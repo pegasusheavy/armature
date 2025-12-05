@@ -1,0 +1,30 @@
+[package]
+name = "armature-cache"
+version = "0.1.0"
+edition = "2024"
+authors = ["Armature Contributors"]
+description = "Cache management for Armature framework"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Core dependencies
+async-trait = "0.1"
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+
+# Redis support (optional)
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"], optional = true }
+
+# Memcached support (optional)
+memcache = { version = "0.17", optional = true }
+
+[features]
+default = ["redis", "memcached"]
+redis = ["dep:redis"]
+memcached = ["dep:memcache"]
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+

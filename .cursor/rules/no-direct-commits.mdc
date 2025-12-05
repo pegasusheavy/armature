@@ -1,0 +1,312 @@
+# No Direct Commits to Main and Develop
+
+**CRITICAL RULE:** Never commit directly to `main` or `develop` branches.
+
+## Protected Branches
+
+### `main` branch
+- ❌ **NO direct commits**
+- ❌ **NO force pushes**
+- ✅ Only merge via Pull Requests from `release/*` or `hotfix/*`
+
+### `develop` branch
+- ❌ **NO direct commits**
+- ❌ **NO force pushes**
+- ✅ Only merge via Pull Requests from `feature/*`, `release/*`, or `hotfix/*`
+
+## Why This Rule Exists
+
+1. **Code Review:** All changes must be reviewed before merging
+2. **CI/CD:** Automated tests must pass before integration
+3. **Quality Control:** Prevents untested code from reaching protected branches
+4. **Audit Trail:** Maintains clear history of what changed and why
+5. **Team Collaboration:** Ensures visibility of all changes
+6. **Rollback Safety:** Makes it easier to revert problematic changes
+
+## Correct Workflow
+
+### For New Features
+
+```bash
+# ❌ WRONG - Never do this!
+git checkout develop
+git add .
+git commit -m "Add new feature"
+git push origin develop  # This will be rejected!
+
+# ✅ CORRECT
+git checkout develop
+git pull origin develop
+git checkout -b feature/123-new-feature
+git add .
+git commit -m "feat: add new feature"
+git push origin feature/123-new-feature
+# Then create Pull Request on GitHub/GitLab
+```
+
+### For Bug Fixes
+
+```bash
+# ❌ WRONG
+git checkout develop
+git commit -am "fix bug"
+git push origin develop  # This will be rejected!
+
+# ✅ CORRECT
+git checkout develop
+git pull origin develop
+git checkout -b feature/456-fix-bug
+git commit -am "fix: resolve issue with authentication"
+git push origin feature/456-fix-bug
+# Then create Pull Request
+```
+
+### For Hotfixes
+
+```bash
+# ❌ WRONG
+git checkout main
+git commit -am "urgent fix"
+git push origin main  # This will be rejected!
+
+# ✅ CORRECT
+git checkout main
+git pull origin main
+git checkout -b hotfix/1.0.1-critical-fix
+git commit -am "fix: resolve critical security issue"
+git push origin hotfix/1.0.1-critical-fix
+# Then create Pull Request to main AND develop
+```
+
+## What If I Accidentally Commit?
+
+### Before Pushing
+
+If you committed to `main` or `develop` locally but haven't pushed yet:
+
+```bash
+# Move the commit to a new branch
+git branch feature/my-changes
+git reset --hard origin/develop  # or origin/main
+git checkout feature/my-changes
+git push origin feature/my-changes
+# Now create Pull Request
+```
+
+### After Pushing (If Allowed)
+
+If you somehow managed to push directly:
+
+```bash
+# Immediately notify the team
+# Revert the commit
+git checkout develop  # or main
+git revert HEAD
+git push origin develop  # or main
+
+# Then create proper feature branch with the fix
+git checkout -b feature/proper-implementation
+# Re-apply your changes properly
+git push origin feature/proper-implementation
+# Create Pull Request
+```
+
+## Emergency Exceptions
+
+In **extremely rare** emergency situations (production down, data loss, security breach), a direct commit *might* be necessary:
+
+### Emergency Procedure
+
+1. **Get approval** from team lead/CTO
+2. **Document reason** in commit message
+3. **Notify team** immediately in Slack/Discord
+4. **Create follow-up PR** with proper testing
+5. **Post-mortem** document after resolution
+
+```bash
+# Only in extreme emergency with approval
+git checkout main
+git commit -am "EMERGENCY: fix critical production outage
+
+Reason: Database connection pool exhausted causing 100% error rate
+Approved by: [Name]
+Impact: 10,000+ users affected
+Ticket: #CRITICAL-123"
+git push origin main
+
+# Immediately after, create proper PR for review
+git checkout -b hotfix/emergency-followup
+# Add tests, documentation, etc.
+git push origin hotfix/emergency-followup
+```
+
+## Pull Request Requirements
+
+All merges to `main` and `develop` must go through Pull Requests with:
+
+### Required Checks
+
+- ✅ At least one approval from code owner
+- ✅ All CI tests passing (`cargo test --all-features`)
+- ✅ No clippy warnings (`cargo clippy -- -D warnings`)
+- ✅ Code is formatted (`cargo fmt -- --check`)
+- ✅ No merge conflicts
+- ✅ Branch is up to date with target
+- ✅ All conversations resolved
+
+### PR Must Include
+
+- Clear description of changes
+- Link to related issue/ticket
+- Test coverage for new code
+- Documentation updates (if needed)
+- CHANGELOG update (for releases)
+
+## Branch Protection Setup
+
+### GitHub Settings
+
+```yaml
+# .github/branch-protection.yml (conceptual)
+branches:
+  main:
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+      required_status_checks:
+        strict: true
+        contexts:
+          - "test"
+          - "lint"
+          - "format-check"
+      enforce_admins: true
+      restrictions: null
+
+  develop:
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+      required_status_checks:
+        strict: true
+        contexts:
+          - "test"
+          - "lint"
+      enforce_admins: true
+```
+
+## Common Mistakes to Avoid
+
+### ❌ Mistake 1: "Just a quick fix"
+
+```bash
+# NO! Even small changes need PR
+git checkout develop
+git commit -am "fix typo"  # Still wrong!
+```
+
+### ❌ Mistake 2: "Nobody will notice"
+
+```bash
+# Everyone will notice, and CI should block it
+git push origin main  # Protected branch!
+```
+
+### ❌ Mistake 3: "I'm the only developer"
+
+```bash
+# Still wrong - maintains good habits and audit trail
+git commit --allow-empty -m "update"
+git push origin develop  # Bad practice!
+```
+
+### ❌ Mistake 4: Force pushing to fix
+
+```bash
+# NEVER force push to protected branches
+git push --force origin main  # Extremely bad!
+```
+
+## Enforcement
+
+### Git Hooks
+
+Add a pre-push hook to prevent accidents:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-push
+
+protected_branches='main develop'
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+for branch in $protected_branches; do
+    if [ $branch = $current_branch ]; then
+        echo "🚫 Direct push to $current_branch is not allowed!"
+        echo "   Create a feature branch and use a Pull Request."
+        echo "   Run: git checkout -b feature/your-feature-name"
+        exit 1
+    fi
+done
+
+exit 0
+```
+
+### Make it executable
+
+```bash
+chmod +x .git/hooks/pre-push
+```
+
+## Team Communication
+
+If you see someone attempting to push directly to `main` or `develop`:
+
+### Gentle Reminder
+
+> Hey! I noticed you're trying to commit directly to [main/develop].
+> Let's create a feature branch instead so we can get it reviewed:
+>
+> ```
+> git checkout -b feature/your-change
+> git push origin feature/your-change
+> ```
+>
+> Then create a PR and I'll review it! 👍
+
+## Summary
+
+### The Golden Rules
+
+1. ✅ **Always** create a feature/hotfix branch
+2. ✅ **Always** push to your branch
+3. ✅ **Always** create a Pull Request
+4. ✅ **Always** wait for review and approval
+5. ✅ **Always** ensure CI passes
+
+### Never Do This
+
+1. ❌ **Never** `git checkout main` and commit
+2. ❌ **Never** `git checkout develop` and commit
+3. ❌ **Never** force push to protected branches
+4. ❌ **Never** bypass CI checks
+5. ❌ **Never** merge without approval
+
+### Quick Reference
+
+```bash
+# The right way every time:
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-feature
+# Make changes...
+git add .
+git commit -m "feat: add feature"
+git push origin feature/my-feature
+# Create PR on GitHub
+```
+
+---
+
+**Remember:** If it feels like you're taking a shortcut, you probably are.
+Use branches and PRs - it's worth the extra 30 seconds! 🚀

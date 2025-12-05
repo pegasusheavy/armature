@@ -1,0 +1,194 @@
+[workspace]
+members = [
+    "armature-core",
+    "armature-macro",
+    "armature-graphql",
+    "armature-config",
+    "armature-angular",
+    "armature-react",
+    "armature-vue",
+    "armature-svelte",
+    "armature-jwt",
+    "armature-auth",
+    "armature-testing",
+    "armature-validation",
+    "armature-openapi",
+    "armature-cache",
+    "armature-cron",
+    "armature-queue",
+    "armature-opentelemetry",
+]
+resolver = "2"
+
+[package]
+name = "armature"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "armature"
+path = "src/lib.rs"
+
+[dependencies]
+armature-core = { path = "armature-core" }
+armature-macro = { path = "armature-macro" }
+armature-graphql = { path = "armature-graphql", optional = true }
+armature-config = { path = "armature-config", optional = true }
+armature-angular = { path = "armature-angular", optional = true }
+armature-react = { path = "armature-react", optional = true }
+armature-vue = { path = "armature-vue", optional = true }
+armature-svelte = { path = "armature-svelte", optional = true }
+armature-jwt = { path = "armature-jwt", optional = true }
+armature-auth = { path = "armature-auth", optional = true }
+armature-testing = { path = "armature-testing", optional = true }
+armature-validation = { path = "armature-validation", optional = true }
+armature-openapi = { path = "armature-openapi", optional = true }
+armature-cache = { path = "armature-cache", optional = true }
+armature-cron = { path = "armature-cron", optional = true }
+armature-queue = { path = "armature-queue", optional = true }
+armature-opentelemetry = { path = "armature-opentelemetry", optional = true }
+
+# Re-export core functionality
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+tokio-stream = "0.1"
+
+[features]
+default = []
+full = [
+    "graphql",
+    "config",
+    "angular",
+    "react",
+    "vue",
+    "svelte",
+    "jwt",
+    "auth",
+    "testing",
+    "validation",
+    "openapi",
+    "cache",
+    "cron",
+    "queue",
+    "opentelemetry",
+]
+graphql = ["armature-graphql"]
+config = ["armature-config"]
+angular = ["armature-angular"]
+react = ["armature-react"]
+vue = ["armature-vue"]
+svelte = ["armature-svelte"]
+jwt = ["armature-jwt"]
+auth = ["armature-auth", "armature-jwt"]
+testing = ["armature-testing"]
+validation = ["armature-validation"]
+openapi = ["armature-openapi"]
+cache = ["armature-cache"]
+cron = ["armature-cron"]
+queue = ["armature-queue"]
+opentelemetry = ["armature-opentelemetry"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+# Examples require runtime dependencies
+[[example]]
+name = "full_example"
+path = "examples/full_example.rs"
+
+[[example]]
+name = "simple"
+path = "examples/simple.rs"
+
+[[example]]
+name = "rest_api"
+path = "examples/rest_api.rs"
+
+[[example]]
+name = "dependency_injection"
+path = "examples/dependency_injection.rs"
+
+[[example]]
+name = "automatic_di"
+path = "examples/automatic_di.rs"
+
+[[example]]
+name = "websocket_chat"
+path = "examples/websocket_chat.rs"
+
+[[example]]
+name = "server_sent_events"
+path = "examples/server_sent_events.rs"
+
+[[example]]
+name = "graphql_api"
+path = "examples/graphql_api.rs"
+required-features = ["graphql"]
+
+[[example]]
+name = "config_example"
+path = "examples/config_example.rs"
+required-features = ["config"]
+
+[[example]]
+name = "angular_ssr_simple"
+path = "examples/angular_ssr_simple.rs"
+required-features = ["angular"]
+
+[[example]]
+name = "jwt_simple"
+path = "examples/jwt_simple.rs"
+required-features = ["jwt"]
+
+[[example]]
+name = "auth_complete"
+path = "examples/auth_complete.rs"
+required-features = ["auth"]
+
+[[example]]
+name = "oauth2_providers"
+path = "examples/oauth2_providers.rs"
+required-features = ["auth"]
+
+[[example]]
+name = "saml_simple"
+path = "examples/saml_simple.rs"
+required-features = ["auth"]
+
+[[example]]
+name = "guards_interceptors"
+path = "examples/guards_interceptors.rs"
+
+[[example]]
+name = "http_errors"
+path = "examples/http_errors.rs"
+
+[[example]]
+name = "middleware_demo"
+path = "examples/middleware_demo.rs"
+
+[[example]]
+name = "react_ssr"
+path = "examples/react_ssr.rs"
+required-features = ["react"]
+
+[[example]]
+name = "vue_ssr"
+path = "examples/vue_ssr.rs"
+required-features = ["vue"]
+
+[[example]]
+name = "svelte_ssr"
+path = "examples/svelte_ssr.rs"
+required-features = ["svelte"]
+
+[[example]]
+name = "testing_example"
+path = "examples/testing_example.rs"
+
+[[example]]
+name = "validation_example"
+path = "examples/validation_example.rs"
+required-features = ["validation"]

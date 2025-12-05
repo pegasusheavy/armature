@@ -1,0 +1,360 @@
+//! Job definition and state management.
+
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use uuid::Uuid;
+
+/// Job unique identifier.
+pub type JobId = Uuid;
+
+/// Job data payload.
+pub type JobData = serde_json::Value;
+
+/// Job priority levels.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum JobPriority {
+    /// Lowest priority
+    Low = 0,
+    /// Normal priority (default)
+    Normal = 1,
+    /// High priority
+    High = 2,
+    /// Critical priority
+    Critical = 3,
+}
+
+impl Default for JobPriority {
+    fn default() -> Self {
+        Self::Normal
+    }
+}
+
+/// Job state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum JobState {
+    /// Job is waiting to be processed
+    Pending,
+    /// Job is currently being processed
+    Processing,
+    /// Job completed successfully
+    Completed,
+    /// Job failed and will be retried
+    Failed,
+    /// Job failed permanently (max retries exceeded)
+    Dead,
+}
+
+/// Job status information.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct JobStatus {
+    /// Current state
+    pub state: JobState,
+
+    /// Progress percentage (0-100)
+    pub progress: u8,
+
+    /// Status message
+    pub message: Option<String>,
+
+    /// Error message (if failed)
+    pub error: Option<String>,
+
+    /// Last updated timestamp
+    pub updated_at: DateTime<Utc>,
+}
+
+impl JobStatus {
+    /// Create a new pending status.
+    pub fn pending() -> Self {
+        Self {
+            state: JobState::Pending,
+            progress: 0,
+            message: None,
+            error: None,
+            updated_at: Utc::now(),
+        }
+    }
+
+    /// Create a processing status.
+    pub fn processing() -> Self {
+        Self {
+            state: JobState::Processing,
+            progress: 0,
+            message: None,
+            error: None,
+            updated_at: Utc::now(),
+        }
+    }
+
+    /// Create a completed status.
+    pub fn completed() -> Self {
+        Self {
+            state: JobState::Completed,
+            progress: 100,
+            message: None,
+            error: None,
+            updated_at: Utc::now(),
+        }
+    }
+
+    /// Create a failed status.
+    pub fn failed(error: String) -> Self {
+        Self {
+            state: JobState::Failed,
+            progress: 0,
+            message: None,
+            error: Some(error),
+            updated_at: Utc::now(),
+        }
+    }
+
+    /// Create a dead status.
+    pub fn dead(error: String) -> Self {
+        Self {
+            state: JobState::Dead,
+            progress: 0,
+            message: None,
+            error: Some(error),
+            updated_at: Utc::now(),
+        }
+    }
+
+    /// Update progress.
+    pub fn with_progress(mut self, progress: u8) -> Self {
+        self.progress = progress.min(100);
+        self.updated_at = Utc::now();
+        self
+    }
+
+    /// Update message.
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = Some(message.into());
+        self.updated_at = Utc::now();
+        self
+    }
+}
+
+/// A job to be processed.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Job {
+    /// Unique job identifier
+    pub id: JobId,
+
+    /// Job type/name
+    pub job_type: String,
+
+    /// Job payload data
+    pub data: JobData,
+
+    /// Job priority
+    pub priority: JobPriority,
+
+    /// Job status
+    pub status: JobStatus,
+
+    /// Number of attempts
+    pub attempts: u32,
+
+    /// Maximum number of retry attempts
+    pub max_attempts: u32,
+
+    /// Queue name
+    pub queue: String,
+
+    /// When the job was created
+    pub created_at: DateTime<Utc>,
+
+    /// When the job should be processed (for delayed jobs)
+    pub scheduled_at: Option<DateTime<Utc>>,
+
+    /// When the job was started
+    pub started_at: Option<DateTime<Utc>>,
+
+    /// When the job completed/failed
+    pub completed_at: Option<DateTime<Utc>>,
+
+    /// Job metadata
+    pub metadata: HashMap<String, String>,
+}
+
+impl Job {
+    /// Create a new job.
+    pub fn new(queue: impl Into<String>, job_type: impl Into<String>, data: JobData) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            job_type: job_type.into(),
+            data,
+            priority: JobPriority::default(),
+            status: JobStatus::pending(),
+            attempts: 0,
+            max_attempts: 3,
+            queue: queue.into(),
+            created_at: Utc::now(),
+            scheduled_at: None,
+            started_at: None,
+            completed_at: None,
+            metadata: HashMap::new(),
+        }
+    }
+
+    /// Set job priority.
+    pub fn with_priority(mut self, priority: JobPriority) -> Self {
+        self.priority = priority;
+        self
+    }
+
+    /// Set max retry attempts.
+    pub fn with_max_attempts(mut self, max_attempts: u32) -> Self {
+        self.max_attempts = max_attempts;
+        self
+    }
+
+    /// Schedule the job for later.
+    pub fn schedule_at(mut self, time: DateTime<Utc>) -> Self {
+        self.scheduled_at = Some(time);
+        self
+    }
+
+    /// Schedule the job after a delay.
+    pub fn schedule_after(mut self, duration: chrono::Duration) -> Self {
+        self.scheduled_at = Some(Utc::now() + duration);
+        self
+    }
+
+    /// Add metadata.
+    pub fn with_metadata(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.metadata.insert(key.into(), value.into());
+        self
+    }
+
+    /// Check if the job is ready to be processed.
+    pub fn is_ready(&self) -> bool {
+        if let Some(scheduled_at) = self.scheduled_at {
+            Utc::now() >= scheduled_at
+        } else {
+            true
+        }
+    }
+
+    /// Check if the job can be retried.
+    pub fn can_retry(&self) -> bool {
+        self.attempts < self.max_attempts
+    }
+
+    /// Mark job as processing.
+    pub fn start_processing(&mut self) {
+        self.status = JobStatus::processing();
+        self.started_at = Some(Utc::now());
+        self.attempts += 1;
+    }
+
+    /// Mark job as completed.
+    pub fn complete(&mut self) {
+        self.status = JobStatus::completed();
+        self.completed_at = Some(Utc::now());
+    }
+
+    /// Mark job as failed.
+    pub fn fail(&mut self, error: String) {
+        if self.can_retry() {
+            self.status = JobStatus::failed(error);
+        } else {
+            self.status = JobStatus::dead(error);
+            self.completed_at = Some(Utc::now());
+        }
+    }
+
+    /// Update job progress.
+    pub fn update_progress(&mut self, progress: u8, message: Option<String>) {
+        self.status.progress = progress.min(100);
+        self.status.message = message;
+        self.status.updated_at = Utc::now();
+    }
+
+    /// Calculate backoff delay for retry.
+    pub fn backoff_delay(&self) -> chrono::Duration {
+        // Exponential backoff: 2^attempts seconds
+        let seconds = 2_i64.pow(self.attempts.saturating_sub(1));
+        chrono::Duration::seconds(seconds.min(3600)) // Max 1 hour
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_job_creation() {
+        let job = Job::new(
+            "default",
+            "send_email",
+            serde_json::json!({"to": "test@example.com"}),
+        );
+
+        assert_eq!(job.queue, "default");
+        assert_eq!(job.job_type, "send_email");
+        assert_eq!(job.attempts, 0);
+        assert_eq!(job.priority, JobPriority::Normal);
+    }
+
+    #[test]
+    fn test_job_builder() {
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .with_priority(JobPriority::High)
+            .with_max_attempts(5)
+            .with_metadata("user_id", "123");
+
+        assert_eq!(job.priority, JobPriority::High);
+        assert_eq!(job.max_attempts, 5);
+        assert_eq!(job.metadata.get("user_id"), Some(&"123".to_string()));
+    }
+
+    #[test]
+    fn test_job_ready() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+        assert!(job.is_ready());
+
+        job = job.schedule_at(Utc::now() + chrono::Duration::hours(1));
+        assert!(!job.is_ready());
+    }
+
+    #[test]
+    fn test_job_retry_logic() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+        job.max_attempts = 3;
+
+        assert!(job.can_retry());
+
+        job.start_processing();
+        job.fail("Error 1".to_string());
+        assert!(job.can_retry());
+        assert_eq!(job.status.state, JobState::Failed);
+
+        job.start_processing();
+        job.fail("Error 2".to_string());
+        assert!(job.can_retry());
+
+        job.start_processing();
+        job.fail("Error 3".to_string());
+        assert!(!job.can_retry());
+        assert_eq!(job.status.state, JobState::Dead);
+    }
+
+    #[test]
+    fn test_backoff_delay() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+
+        job.attempts = 1;
+        assert_eq!(job.backoff_delay(), chrono::Duration::seconds(1));
+
+        job.attempts = 2;
+        assert_eq!(job.backoff_delay(), chrono::Duration::seconds(2));
+
+        job.attempts = 3;
+        assert_eq!(job.backoff_delay(), chrono::Duration::seconds(4));
+
+        job.attempts = 10;
+        assert_eq!(job.backoff_delay(), chrono::Duration::seconds(512));
+    }
+}

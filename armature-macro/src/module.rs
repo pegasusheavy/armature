@@ -1,0 +1,142 @@
+use proc_macro::TokenStream;
+use quote::quote;
+use syn::{
+    Ident, ItemStruct, Token, Type,
+    parse::{Parse, ParseStream},
+    parse_macro_input,
+    punctuated::Punctuated,
+};
+
+struct ModuleArgs {
+    providers: Vec<Type>,
+    controllers: Vec<Type>,
+    imports: Vec<Type>,
+    exports: Vec<Type>,
+}
+
+impl Parse for ModuleArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut providers = Vec::new();
+        let mut controllers = Vec::new();
+        let mut imports = Vec::new();
+        let mut exports = Vec::new();
+
+        while !input.is_empty() {
+            let key: Ident = input.parse()?;
+            input.parse::<Token![:]>()?;
+
+            let content;
+            syn::bracketed!(content in input);
+            let types: Punctuated<Type, Token![,]> =
+                content.parse_terminated(Type::parse, Token![,])?;
+
+            match key.to_string().as_str() {
+                "providers" => providers = types.into_iter().collect(),
+                "controllers" => controllers = types.into_iter().collect(),
+                "imports" => imports = types.into_iter().collect(),
+                "exports" => exports = types.into_iter().collect(),
+                _ => {}
+            }
+
+            if !input.is_empty() {
+                input.parse::<Token![,]>()?;
+            }
+        }
+
+        Ok(ModuleArgs {
+            providers,
+            controllers,
+            imports,
+            exports,
+        })
+    }
+}
+
+pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemStruct);
+    let struct_name = &input.ident;
+
+    let args = parse_macro_input!(attr as ModuleArgs);
+
+    let providers = &args.providers;
+    let controllers = &args.controllers;
+    let imports = &args.imports;
+    let exports = &args.exports;
+
+    let provider_registrations = providers.iter().map(|ty| {
+        quote! {
+            armature_core::ProviderRegistration {
+                type_id: std::any::TypeId::of::<#ty>(),
+                type_name: std::any::type_name::<#ty>(),
+                register_fn: |container| {
+                    let instance = #ty::default();
+                    container.register(instance);
+                },
+            }
+        }
+    });
+
+    let controller_registrations = controllers.iter().map(|ty| {
+        quote! {
+            armature_core::ControllerRegistration {
+                type_id: std::any::TypeId::of::<#ty>(),
+                type_name: std::any::type_name::<#ty>(),
+                base_path: #ty::BASE_PATH,
+                factory: |container| {
+                    let instance = #ty::new_with_di(container)?;
+                    Ok(Box::new(instance) as Box<dyn std::any::Any + Send + Sync>)
+                },
+                route_registrar: |container, router, controller_any| {
+                    let controller = controller_any.downcast::<#ty>()
+                        .map_err(|_| armature_core::Error::Internal("Failed to downcast controller".to_string()))?;
+                    // Routes will be registered separately
+                    Ok(())
+                },
+            }
+        }
+    });
+
+    let import_instances = imports.iter().map(|ty| {
+        quote! {
+            Box::new(#ty) as Box<dyn armature_core::Module>
+        }
+    });
+
+    let export_ids = exports.iter().map(|ty| {
+        quote! {
+            std::any::TypeId::of::<#ty>()
+        }
+    });
+
+    let expanded = quote! {
+        #input
+
+        impl armature_core::Module for #struct_name {
+            fn providers(&self) -> Vec<armature_core::ProviderRegistration> {
+                vec![
+                    #(#provider_registrations),*
+                ]
+            }
+
+            fn controllers(&self) -> Vec<armature_core::ControllerRegistration> {
+                vec![
+                    #(#controller_registrations),*
+                ]
+            }
+
+            fn imports(&self) -> Vec<Box<dyn armature_core::Module>> {
+                vec![
+                    #(#import_instances),*
+                ]
+            }
+
+            fn exports(&self) -> Vec<std::any::TypeId> {
+                vec![
+                    #(#export_ids),*
+                ]
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}

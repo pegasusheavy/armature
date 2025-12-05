@@ -1,0 +1,591 @@
+---
+alwaysApply: false
+---
+
+# Rust 2024 Best Practices
+
+This project uses **Rust Edition 2024** and follows modern Rust best practices.
+
+## Edition Configuration
+
+All `Cargo.toml` files must specify edition 2024:
+
+```toml
+[package]
+name = "crate-name"
+version = "0.1.0"
+edition = "2024"
+```
+
+## Code Style
+
+### Use `rustfmt`
+
+Always format code with rustfmt before committing:
+
+```bash
+cargo fmt --all
+```
+
+### Use `clippy`
+
+Run clippy and fix all warnings:
+
+```bash
+cargo clippy --all-features --all-targets -- -D warnings
+```
+
+### Naming Conventions
+
+```rust
+// ✅ Good
+struct UserAccount { }           // Types: UpperCamelCase
+trait Validate { }               // Traits: UpperCamelCase
+enum HttpStatus { }              // Enums: UpperCamelCase
+fn create_user() { }             // Functions: snake_case
+const MAX_SIZE: usize = 100;     // Constants: SCREAMING_SNAKE_CASE
+static GLOBAL_CONFIG: &str = ""; // Statics: SCREAMING_SNAKE_CASE
+let user_name = "Alice";         // Variables: snake_case
+mod http_client;                 // Modules: snake_case
+
+// ❌ Bad
+struct user_account { }          // Wrong case
+fn CreateUser() { }              // Wrong case
+const maxSize: usize = 100;      // Wrong case
+```
+
+## Error Handling
+
+### Use `Result` and `?` Operator
+
+```rust
+// ✅ Good: Use Result and ? operator
+pub fn parse_config(path: &str) -> Result<Config, Error> {
+    let contents = std::fs::read_to_string(path)?;
+    let config: Config = serde_json::from_str(&contents)?;
+    validate_config(&config)?;
+    Ok(config)
+}
+
+// ❌ Bad: Using unwrap in library code
+pub fn parse_config(path: &str) -> Config {
+    let contents = std::fs::read_to_string(path).unwrap(); // Don't panic!
+    serde_json::from_str(&contents).unwrap()
+}
+```
+
+### Use `thiserror` for Error Types
+
+```rust
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum CacheError {
+    #[error("Redis error: {0}")]
+    Redis(#[from] redis::RedisError),
+
+    #[error("Serialization error: {0}")]
+    Serialization(String),
+
+    #[error("Cache key not found: {0}")]
+    NotFound(String),
+}
+```
+
+### Never Use `unwrap()` or `expect()` in Library Code
+
+```rust
+// ✅ Good: Propagate errors
+pub fn get_user(id: i32) -> Result<User, Error> {
+    database.query("SELECT * FROM users WHERE id = ?", id)?
+        .ok_or_else(|| Error::NotFound(format!("User {} not found", id)))
+}
+
+// ❌ Bad: Panicking in library code
+pub fn get_user(id: i32) -> User {
+    database.query("SELECT * FROM users WHERE id = ?", id)
+        .unwrap()
+        .expect("User not found") // Never use in library code!
+}
+
+// ✅ Acceptable: In application code, example code, or tests
+#[tokio::main]
+async fn main() {
+    let app = Application::create(AppModule);
+    app.listen(3000).await.expect("Failed to start server");
+}
+```
+
+## Async/Await
+
+### Use `async-trait` for Async Traits
+
+```rust
+use async_trait::async_trait;
+
+#[async_trait]
+pub trait Repository: Send + Sync {
+    async fn find_by_id(&self, id: i32) -> Result<User, Error>;
+    async fn save(&self, user: &User) -> Result<(), Error>;
+}
+```
+
+### Prefer `tokio` Runtime
+
+```rust
+// ✅ Good: Use tokio for async runtime
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    // Async code
+    Ok(())
+}
+
+// For tests
+#[tokio::test]
+async fn test_async_function() {
+    let result = async_function().await;
+    assert!(result.is_ok());
+}
+```
+
+### Use `.await` Properly
+
+```rust
+// ✅ Good: Await futures properly
+let user = fetch_user(id).await?;
+let posts = fetch_posts(user.id).await?;
+
+// ✅ Good: Concurrent execution with join!
+let (user, posts) = tokio::join!(
+    fetch_user(id),
+    fetch_posts(user_id)
+);
+
+// ❌ Bad: Blocking in async code
+async fn bad_example() {
+    std::thread::sleep(Duration::from_secs(1)); // Blocks entire thread!
+}
+
+// ✅ Good: Async sleep
+async fn good_example() {
+    tokio::time::sleep(Duration::from_secs(1)).await;
+}
+```
+
+## Ownership and Borrowing
+
+### Follow Ownership Rules
+
+```rust
+// ✅ Good: Clear ownership
+pub struct User {
+    pub id: i32,
+    pub name: String,
+}
+
+impl User {
+    // Takes ownership
+    pub fn new(name: String) -> Self {
+        Self { id: 0, name }
+    }
+
+    // Borrows immutably
+    pub fn display(&self) {
+        println!("{}", self.name);
+    }
+
+    // Borrows mutably
+    pub fn update_name(&mut self, name: String) {
+        self.name = name;
+    }
+
+    // Consumes self
+    pub fn into_dto(self) -> UserDto {
+        UserDto { name: self.name }
+    }
+}
+```
+
+### Use References Appropriately
+
+```rust
+// ✅ Good: Take references for read-only access
+pub fn validate_email(email: &str) -> bool {
+    email.contains('@')
+}
+
+// ❌ Bad: Unnecessary ownership
+pub fn validate_email(email: String) -> bool {
+    email.contains('@')
+}
+
+// ✅ Good: Return owned data
+pub fn format_name(first: &str, last: &str) -> String {
+    format!("{} {}", first, last)
+}
+```
+
+### Prefer `&str` Over `&String`
+
+```rust
+// ✅ Good: Use &str for string parameters
+pub fn process_text(text: &str) -> String {
+    text.to_uppercase()
+}
+
+// ❌ Bad: Unnecessarily specific
+pub fn process_text(text: &String) -> String {
+    text.to_uppercase()
+}
+```
+
+## Type Safety
+
+### Use Newtypes for Type Safety
+
+```rust
+// ✅ Good: Type-safe wrappers
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserId(pub i32);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PostId(pub i32);
+
+// Now you can't accidentally mix them up
+fn get_user(id: UserId) -> Result<User, Error> { }
+fn get_post(id: PostId) -> Result<Post, Error> { }
+
+// ❌ Bad: Easy to mix up IDs
+fn get_user(id: i32) -> Result<User, Error> { }
+fn get_post(id: i32) -> Result<Post, Error> { }
+```
+
+### Use Enums for State
+
+```rust
+// ✅ Good: Type-safe state machine
+pub enum PaymentStatus {
+    Pending { amount: f64 },
+    Processing { transaction_id: String },
+    Completed { receipt: String },
+    Failed { error: String },
+}
+
+impl PaymentStatus {
+    pub fn is_final(&self) -> bool {
+        matches!(self, Self::Completed { .. } | Self::Failed { .. })
+    }
+}
+```
+
+### Leverage the Type System
+
+```rust
+// ✅ Good: Use type system to prevent invalid states
+pub struct ValidatedEmail(String);
+
+impl ValidatedEmail {
+    pub fn new(email: String) -> Result<Self, Error> {
+        if email.contains('@') {
+            Ok(Self(email))
+        } else {
+            Err(Error::InvalidEmail)
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+// Now you can't create invalid emails
+fn send_email(to: ValidatedEmail, body: &str) { }
+```
+
+## Pattern Matching
+
+### Use Exhaustive Pattern Matching
+
+```rust
+// ✅ Good: Exhaustive matching
+match status {
+    HttpStatus::Ok => handle_success(),
+    HttpStatus::NotFound => handle_not_found(),
+    HttpStatus::ServerError => handle_error(),
+    // Compiler ensures all cases are covered
+}
+
+// ⚠️ Use _ sparingly and intentionally
+match status {
+    HttpStatus::Ok => handle_success(),
+    _ => handle_other(), // Only if appropriate
+}
+```
+
+### Use `if let` for Single Pattern
+
+```rust
+// ✅ Good: Use if let for single pattern
+if let Some(user) = find_user(id) {
+    process_user(user);
+}
+
+// ❌ Bad: Unnecessary match for single pattern
+match find_user(id) {
+    Some(user) => process_user(user),
+    None => {}
+}
+
+// ✅ Good: Use let-else for early return (Rust 2021+)
+let Some(user) = find_user(id) else {
+    return Err(Error::NotFound);
+};
+```
+
+### Use `matches!` Macro
+
+```rust
+// ✅ Good: Use matches! for boolean checks
+if matches!(status, HttpStatus::Ok | HttpStatus::Created) {
+    // Handle success cases
+}
+
+// ❌ Bad: Verbose pattern matching
+if match status {
+    HttpStatus::Ok | HttpStatus::Created => true,
+    _ => false,
+} {
+    // Handle success cases
+}
+```
+
+## Iterators
+
+### Prefer Iterators Over Loops
+
+```rust
+// ✅ Good: Use iterators
+let even_squares: Vec<i32> = numbers
+    .iter()
+    .filter(|n| n % 2 == 0)
+    .map(|n| n * n)
+    .collect();
+
+// ❌ Bad: Manual loop
+let mut even_squares = Vec::new();
+for n in &numbers {
+    if n % 2 == 0 {
+        even_squares.push(n * n);
+    }
+}
+
+// ✅ Good: Use iterator methods
+let sum: i32 = numbers.iter().sum();
+let max = numbers.iter().max();
+let found = numbers.iter().find(|&&n| n > 10);
+```
+
+### Avoid Unnecessary `collect()`
+
+```rust
+// ✅ Good: Chain iterators
+let result = data
+    .iter()
+    .filter(|x| x.is_valid())
+    .map(|x| x.process())
+    .collect();
+
+// ❌ Bad: Multiple collects
+let filtered = data.iter().filter(|x| x.is_valid()).collect::<Vec<_>>();
+let result = filtered.iter().map(|x| x.process()).collect();
+```
+
+## Safety
+
+### Avoid `unsafe` Unless Necessary
+
+```rust
+// ✅ Good: Safe Rust is preferred
+pub fn get_slice(data: &[u8], start: usize, len: usize) -> Option<&[u8]> {
+    data.get(start..start + len)
+}
+
+// ❌ Bad: Unnecessary unsafe
+pub fn get_slice(data: &[u8], start: usize, len: usize) -> &[u8] {
+    unsafe {
+        std::slice::from_raw_parts(data.as_ptr().add(start), len)
+    }
+}
+```
+
+### Document `unsafe` Code
+
+```rust
+// ✅ Good: Document safety invariants
+/// # Safety
+///
+/// Caller must ensure that:
+/// - `ptr` is valid and properly aligned
+/// - `ptr` points to `len` initialized elements
+/// - The memory is not accessed mutably elsewhere
+pub unsafe fn from_raw_parts(ptr: *const T, len: usize) -> &[T] {
+    std::slice::from_raw_parts(ptr, len)
+}
+```
+
+## Performance
+
+### Use `&[T]` Instead of `&Vec<T>`
+
+```rust
+// ✅ Good: More flexible
+pub fn process_items(items: &[Item]) -> Result<(), Error> {
+    for item in items {
+        process(item)?;
+    }
+    Ok(())
+}
+
+// ❌ Bad: Too specific
+pub fn process_items(items: &Vec<Item>) -> Result<(), Error> {
+    // Same code
+}
+```
+
+### Avoid Cloning When Not Needed
+
+```rust
+// ✅ Good: Borrow when possible
+pub fn format_user(user: &User) -> String {
+    format!("{} ({})", user.name, user.email)
+}
+
+// ❌ Bad: Unnecessary clone
+pub fn format_user(user: User) -> String {
+    format!("{} ({})", user.name, user.email)
+}
+
+// ✅ Good: Clone only when necessary
+pub fn cache_user(&mut self, user: User) {
+    self.cache.insert(user.id, user); // Needs ownership
+}
+```
+
+### Use `Cow` for Conditional Ownership
+
+```rust
+use std::borrow::Cow;
+
+// ✅ Good: Avoid allocation when possible
+pub fn ensure_prefix(s: &str, prefix: &str) -> Cow<str> {
+    if s.starts_with(prefix) {
+        Cow::Borrowed(s)
+    } else {
+        Cow::Owned(format!("{}{}", prefix, s))
+    }
+}
+```
+
+## Traits
+
+### Implement Standard Traits
+
+```rust
+// ✅ Good: Derive common traits
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UserId(pub i32);
+
+// Implement Display for user-facing output
+impl std::fmt::Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "User({})", self.0)
+    }
+}
+
+// Implement From for conversions
+impl From<i32> for UserId {
+    fn from(id: i32) -> Self {
+        Self(id)
+    }
+}
+```
+
+### Use Trait Bounds Wisely
+
+```rust
+// ✅ Good: Clear trait bounds
+pub fn serialize<T: Serialize>(value: &T) -> Result<String, Error> {
+    serde_json::to_string(value)
+        .map_err(|e| Error::Serialization(e.to_string()))
+}
+
+// ✅ Good: Use where clause for complex bounds
+pub fn process<T>(data: T) -> Result<Output, Error>
+where
+    T: Serialize + DeserializeOwned + Clone + Send + Sync + 'static,
+{
+    // Implementation
+}
+```
+
+## Documentation
+
+### Document Public APIs
+
+```rust
+/// Validates a user email address.
+///
+/// # Arguments
+///
+/// * `email` - The email address to validate
+///
+/// # Returns
+///
+/// Returns `true` if the email is valid, `false` otherwise.
+///
+/// # Examples
+///
+/// ```
+/// use armature::validation::validate_email;
+///
+/// assert!(validate_email("user@example.com"));
+/// assert!(!validate_email("invalid"));
+/// ```
+pub fn validate_email(email: &str) -> bool {
+    email.contains('@') && email.contains('.')
+}
+```
+
+### Document Module Purpose
+
+```rust
+//! User authentication and authorization module.
+//!
+//! This module provides types and functions for handling user
+//! authentication, including password hashing, token generation,
+//! and permission checking.
+//!
+//! # Examples
+//!
+//! ```
+//! use armature::auth::*;
+//!
+//! let auth_service = AuthService::new();
+//! let user = auth_service.authenticate(credentials).await?;
+//! ```
+```
+
+## Summary
+
+1. **Use Rust 2024 edition** in all Cargo.toml files
+2. **Run `rustfmt` and `clippy`** before committing
+3. **Use `Result` and `?`** for error handling, avoid `unwrap()`
+4. **Prefer borrowing** over cloning
+5. **Use iterators** over manual loops
+6. **Leverage the type system** for safety
+7. **Document public APIs** thoroughly
+8. **Write comprehensive tests**
+9. **Follow naming conventions** strictly
+10. **Avoid `unsafe`** unless absolutely necessary
+
+When in doubt, follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)!

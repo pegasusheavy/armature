@@ -1,0 +1,22 @@
+[package]
+name = "armature-cron"
+version = "0.1.0"
+edition = "2024"
+authors = ["Armature Contributors"]
+description = "Cron job scheduling for Armature framework"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Core dependencies
+async-trait = "0.1"
+thiserror = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+chrono = "0.4"
+cron = "0.12"
+
+# DI integration
+armature-core = { path = "../armature-core" }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+

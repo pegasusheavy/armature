@@ -1,0 +1,30 @@
+[package]
+name = "armature-auth"
+version = "0.1.0"
+edition = "2024"
+description = "Authentication and authorization for Armature framework"
+
+[dependencies]
+armature-core = { path = "../armature-core" }
+armature-jwt = { path = "../armature-jwt" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+async-trait = "0.1"
+bcrypt = "0.15"
+argon2 = { version = "0.5", features = ["std"] }
+rand = "0.8"
+base64 = "0.22"
+oauth2 = "4.4"
+reqwest = { version = "0.12", features = ["json"] }
+url = "2.5"
+tokio = { version = "1.35", features = ["full"] }
+samael = "0.0.15"
+chrono = "0.4"
+flate2 = "1.0"
+quick-xml = { version = "0.31", features = ["serialize"] }
+uuid = { version = "1.7", features = ["v4"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
