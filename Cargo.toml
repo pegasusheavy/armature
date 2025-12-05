@@ -25,6 +25,12 @@ resolver = "2"
 name = "armature"
 version = "0.1.0"
 edition = "2024"
+authors = ["Joseph R. Quinn <quinnjr@linux.com>"]
+license = "MIT"
+repository = "https://github.com/quinnjr/armature"
+description = "A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS"
+keywords = ["web", "framework", "http", "async", "server"]
+categories = ["web-programming::http-server"]
 
 [lib]
 name = "armature"
