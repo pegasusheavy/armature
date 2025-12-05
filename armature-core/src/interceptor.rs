@@ -129,6 +129,7 @@ impl Interceptor for CacheInterceptor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     #[test]
     fn test_logging_interceptor_creation() {
@@ -139,5 +140,65 @@ mod tests {
     fn test_cache_interceptor_creation() {
         let interceptor = CacheInterceptor::new(60);
         assert_eq!(interceptor.ttl_seconds, 60);
+    }
+
+    #[test]
+    fn test_cache_interceptor_different_ttls() {
+        let i1 = CacheInterceptor::new(30);
+        let i2 = CacheInterceptor::new(120);
+        let i3 = CacheInterceptor::new(3600);
+
+        assert_eq!(i1.ttl_seconds, 30);
+        assert_eq!(i2.ttl_seconds, 120);
+        assert_eq!(i3.ttl_seconds, 3600);
+    }
+
+    #[test]
+    fn test_transform_interceptor_creation() {
+        let _interceptor = TransformInterceptor::new(|res| res);
+    }
+
+    #[test]
+    fn test_execution_context_creation() {
+        let request = crate::HttpRequest {
+            method: "GET".to_string(),
+            path: "/test".to_string(),
+            headers: HashMap::new(),
+            body: vec![],
+            path_params: HashMap::new(),
+            query_params: HashMap::new(),
+        };
+
+        let context = ExecutionContext::new(request.clone());
+        assert_eq!(context.request.method, "GET");
+        assert_eq!(context.request.path, "/test");
+    }
+
+    #[test]
+    fn test_execution_context_with_metadata() {
+        let request = crate::HttpRequest {
+            method: "POST".to_string(),
+            path: "/api/users".to_string(),
+            headers: HashMap::new(),
+            body: vec![1, 2, 3],
+            path_params: HashMap::new(),
+            query_params: HashMap::new(),
+        };
+
+        let context = ExecutionContext::new(request.clone());
+        assert_eq!(context.request.body.len(), 3);
+    }
+
+    #[test]
+    fn test_cache_interceptor_zero_ttl() {
+        let interceptor = CacheInterceptor::new(0);
+        assert_eq!(interceptor.ttl_seconds, 0);
+    }
+
+    #[test]
+    fn test_cache_interceptor_long_ttl() {
+        let one_day = 86400;
+        let interceptor = CacheInterceptor::new(one_day);
+        assert_eq!(interceptor.ttl_seconds, one_day);
     }
 }

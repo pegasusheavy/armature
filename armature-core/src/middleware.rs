@@ -493,4 +493,213 @@ mod tests {
 
         assert!(result.is_err());
     }
+
+    #[tokio::test]
+    async fn test_request_id_middleware() {
+        let middleware = RequestIdMiddleware;
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+
+        let result = middleware
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: Vec::new(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.headers.contains_key("x-request-id"));
+    }
+
+    #[tokio::test]
+    async fn test_security_headers_middleware() {
+        let middleware = SecurityHeadersMiddleware::new();
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+
+        let result = middleware
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: Vec::new(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.headers.contains_key("X-Content-Type-Options"));
+        assert!(response.headers.contains_key("X-Frame-Options"));
+    }
+
+    #[tokio::test]
+    async fn test_timeout_middleware() {
+        let middleware = TimeoutMiddleware::new(5);
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+
+        let result = middleware
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: Vec::new(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_cors_middleware_builder() {
+        let cors = CorsMiddleware::new()
+            .allow_origin("https://example.com")
+            .allow_credentials(true);
+
+        assert_eq!(cors.allow_origin, "https://example.com");
+        assert!(cors.allow_credentials);
+    }
+
+    #[test]
+    fn test_body_size_limit_creation() {
+        let middleware = BodySizeLimitMiddleware::new(1024);
+        assert_eq!(middleware.max_size, 1024);
+    }
+
+    #[test]
+    fn test_logger_middleware_creation() {
+        let _middleware = LoggerMiddleware::new();
+        // Just test that it can be created
+    }
+
+    #[tokio::test]
+    async fn test_compression_middleware() {
+        let middleware = CompressionMiddleware::new();
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+
+        let result = middleware
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: b"test response body".to_vec(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_middleware_chain_multiple() {
+        let mut chain = MiddlewareChain::new();
+        chain.use_middleware(LoggerMiddleware::new());
+        chain.use_middleware(RequestIdMiddleware);
+        chain.use_middleware(SecurityHeadersMiddleware::new());
+
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+
+        let handler = Arc::new(|_req: HttpRequest| {
+            Box::pin(async {
+                Ok(HttpResponse {
+                    status: 200,
+                    headers: HashMap::new(),
+                    body: Vec::new(),
+                })
+            }) as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+        });
+
+        let result = chain.apply(req, handler).await;
+
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.headers.contains_key("x-request-id"));
+        assert!(response.headers.contains_key("X-Content-Type-Options"));
+    }
+
+    #[tokio::test]
+    async fn test_cors_preflight() {
+        let cors = CorsMiddleware::new().allow_origin("https://example.com");
+
+        let mut req = HttpRequest::new("OPTIONS".to_string(), "/api".to_string());
+        req.headers
+            .insert("Origin".to_string(), "https://example.com".to_string());
+        req.headers.insert(
+            "Access-Control-Request-Method".to_string(),
+            "POST".to_string(),
+        );
+
+        let result = cors
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: Vec::new(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+        let response = result.unwrap();
+        assert!(response.headers.contains_key("Access-Control-Allow-Origin"));
+        assert!(response.headers.contains_key("Access-Control-Allow-Methods"));
+    }
+
+    #[tokio::test]
+    async fn test_body_size_within_limit() {
+        let middleware = BodySizeLimitMiddleware::new(100);
+        let mut req = HttpRequest::new("POST".to_string(), "/api".to_string());
+        req.body = vec![0; 50]; // 50 bytes, within limit
+
+        let result = middleware
+            .handle(
+                req,
+                Box::new(|_req| {
+                    Box::pin(async {
+                        Ok(HttpResponse {
+                            status: 200,
+                            headers: HashMap::new(),
+                            body: Vec::new(),
+                        })
+                    })
+                }),
+            )
+            .await;
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_cors_default_origin() {
+        let cors = CorsMiddleware::new();
+        assert_eq!(cors.allow_origin, "*");
+    }
 }
