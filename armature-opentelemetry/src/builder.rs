@@ -7,14 +7,15 @@ use crate::{
     middleware::TelemetryMiddleware,
     tracing_setup::{init_tracing, shutdown_tracing},
 };
-use opentelemetry_sdk::{metrics::MeterProvider, trace::TracerProvider};
+use opentelemetry::metrics::MeterProvider;
+use opentelemetry_sdk::{metrics::SdkMeterProvider, trace::TracerProvider};
 use std::sync::Arc;
 
 /// Telemetry system manager
 pub struct Telemetry {
     config: TelemetryConfig,
     tracer_provider: Option<TracerProvider>,
-    meter_provider: Option<MeterProvider>,
+    meter_provider: Option<SdkMeterProvider>,
     http_metrics: Option<Arc<HttpMetrics>>,
 }
 
@@ -168,7 +169,7 @@ impl TelemetryBuilder {
         // Initialize metrics
         if self.config.enable_metrics {
             let provider = init_metrics(&self.config).await?;
-            let meter = provider.meter(&self.config.service_name);
+            let meter = provider.meter(self.config.service_name.clone());
 
             // Create HTTP metrics
             http_metrics =

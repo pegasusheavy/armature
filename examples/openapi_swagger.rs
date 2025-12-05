@@ -1,5 +1,5 @@
-use armature::prelude::*;
 use armature::armature_openapi::*;
+use armature::prelude::*;
 
 // Example user service
 #[derive(Clone)]
@@ -76,7 +76,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Build OpenAPI specification programmatically
     let spec = OpenApiBuilder::new("User API", "1.0.0")
         .description("A simple user management API")
-        .server("http://localhost:3000", Some("Development server".to_string()))
+        .server(
+            "http://localhost:3000",
+            Some("Development server".to_string()),
+        )
         .tag("users", Some("User management endpoints".to_string()))
         // Add Bearer authentication
         .add_bearer_auth("bearer")
@@ -115,7 +118,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         MediaType {
                                             schema: Some(object_schema(
                                                 {
-                                                    let mut props = std::collections::HashMap::new();
+                                                    let mut props =
+                                                        std::collections::HashMap::new();
                                                     props.insert(
                                                         "users".to_string(),
                                                         array_schema(ref_schema("User")),
@@ -221,8 +225,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ OpenAPI specification built");
 
     // Create Swagger configuration
-    let swagger_config = SwaggerConfig::new("/api-docs", spec)
-        .with_title("User API Documentation");
+    let swagger_config = SwaggerConfig::new("/api-docs", spec).with_title("User API Documentation");
 
     // Register Swagger UI controller with config
     let (mut container, mut router) = Application::create::<AppModule>().await?;
@@ -252,4 +255,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

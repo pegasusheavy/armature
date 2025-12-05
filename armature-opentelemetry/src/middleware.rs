@@ -4,7 +4,7 @@ use armature_core::{Error, HttpRequest, HttpResponse, Middleware, Next};
 use async_trait::async_trait;
 use opentelemetry::{
     Context as OtelContext, KeyValue, global,
-    trace::{FutureExt, SpanKind, TraceContextExt, Tracer},
+    trace::{SpanKind, TraceContextExt, Tracer},
 };
 use std::sync::Arc;
 use std::time::Instant;
@@ -76,49 +76,47 @@ impl Middleware for TelemetryMiddleware {
         });
 
         // Create a span for this request
-        let tracer = global::tracer(&self.service_name);
+        let service_name = self.service_name.clone();
+        let tracer = global::tracer(service_name);
+        let request_attrs = self.extract_attributes(&req);
         let span = tracer
             .span_builder(format!("{} {}", req.method, req.path))
             .with_kind(SpanKind::Server)
-            .with_attributes(self.extract_attributes(&req))
+            .with_attributes(request_attrs)
             .start_with_context(&tracer, &parent_context);
 
         let cx = OtelContext::current_with_span(span);
 
         // Execute request with tracing context
-        let result = async move {
-            let response = next(req).await;
+        let response_result = next(req).await;
 
-            match &response {
-                Ok(res) => {
-                    // Add response attributes to span
-                    let span = cx.span();
-                    for attr in self.extract_response_attributes(res) {
-                        span.set_attribute(attr);
-                    }
-
-                    // Set span status based on HTTP status
-                    if res.status >= 400 {
-                        span.set_status(opentelemetry::trace::Status::error(format!(
-                            "HTTP {}",
-                            res.status
-                        )));
-                    } else {
-                        span.set_status(opentelemetry::trace::Status::Ok);
-                    }
+        // Add response attributes to span
+        match &response_result {
+            Ok(res) => {
+                let span = cx.span();
+                for attr in self.extract_response_attributes(res) {
+                    span.set_attribute(attr);
                 }
-                Err(e) => {
-                    // Record error
-                    let span = cx.span();
-                    span.set_status(opentelemetry::trace::Status::error(e.to_string()));
-                    span.record_error(e);
+
+                // Set span status based on HTTP status
+                if res.status >= 400 {
+                    span.set_status(opentelemetry::trace::Status::error(format!(
+                        "HTTP {}",
+                        res.status
+                    )));
+                } else {
+                    span.set_status(opentelemetry::trace::Status::Ok);
                 }
             }
-
-            response
+            Err(e) => {
+                // Record error
+                let span = cx.span();
+                span.set_status(opentelemetry::trace::Status::error(e.to_string()));
+                span.record_error(e);
+            }
         }
-        .with_context(cx)
-        .await;
+
+        let result = response_result;
 
         // Record metrics
         let duration = start_time.elapsed().as_secs_f64();

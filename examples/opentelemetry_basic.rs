@@ -1,5 +1,5 @@
-use armature::prelude::*;
 use armature::armature_opentelemetry::*;
+use armature::prelude::*;
 
 // Example service
 #[derive(Clone)]
@@ -96,4 +96,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

@@ -4,10 +4,10 @@ use crate::{
     config::{TelemetryConfig, TracingExporter},
     error::{TelemetryError, TelemetryResult},
 };
-use opentelemetry::{global, trace::TracerProvider as _};
+use opentelemetry::global;
 use opentelemetry_sdk::{
     runtime,
-    trace::{RandomIdGenerator, Sampler, TracerProvider},
+    trace::{Config, RandomIdGenerator, Sampler, TracerProvider},
 };
 
 /// Initialize tracing based on configuration
@@ -35,19 +35,22 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
 
             use opentelemetry_otlp::WithExportConfig;
 
-            let exporter = opentelemetry_otlp::SpanExporter::builder()
-                .with_tonic()
+            let exporter = opentelemetry_otlp::new_exporter()
+                .tonic()
                 .with_endpoint(endpoint)
-                .build()
+                .build_span_exporter()
                 .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
 
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
+            let trace_config = Config::default()
                 .with_resource(resource)
                 .with_id_generator(RandomIdGenerator::default())
                 .with_sampler(sampler)
                 .with_max_attributes_per_span(config.tracing.max_attributes_per_span)
-                .with_max_events_per_span(config.tracing.max_events_per_span)
+                .with_max_events_per_span(config.tracing.max_events_per_span);
+
+            TracerProvider::builder()
+                .with_batch_exporter(exporter, runtime::Tokio)
+                .with_config(trace_config)
                 .build()
         }
 
@@ -63,11 +66,14 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
                 .build_async_agent_exporter(runtime::Tokio)
                 .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
 
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
+            let trace_config = Config::default()
                 .with_resource(resource)
                 .with_id_generator(RandomIdGenerator::default())
-                .with_sampler(sampler)
+                .with_sampler(sampler);
+
+            TracerProvider::builder()
+                .with_batch_exporter(exporter, runtime::Tokio)
+                .with_config(trace_config)
                 .build()
         }
 
@@ -83,19 +89,25 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
                 .init_exporter()
                 .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
 
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
+            let trace_config = Config::default()
                 .with_resource(resource)
                 .with_id_generator(RandomIdGenerator::default())
-                .with_sampler(sampler)
+                .with_sampler(sampler);
+
+            TracerProvider::builder()
+                .with_batch_exporter(exporter, runtime::Tokio)
+                .with_config(trace_config)
                 .build()
         }
 
-        TracingExporter::None => TracerProvider::builder()
-            .with_resource(resource)
-            .with_id_generator(RandomIdGenerator::default())
-            .with_sampler(sampler)
-            .build(),
+        TracingExporter::None => {
+            let trace_config = Config::default()
+                .with_resource(resource)
+                .with_id_generator(RandomIdGenerator::default())
+                .with_sampler(sampler);
+
+            TracerProvider::builder().with_config(trace_config).build()
+        }
 
         #[allow(unreachable_patterns)]
         _ => {
@@ -114,9 +126,7 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
 
 /// Shutdown tracing gracefully
 pub async fn shutdown_tracing(provider: TracerProvider) -> TelemetryResult<()> {
-    provider
-        .shutdown()
-        .map_err(|e| TelemetryError::Shutdown(e.to_string()))?;
+    provider.force_flush();
     Ok(())
 }
 

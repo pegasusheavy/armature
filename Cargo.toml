@@ -12,7 +12,7 @@ members = [
     "armature-auth",
     "armature-testing",
     "armature-validation",
-    "armature-openapi",
+    # "armature-openapi",  # TODO: Missing Cargo.toml
     "armature-cache",
     "armature-cron",
     "armature-queue",

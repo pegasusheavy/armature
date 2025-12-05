@@ -54,8 +54,7 @@ pub use opentelemetry::{
 };
 pub use opentelemetry_sdk::{
     Resource,
-    export::metrics::aggregation::Aggregation,
-    metrics::{MeterProvider, PeriodicReader},
+    metrics::{PeriodicReader, SdkMeterProvider},
     runtime,
     trace::{RandomIdGenerator, Sampler, Tracer, TracerProvider},
 };
