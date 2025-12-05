@@ -1,4 +1,64 @@
-// JWT authentication and authorization for Armature
+//! JWT authentication and authorization for Armature
+//!
+//! This crate provides JSON Web Token (JWT) support for the Armature framework,
+//! including token generation, verification, and management.
+//!
+//! # Examples
+//!
+//! ## Basic Usage
+//!
+//! ```
+//! use armature_jwt::{JwtConfig, JwtManager, StandardClaims};
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! // Create JWT configuration
+//! let config = JwtConfig::new("your-secret-key".to_string());
+//! let manager = JwtManager::new(config)?;
+//!
+//! // Create claims
+//! let claims = StandardClaims::new()
+//!     .with_subject("user123".to_string())
+//!     .with_expiration(3600); // 1 hour
+//!
+//! // Sign a token
+//! let token = manager.sign(&claims)?;
+//!
+//! // Verify and decode
+//! let decoded: StandardClaims = manager.verify(&token)?;
+//! assert_eq!(decoded.sub, Some("user123".to_string()));
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Custom Claims
+//!
+//! ```
+//! use armature_jwt::{Claims, JwtConfig, JwtManager};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Serialize, Deserialize)]
+//! struct UserClaims {
+//!     email: String,
+//!     role: String,
+//! }
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let config = JwtConfig::new("secret".to_string());
+//! let manager = JwtManager::new(config)?;
+//!
+//! let claims = Claims::new(UserClaims {
+//!     email: "user@example.com".to_string(),
+//!     role: "admin".to_string(),
+//! })
+//! .with_subject("123".to_string())
+//! .with_expiration(7200);
+//!
+//! let token = manager.sign(&claims)?;
+//! let decoded: Claims<UserClaims> = manager.verify(&token)?;
+//! assert_eq!(decoded.custom.email, "user@example.com");
+//! # Ok(())
+//! # }
+//! ```
 
 pub mod claims;
 pub mod config;
@@ -25,17 +85,60 @@ pub struct JwtManager {
 
 impl JwtManager {
     /// Create a new JWT manager
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_jwt::{JwtConfig, JwtManager};
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let config = JwtConfig::new("my-secret".to_string());
+    /// let manager = JwtManager::new(config)?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn new(config: JwtConfig) -> Result<Self> {
         let service = JwtService::new(config)?;
         Ok(Self { service })
     }
 
     /// Sign a token with claims
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_jwt::{JwtConfig, JwtManager, StandardClaims};
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let manager = JwtManager::new(JwtConfig::new("secret".to_string()))?;
+    /// let claims = StandardClaims::new().with_subject("user".to_string());
+    /// let token = manager.sign(&claims)?;
+    /// assert!(!token.is_empty());
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn sign<T: serde::Serialize>(&self, claims: &T) -> Result<String> {
         self.service.sign(claims)
     }
 
     /// Verify and decode a token
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_jwt::{JwtConfig, JwtManager, StandardClaims};
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let manager = JwtManager::new(JwtConfig::new("secret".to_string()))?;
+    /// let claims = StandardClaims::new()
+    ///     .with_subject("user".to_string())
+    ///     .with_expiration(3600); // Add expiration
+    /// let token = manager.sign(&claims)?;
+    /// let decoded: StandardClaims = manager.verify(&token)?;
+    /// assert_eq!(decoded.sub, Some("user".to_string()));
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn verify<T: serde::de::DeserializeOwned>(&self, token: &str) -> Result<T> {
         self.service.verify(token)
     }

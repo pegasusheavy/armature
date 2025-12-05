@@ -193,7 +193,7 @@ mod tests {
         let response_200 = create_test_response(200, "OK");
         let response_201 = create_test_response(201, "Created");
         let response_204 = create_test_response(204, "No Content");
-        
+
         assert_success(&response_200);
         assert_success(&response_201);
         assert_success(&response_204);
@@ -205,7 +205,7 @@ mod tests {
         let response_401 = create_test_response(401, "Unauthorized");
         let response_403 = create_test_response(403, "Forbidden");
         let response_404 = create_test_response(404, "Not Found");
-        
+
         assert_client_error(&response_400);
         assert_client_error(&response_401);
         assert_client_error(&response_403);
@@ -217,7 +217,7 @@ mod tests {
         let response_500 = create_test_response(500, "Internal Server Error");
         let response_502 = create_test_response(502, "Bad Gateway");
         let response_503 = create_test_response(503, "Service Unavailable");
-        
+
         assert_server_error(&response_500);
         assert_server_error(&response_502);
         assert_server_error(&response_503);

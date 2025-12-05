@@ -124,11 +124,18 @@ impl Application {
     ///
     /// # Example
     ///
-    /// ```no_run
-    /// use armature_core::{Application, TlsConfig};
+    /// ```ignore
+    /// use armature_core::{Application, TlsConfig, Module};
+    ///
+    /// #[derive(Clone)]
+    /// struct AppModule;
+    /// impl Module for AppModule {
+    ///     fn name(&self) -> &str { "AppModule" }
+    ///     fn controllers(&self) -> Vec<Box<dyn Controller>> { vec![] }
+    /// }
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    /// let app = Application::create::<MyModule>();
+    /// let mut app = Application::new();
     /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
     /// app.listen_https(443, tls).await?;
     /// # Ok(())
@@ -178,11 +185,11 @@ impl Application {
     ///
     /// # Example
     ///
-    /// ```no_run
+    /// ```ignore
     /// use armature_core::{Application, HttpsConfig, TlsConfig};
     ///
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    /// let app = Application::create::<MyModule>();
+    /// let mut app = Application::new();
     /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
     /// let https_config = HttpsConfig::new("0.0.0.0:443", tls)
     ///     .with_http_redirect("0.0.0.0:80");

@@ -1,4 +1,75 @@
-// Configuration management for Armature framework
+//! Configuration management for Armature framework
+//!
+//! Provides flexible configuration loading from multiple sources including
+//! environment variables, JSON, TOML, and programmatic values.
+//!
+//! # Examples
+//!
+//! ## Basic Usage
+//!
+//! ```
+//! use armature_config::ConfigManager;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let manager = ConfigManager::new();
+//!
+//! // Set configuration values
+//! manager.set("app.name", "MyApp")?;
+//! manager.set("app.port", 3000i64)?;
+//!
+//! // Get configuration values
+//! let name: String = manager.get("app.name")?;
+//! let port: i64 = manager.get("app.port")?;
+//!
+//! assert_eq!(name, "MyApp");
+//! assert_eq!(port, 3000);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Loading from Environment Variables
+//!
+//! ```
+//! use armature_config::EnvLoader;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let loader = EnvLoader::new(None);
+//!
+//! // Load all environment variables
+//! let vars = loader.load()?;
+//!
+//! // Or load a specific variable
+//! match loader.load_var("HOME") {
+//!     Ok(value) => println!("Home directory: {}", value),
+//!     Err(_) => println!("HOME not set"),
+//! }
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Type Conversions
+//!
+//! ```
+//! use armature_config::ConfigManager;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let manager = ConfigManager::new();
+//!
+//! manager.set("debug", true)?;
+//! manager.set("timeout", 30i64)?;
+//! manager.set("rate", 0.5)?;
+//!
+//! // Get with automatic type conversion
+//! let debug = manager.get_bool("debug")?;
+//! let timeout = manager.get_int("timeout")?;
+//! let rate = manager.get_float("rate")?;
+//!
+//! assert!(debug);
+//! assert_eq!(timeout, 30);
+//! assert_eq!(rate, 0.5);
+//! # Ok(())
+//! # }
+//! ```
 
 pub mod config_service;
 pub mod env;
@@ -231,7 +302,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("key", "value1").unwrap();
         manager.set("key", "value2").unwrap();
-        
+
         let value: String = manager.get("key").unwrap();
         assert_eq!(value, "value2");
     }
@@ -242,7 +313,7 @@ mod tests {
         manager.set("key1", "value1").unwrap();
         manager.set("key2", "value2").unwrap();
         manager.set("key3", "value3").unwrap();
-        
+
         assert!(manager.has("key1"));
         assert!(manager.has("key2"));
         assert!(manager.has("key3"));
@@ -253,7 +324,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("database.host", "localhost").unwrap();
         manager.set("database.port", 5432i64).unwrap();
-        
+
         assert_eq!(manager.get_string("database.host").unwrap(), "localhost");
         assert_eq!(manager.get_int("database.port").unwrap(), 5432);
     }
@@ -262,7 +333,7 @@ mod tests {
     fn test_empty_string() {
         let manager = ConfigManager::new();
         manager.set("empty", "").unwrap();
-        
+
         let value: String = manager.get("empty").unwrap();
         assert_eq!(value, "");
     }
@@ -272,7 +343,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("zero_int", 0i64).unwrap();
         manager.set("zero_float", 0.0).unwrap();
-        
+
         assert_eq!(manager.get_int("zero_int").unwrap(), 0);
         assert_eq!(manager.get_float("zero_float").unwrap(), 0.0);
     }
@@ -282,7 +353,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("negative_int", -42i64).unwrap();
         manager.set("negative_float", -3.14).unwrap();
-        
+
         assert_eq!(manager.get_int("negative_int").unwrap(), -42);
         assert_eq!(manager.get_float("negative_float").unwrap(), -3.14);
     }
@@ -292,7 +363,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("true_val", true).unwrap();
         manager.set("false_val", false).unwrap();
-        
+
         assert!(manager.get_bool("true_val").unwrap());
         assert!(!manager.get_bool("false_val").unwrap());
     }
@@ -302,7 +373,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("large_int", i64::MAX).unwrap();
         manager.set("large_float", f64::MAX).unwrap();
-        
+
         assert_eq!(manager.get_int("large_int").unwrap(), i64::MAX);
         assert_eq!(manager.get_float("large_float").unwrap(), f64::MAX);
     }
@@ -311,7 +382,7 @@ mod tests {
     fn test_special_characters_in_values() {
         let manager = ConfigManager::new();
         manager.set("special", "value!@#$%^&*()").unwrap();
-        
+
         let value: String = manager.get("special").unwrap();
         assert_eq!(value, "value!@#$%^&*()");
     }
@@ -320,7 +391,7 @@ mod tests {
     fn test_unicode_values() {
         let manager = ConfigManager::new();
         manager.set("unicode", "Hello 世界 🌍").unwrap();
-        
+
         let value: String = manager.get("unicode").unwrap();
         assert_eq!(value, "Hello 世界 🌍");
     }
@@ -329,7 +400,7 @@ mod tests {
     fn test_whitespace_values() {
         let manager = ConfigManager::new();
         manager.set("spaces", "  value with spaces  ").unwrap();
-        
+
         let value: String = manager.get("spaces").unwrap();
         assert_eq!(value, "  value with spaces  ");
     }
@@ -338,7 +409,7 @@ mod tests {
     fn test_newline_in_values() {
         let manager = ConfigManager::new();
         manager.set("multiline", "line1\nline2\nline3").unwrap();
-        
+
         let value: String = manager.get("multiline").unwrap();
         assert!(value.contains("\n"));
     }
@@ -347,7 +418,7 @@ mod tests {
     fn test_get_or_with_existing_key() {
         let manager = ConfigManager::new();
         manager.set("key", "actual").unwrap();
-        
+
         let value: String = manager.get_or("key", "default".to_string());
         assert_eq!(value, "actual");
     }
@@ -356,7 +427,7 @@ mod tests {
     fn test_clone_config_manager() {
         let manager1 = ConfigManager::new();
         manager1.set("key", "value").unwrap();
-        
+
         let manager2 = manager1.clone();
         let value: String = manager2.get("key").unwrap();
         assert_eq!(value, "value");
@@ -393,7 +464,7 @@ mod tests {
         let manager = ConfigManager::new();
         manager.set("Key", "value1").unwrap();
         manager.set("key", "value2").unwrap();
-        
+
         assert!(manager.has("Key"));
         assert!(manager.has("key"));
         assert_ne!(

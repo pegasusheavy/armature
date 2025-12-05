@@ -249,7 +249,7 @@ mod tests {
         let config = JwtConfig::new("secret".to_string())
             .with_issuer("my-issuer".to_string())
             .with_audience(vec!["my-audience".to_string()]);
-        
+
         let validation = config.validation();
         assert!(validation.iss.is_some());
         assert!(validation.aud.is_some());
@@ -281,7 +281,7 @@ mod tests {
     fn test_validation_enabled_by_default() {
         let config = JwtConfig::new("secret".to_string());
         assert!(config.validate_exp);
-        
+
         let validation = config.validation();
         assert!(validation.validate_exp);
     }
@@ -290,9 +290,9 @@ mod tests {
     fn test_leeway_configuration() {
         let config = JwtConfig::new("secret".to_string())
             .with_leeway(120);
-        
+
         assert_eq!(config.leeway, 120);
-        
+
         let validation = config.validation();
         assert_eq!(validation.leeway, 120);
     }
@@ -301,9 +301,9 @@ mod tests {
     fn test_audience_configuration() {
         let config = JwtConfig::new("secret".to_string())
             .with_audience(vec!["app1".to_string()]);
-        
+
         assert_eq!(config.audience, Some(vec!["app1".to_string()]));
-        
+
         let validation = config.validation();
         assert!(validation.aud.is_some());
     }
@@ -312,9 +312,9 @@ mod tests {
     fn test_issuer_configuration() {
         let config = JwtConfig::new("secret".to_string())
             .with_issuer("auth-server".to_string());
-        
+
         assert_eq!(config.issuer, Some("auth-server".to_string()));
-        
+
         let validation = config.validation();
         assert!(validation.iss.is_some());
     }
@@ -324,7 +324,7 @@ mod tests {
         let one_hour = Duration::from_secs(3600);
         let config = JwtConfig::new("secret".to_string())
             .with_expiration(one_hour);
-        
+
         assert_eq!(config.expires_in, one_hour);
     }
 
@@ -338,7 +338,7 @@ mod tests {
     fn test_config_clone() {
         let config1 = JwtConfig::new("secret".to_string())
             .with_issuer("issuer".to_string());
-        
+
         let config2 = config1.clone();
         assert_eq!(config1.issuer, config2.issuer);
         assert_eq!(config1.algorithm, config2.algorithm);
@@ -352,7 +352,7 @@ mod tests {
             .with_issuer("issuer".to_string())
             .with_audience(vec!["audience".to_string()])
             .with_leeway(60);
-        
+
         assert_eq!(config.algorithm, Algorithm::HS512);
         assert_eq!(config.expires_in, Duration::from_secs(7200));
         assert_eq!(config.issuer, Some("issuer".to_string()));
@@ -366,12 +366,12 @@ mod tests {
         let config = JwtConfig::new("secret".to_string())
             .with_issuer("required-issuer".to_string())
             .with_audience(vec!["required-audience".to_string()]);
-        
+
         let validation = config.validation();
         assert!(validation.iss.is_some());
         assert!(validation.aud.is_some());
-        
-        let expected_iss: std::collections::HashSet<String> = 
+
+        let expected_iss: std::collections::HashSet<String> =
             std::collections::HashSet::from(["required-issuer".to_string()]);
         assert_eq!(validation.iss.as_ref().unwrap(), &expected_iss);
     }
@@ -380,7 +380,7 @@ mod tests {
     fn test_zero_leeway() {
         let config = JwtConfig::new("secret".to_string())
             .with_leeway(0);
-        
+
         assert_eq!(config.leeway, 0);
     }
 
@@ -389,7 +389,7 @@ mod tests {
         let one_year = Duration::from_secs(365 * 24 * 3600);
         let config = JwtConfig::new("secret".to_string())
             .with_expiration(one_year);
-        
+
         assert_eq!(config.expires_in, one_year);
     }
 }

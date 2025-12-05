@@ -120,7 +120,7 @@ mod tests {
         let config1 = AngularConfig::new()
             .with_node_path(PathBuf::from("/custom/node"))
             .with_cache(true, 300);
-        
+
         let config2 = config1.clone();
         assert_eq!(config1.node_path, config2.node_path);
         assert_eq!(config1.enable_cache, config2.enable_cache);
@@ -133,7 +133,7 @@ mod tests {
             .exclude_route("/admin".to_string())
             .exclude_route("/private".to_string())
             .exclude_route("/internal".to_string());
-        
+
         assert_eq!(config.excluded_routes.len(), 5); // 2 default + 3 added
         assert!(config.excluded_routes.contains(&"/admin".to_string()));
         assert!(config.excluded_routes.contains(&"/private".to_string()));
@@ -182,7 +182,7 @@ mod tests {
         let config1 = AngularConfig::new().with_cache(true, 0);
         let config2 = AngularConfig::new().with_cache(true, 3600);
         let config3 = AngularConfig::new().with_cache(true, 86400);
-        
+
         assert_eq!(config1.cache_ttl, 0);
         assert_eq!(config2.cache_ttl, 3600);
         assert_eq!(config3.cache_ttl, 86400);
@@ -193,7 +193,7 @@ mod tests {
         let config = AngularConfig::new()
             .exclude_route("/admin".to_string())
             .exclude_route("/admin".to_string());
-        
+
         // Should still work (HashSet handles duplicates)
         assert!(config.excluded_routes.contains(&"/admin".to_string()));
     }
@@ -211,7 +211,7 @@ mod tests {
             .exclude_route("/test1".to_string())
             .exclude_route("/test2".to_string())
             .with_cache(true, 900);
-        
+
         assert_eq!(config.node_path, PathBuf::from("/usr/local/bin/node"));
         assert!(config.excluded_routes.contains(&"/test1".to_string()));
         assert!(config.excluded_routes.contains(&"/test2".to_string()));

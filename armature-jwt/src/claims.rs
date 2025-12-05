@@ -301,7 +301,7 @@ mod tests {
     fn test_claims_deserialization() {
         let json = r#"{"sub":"test","iss":"issuer","exp":1234567890}"#;
         let claims: StandardClaims = serde_json::from_str(json).unwrap();
-        
+
         assert_eq!(claims.sub, Some("test".to_string()));
         assert_eq!(claims.iss, Some("issuer".to_string()));
         assert_eq!(claims.exp, Some(1234567890));
