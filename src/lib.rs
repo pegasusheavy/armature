@@ -57,6 +57,9 @@ pub use armature_queue;
 #[cfg(feature = "opentelemetry")]
 pub use armature_opentelemetry;
 
+#[cfg(feature = "security")]
+pub use armature_security;
+
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{

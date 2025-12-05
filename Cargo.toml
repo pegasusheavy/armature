@@ -17,6 +17,7 @@ members = [
     "armature-cron",
     "armature-queue",
     "armature-opentelemetry",
+    "armature-security",
 ]
 resolver = "2"
 
@@ -47,6 +48,7 @@ armature-cache = { path = "armature-cache", optional = true }
 armature-cron = { path = "armature-cron", optional = true }
 armature-queue = { path = "armature-queue", optional = true }
 armature-opentelemetry = { path = "armature-opentelemetry", optional = true }
+armature-security = { path = "armature-security", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.35", features = ["full"] }
@@ -73,6 +75,7 @@ full = [
     "cron",
     "queue",
     "opentelemetry",
+    "security",
 ]
 graphql = ["armature-graphql"]
 config = ["armature-config"]
@@ -89,6 +92,7 @@ cache = ["armature-cache"]
 cron = ["armature-cron"]
 queue = ["armature-queue"]
 opentelemetry = ["armature-opentelemetry"]
+security = ["armature-security"]
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -192,3 +196,8 @@ path = "examples/testing_example.rs"
 name = "validation_example"
 path = "examples/validation_example.rs"
 required-features = ["validation"]
+
+[[example]]
+name = "security_example"
+path = "examples/security_example.rs"
+required-features = ["security"]
