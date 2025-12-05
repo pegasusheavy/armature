@@ -1,6 +1,6 @@
 // Application bootstrapper and HTTP server
 
-use crate::{Container, Error, HttpRequest, HttpResponse, Module, Router};
+use crate::{Container, Error, HttpRequest, HttpResponse, HttpsConfig, Module, Router, TlsConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -9,6 +9,7 @@ use hyper_util::rt::TokioIo;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tokio_rustls::TlsAcceptor;
 
 /// The main application struct
 pub struct Application {
@@ -119,9 +120,195 @@ impl Application {
         }
     }
 
+    /// Start the HTTPS server with TLS
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use armature_core::{Application, TlsConfig};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::create::<MyModule>();
+    /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
+    /// app.listen_https(443, tls).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn listen_https(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+        let listener = TcpListener::bind(addr).await?;
+
+        println!("🔒 HTTPS Server listening on https://{}", addr);
+
+        let acceptor = TlsAcceptor::from(tls_config.server_config);
+        let router = self.router.clone();
+
+        loop {
+            let (stream, _) = listener.accept().await?;
+            let acceptor = acceptor.clone();
+            let router = router.clone();
+
+            tokio::spawn(async move {
+                match acceptor.accept(stream).await {
+                    Ok(tls_stream) => {
+                        let io = TokioIo::new(tls_stream);
+
+                        let service = service_fn(move |req: Request<IncomingBody>| {
+                            let router = router.clone();
+                            async move { handle_request(req, router).await }
+                        });
+
+                        if let Err(err) = http1::Builder::new().serve_connection(io, service).await
+                        {
+                            eprintln!("Error serving HTTPS connection: {:?}", err);
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("TLS handshake failed: {:?}", err);
+                    }
+                }
+            });
+        }
+    }
+
+    /// Start HTTPS server with optional HTTP to HTTPS redirect
+    ///
+    /// This method starts both an HTTPS server and optionally an HTTP server that redirects
+    /// all traffic to HTTPS.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use armature_core::{Application, HttpsConfig, TlsConfig};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::create::<MyModule>();
+    /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
+    /// let https_config = HttpsConfig::new("0.0.0.0:443", tls)
+    ///     .with_http_redirect("0.0.0.0:80");
+    /// app.listen_with_config(https_config).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn listen_with_config(self, config: HttpsConfig) -> Result<(), Error> {
+        let router = self.router.clone();
+
+        // Start HTTP redirect server if configured
+        if let Some(ref http_addr) = config.http_redirect_addr {
+            let https_port = config
+                .https_addr
+                .split(':')
+                .last()
+                .and_then(|p| p.parse::<u16>().ok())
+                .unwrap_or(443);
+
+            let http_addr = http_addr.clone();
+            tokio::spawn(async move {
+                if let Err(e) = start_http_redirect_server(&http_addr, https_port).await {
+                    eprintln!("HTTP redirect server failed: {}", e);
+                }
+            });
+        }
+
+        // Parse HTTPS address
+        let https_addr: SocketAddr = config
+            .https_addr
+            .parse()
+            .map_err(|e| Error::Internal(format!("Invalid HTTPS address: {}", e)))?;
+
+        let listener = TcpListener::bind(https_addr).await?;
+
+        println!("🔒 HTTPS Server listening on https://{}", https_addr);
+        if config.http_redirect_addr.is_some() {
+            println!("↪️  HTTP redirect server enabled");
+        }
+
+        let acceptor = TlsAcceptor::from(config.tls.server_config);
+
+        loop {
+            let (stream, _) = listener.accept().await?;
+            let acceptor = acceptor.clone();
+            let router = router.clone();
+
+            tokio::spawn(async move {
+                match acceptor.accept(stream).await {
+                    Ok(tls_stream) => {
+                        let io = TokioIo::new(tls_stream);
+
+                        let service = service_fn(move |req: Request<IncomingBody>| {
+                            let router = router.clone();
+                            async move { handle_request(req, router).await }
+                        });
+
+                        if let Err(err) = http1::Builder::new().serve_connection(io, service).await
+                        {
+                            eprintln!("Error serving HTTPS connection: {:?}", err);
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("TLS handshake failed: {:?}", err);
+                    }
+                }
+            });
+        }
+    }
+
     /// Get a reference to the DI container
     pub fn container(&self) -> &Container {
         &self.container
+    }
+}
+
+/// Start HTTP server that redirects all requests to HTTPS
+async fn start_http_redirect_server(addr: &str, https_port: u16) -> Result<(), Error> {
+    let addr: SocketAddr = addr
+        .parse()
+        .map_err(|e| Error::Internal(format!("Invalid HTTP redirect address: {}", e)))?;
+
+    let listener = TcpListener::bind(addr).await?;
+
+    println!("↪️  HTTP redirect server listening on http://{}", addr);
+
+    loop {
+        let (stream, _) = listener.accept().await?;
+        let io = TokioIo::new(stream);
+
+        tokio::spawn(async move {
+            let service = service_fn(move |req: Request<IncomingBody>| async move {
+                // Redirect to HTTPS
+                let host = req
+                    .headers()
+                    .get("host")
+                    .and_then(|h| h.to_str().ok())
+                    .unwrap_or("localhost");
+
+                // Remove port from host if present
+                let host_without_port = host.split(':').next().unwrap_or(host);
+
+                let location = if https_port == 443 {
+                    format!("https://{}{}", host_without_port, req.uri().path())
+                } else {
+                    format!(
+                        "https://{}:{}{}",
+                        host_without_port,
+                        https_port,
+                        req.uri().path()
+                    )
+                };
+
+                let response = Response::builder()
+                    .status(301)
+                    .header("Location", location)
+                    .body(Full::new(bytes::Bytes::from("Redirecting to HTTPS...")))
+                    .unwrap();
+
+                Ok::<_, hyper::Error>(response)
+            });
+
+            if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
+                eprintln!("Error serving HTTP redirect: {:?}", err);
+            }
+        });
     }
 }
 

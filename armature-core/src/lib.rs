@@ -11,6 +11,7 @@ pub mod middleware;
 pub mod routing;
 pub mod sse;
 pub mod status;
+pub mod tls;
 pub mod traits;
 pub mod websocket;
 
@@ -25,5 +26,6 @@ pub use middleware::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use sse::*;
 pub use status::*;
+pub use tls::*;
 pub use traits::*;
 pub use websocket::*;

@@ -28,6 +28,7 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 - **Validation Framework**: Powerful validation with built-in validators and custom rules
 - **WebSocket Support**: Full-duplex real-time communication with rooms and broadcasting
 - **Server-Sent Events (SSE)**: Efficient server-to-client streaming for live updates
+- **HTTPS/TLS Support**: Built-in TLS support with certificate management and automatic HTTP to HTTPS redirect
 - **OpenTelemetry Integration**: Distributed tracing, metrics, and observability with OTLP, Jaeger, Zipkin, and Prometheus support
 - **Async-First**: Built on Tokio and Hyper for high-performance async I/O
 - **Type-Safe Routing**: Path parameters and query string parsing with compile-time validation
