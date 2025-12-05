@@ -1,0 +1,131 @@
+name: Documentation Improvement
+description: Suggest improvements or report issues with documentation
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+assignees:
+  - quinnjr
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Clear docs are essential for a great developer experience.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs improvement?
+      options:
+        - API Documentation (inline docs)
+        - User Guide
+        - Tutorial
+        - Example Code
+        - README
+        - Contributing Guide
+        - Architecture Documentation
+        - Migration Guide
+        - Website Content
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing Documentation
+        - Incorrect/Outdated Information
+        - Unclear Explanation
+        - Broken Links
+        - Code Example Not Working
+        - Typo/Grammar
+        - Missing Code Example
+        - Needs More Detail
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is this documentation located? (URL or file path)
+      placeholder: "docs/AUTH_GUIDE.md or https://docs.rs/armature/..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Documentation
+      description: What does the current documentation say? (Copy/paste or describe)
+      placeholder: |
+        Currently, the docs state...
+        Or: There is no documentation for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed Improvement
+      description: What should the documentation say instead?
+      placeholder: |
+        The documentation should explain...
+        It should include an example of...
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Suggested Example
+      description: If applicable, provide a code example that should be added
+      render: rust
+      placeholder: |
+        use armature::prelude::*;
+        
+        // Example showing the feature
+    validations:
+      required: false
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who would benefit most from this documentation improvement?
+      options:
+        - Beginners (new to Rust or web frameworks)
+        - Intermediate (familiar with Rust)
+        - Advanced (experienced Rust developers)
+        - All Users
+        - Specific Use Case (explain in context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Why is this important? How did you discover this issue?
+      placeholder: |
+        I was trying to...
+        This is important because...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checks
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have checked the latest documentation
+          required: true
+        - label: I am willing to submit a PR to improve the documentation
+          required: false

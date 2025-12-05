@@ -1,0 +1,45 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install criterion
+        run: cargo install cargo-criterion || true
+      
+      - name: Run benchmarks
+        run: |
+          # Create benches directory if it doesn't exist
+          mkdir -p benches
+          
+          # Run cargo bench if benchmarks exist
+          if ls benches/*.rs 1> /dev/null 2>&1; then
+            cargo bench --all-features
+          else
+            echo "No benchmarks found yet"
+          fi
+      
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        with:
+          tool: 'cargo'
+          output-file-path: target/criterion/output.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+

@@ -1,0 +1,41 @@
+name: Greetings
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: >
+            👋 Thanks for opening your first issue in Armature! We appreciate you taking
+            the time to contribute. A maintainer will review this shortly.
+            
+            In the meantime, please make sure you've provided all the requested information
+            in the issue template. The more details you provide, the faster we can help!
+            
+            If you'd like to work on this yourself, feel free to submit a pull request.
+            Check out our [Contributing Guide](https://github.com/quinnjr/armature/blob/develop/CONTRIBUTING.md)
+            to get started.
+          pr-message: >
+            👋 Thanks for opening your first pull request in Armature! We're excited to
+            review your contribution.
+            
+            Please make sure:
+            - ✅ Your PR description clearly explains the changes
+            - ✅ All tests pass (`cargo test --all-features`)
+            - ✅ You've run `cargo fmt` and `cargo clippy`
+            - ✅ Documentation is updated if needed
+            - ✅ You've followed our [Gitflow branching strategy](.cursor/rules/gitflow-branching.mdc)
+            
+            A maintainer will review your PR as soon as possible. Thanks for contributing! 🎉
+

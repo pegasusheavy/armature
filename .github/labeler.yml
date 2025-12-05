@@ -1,0 +1,127 @@
+# Label configuration for automatic PR labeling
+# https://github.com/actions/labeler
+
+# Core framework
+'core':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-core/**/*'
+    - any-glob-to-any-file: 'src/lib.rs'
+
+'macros':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-macro/**/*'
+
+# Authentication & Security
+'auth':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-auth/**/*'
+    - any-glob-to-any-file: 'armature-jwt/**/*'
+
+'security':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-security/**/*'
+
+# Backend Services
+'cache':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-cache/**/*'
+
+'queue':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-queue/**/*'
+
+'cron':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-cron/**/*'
+
+'observability':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-opentelemetry/**/*'
+
+# API & GraphQL
+'graphql':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-graphql/**/*'
+
+'openapi':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-openapi/**/*'
+
+# SSR
+'ssr':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-angular/**/*'
+    - any-glob-to-any-file: 'armature-react/**/*'
+    - any-glob-to-any-file: 'armature-vue/**/*'
+    - any-glob-to-any-file: 'armature-svelte/**/*'
+
+'angular':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-angular/**/*'
+
+'react':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-react/**/*'
+
+'vue':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-vue/**/*'
+
+'svelte':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-svelte/**/*'
+
+# Configuration & Validation
+'config':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-config/**/*'
+
+'validation':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-validation/**/*'
+
+# Testing
+'testing':
+  - changed-files:
+    - any-glob-to-any-file: 'armature-testing/**/*'
+    - any-glob-to-any-file: '**/*test*.rs'
+    - any-glob-to-any-file: '**/tests/**/*'
+
+# Documentation
+'documentation':
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
+    - any-glob-to-any-file: '**/*.md'
+    - any-glob-to-any-file: 'web/**/*'
+
+'examples':
+  - changed-files:
+    - any-glob-to-any-file: 'examples/**/*'
+
+# CI/CD and Infrastructure
+'ci':
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**/*'
+    - any-glob-to-any-file: '.github/actions/**/*'
+
+'dependencies':
+  - changed-files:
+    - any-glob-to-any-file: '**/Cargo.toml'
+    - any-glob-to-any-file: '**/Cargo.lock'
+    - any-glob-to-any-file: 'web/package.json'
+    - any-glob-to-any-file: 'web/pnpm-lock.yaml'
+
+'rust':
+  - changed-files:
+    - any-glob-to-any-file: '**/*.rs'
+
+'frontend':
+  - changed-files:
+    - any-glob-to-any-file: 'web/**/*'
+
+# GitHub Configuration
+'github-config':
+  - changed-files:
+    - any-glob-to-any-file: '.github/**/*'
+    - any-glob-to-any-file: '.cursor/**/*'
+
