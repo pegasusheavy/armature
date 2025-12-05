@@ -12,7 +12,7 @@ members = [
     "armature-auth",
     "armature-testing",
     "armature-validation",
-    # "armature-openapi",  # TODO: Missing Cargo.toml
+    "armature-openapi",
     "armature-cache",
     "armature-cron",
     "armature-queue",
@@ -21,16 +21,43 @@ members = [
 ]
 resolver = "2"
 
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Joseph R. Quinn <quinnjr@linux.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/quinnjr/armature"
+homepage = "https://quinnjr.github.io/armature/"
+
 [package]
 name = "armature"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85"
 authors = ["Joseph R. Quinn <quinnjr@linux.com>"]
 license = "Apache-2.0"
+readme = "README.md"
 repository = "https://github.com/quinnjr/armature"
-description = "A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS"
-keywords = ["web", "framework", "http", "async", "server"]
-categories = ["web-programming::http-server"]
+homepage = "https://quinnjr.github.io/armature/"
+documentation = "https://docs.rs/armature"
+description = "A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS. Features dependency injection, decorators, middleware, authentication (JWT/OAuth2/SAML), validation, OpenAPI/Swagger, SSR, caching, job queues, and observability."
+keywords = ["web", "framework", "http", "async", "nestjs"]
+categories = ["web-programming::http-server", "asynchronous", "network-programming"]
+exclude = [
+    ".git/",
+    ".github/",
+    ".gitignore",
+    ".cursor/",
+    "target/",
+    "web/",
+    "CONTRIBUTING.md",
+    "COVERAGE_STATUS.md",
+]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lib]
 name = "armature"
