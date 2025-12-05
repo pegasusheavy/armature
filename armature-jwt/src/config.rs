@@ -236,4 +236,160 @@ mod tests {
         let key = config.encoding_key();
         assert!(key.is_ok());
     }
+
+    #[test]
+    fn test_decoding_key() {
+        let config = JwtConfig::new("test-secret".to_string());
+        let key = config.decoding_key();
+        assert!(key.is_ok());
+    }
+
+    #[test]
+    fn test_validation() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_issuer("my-issuer".to_string())
+            .with_audience(vec!["my-audience".to_string()]);
+        
+        let validation = config.validation();
+        assert!(validation.iss.is_some());
+        assert!(validation.aud.is_some());
+        assert!(validation.validate_exp);
+    }
+
+    #[test]
+    fn test_algorithm_hs256() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_algorithm(Algorithm::HS256);
+        assert_eq!(config.algorithm, Algorithm::HS256);
+    }
+
+    #[test]
+    fn test_algorithm_hs384() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_algorithm(Algorithm::HS384);
+        assert_eq!(config.algorithm, Algorithm::HS384);
+    }
+
+    #[test]
+    fn test_algorithm_hs512() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_algorithm(Algorithm::HS512);
+        assert_eq!(config.algorithm, Algorithm::HS512);
+    }
+
+    #[test]
+    fn test_validation_enabled_by_default() {
+        let config = JwtConfig::new("secret".to_string());
+        assert!(config.validate_exp);
+        
+        let validation = config.validation();
+        assert!(validation.validate_exp);
+    }
+
+    #[test]
+    fn test_leeway_configuration() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_leeway(120);
+        
+        assert_eq!(config.leeway, 120);
+        
+        let validation = config.validation();
+        assert_eq!(validation.leeway, 120);
+    }
+
+    #[test]
+    fn test_audience_configuration() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_audience(vec!["app1".to_string()]);
+        
+        assert_eq!(config.audience, Some(vec!["app1".to_string()]));
+        
+        let validation = config.validation();
+        assert!(validation.aud.is_some());
+    }
+
+    #[test]
+    fn test_issuer_configuration() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_issuer("auth-server".to_string());
+        
+        assert_eq!(config.issuer, Some("auth-server".to_string()));
+        
+        let validation = config.validation();
+        assert!(validation.iss.is_some());
+    }
+
+    #[test]
+    fn test_expiration_duration() {
+        let one_hour = Duration::from_secs(3600);
+        let config = JwtConfig::new("secret".to_string())
+            .with_expiration(one_hour);
+        
+        assert_eq!(config.expires_in, one_hour);
+    }
+
+    #[test]
+    fn test_default_expiration() {
+        let config = JwtConfig::default();
+        assert_eq!(config.expires_in, Duration::from_secs(3600));
+    }
+
+    #[test]
+    fn test_config_clone() {
+        let config1 = JwtConfig::new("secret".to_string())
+            .with_issuer("issuer".to_string());
+        
+        let config2 = config1.clone();
+        assert_eq!(config1.issuer, config2.issuer);
+        assert_eq!(config1.algorithm, config2.algorithm);
+    }
+
+    #[test]
+    fn test_config_with_all_options() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_algorithm(Algorithm::HS512)
+            .with_expiration(Duration::from_secs(7200))
+            .with_issuer("issuer".to_string())
+            .with_audience(vec!["audience".to_string()])
+            .with_leeway(60);
+        
+        assert_eq!(config.algorithm, Algorithm::HS512);
+        assert_eq!(config.expires_in, Duration::from_secs(7200));
+        assert_eq!(config.issuer, Some("issuer".to_string()));
+        assert_eq!(config.audience, Some(vec!["audience".to_string()]));
+        assert_eq!(config.leeway, 60);
+        assert!(config.validate_exp);
+    }
+
+    #[test]
+    fn test_validation_requirements() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_issuer("required-issuer".to_string())
+            .with_audience(vec!["required-audience".to_string()]);
+        
+        let validation = config.validation();
+        assert!(validation.iss.is_some());
+        assert!(validation.aud.is_some());
+        
+        let expected_iss: std::collections::HashSet<String> = 
+            std::collections::HashSet::from(["required-issuer".to_string()]);
+        assert_eq!(validation.iss.as_ref().unwrap(), &expected_iss);
+    }
+
+    #[test]
+    fn test_zero_leeway() {
+        let config = JwtConfig::new("secret".to_string())
+            .with_leeway(0);
+        
+        assert_eq!(config.leeway, 0);
+    }
+
+    #[test]
+    fn test_long_expiration() {
+        let one_year = Duration::from_secs(365 * 24 * 3600);
+        let config = JwtConfig::new("secret".to_string())
+            .with_expiration(one_year);
+        
+        assert_eq!(config.expires_in, one_year);
+    }
 }

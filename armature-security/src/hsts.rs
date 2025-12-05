@@ -7,10 +7,10 @@
 pub struct HstsConfig {
     /// Max age in seconds
     pub max_age: u64,
-    
+
     /// Include subdomains
     pub include_subdomains: bool,
-    
+
     /// Preload (submit to browser preload list)
     pub preload: bool,
 }
@@ -24,31 +24,31 @@ impl HstsConfig {
             preload: false,
         }
     }
-    
+
     /// Include subdomains
     pub fn include_subdomains(mut self, include: bool) -> Self {
         self.include_subdomains = include;
         self
     }
-    
+
     /// Enable preloading
     pub fn preload(mut self, preload: bool) -> Self {
         self.preload = preload;
         self
     }
-    
+
     /// Convert to header value
     pub fn to_header_value(&self) -> String {
         let mut parts = vec![format!("max-age={}", self.max_age)];
-        
+
         if self.include_subdomains {
             parts.push("includeSubDomains".to_string());
         }
-        
+
         if self.preload {
             parts.push("preload".to_string());
         }
-        
+
         parts.join("; ")
     }
 }

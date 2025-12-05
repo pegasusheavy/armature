@@ -19,17 +19,17 @@ The Armature Security middleware provides a collection of security headers and p
 
 ## Features
 
-✅ **Content Security Policy (CSP)** - Prevent XSS attacks  
-✅ **HTTP Strict Transport Security (HSTS)** - Force HTTPS  
-✅ **X-Frame-Options** - Prevent clickjacking  
-✅ **X-Content-Type-Options** - Prevent MIME sniffing  
-✅ **X-XSS-Protection** - Enable browser XSS filters  
-✅ **Referrer Policy** - Control referrer information  
-✅ **DNS Prefetch Control** - Control DNS prefetching  
-✅ **Expect-CT** - Certificate Transparency  
-✅ **X-Download-Options** - Prevent IE download execution  
-✅ **X-Permitted-Cross-Domain-Policies** - Control Flash/PDF policies  
-✅ **Hide X-Powered-By** - Remove server fingerprinting  
+✅ **Content Security Policy (CSP)** - Prevent XSS attacks
+✅ **HTTP Strict Transport Security (HSTS)** - Force HTTPS
+✅ **X-Frame-Options** - Prevent clickjacking
+✅ **X-Content-Type-Options** - Prevent MIME sniffing
+✅ **X-XSS-Protection** - Enable browser XSS filters
+✅ **Referrer Policy** - Control referrer information
+✅ **DNS Prefetch Control** - Control DNS prefetching
+✅ **Expect-CT** - Certificate Transparency
+✅ **X-Download-Options** - Prevent IE download execution
+✅ **X-Permitted-Cross-Domain-Policies** - Control Flash/PDF policies
+✅ **Hide X-Powered-By** - Remove server fingerprinting
 
 ## Installation
 
@@ -371,7 +371,7 @@ impl HomeController {
         let security = SecurityMiddleware::default();
         let response = HttpResponse::ok()
             .with_body(b"Hello, secure world!".to_vec());
-        
+
         Ok(security.apply(response))
     }
 }

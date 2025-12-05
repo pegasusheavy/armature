@@ -218,4 +218,187 @@ mod tests {
         assert_eq!(manager.get_bool("bool_key").unwrap(), true);
         assert_eq!(manager.get_float("float_key").unwrap(), 3.14);
     }
+
+    #[test]
+    fn test_get_missing_key() {
+        let manager = ConfigManager::new();
+        let result: Result<String> = manager.get("nonexistent");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_set_overwrites() {
+        let manager = ConfigManager::new();
+        manager.set("key", "value1").unwrap();
+        manager.set("key", "value2").unwrap();
+        
+        let value: String = manager.get("key").unwrap();
+        assert_eq!(value, "value2");
+    }
+
+    #[test]
+    fn test_multiple_keys() {
+        let manager = ConfigManager::new();
+        manager.set("key1", "value1").unwrap();
+        manager.set("key2", "value2").unwrap();
+        manager.set("key3", "value3").unwrap();
+        
+        assert!(manager.has("key1"));
+        assert!(manager.has("key2"));
+        assert!(manager.has("key3"));
+    }
+
+    #[test]
+    fn test_nested_keys() {
+        let manager = ConfigManager::new();
+        manager.set("database.host", "localhost").unwrap();
+        manager.set("database.port", 5432i64).unwrap();
+        
+        assert_eq!(manager.get_string("database.host").unwrap(), "localhost");
+        assert_eq!(manager.get_int("database.port").unwrap(), 5432);
+    }
+
+    #[test]
+    fn test_empty_string() {
+        let manager = ConfigManager::new();
+        manager.set("empty", "").unwrap();
+        
+        let value: String = manager.get("empty").unwrap();
+        assert_eq!(value, "");
+    }
+
+    #[test]
+    fn test_zero_values() {
+        let manager = ConfigManager::new();
+        manager.set("zero_int", 0i64).unwrap();
+        manager.set("zero_float", 0.0).unwrap();
+        
+        assert_eq!(manager.get_int("zero_int").unwrap(), 0);
+        assert_eq!(manager.get_float("zero_float").unwrap(), 0.0);
+    }
+
+    #[test]
+    fn test_negative_numbers() {
+        let manager = ConfigManager::new();
+        manager.set("negative_int", -42i64).unwrap();
+        manager.set("negative_float", -3.14).unwrap();
+        
+        assert_eq!(manager.get_int("negative_int").unwrap(), -42);
+        assert_eq!(manager.get_float("negative_float").unwrap(), -3.14);
+    }
+
+    #[test]
+    fn test_bool_values() {
+        let manager = ConfigManager::new();
+        manager.set("true_val", true).unwrap();
+        manager.set("false_val", false).unwrap();
+        
+        assert!(manager.get_bool("true_val").unwrap());
+        assert!(!manager.get_bool("false_val").unwrap());
+    }
+
+    #[test]
+    fn test_large_numbers() {
+        let manager = ConfigManager::new();
+        manager.set("large_int", i64::MAX).unwrap();
+        manager.set("large_float", f64::MAX).unwrap();
+        
+        assert_eq!(manager.get_int("large_int").unwrap(), i64::MAX);
+        assert_eq!(manager.get_float("large_float").unwrap(), f64::MAX);
+    }
+
+    #[test]
+    fn test_special_characters_in_values() {
+        let manager = ConfigManager::new();
+        manager.set("special", "value!@#$%^&*()").unwrap();
+        
+        let value: String = manager.get("special").unwrap();
+        assert_eq!(value, "value!@#$%^&*()");
+    }
+
+    #[test]
+    fn test_unicode_values() {
+        let manager = ConfigManager::new();
+        manager.set("unicode", "Hello 世界 🌍").unwrap();
+        
+        let value: String = manager.get("unicode").unwrap();
+        assert_eq!(value, "Hello 世界 🌍");
+    }
+
+    #[test]
+    fn test_whitespace_values() {
+        let manager = ConfigManager::new();
+        manager.set("spaces", "  value with spaces  ").unwrap();
+        
+        let value: String = manager.get("spaces").unwrap();
+        assert_eq!(value, "  value with spaces  ");
+    }
+
+    #[test]
+    fn test_newline_in_values() {
+        let manager = ConfigManager::new();
+        manager.set("multiline", "line1\nline2\nline3").unwrap();
+        
+        let value: String = manager.get("multiline").unwrap();
+        assert!(value.contains("\n"));
+    }
+
+    #[test]
+    fn test_get_or_with_existing_key() {
+        let manager = ConfigManager::new();
+        manager.set("key", "actual").unwrap();
+        
+        let value: String = manager.get_or("key", "default".to_string());
+        assert_eq!(value, "actual");
+    }
+
+    #[test]
+    fn test_clone_config_manager() {
+        let manager1 = ConfigManager::new();
+        manager1.set("key", "value").unwrap();
+        
+        let manager2 = manager1.clone();
+        let value: String = manager2.get("key").unwrap();
+        assert_eq!(value, "value");
+    }
+
+    #[test]
+    fn test_concurrent_access() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let manager = Arc::new(ConfigManager::new());
+        manager.set("counter", 0i64).unwrap();
+
+        let handles: Vec<_> = (0..10)
+            .map(|i| {
+                let manager = Arc::clone(&manager);
+                thread::spawn(move || {
+                    manager.set(&format!("key{}", i), i).unwrap();
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            handle.join().unwrap();
+        }
+
+        for i in 0..10 {
+            assert!(manager.has(&format!("key{}", i)));
+        }
+    }
+
+    #[test]
+    fn test_case_sensitive_keys() {
+        let manager = ConfigManager::new();
+        manager.set("Key", "value1").unwrap();
+        manager.set("key", "value2").unwrap();
+        
+        assert!(manager.has("Key"));
+        assert!(manager.has("key"));
+        assert_ne!(
+            manager.get_string("Key").unwrap(),
+            manager.get_string("key").unwrap()
+        );
+    }
 }

@@ -190,4 +190,149 @@ mod tests {
 
         assert!(!valid_claims.is_expired());
     }
+
+    #[test]
+    fn test_standard_claims_default() {
+        let claims = StandardClaims::default();
+        assert!(claims.sub.is_none());
+        assert!(claims.iss.is_none());
+        assert!(claims.aud.is_none());
+        assert!(claims.exp.is_none());
+        assert!(claims.nbf.is_none());
+        assert!(claims.iat.is_some()); // iat is set by default to current timestamp
+        assert!(claims.jti.is_none());
+    }
+
+    #[test]
+    fn test_with_audience() {
+        let claims = StandardClaims::new()
+            .with_audience(vec!["api1".to_string(), "api2".to_string()]);
+        assert_eq!(claims.aud, Some(vec!["api1".to_string(), "api2".to_string()]));
+    }
+
+    #[test]
+    fn test_with_not_before() {
+        let nbf = Utc::now().timestamp();
+        let claims = StandardClaims::new().with_not_before(nbf);
+        assert_eq!(claims.nbf, Some(nbf));
+    }
+
+    #[test]
+    fn test_with_jti() {
+        let claims = StandardClaims::new()
+            .with_jti("unique-id-123".to_string());
+        assert_eq!(claims.jti, Some("unique-id-123".to_string()));
+    }
+
+    #[test]
+    fn test_expiration_in_future() {
+        let claims = StandardClaims::new().with_expiration(3600);
+        assert!(claims.exp.is_some());
+        let exp = claims.exp.unwrap();
+        let now = Utc::now().timestamp();
+        assert!(exp > now);
+        assert!(exp <= now + 3600);
+    }
+
+    #[test]
+    fn test_is_expired_no_expiration() {
+        let claims = StandardClaims::default();
+        assert!(!claims.is_expired()); // No expiration means not expired
+    }
+
+    #[test]
+    fn test_is_expired_exactly_now() {
+        let claims = StandardClaims {
+            exp: Some(Utc::now().timestamp()),
+            ..Default::default()
+        };
+        // Could be expired or not depending on timing - just check it doesn't panic
+        let _ = claims.is_expired();
+    }
+
+    #[test]
+    fn test_claims_with_custom_data() {
+        #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+        struct CustomData {
+            user_id: u64,
+            permissions: Vec<String>,
+        }
+
+        let custom = CustomData {
+            user_id: 42,
+            permissions: vec!["read".to_string(), "write".to_string()],
+        };
+
+        let claims = Claims::new(custom.clone())
+            .with_subject("user42".to_string())
+            .with_expiration(7200);
+
+        assert_eq!(claims.custom, custom);
+        assert_eq!(claims.standard.sub, Some("user42".to_string()));
+    }
+
+    #[test]
+    fn test_claims_builder_chaining() {
+        let claims = StandardClaims::new()
+            .with_subject("user".to_string())
+            .with_issuer("issuer".to_string())
+            .with_audience(vec!["aud1".to_string()])
+            .with_expiration(3600)
+            .with_jti("jti-123".to_string());
+
+        assert!(claims.sub.is_some());
+        assert!(claims.iss.is_some());
+        assert!(claims.aud.is_some());
+        assert!(claims.exp.is_some());
+        assert!(claims.jti.is_some());
+    }
+
+    #[test]
+    fn test_claims_serialization() {
+        let claims = StandardClaims::new()
+            .with_subject("test".to_string())
+            .with_expiration(3600);
+
+        let json = serde_json::to_string(&claims).unwrap();
+        assert!(json.contains("\"sub\":\"test\""));
+    }
+
+    #[test]
+    fn test_claims_deserialization() {
+        let json = r#"{"sub":"test","iss":"issuer","exp":1234567890}"#;
+        let claims: StandardClaims = serde_json::from_str(json).unwrap();
+        
+        assert_eq!(claims.sub, Some("test".to_string()));
+        assert_eq!(claims.iss, Some("issuer".to_string()));
+        assert_eq!(claims.exp, Some(1234567890));
+    }
+
+    #[test]
+    fn test_multiple_audiences() {
+        let audiences = vec![
+            "api1".to_string(),
+            "api2".to_string(),
+            "api3".to_string(),
+        ];
+        let claims = StandardClaims::new().with_audience(audiences.clone());
+        assert_eq!(claims.aud, Some(audiences));
+    }
+
+    #[test]
+    fn test_empty_audience() {
+        let claims = StandardClaims::new().with_audience(vec![]);
+        assert_eq!(claims.aud, Some(vec![]));
+    }
+
+    #[test]
+    fn test_custom_claims_serialization() {
+        #[derive(Debug, Serialize, Deserialize)]
+        struct Data {
+            count: u32,
+        }
+
+        let claims = Claims::new(Data { count: 42 });
+        let json = serde_json::to_string(&claims).unwrap();
+        assert!(json.contains("\"count\":42"));
+    }
 }

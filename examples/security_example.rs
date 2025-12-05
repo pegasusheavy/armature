@@ -68,11 +68,11 @@ impl HomeController {
 <body>
     <h1>🛡️ Armature Security Middleware</h1>
     <p>{}</p>
-    
+
     <div class="security-info">
         <h2>Active Security Headers</h2>
         <p>Open your browser's developer tools (Network tab) to see these headers:</p>
-        
+
         <div class="header">Content-Security-Policy</div>
         <div class="header">Strict-Transport-Security</div>
         <div class="header">X-Frame-Options</div>
@@ -84,7 +84,7 @@ impl HomeController {
         <div class="header">X-Permitted-Cross-Domain-Policies</div>
         <div class="header">Expect-CT</div>
     </div>
-    
+
     <h2>What This Protects Against</h2>
     <ul>
         <li>Cross-Site Scripting (XSS)</li>
@@ -94,7 +94,7 @@ impl HomeController {
         <li>DNS prefetch attacks</li>
         <li>Cross-domain policy abuse</li>
     </ul>
-    
+
     <h2>Usage Examples</h2>
     <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px;">
 // Default (recommended) - All security features enabled
@@ -164,7 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Configure security middleware with recommended defaults
     let security = SecurityMiddleware::default();
-    
+
     println!("✅ Security middleware configured with:");
     println!("   - Content Security Policy (CSP)");
     println!("   - HTTP Strict Transport Security (HSTS)");

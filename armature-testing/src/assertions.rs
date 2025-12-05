@@ -151,4 +151,89 @@ mod tests {
         let response = create_test_response(200, "Hello World");
         assert_body_contains(&response, "Hello");
     }
+
+    #[test]
+    fn test_assert_client_error() {
+        let response = create_test_response(404, "Not Found");
+        assert_client_error(&response);
+    }
+
+    #[test]
+    fn test_assert_server_error() {
+        let response = create_test_response(500, "Internal Error");
+        assert_server_error(&response);
+    }
+
+    #[test]
+    fn test_assert_json_content_type() {
+        let mut response = HttpResponse::ok();
+        response.headers.insert("Content-Type".to_string(), "application/json".to_string());
+        let test_response = TestResponse::Success(response);
+        assert_json_content_type(&test_response);
+    }
+
+    #[test]
+    fn test_assert_html_content_type() {
+        let mut response = HttpResponse::ok();
+        response.headers.insert("Content-Type".to_string(), "text/html".to_string());
+        let test_response = TestResponse::Success(response);
+        assert_html_content_type(&test_response);
+    }
+
+    #[test]
+    fn test_assert_header() {
+        let mut response = HttpResponse::ok();
+        response.headers.insert("X-Custom".to_string(), "value".to_string());
+        let test_response = TestResponse::Success(response);
+        assert_header(&test_response, "X-Custom", "value");
+    }
+
+    #[test]
+    fn test_assert_status_ranges() {
+        let response_200 = create_test_response(200, "OK");
+        let response_201 = create_test_response(201, "Created");
+        let response_204 = create_test_response(204, "No Content");
+        
+        assert_success(&response_200);
+        assert_success(&response_201);
+        assert_success(&response_204);
+    }
+
+    #[test]
+    fn test_assert_various_4xx_errors() {
+        let response_400 = create_test_response(400, "Bad Request");
+        let response_401 = create_test_response(401, "Unauthorized");
+        let response_403 = create_test_response(403, "Forbidden");
+        let response_404 = create_test_response(404, "Not Found");
+        
+        assert_client_error(&response_400);
+        assert_client_error(&response_401);
+        assert_client_error(&response_403);
+        assert_client_error(&response_404);
+    }
+
+    #[test]
+    fn test_assert_various_5xx_errors() {
+        let response_500 = create_test_response(500, "Internal Server Error");
+        let response_502 = create_test_response(502, "Bad Gateway");
+        let response_503 = create_test_response(503, "Service Unavailable");
+        
+        assert_server_error(&response_500);
+        assert_server_error(&response_502);
+        assert_server_error(&response_503);
+    }
+
+    #[test]
+    fn test_assert_body_contains_multiple_strings() {
+        let response = create_test_response(200, "Hello World from Armature");
+        assert_body_contains(&response, "Hello");
+        assert_body_contains(&response, "World");
+        assert_body_contains(&response, "Armature");
+    }
+
+    #[test]
+    fn test_assert_empty_body() {
+        let response = create_test_response(204, "");
+        assert_body_contains(&response, ""); // Empty string should match
+    }
 }

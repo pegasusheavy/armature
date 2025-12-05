@@ -7,10 +7,10 @@
 pub struct ExpectCtConfig {
     /// Max age in seconds
     pub max_age: u64,
-    
+
     /// Enforce the policy
     pub enforce: bool,
-    
+
     /// Report URI for violations
     pub report_uri: Option<String>,
 }
@@ -24,31 +24,31 @@ impl ExpectCtConfig {
             report_uri: None,
         }
     }
-    
+
     /// Enable enforcement
     pub fn enforce(mut self, enforce: bool) -> Self {
         self.enforce = enforce;
         self
     }
-    
+
     /// Set report URI
     pub fn report_uri(mut self, uri: String) -> Self {
         self.report_uri = Some(uri);
         self
     }
-    
+
     /// Convert to header value
     pub fn to_header_value(&self) -> String {
         let mut parts = vec![format!("max-age={}", self.max_age)];
-        
+
         if self.enforce {
             parts.push("enforce".to_string());
         }
-        
+
         if let Some(ref uri) = self.report_uri {
             parts.push(format!("report-uri=\"{}\"", uri));
         }
-        
+
         parts.join(", ")
     }
 }
