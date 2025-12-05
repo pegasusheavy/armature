@@ -224,20 +224,20 @@ mod tests {
     fn test_expression_clone() {
         let expr1 = CronExpression::parse("0 * * * * *").unwrap();
         let expr2 = expr1.clone();
-        
+
         let next1 = expr1.next();
         let next2 = expr2.next();
-        
+
         assert_eq!(next1.is_some(), next2.is_some());
     }
 
     #[test]
     fn test_next_execution_multiple_calls() {
         let expr = CronExpression::parse("0 * * * * *").unwrap();
-        
+
         let next1 = expr.next();
         let next2 = expr.next();
-        
+
         assert!(next1.is_some());
         assert!(next2.is_some());
     }

@@ -239,7 +239,7 @@ mod tests {
     fn test_config_backend_display() {
         let redis = CacheBackend::Redis;
         let memcached = CacheBackend::Memcached;
-        
+
         // Just verify they can be formatted
         let _ = format!("{:?}", redis);
         let _ = format!("{:?}", memcached);
@@ -280,7 +280,7 @@ mod tests {
         let config = CacheConfig::redis("redis://localhost:6379")
             .unwrap()
             .with_key_prefix("app");
-        
+
         let key1 = config.build_key("test");
         let key2 = config.build_key("test");
         assert_eq!(key1, key2);

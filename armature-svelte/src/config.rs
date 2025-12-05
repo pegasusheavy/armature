@@ -133,4 +133,88 @@ mod tests {
         assert!(!config.hydration);
         assert!(config.prerender);
     }
+
+    #[test]
+    fn test_config_with_server_entry() {
+        let config = SvelteConfig::new(PathBuf::from("build"))
+            .with_server_entry("server/index.js".to_string());
+
+        assert_eq!(config.server_entry, "server/index.js");
+    }
+
+
+    #[test]
+    fn test_config_clone() {
+        let config1 = SvelteConfig::new(PathBuf::from("build"))
+            .with_prerender(true)
+            .with_hydration(false);
+        let config2 = config1.clone();
+
+        assert_eq!(config1.prerender, config2.prerender);
+        assert_eq!(config1.hydration, config2.hydration);
+    }
+
+    #[test]
+    fn test_config_compression_toggle() {
+        let config1 = SvelteConfig::new(PathBuf::from("build")).with_compression(true);
+        let config2 = SvelteConfig::new(PathBuf::from("build")).with_compression(false);
+
+        assert!(config1.compression);
+        assert!(!config2.compression);
+    }
+
+    #[test]
+    fn test_config_cache_ttl_range() {
+        let config1 = SvelteConfig::new(PathBuf::from("build")).with_cache_ttl(0);
+        let config2 = SvelteConfig::new(PathBuf::from("build")).with_cache_ttl(7200);
+
+        assert_eq!(config1.cache_ttl, 0);
+        assert_eq!(config2.cache_ttl, 7200);
+    }
+
+    #[test]
+    fn test_config_hydration_and_prerender() {
+        let config = SvelteConfig::new(PathBuf::from("build"))
+            .with_hydration(true)
+            .with_prerender(true);
+
+        assert!(config.hydration);
+        assert!(config.prerender);
+    }
+
+    #[test]
+    fn test_config_all_features() {
+        let config = SvelteConfig::new(PathBuf::from("dist"))
+            .with_node_path("/opt/node".to_string())
+            .with_server_entry("ssr/bundle.js".to_string())
+            .with_cache(true)
+            .with_cache_ttl(900)
+            .with_compression(true)
+            .with_hydration(true)
+            .with_prerender(true);
+
+        assert_eq!(config.node_path, "/opt/node");
+        assert!(config.cache_enabled);
+        assert_eq!(config.cache_ttl, 900);
+        assert!(config.compression);
+        assert!(config.hydration);
+        assert!(config.prerender);
+    }
+
+    #[test]
+    fn test_config_default_cache_ttl() {
+        let config = SvelteConfig::new(PathBuf::from("build"));
+        assert_eq!(config.cache_ttl, 300);
+    }
+
+    #[test]
+    fn test_config_different_build_dirs() {
+        let config1 = SvelteConfig::new(PathBuf::from("build"));
+        let config2 = SvelteConfig::new(PathBuf::from("dist"));
+        let config3 = SvelteConfig::new(PathBuf::from(".svelte-kit/output"));
+
+        assert_eq!(config1.build_dir, PathBuf::from("build"));
+        assert_eq!(config2.build_dir, PathBuf::from("dist"));
+        assert_eq!(config3.build_dir, PathBuf::from(".svelte-kit/output"));
+    }
 }

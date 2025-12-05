@@ -350,7 +350,7 @@ mod tests {
     fn test_job_name_consistency() {
         let expr = CronExpression::parse("0 * * * * *").unwrap();
         let job = Job::new("consistent", expr, |_ctx| async { Ok(()) });
-        
+
         assert_eq!(job.name, "consistent");
         assert_eq!(job.name, "consistent"); // Multiple reads should be consistent
     }
@@ -361,7 +361,7 @@ mod tests {
         let mut job = Job::new("disabled", expr, |_ctx| async { Ok(()) });
 
         job.disable();
-        
+
         assert!(!job.enabled);
     }
 

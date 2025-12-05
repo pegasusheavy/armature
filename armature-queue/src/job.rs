@@ -477,7 +477,7 @@ mod tests {
     #[test]
     fn test_job_complete_sets_state() {
         let mut job = Job::new("default", "task", serde_json::json!({}));
-        
+
         job.start_processing();
         job.complete();
 

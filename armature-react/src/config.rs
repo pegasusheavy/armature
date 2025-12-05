@@ -83,3 +83,107 @@ impl Default for ReactConfig {
         Self::new(PathBuf::from("build"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_creation() {
+        let config = ReactConfig::new(PathBuf::from("dist"));
+        assert_eq!(config.build_dir, PathBuf::from("dist"));
+        assert_eq!(config.server_entry, "server/index.js");
+        assert_eq!(config.cache_ttl, 300);
+    }
+
+    #[test]
+    fn test_config_with_server_entry() {
+        let config = ReactConfig::new(PathBuf::from("build"))
+            .with_server_entry("server.js".to_string());
+
+        assert_eq!(config.server_entry, "server.js");
+    }
+
+    #[test]
+    fn test_config_with_static_dir() {
+        let config = ReactConfig::new(PathBuf::from("build"))
+            .with_static_dir(PathBuf::from("static"));
+
+        assert_eq!(config.static_dir, PathBuf::from("static"));
+    }
+
+    #[test]
+    fn test_config_default() {
+        let config = ReactConfig::default();
+        assert_eq!(config.build_dir, PathBuf::from("build"));
+    }
+
+    #[test]
+    fn test_config_builder_pattern() {
+        let config = ReactConfig::new(PathBuf::from("dist"))
+            .with_server_entry("ssr/server.js".to_string())
+            .with_static_dir(PathBuf::from("public"))
+            .with_cache(true)
+            .with_cache_ttl(600);
+
+        assert_eq!(config.build_dir, PathBuf::from("dist"));
+        assert_eq!(config.server_entry, "ssr/server.js");
+        assert_eq!(config.static_dir, PathBuf::from("public"));
+        assert!(config.cache_enabled);
+        assert_eq!(config.cache_ttl, 600);
+    }
+
+    #[test]
+    fn test_config_clone() {
+        let config1 = ReactConfig::new(PathBuf::from("build"))
+            .with_server_entry("server.js".to_string());
+        let config2 = config1.clone();
+
+        assert_eq!(config1.build_dir, config2.build_dir);
+        assert_eq!(config1.server_entry, config2.server_entry);
+    }
+
+    #[test]
+    fn test_config_debug() {
+        let config = ReactConfig::new(PathBuf::from("build"));
+        let debug_str = format!("{:?}", config);
+        assert!(debug_str.contains("build"));
+    }
+
+    #[test]
+    fn test_config_with_nested_paths() {
+        let config = ReactConfig::new(PathBuf::from("dist/production"))
+            .with_server_entry("ssr/main/server.bundle.js".to_string())
+            .with_static_dir(PathBuf::from("assets/static"));
+
+        assert!(config.server_entry.contains("ssr"));
+        assert!(config.static_dir.to_str().unwrap().contains("assets"));
+    }
+
+    #[test]
+    fn test_config_cache_toggle() {
+        let config = ReactConfig::new(PathBuf::from("build"))
+            .with_cache(true)
+            .with_cache_ttl(1200);
+
+        assert!(config.cache_enabled);
+        assert_eq!(config.cache_ttl, 1200);
+    }
+
+    #[test]
+    fn test_config_compression_toggle() {
+        let config1 = ReactConfig::new(PathBuf::from("build")).with_compression(true);
+        let config2 = ReactConfig::new(PathBuf::from("build")).with_compression(false);
+
+        assert!(config1.compression);
+        assert!(!config2.compression);
+    }
+
+    #[test]
+    fn test_config_node_path() {
+        let config = ReactConfig::new(PathBuf::from("build"))
+            .with_node_path("/custom/node".to_string());
+
+        assert_eq!(config.node_path, "/custom/node");
+    }
+}

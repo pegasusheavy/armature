@@ -375,7 +375,7 @@ mod tests {
     #[test]
     fn test_queue_key_generation() {
         let config = QueueConfig::new("redis://localhost:6379", "jobs");
-        
+
         let pending_key = config.key("pending:normal");
         let processing_key = config.key("processing");
         let completed_key = config.key("completed");
@@ -405,10 +405,10 @@ mod tests {
     #[test]
     fn test_queue_config_key_consistency() {
         let config = QueueConfig::new("redis://localhost:6379", "test");
-        
+
         let key1 = config.key("pending");
         let key2 = config.key("pending");
-        
+
         assert_eq!(key1, key2);
     }
 

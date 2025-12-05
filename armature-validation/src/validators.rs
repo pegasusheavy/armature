@@ -343,4 +343,124 @@ mod tests {
         assert!(validator.validate(15, "age").is_ok());
         assert!(validator.validate(5, "age").is_err());
     }
+
+    #[test]
+    fn test_max_length() {
+        let validator = MaxLength(10);
+        assert!(validator.validate("short", "field").is_ok());
+        assert!(validator.validate("this is too long", "field").is_err());
+    }
+
+    #[test]
+    fn test_max_value() {
+        let validator = Max(100i32);
+        assert!(validator.validate(50i32, "value").is_ok());
+        assert!(validator.validate(150i32, "value").is_err());
+    }
+
+    #[test]
+    fn test_in_range() {
+        let validator = InRange { min: 10i32, max: 20i32 };
+        assert!(validator.validate(15i32, "value").is_ok());
+        assert!(validator.validate(5i32, "value").is_err());
+        assert!(validator.validate(25i32, "value").is_err());
+    }
+
+
+    #[test]
+    fn test_is_url() {
+        assert!(IsUrl::validate("https://example.com", "url").is_ok());
+        assert!(IsUrl::validate("http://test.org/path", "url").is_ok());
+        assert!(IsUrl::validate("not a url", "url").is_err());
+    }
+
+    #[test]
+    fn test_is_alpha() {
+        assert!(IsAlpha::validate("abcXYZ", "field").is_ok());
+        assert!(IsAlpha::validate("abc123", "field").is_err());
+        assert!(IsAlpha::validate("abc xyz", "field").is_err());
+    }
+
+    #[test]
+    fn test_is_alphanumeric() {
+        assert!(IsAlphanumeric::validate("abc123", "field").is_ok());
+        assert!(IsAlphanumeric::validate("abc@123", "field").is_err());
+        assert!(IsAlphanumeric::validate("test", "field").is_ok());
+    }
+
+    #[test]
+    fn test_is_numeric() {
+        assert!(IsNumeric::validate("12345", "field").is_ok());
+        assert!(IsNumeric::validate("123.45", "field").is_err());
+        assert!(IsNumeric::validate("abc", "field").is_err());
+    }
+
+
+    #[test]
+    fn test_is_uuid() {
+        assert!(IsUuid::validate("550e8400-e29b-41d4-a716-446655440000", "id").is_ok());
+        assert!(IsUuid::validate("not-a-uuid", "id").is_err());
+        assert!(IsUuid::validate("", "id").is_err());
+    }
+
+
+    #[test]
+    fn test_not_empty_with_whitespace_only() {
+        assert!(NotEmpty::validate("\t\n  \r", "field").is_err());
+    }
+
+    #[test]
+    fn test_min_length_exact() {
+        let validator = MinLength(5);
+        assert!(validator.validate("exact", "field").is_ok());
+        assert!(validator.validate("four", "field").is_err());
+    }
+
+    #[test]
+    fn test_max_length_exact() {
+        let validator = MaxLength(5);
+        assert!(validator.validate("exact", "field").is_ok());
+        assert!(validator.validate("sixsix", "field").is_err());
+    }
+
+    #[test]
+    fn test_in_range_boundaries() {
+        let validator = InRange { min: 0i32, max: 10i32 };
+        assert!(validator.validate(0i32, "value").is_ok());
+        assert!(validator.validate(10i32, "value").is_ok());
+        assert!(validator.validate(-1i32, "value").is_err());
+        assert!(validator.validate(11i32, "value").is_err());
+    }
+
+    #[test]
+    fn test_email_variations() {
+        assert!(IsEmail::validate("user+tag@example.com", "email").is_ok());
+        assert!(IsEmail::validate("user.name@example.co.uk", "email").is_ok());
+        assert!(IsEmail::validate("@example.com", "email").is_err());
+        assert!(IsEmail::validate("user@", "email").is_err());
+    }
+
+    #[test]
+    fn test_url_variations() {
+        assert!(IsUrl::validate("https://example.com", "url").is_ok());
+        assert!(IsUrl::validate("http://test.com/path", "url").is_ok());
+        assert!(IsUrl::validate("//example.com", "url").is_err());
+    }
+
+    #[test]
+    fn test_uuid_formats() {
+        // UUID v4 format
+        assert!(IsUuid::validate("123e4567-e89b-12d3-a456-426614174000", "id").is_ok());
+        // Without hyphens should fail
+        assert!(IsUuid::validate("123e4567e89b12d3a456426614174000", "id").is_err());
+    }
+
+
+    #[test]
+    fn test_empty_string_validators() {
+        // Empty strings fail because regex requires at least one character
+        assert!(IsAlpha::validate("", "field").is_err());
+        assert!(IsNumeric::validate("", "field").is_err());
+        assert!(IsAlphanumeric::validate("", "field").is_err());
+    }
 }
