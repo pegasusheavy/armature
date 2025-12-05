@@ -194,4 +194,155 @@ mod tests {
 
         assert_eq!(namespaced.build_key("123"), "users:123");
     }
+
+    #[test]
+    fn test_namespace_build_key_empty() {
+        struct MockStore;
+
+        #[async_trait::async_trait]
+        impl CacheStore for MockStore {
+            async fn get_json(&self, _key: &str) -> CacheResult<Option<String>> {
+                Ok(None)
+            }
+            async fn set_json(
+                &self,
+                _key: &str,
+                _value: String,
+                _ttl: Option<Duration>,
+            ) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn delete(&self, _key: &str) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn exists(&self, _key: &str) -> CacheResult<bool> {
+                Ok(false)
+            }
+            async fn clear(&self) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn ttl(&self, _key: &str) -> CacheResult<Option<Duration>> {
+                Ok(None)
+            }
+            async fn expire(&self, _key: &str, _ttl: Duration) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn increment(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+            async fn decrement(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+        }
+
+        let namespaced = NamespacedCache {
+            store: Arc::new(MockStore),
+            prefix: "app".to_string(),
+        };
+
+        assert_eq!(namespaced.build_key(""), "app:");
+    }
+
+    #[test]
+    fn test_namespace_build_key_with_colons() {
+        struct MockStore;
+
+        #[async_trait::async_trait]
+        impl CacheStore for MockStore {
+            async fn get_json(&self, _key: &str) -> CacheResult<Option<String>> {
+                Ok(None)
+            }
+            async fn set_json(
+                &self,
+                _key: &str,
+                _value: String,
+                _ttl: Option<Duration>,
+            ) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn delete(&self, _key: &str) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn exists(&self, _key: &str) -> CacheResult<bool> {
+                Ok(false)
+            }
+            async fn clear(&self) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn ttl(&self, _key: &str) -> CacheResult<Option<Duration>> {
+                Ok(None)
+            }
+            async fn expire(&self, _key: &str, _ttl: Duration) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn increment(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+            async fn decrement(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+        }
+
+        let namespaced = NamespacedCache {
+            store: Arc::new(MockStore),
+            prefix: "app".to_string(),
+        };
+
+        assert_eq!(namespaced.build_key("user:123"), "app:user:123");
+    }
+
+    #[test]
+    fn test_namespace_multiple_prefixes() {
+        struct MockStore;
+
+        #[async_trait::async_trait]
+        impl CacheStore for MockStore {
+            async fn get_json(&self, _key: &str) -> CacheResult<Option<String>> {
+                Ok(None)
+            }
+            async fn set_json(
+                &self,
+                _key: &str,
+                _value: String,
+                _ttl: Option<Duration>,
+            ) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn delete(&self, _key: &str) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn exists(&self, _key: &str) -> CacheResult<bool> {
+                Ok(false)
+            }
+            async fn clear(&self) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn ttl(&self, _key: &str) -> CacheResult<Option<Duration>> {
+                Ok(None)
+            }
+            async fn expire(&self, _key: &str, _ttl: Duration) -> CacheResult<()> {
+                Ok(())
+            }
+            async fn increment(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+            async fn decrement(&self, _key: &str, _delta: i64) -> CacheResult<i64> {
+                Ok(0)
+            }
+        }
+
+        let ns1 = NamespacedCache {
+            store: Arc::new(MockStore),
+            prefix: "app1".to_string(),
+        };
+
+        let ns2 = NamespacedCache {
+            store: Arc::new(MockStore),
+            prefix: "app2".to_string(),
+        };
+
+        assert_eq!(ns1.build_key("key"), "app1:key");
+        assert_eq!(ns2.build_key("key"), "app2:key");
+        assert_ne!(ns1.build_key("key"), ns2.build_key("key"));
+    }
 }

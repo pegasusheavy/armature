@@ -337,4 +337,139 @@ mod tests {
         let config = QueueConfig::new("redis://localhost:6379", "test");
         assert!(config.key("pending:high").contains("high"));
     }
+
+    #[test]
+    fn test_queue_config_with_custom_prefix() {
+        let config = QueueConfig::new("redis://localhost:6379", "myqueue")
+            .with_key_prefix("app");
+        assert!(config.key_prefix.contains("app"));
+    }
+
+    #[test]
+    fn test_queue_config_default_retention() {
+        let config = QueueConfig::new("redis://localhost:6379", "test");
+        assert_eq!(config.retention_time, Duration::from_secs(86400)); // 1 day
+    }
+
+    #[test]
+    fn test_queue_config_custom_retention() {
+        let retention = Duration::from_secs(3600);
+        let config = QueueConfig::new("redis://localhost:6379", "test")
+            .with_retention_time(retention);
+        assert_eq!(config.retention_time, retention);
+    }
+
+    #[test]
+    fn test_queue_config_default_max_size() {
+        let config = QueueConfig::new("redis://localhost:6379", "test");
+        assert_eq!(config.max_size, 0); // 0 means unlimited
+    }
+
+    #[test]
+    fn test_queue_config_custom_max_size() {
+        let config = QueueConfig::new("redis://localhost:6379", "test")
+            .with_max_size(1000);
+        assert_eq!(config.max_size, 1000);
+    }
+
+    #[test]
+    fn test_queue_key_generation() {
+        let config = QueueConfig::new("redis://localhost:6379", "jobs");
+        
+        let pending_key = config.key("pending:normal");
+        let processing_key = config.key("processing");
+        let completed_key = config.key("completed");
+
+        assert!(pending_key.contains("jobs"));
+        assert!(processing_key.contains("jobs"));
+        assert!(completed_key.contains("jobs"));
+    }
+
+    #[test]
+    fn test_queue_config_clone() {
+        let config1 = QueueConfig::new("redis://localhost:6379", "test");
+        let config2 = config1.clone();
+
+        assert_eq!(config1.queue_name, config2.queue_name);
+        assert_eq!(config1.redis_url, config2.redis_url);
+    }
+
+    #[test]
+    fn test_queue_config_different_queues() {
+        let config1 = QueueConfig::new("redis://localhost:6379", "queue1");
+        let config2 = QueueConfig::new("redis://localhost:6379", "queue2");
+
+        assert_ne!(config1.key_prefix, config2.key_prefix);
+    }
+
+    #[test]
+    fn test_queue_config_key_consistency() {
+        let config = QueueConfig::new("redis://localhost:6379", "test");
+        
+        let key1 = config.key("pending");
+        let key2 = config.key("pending");
+        
+        assert_eq!(key1, key2);
+    }
+
+    #[test]
+    fn test_queue_config_builder_pattern() {
+        let config = QueueConfig::new("redis://localhost:6379", "test")
+            .with_key_prefix("app")
+            .with_retention_time(Duration::from_secs(7200))
+            .with_max_size(500);
+
+        assert!(config.key_prefix.contains("app"));
+        assert_eq!(config.retention_time, Duration::from_secs(7200));
+        assert_eq!(config.max_size, 500);
+    }
+
+    #[test]
+    fn test_queue_config_redis_url() {
+        let url = "redis://user:pass@host:6380/2";
+        let config = QueueConfig::new(url, "test");
+        assert_eq!(config.redis_url, url);
+    }
+
+    #[test]
+    fn test_queue_config_key_with_empty_suffix() {
+        let config = QueueConfig::new("redis://localhost:6379", "test");
+        let key = config.key("");
+        assert!(key.contains("test"));
+    }
+
+    #[test]
+    fn test_queue_config_key_with_special_characters() {
+        let config = QueueConfig::new("redis://localhost:6379", "test");
+        let key = config.key("pending:high:priority");
+        assert!(key.contains("pending:high:priority"));
+    }
+
+    #[test]
+    fn test_queue_config_multiple_prefixes() {
+        let config1 = QueueConfig::new("redis://localhost:6379", "app1")
+            .with_key_prefix("production");
+        let config2 = QueueConfig::new("redis://localhost:6379", "app2")
+            .with_key_prefix("development");
+
+        let key1 = config1.key("jobs");
+        let key2 = config2.key("jobs");
+
+        assert_ne!(key1, key2);
+    }
+
+    #[test]
+    fn test_queue_config_unlimited_max_size() {
+        let config = QueueConfig::new("redis://localhost:6379", "test")
+            .with_max_size(0);
+        assert_eq!(config.max_size, 0);
+    }
+
+    #[test]
+    fn test_queue_config_large_retention() {
+        let week = Duration::from_secs(7 * 24 * 3600);
+        let config = QueueConfig::new("redis://localhost:6379", "test")
+            .with_retention_time(week);
+        assert_eq!(config.retention_time, week);
+    }
 }

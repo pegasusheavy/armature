@@ -141,4 +141,133 @@ mod tests {
         let next = expr.next();
         assert!(next.is_some());
     }
+
+    #[test]
+    fn test_preset_every_minute() {
+        let expr = CronExpression::parse(CronPresets::EVERY_MINUTE);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_preset_every_hour() {
+        let expr = CronExpression::parse(CronPresets::EVERY_HOUR);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_preset_daily() {
+        let expr = CronExpression::parse(CronPresets::DAILY);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_preset_weekly() {
+        let expr = CronExpression::parse(CronPresets::WEEKLY);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_preset_monthly() {
+        let expr = CronExpression::parse(CronPresets::MONTHLY);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_preset_yearly() {
+        let expr = CronExpression::parse(CronPresets::YEARLY);
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_custom_expression_6_fields() {
+        let expr = CronExpression::parse("0 0 0 * * *");
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_custom_expression_with_ranges() {
+        let expr = CronExpression::parse("0 0-5 0 * * *");
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_custom_expression_with_steps() {
+        let expr = CronExpression::parse("0 */2 0 * * *");
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_custom_expression_with_lists() {
+        let expr = CronExpression::parse("0 1,2,3 0 * * *");
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_invalid_expression_too_few_fields() {
+        let expr = CronExpression::parse("0 * *");
+        assert!(expr.is_err());
+    }
+
+    #[test]
+    fn test_invalid_expression_too_many_fields() {
+        let expr = CronExpression::parse("0 * * * * * * *");
+        assert!(expr.is_err());
+    }
+
+    #[test]
+    fn test_invalid_expression_bad_value() {
+        let expr = CronExpression::parse("60 * * * *");
+        assert!(expr.is_err());
+    }
+
+    #[test]
+    fn test_expression_clone() {
+        let expr1 = CronExpression::parse("0 * * * * *").unwrap();
+        let expr2 = expr1.clone();
+        
+        let next1 = expr1.next();
+        let next2 = expr2.next();
+        
+        assert_eq!(next1.is_some(), next2.is_some());
+    }
+
+    #[test]
+    fn test_next_execution_multiple_calls() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        
+        let next1 = expr.next();
+        let next2 = expr.next();
+        
+        assert!(next1.is_some());
+        assert!(next2.is_some());
+    }
+
+    #[test]
+    fn test_preset_constants_valid() {
+        // Just verify all preset constants are valid cron expressions
+        let presets = vec![
+            CronPresets::EVERY_MINUTE,
+            CronPresets::EVERY_HOUR,
+            CronPresets::DAILY,
+            CronPresets::WEEKLY,
+            CronPresets::MONTHLY,
+            CronPresets::YEARLY,
+        ];
+
+        for preset in presets {
+            assert!(CronExpression::parse(preset).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_expression_with_weekday() {
+        let expr = CronExpression::parse("0 0 0 * * MON");
+        assert!(expr.is_ok());
+    }
+
+    #[test]
+    fn test_expression_with_month_name() {
+        let expr = CronExpression::parse("0 0 0 1 JAN *");
+        assert!(expr.is_ok());
+    }
 }

@@ -357,4 +357,199 @@ mod tests {
         job.attempts = 10;
         assert_eq!(job.backoff_delay(), chrono::Duration::seconds(512));
     }
+
+    #[test]
+    fn test_job_priority_levels() {
+        let low = Job::new("default", "task", serde_json::json!({}))
+            .with_priority(JobPriority::Low);
+        let normal = Job::new("default", "task", serde_json::json!({}))
+            .with_priority(JobPriority::Normal);
+        let high = Job::new("default", "task", serde_json::json!({}))
+            .with_priority(JobPriority::High);
+        let critical = Job::new("default", "task", serde_json::json!({}))
+            .with_priority(JobPriority::Critical);
+
+        assert_eq!(low.priority, JobPriority::Low);
+        assert_eq!(normal.priority, JobPriority::Normal);
+        assert_eq!(high.priority, JobPriority::High);
+        assert_eq!(critical.priority, JobPriority::Critical);
+    }
+
+    #[test]
+    fn test_job_metadata() {
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .with_metadata("key1", "value1")
+            .with_metadata("key2", "value2");
+
+        assert_eq!(job.metadata.len(), 2);
+        assert_eq!(job.metadata.get("key1"), Some(&"value1".to_string()));
+        assert_eq!(job.metadata.get("key2"), Some(&"value2".to_string()));
+    }
+
+    #[test]
+    fn test_job_schedule_at() {
+        let future = Utc::now() + chrono::Duration::hours(2);
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .schedule_at(future);
+
+        assert!(!job.is_ready());
+        assert!(job.scheduled_at.is_some());
+    }
+
+    #[test]
+    fn test_job_scheduled_at_in_future() {
+        let future = Utc::now() + chrono::Duration::minutes(30);
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .schedule_at(future);
+
+        assert!(!job.is_ready());
+        assert!(job.scheduled_at.is_some());
+    }
+
+    #[test]
+    fn test_job_status_transitions() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+
+        assert_eq!(job.status.state, JobState::Pending);
+
+        job.start_processing();
+        assert_eq!(job.status.state, JobState::Processing);
+
+        job.complete();
+        assert_eq!(job.status.state, JobState::Completed);
+    }
+
+    #[test]
+    fn test_job_failure_tracking() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+
+        job.start_processing();
+        job.fail("First error".to_string());
+
+        assert_eq!(job.status.state, JobState::Failed);
+        assert_eq!(job.status.error, Some("First error".to_string()));
+        assert_eq!(job.attempts, 1);
+    }
+
+    #[test]
+    fn test_job_max_attempts() {
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .with_max_attempts(10);
+
+        assert_eq!(job.max_attempts, 10);
+    }
+
+    #[test]
+    fn test_job_default_max_attempts() {
+        let job = Job::new("default", "task", serde_json::json!({}));
+        assert_eq!(job.max_attempts, 3);
+    }
+
+    #[test]
+    fn test_job_can_retry_with_zero_max_attempts() {
+        let mut job = Job::new("default", "task", serde_json::json!({}))
+            .with_max_attempts(0);
+
+        job.start_processing();
+        job.fail("Error".to_string());
+
+        assert!(!job.can_retry());
+    }
+
+    #[test]
+    fn test_job_id_uniqueness() {
+        let job1 = Job::new("default", "task", serde_json::json!({}));
+        let job2 = Job::new("default", "task", serde_json::json!({}));
+
+        assert_ne!(job1.id, job2.id);
+    }
+
+    #[test]
+    fn test_job_timestamps() {
+        let before = Utc::now();
+        let job = Job::new("default", "task", serde_json::json!({}));
+        let after = Utc::now();
+
+        assert!(job.created_at >= before);
+        assert!(job.created_at <= after);
+    }
+
+    #[test]
+    fn test_job_complete_sets_state() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+        
+        job.start_processing();
+        job.complete();
+
+        assert_eq!(job.status.state, JobState::Completed);
+    }
+
+    #[test]
+    fn test_job_ready_with_past_schedule() {
+        let past = Utc::now() - chrono::Duration::hours(1);
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .schedule_at(past);
+
+        assert!(job.is_ready());
+    }
+
+    #[test]
+    fn test_job_serialization_data() {
+        let data = serde_json::json!({
+            "email": "test@example.com",
+            "subject": "Test",
+            "count": 42
+        });
+
+        let job = Job::new("default", "send_email", data.clone());
+        assert_eq!(job.data, data);
+    }
+
+    #[test]
+    fn test_job_priority_ordering() {
+        assert!(JobPriority::Low < JobPriority::Normal);
+        assert!(JobPriority::Normal < JobPriority::High);
+        assert!(JobPriority::High < JobPriority::Critical);
+    }
+
+    #[test]
+    fn test_backoff_delay_exponential_growth() {
+        let mut job = Job::new("default", "task", serde_json::json!({}));
+
+        let delays: Vec<i64> = (1..=5)
+            .map(|attempt| {
+                job.attempts = attempt;
+                job.backoff_delay().num_seconds()
+            })
+            .collect();
+
+        // Verify exponential growth
+        assert!(delays[0] < delays[1]);
+        assert!(delays[1] < delays[2]);
+        assert!(delays[2] < delays[3]);
+        assert!(delays[3] < delays[4]);
+    }
+
+    #[test]
+    fn test_job_state_dead_after_max_retries() {
+        let mut job = Job::new("default", "task", serde_json::json!({}))
+            .with_max_attempts(2);
+
+        job.start_processing();
+        job.fail("Error 1".to_string());
+        assert_eq!(job.status.state, JobState::Failed);
+
+        job.start_processing();
+        job.fail("Error 2".to_string());
+        assert_eq!(job.status.state, JobState::Dead);
+    }
+
+    #[test]
+    fn test_job_metadata_overwrite() {
+        let job = Job::new("default", "task", serde_json::json!({}))
+            .with_metadata("key", "value1")
+            .with_metadata("key", "value2");
+
+        assert_eq!(job.metadata.get("key"), Some(&"value2".to_string()));
+    }
 }

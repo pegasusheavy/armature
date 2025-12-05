@@ -204,6 +204,7 @@ impl Job {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::CronError;
     use crate::CronExpression;
 
     #[tokio::test]
@@ -255,5 +256,137 @@ mod tests {
 
         job.enable();
         assert!(job.enabled);
+    }
+
+    #[tokio::test]
+    async fn test_job_initial_execution_count() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let job = Job::new("test", expr, |_ctx| async { Ok(()) });
+
+        assert_eq!(job.execution_count, 0);
+    }
+
+    #[tokio::test]
+    async fn test_job_execution_increments_count() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("counter", expr, |_ctx| async { Ok(()) });
+
+        let initial_count = job.execution_count;
+        let _ = job.execute().await;
+        let new_count = job.execution_count;
+
+        assert_eq!(new_count, initial_count + 1);
+    }
+
+    #[tokio::test]
+    async fn test_job_success_status() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("success", expr, |_ctx| async { Ok(()) });
+
+        let _ = job.execute().await;
+        assert!(matches!(job.status, JobStatus::Completed));
+    }
+
+    #[tokio::test]
+    async fn test_job_failure_status() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("failure", expr, |_ctx| async {
+            Err(CronError::ExecutionFailed("test error".to_string()))
+        });
+
+        let _ = job.execute().await;
+        assert!(matches!(job.status, JobStatus::Failed(_)));
+    }
+
+    #[tokio::test]
+    async fn test_job_multiple_executions() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("multi", expr, |_ctx| async { Ok(()) });
+
+        for _ in 0..3 {
+            let _ = job.execute().await;
+        }
+
+        assert_eq!(job.execution_count, 3);
+    }
+
+    #[tokio::test]
+    async fn test_job_status_before_execution() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let job = Job::new("test", expr, |_ctx| async { Ok(()) });
+
+        assert!(matches!(job.status, JobStatus::Scheduled));
+    }
+
+    #[test]
+    fn test_job_creation_with_different_schedules() {
+        let schedules = vec![
+            "0 * * * * *",       // every minute
+            "0 0 * * * *",       // every hour
+            "0 0 0 * * *",       // every day
+        ];
+
+        for schedule in schedules {
+            let expr = CronExpression::parse(schedule).unwrap();
+            let job = Job::new("test", expr, |_ctx| async { Ok(()) });
+            assert_eq!(job.name, "test");
+        }
+    }
+
+    #[tokio::test]
+    async fn test_job_context_data() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("ctx_test", expr, |ctx| async move {
+            assert_eq!(ctx.name, "ctx_test");
+            // execution_count is always >= 0 (u64 type)
+            Ok(())
+        });
+
+        let result = job.execute().await;
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_job_name_consistency() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let job = Job::new("consistent", expr, |_ctx| async { Ok(()) });
+        
+        assert_eq!(job.name, "consistent");
+        assert_eq!(job.name, "consistent"); // Multiple reads should be consistent
+    }
+
+    #[tokio::test]
+    async fn test_job_disabled_flag() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let mut job = Job::new("disabled", expr, |_ctx| async { Ok(()) });
+
+        job.disable();
+        
+        assert!(!job.enabled);
+    }
+
+    #[tokio::test]
+    async fn test_job_mixed_results() {
+        let expr = CronExpression::parse("0 * * * * *").unwrap();
+        let counter = std::sync::Arc::new(std::sync::atomic::AtomicU32::new(0));
+        let counter_clone = counter.clone();
+
+        let mut job = Job::new("mixed", expr, move |_ctx| {
+            let c = counter_clone.clone();
+            async move {
+                let count = c.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                if count % 2 == 0 {
+                    Ok(())
+                } else {
+                    Err(CronError::ExecutionFailed("odd execution".to_string()))
+                }
+            }
+        });
+
+        for _ in 0..4 {
+            let _ = job.execute().await;
+        }
+
+        assert_eq!(job.execution_count, 4);
     }
 }

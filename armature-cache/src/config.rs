@@ -172,4 +172,117 @@ mod tests {
         let config = CacheConfig::redis("redis://localhost:6379").unwrap();
         assert_eq!(config.build_key("user:123"), "user:123");
     }
+
+    #[test]
+    fn test_redis_config_with_auth() {
+        let config = CacheConfig::redis("redis://:password@localhost:6379/1").unwrap();
+        assert_eq!(config.backend, CacheBackend::Redis);
+        assert!(config.url.contains("password"));
+    }
+
+    #[test]
+    fn test_memcached_config_with_multiple_servers() {
+        let config = CacheConfig::memcached("memcache://server1:11211,server2:11211").unwrap();
+        assert_eq!(config.backend, CacheBackend::Memcached);
+    }
+
+    #[test]
+    fn test_config_default_values() {
+        let config = CacheConfig::redis("redis://localhost:6379").unwrap();
+        assert_eq!(config.max_connections, 10);
+        assert_eq!(config.key_prefix, None);
+        assert_eq!(config.default_ttl, None);
+    }
+
+    #[test]
+    fn test_config_with_custom_max_connections() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_max_connections(50);
+        assert_eq!(config.max_connections, 50);
+    }
+
+    #[test]
+    fn test_config_with_ttl_zero() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_default_ttl(Duration::from_secs(0));
+        assert_eq!(config.default_ttl, Some(Duration::from_secs(0)));
+    }
+
+    #[test]
+    fn test_config_with_long_ttl() {
+        let one_day = Duration::from_secs(86400);
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_default_ttl(one_day);
+        assert_eq!(config.default_ttl, Some(one_day));
+    }
+
+    #[test]
+    fn test_build_key_with_empty_key() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_key_prefix("app");
+        assert_eq!(config.build_key(""), "app:");
+    }
+
+    #[test]
+    fn test_build_key_with_special_characters() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_key_prefix("app");
+        assert_eq!(config.build_key("user:123:token"), "app:user:123:token");
+    }
+
+    #[test]
+    fn test_config_backend_display() {
+        let redis = CacheBackend::Redis;
+        let memcached = CacheBackend::Memcached;
+        
+        // Just verify they can be formatted
+        let _ = format!("{:?}", redis);
+        let _ = format!("{:?}", memcached);
+    }
+
+    #[test]
+    fn test_config_chaining() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_key_prefix("test")
+            .with_default_ttl(Duration::from_secs(100))
+            .with_max_connections(15);
+
+        assert_eq!(config.key_prefix, Some("test".to_string()));
+        assert_eq!(config.default_ttl, Some(Duration::from_secs(100)));
+        assert_eq!(config.max_connections, 15);
+    }
+
+    #[test]
+    fn test_config_clone() {
+        let config1 = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_key_prefix("app");
+        let config2 = config1.clone();
+
+        assert_eq!(config1.url, config2.url);
+        assert_eq!(config1.key_prefix, config2.key_prefix);
+    }
+
+    #[test]
+    fn test_redis_config_with_db_number() {
+        let config = CacheConfig::redis("redis://localhost:6379/5").unwrap();
+        assert!(config.url.ends_with("/5"));
+    }
+
+    #[test]
+    fn test_build_key_consistency() {
+        let config = CacheConfig::redis("redis://localhost:6379")
+            .unwrap()
+            .with_key_prefix("app");
+        
+        let key1 = config.build_key("test");
+        let key2 = config.build_key("test");
+        assert_eq!(key1, key2);
+    }
 }
