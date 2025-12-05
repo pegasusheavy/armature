@@ -210,3 +210,78 @@ macro_rules! span_event {
         span.add_event($name, attributes);
     }};
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use opentelemetry::propagation::{Extractor, Injector};
+
+    #[test]
+    fn test_telemetry_middleware_creation() {
+        let middleware = TelemetryMiddleware::new("test-service");
+        assert_eq!(middleware.service_name, "test-service");
+        assert!(middleware.metrics.is_none());
+    }
+
+    #[test]
+    fn test_header_extractor() {
+        let mut headers = std::collections::HashMap::new();
+        headers.insert("traceparent".to_string(), "00-123-456-01".to_string());
+
+        let extractor = HeaderExtractor(&headers);
+        assert_eq!(extractor.get("traceparent"), Some("00-123-456-01"));
+        assert_eq!(extractor.get("non-existent"), None);
+
+        let keys = extractor.keys();
+        assert_eq!(keys.len(), 1);
+        assert_eq!(keys[0], "traceparent");
+    }
+
+    #[test]
+    fn test_header_injector() {
+        let mut headers = std::collections::HashMap::new();
+        let mut injector = HeaderInjector(&mut headers);
+
+        injector.set("traceparent", "00-789-012-01".to_string());
+
+        assert_eq!(
+            headers.get("traceparent"),
+            Some(&"00-789-012-01".to_string())
+        );
+    }
+
+    #[test]
+    fn test_header_extractor_multiple_keys() {
+        let mut headers = std::collections::HashMap::new();
+        headers.insert("key1".to_string(), "value1".to_string());
+        headers.insert("key2".to_string(), "value2".to_string());
+
+        let extractor = HeaderExtractor(&headers);
+        assert_eq!(extractor.keys().len(), 2);
+    }
+
+    #[test]
+    fn test_header_injector_multiple_sets() {
+        let mut headers = std::collections::HashMap::new();
+        let mut injector = HeaderInjector(&mut headers);
+
+        injector.set("key1", "value1".to_string());
+        injector.set("key2", "value2".to_string());
+
+        assert_eq!(headers.len(), 2);
+        assert_eq!(headers.get("key1"), Some(&"value1".to_string()));
+        assert_eq!(headers.get("key2"), Some(&"value2".to_string()));
+    }
+
+    #[test]
+    fn test_header_injector_overwrite() {
+        let mut headers = std::collections::HashMap::new();
+        let mut injector = HeaderInjector(&mut headers);
+
+        injector.set("key", "value1".to_string());
+        injector.set("key", "value2".to_string());
+
+        assert_eq!(headers.len(), 1);
+        assert_eq!(headers.get("key"), Some(&"value2".to_string()));
+    }
+}

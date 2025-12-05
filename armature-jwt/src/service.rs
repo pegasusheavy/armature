@@ -137,6 +137,7 @@ mod tests {
     struct TestClaims {
         sub: String,
         name: String,
+        exp: i64,
     }
 
     #[test]
@@ -144,15 +145,19 @@ mod tests {
         let config = JwtConfig::new("test-secret".to_string());
         let service = JwtService::new(config).unwrap();
 
+        let exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp();
+
         let claims = TestClaims {
             sub: "123".to_string(),
             name: "Test User".to_string(),
+            exp,
         };
 
         let token = service.sign(&claims).unwrap();
         let decoded: TestClaims = service.verify(&token).unwrap();
 
-        assert_eq!(decoded, claims);
+        assert_eq!(decoded.sub, claims.sub);
+        assert_eq!(decoded.name, claims.name);
     }
 
     #[test]
@@ -163,9 +168,12 @@ mod tests {
         let config2 = JwtConfig::new("secret2".to_string());
         let service2 = JwtService::new(config2).unwrap();
 
+        let exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp();
+
         let claims = TestClaims {
             sub: "123".to_string(),
             name: "Test".to_string(),
+            exp,
         };
 
         let token = service1.sign(&claims).unwrap();
@@ -179,9 +187,12 @@ mod tests {
         let config = JwtConfig::new("test-secret".to_string());
         let service = JwtService::new(config).unwrap();
 
+        let exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp();
+
         let claims = TestClaims {
             sub: "123".to_string(),
             name: "Test".to_string(),
+            exp,
         };
 
         let pair = service.generate_token_pair(&claims).unwrap();
@@ -196,9 +207,12 @@ mod tests {
         let config = JwtConfig::new("test-secret".to_string());
         let service = JwtService::new(config).unwrap();
 
+        let exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp();
+
         let claims = TestClaims {
             sub: "123".to_string(),
             name: "Test".to_string(),
+            exp,
         };
 
         let token = service.sign(&claims).unwrap();

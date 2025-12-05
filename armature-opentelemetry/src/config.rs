@@ -261,3 +261,161 @@ impl TelemetryConfig {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_defaults() {
+        let config = TelemetryConfig::default();
+
+        assert_eq!(config.service_name, "armature-service");
+        assert!(config.enable_tracing);
+        assert!(config.enable_metrics);
+        assert!(!config.enable_logging);
+    }
+
+    #[test]
+    fn test_config_new() {
+        let config = TelemetryConfig::new("my-service");
+        assert_eq!(config.service_name, "my-service");
+    }
+
+    #[test]
+    fn test_config_with_version() {
+        let config = TelemetryConfig::new("test").with_version("1.2.3");
+        assert_eq!(config.service_version, Some("1.2.3".to_string()));
+    }
+
+    #[test]
+    fn test_config_with_namespace() {
+        let config = TelemetryConfig::new("test").with_namespace("my-namespace");
+        assert_eq!(config.service_namespace, Some("my-namespace".to_string()));
+    }
+
+    #[test]
+    fn test_config_with_environment() {
+        let config = TelemetryConfig::new("test").with_environment("staging");
+        assert_eq!(config.environment, Some("staging".to_string()));
+    }
+
+    #[test]
+    fn test_config_with_attributes() {
+        let config = TelemetryConfig::new("test")
+            .with_attribute("key1", "value1")
+            .with_attribute("key2", "value2");
+
+        assert_eq!(config.resource_attributes.len(), 2);
+        assert_eq!(
+            config.resource_attributes[0],
+            ("key1".to_string(), "value1".to_string())
+        );
+        assert_eq!(
+            config.resource_attributes[1],
+            ("key2".to_string(), "value2".to_string())
+        );
+    }
+
+    #[test]
+    fn test_config_with_tracing() {
+        let config = TelemetryConfig::new("test").with_tracing(false);
+        assert!(!config.enable_tracing);
+    }
+
+    #[test]
+    fn test_config_with_metrics() {
+        let config = TelemetryConfig::new("test").with_metrics(false);
+        assert!(!config.enable_metrics);
+    }
+
+    #[test]
+    fn test_config_validate_empty_service_name() {
+        let config = TelemetryConfig {
+            service_name: String::new(),
+            ..Default::default()
+        };
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_config_validate_invalid_sampling_ratio_high() {
+        let mut config = TelemetryConfig::new("test");
+        config.tracing.sampling_ratio = 1.5;
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_config_validate_invalid_sampling_ratio_low() {
+        let mut config = TelemetryConfig::new("test");
+        config.tracing.sampling_ratio = -0.1;
+
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn test_config_validate_valid_sampling_ratios() {
+        for ratio in [0.0, 0.5, 1.0] {
+            let mut config = TelemetryConfig::new("test");
+            config.tracing.sampling_ratio = ratio;
+            assert!(config.validate().is_ok());
+        }
+    }
+
+    #[test]
+    fn test_tracing_config_defaults() {
+        let config = TracingConfig::default();
+
+        assert_eq!(config.sampling_ratio, 1.0);
+        assert_eq!(config.max_attributes_per_span, 128);
+        assert_eq!(config.max_events_per_span, 128);
+    }
+
+    #[test]
+    fn test_metrics_config_defaults() {
+        let config = MetricsConfig::default();
+
+        assert_eq!(config.collection_interval_secs, 60);
+    }
+
+    #[test]
+    fn test_create_resource() {
+        let config = TelemetryConfig::new("test-service")
+            .with_version("1.0.0")
+            .with_namespace("test-ns")
+            .with_environment("prod")
+            .with_attribute("custom", "value");
+
+        let resource = config.create_resource().unwrap();
+        assert!(!resource.is_empty());
+    }
+
+    #[test]
+    fn test_create_resource_minimal() {
+        let config = TelemetryConfig::new("minimal");
+        let resource = config.create_resource().unwrap();
+        assert!(!resource.is_empty());
+    }
+
+    #[test]
+    fn test_tracing_exporter_otlp() {
+        let config = TracingConfig {
+            exporter: TracingExporter::Otlp,
+            ..Default::default()
+        };
+
+        assert!(matches!(config.exporter, TracingExporter::Otlp));
+    }
+
+    #[test]
+    fn test_metrics_exporter_prometheus() {
+        let config = MetricsConfig {
+            exporter: MetricsExporter::Prometheus,
+            ..Default::default()
+        };
+
+        assert!(matches!(config.exporter, MetricsExporter::Prometheus));
+    }
+}

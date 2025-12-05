@@ -22,20 +22,20 @@
 use armature::prelude::*;
 
 #[derive(Default)]
+#[injectable]
 pub struct SecureService;
 
-#[injectable]
 impl SecureService {
     pub fn process_secure_request(&self, path: &str) -> String {
         format!("Securely processed request to: {}", path)
     }
 }
 
+#[controller("/api")]
 pub struct SecureController {
     secure_service: std::sync::Arc<SecureService>,
 }
 
-#[controller("/api")]
 impl SecureController {
     pub fn new(secure_service: std::sync::Arc<SecureService>) -> Self {
         Self { secure_service }

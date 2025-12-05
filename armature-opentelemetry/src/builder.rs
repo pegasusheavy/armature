@@ -205,4 +205,112 @@ mod tests {
 
         assert!(telemetry.is_ok());
     }
+
+    #[tokio::test]
+    async fn test_builder_with_attributes() {
+        let telemetry = TelemetryBuilder::new("test-service")
+            .with_attribute("key1", "value1")
+            .with_attribute("key2", "value2")
+            .without_tracing()
+            .without_metrics()
+            .build()
+            .await;
+
+        assert!(telemetry.is_ok());
+        let t = telemetry.unwrap();
+        assert_eq!(t.config.resource_attributes.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_builder_with_sampling() {
+        let telemetry = TelemetryBuilder::new("test-service")
+            .with_sampling_ratio(0.5)
+            .without_tracing()
+            .without_metrics()
+            .build()
+            .await;
+
+        assert!(telemetry.is_ok());
+        let t = telemetry.unwrap();
+        assert_eq!(t.config.tracing.sampling_ratio, 0.5);
+    }
+
+    #[test]
+    fn test_builder_service_name() {
+        let builder = TelemetryBuilder::new("my-service");
+        assert_eq!(builder.config.service_name, "my-service");
+    }
+
+    #[test]
+    fn test_builder_with_version() {
+        let builder = TelemetryBuilder::new("test").with_version("2.0.0");
+        assert_eq!(builder.config.service_version, Some("2.0.0".to_string()));
+    }
+
+    #[test]
+    fn test_builder_with_environment() {
+        let builder = TelemetryBuilder::new("test").with_environment("production");
+        assert_eq!(builder.config.environment, Some("production".to_string()));
+    }
+
+    #[test]
+    fn test_builder_without_tracing() {
+        let builder = TelemetryBuilder::new("test").without_tracing();
+        assert!(!builder.config.enable_tracing);
+    }
+
+    #[test]
+    fn test_builder_without_metrics() {
+        let builder = TelemetryBuilder::new("test").without_metrics();
+        assert!(!builder.config.enable_metrics);
+    }
+
+    #[cfg(feature = "otlp")]
+    #[test]
+    fn test_builder_with_otlp_endpoint() {
+        let builder = TelemetryBuilder::new("test").with_otlp_endpoint("http://localhost:4317");
+
+        assert_eq!(
+            builder.config.tracing.otlp_endpoint,
+            Some("http://localhost:4317".to_string())
+        );
+        assert_eq!(
+            builder.config.metrics.otlp_endpoint,
+            Some("http://localhost:4317".to_string())
+        );
+    }
+
+    #[cfg(feature = "jaeger")]
+    #[test]
+    fn test_builder_with_jaeger_endpoint() {
+        let builder = TelemetryBuilder::new("test").with_jaeger_endpoint("http://localhost:14250");
+
+        assert_eq!(
+            builder.config.tracing.jaeger_endpoint,
+            Some("http://localhost:14250".to_string())
+        );
+    }
+
+    #[cfg(feature = "zipkin")]
+    #[test]
+    fn test_builder_with_zipkin_endpoint() {
+        let builder = TelemetryBuilder::new("test").with_zipkin_endpoint("http://localhost:9411");
+
+        assert_eq!(
+            builder.config.tracing.zipkin_endpoint,
+            Some("http://localhost:9411".to_string())
+        );
+    }
+
+    #[cfg(feature = "prometheus")]
+    #[test]
+    fn test_builder_with_prometheus_endpoint() {
+        let builder =
+            TelemetryBuilder::new("test").with_prometheus_endpoint("http://localhost:9090");
+
+        assert_eq!(
+            builder.config.metrics.prometheus_endpoint,
+            Some("http://localhost:9090".to_string())
+        );
+    }
 }

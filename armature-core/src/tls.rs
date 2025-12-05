@@ -223,4 +223,112 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_https_config_without_redirect() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let https_config = HttpsConfig::new("0.0.0.0:8443", tls);
+
+            assert_eq!(https_config.https_addr, "0.0.0.0:8443");
+            assert!(https_config.http_redirect_addr.is_none());
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "self-signed-certs")]
+    fn test_self_signed_single_domain() {
+        let tls = TlsConfig::self_signed(&["example.com"]);
+        assert!(tls.is_ok());
+    }
+
+    #[test]
+    #[cfg(feature = "self-signed-certs")]
+    fn test_self_signed_multiple_domains() {
+        let tls = TlsConfig::self_signed(&["example.com", "www.example.com", "api.example.com"]);
+        assert!(tls.is_ok());
+    }
+
+    #[test]
+    #[cfg(feature = "self-signed-certs")]
+    fn test_self_signed_with_localhost() {
+        let tls = TlsConfig::self_signed(&["localhost", "127.0.0.1"]);
+        assert!(tls.is_ok());
+    }
+
+    #[test]
+    fn test_from_pem_bytes_invalid_cert() {
+        let invalid_cert = b"invalid certificate data";
+        let valid_key = b"-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----";
+
+        let result = TlsConfig::from_pem_bytes(invalid_cert, valid_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_from_pem_bytes_invalid_key() {
+        let cert = b"-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----";
+        let invalid_key = b"invalid key data";
+
+        let result = TlsConfig::from_pem_bytes(cert, invalid_key);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_https_config_clone() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let config1 = HttpsConfig::new("0.0.0.0:443", tls);
+            let config2 = config1.clone();
+
+            assert_eq!(config1.https_addr, config2.https_addr);
+            assert_eq!(config1.http_redirect_addr, config2.http_redirect_addr);
+        }
+    }
+
+    #[test]
+    fn test_https_config_with_different_ports() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let config = HttpsConfig::new("0.0.0.0:8443", tls).with_http_redirect("0.0.0.0:8080");
+
+            assert_eq!(config.https_addr, "0.0.0.0:8443");
+            assert_eq!(config.http_redirect_addr, Some("0.0.0.0:8080".to_string()));
+        }
+    }
+
+    #[test]
+    fn test_https_config_with_ipv6() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let config = HttpsConfig::new("[::1]:443", tls);
+
+            assert_eq!(config.https_addr, "[::1]:443");
+        }
+    }
+
+    #[test]
+    fn test_tls_config_debug() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let debug_str = format!("{:?}", tls);
+            assert!(debug_str.contains("TlsConfig"));
+        }
+    }
+
+    #[test]
+    fn test_https_config_debug() {
+        #[cfg(feature = "self-signed-certs")]
+        {
+            let tls = TlsConfig::self_signed(&["localhost"]).unwrap();
+            let config = HttpsConfig::new("0.0.0.0:443", tls);
+            let debug_str = format!("{:?}", config);
+            assert!(debug_str.contains("HttpsConfig"));
+        }
+    }
 }

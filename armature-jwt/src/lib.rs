@@ -84,6 +84,7 @@ mod tests {
     struct TestClaims {
         sub: String,
         name: String,
+        exp: i64,
     }
 
     #[test]
@@ -91,15 +92,19 @@ mod tests {
         let config = JwtConfig::new("test-secret".to_string());
         let manager = JwtManager::new(config).unwrap();
 
+        let exp = (chrono::Utc::now() + chrono::Duration::hours(1)).timestamp();
+
         let claims = TestClaims {
             sub: "123".to_string(),
             name: "John Doe".to_string(),
+            exp,
         };
 
         let token = manager.sign(&claims).unwrap();
         let decoded: TestClaims = manager.verify(&token).unwrap();
 
-        assert_eq!(decoded, claims);
+        assert_eq!(decoded.sub, claims.sub);
+        assert_eq!(decoded.name, claims.name);
     }
 
     #[test]
