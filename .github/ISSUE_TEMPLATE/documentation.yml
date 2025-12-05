@@ -87,7 +87,7 @@ body:
       render: rust
       placeholder: |
         use armature::prelude::*;
-        
+
         // Example showing the feature
     validations:
       required: false

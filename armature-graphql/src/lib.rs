@@ -1,8 +1,10 @@
 // GraphQL support for Armature framework
 
+pub mod config;
 pub mod decorators;
 pub mod resolver;
 pub mod schema_builder;
+pub mod schema_docs;
 
 pub use async_graphql;
 pub use async_graphql::{
@@ -10,9 +12,11 @@ pub use async_graphql::{
     MergedSubscription, Object, Result, Schema, SimpleObject, Subscription, Union,
 };
 
+pub use config::*;
 pub use decorators::*;
 pub use resolver::*;
 pub use schema_builder::*;
+pub use schema_docs::*;
 
 use armature_core::{Error as ArmatureError, Provider};
 use std::sync::Arc;
@@ -193,6 +197,15 @@ where
 }
 
 /// GraphQL playground HTML
+///
+/// # Example
+///
+/// ```
+/// use armature_graphql::graphql_playground_html;
+///
+/// let html = graphql_playground_html("/graphql");
+/// assert!(html.contains("GraphQL Playground"));
+/// ```
 pub fn graphql_playground_html(endpoint: &str) -> String {
     format!(
         r#"

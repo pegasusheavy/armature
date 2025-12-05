@@ -15,7 +15,7 @@ jobs:
       - uses: actions/stale@v9
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          
+
           # Stale issue configuration
           stale-issue-message: >
             This issue has been automatically marked as stale because it has not had
@@ -28,7 +28,7 @@ jobs:
           days-before-issue-stale: 60
           days-before-issue-close: 7
           exempt-issue-labels: 'pinned,security,roadmap,breaking-change,good-first-issue'
-          
+
           # Stale PR configuration
           stale-pr-message: >
             This pull request has been automatically marked as stale because it has not had
@@ -41,7 +41,7 @@ jobs:
           days-before-pr-stale: 30
           days-before-pr-close: 7
           exempt-pr-labels: 'pinned,security,breaking-change,in-progress'
-          
+
           # Operations configuration
           operations-per-run: 30
           remove-stale-when-updated: true

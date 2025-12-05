@@ -165,6 +165,11 @@ path = "examples/graphql_api.rs"
 required-features = ["graphql"]
 
 [[example]]
+name = "graphql_with_docs"
+path = "examples/graphql_with_docs.rs"
+required-features = ["graphql"]
+
+[[example]]
 name = "config_example"
 path = "examples/config_example.rs"
 required-features = ["config"]

@@ -26,9 +26,9 @@
 
 <!-- Describe the changes in detail. Use a bullet list for multiple changes -->
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing
 
@@ -117,8 +117,8 @@ N/A
 
 <!-- Specific areas where you'd like reviewer feedback -->
 
-- 
-- 
+-
+-
 
 ---
 

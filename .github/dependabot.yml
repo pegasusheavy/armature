@@ -21,7 +21,7 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "serde"
         update-types: ["version-update:semver-major"]
-  
+
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -36,7 +36,7 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
-  
+
   # NPM dependencies (for web/ Angular project)
   - package-ecosystem: "npm"
     directory: "/web"
