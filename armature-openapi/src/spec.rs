@@ -237,3 +237,213 @@ pub struct Tag {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_openapi_spec_creation() {
+        let spec = OpenApiSpec {
+            openapi: "3.0.0".to_string(),
+            info: Info {
+                title: "Test".to_string(),
+                version: "1.0.0".to_string(),
+                description: None,
+                terms_of_service: None,
+                contact: None,
+                license: None,
+            },
+            paths: HashMap::new(),
+            components: None,
+            servers: Vec::new(),
+            security: Vec::new(),
+            tags: Vec::new(),
+        };
+
+        assert_eq!(spec.openapi, "3.0.0");
+    }
+
+    #[test]
+    fn test_info_creation() {
+        let info = Info {
+            title: "Test API".to_string(),
+            version: "1.0.0".to_string(),
+            description: None,
+            terms_of_service: None,
+            contact: None,
+            license: None,
+        };
+        assert!(!info.title.is_empty());
+        assert!(!info.version.is_empty());
+    }
+
+    #[test]
+    fn test_path_item_creation() {
+        let mut path = PathItem::default();
+        path.get = Some(Operation::default());
+
+        assert!(path.get.is_some());
+        assert!(path.post.is_none());
+    }
+
+    #[test]
+    fn test_schema_string_type() {
+        let schema = Schema {
+            schema_type: Some("string".to_string()),
+            format: Some("email".to_string()),
+            ..Default::default()
+        };
+
+        assert_eq!(schema.schema_type, Some("string".to_string()));
+        assert_eq!(schema.format, Some("email".to_string()));
+    }
+
+    #[test]
+    fn test_schema_object_type() {
+        let mut properties = HashMap::new();
+        properties.insert(
+            "name".to_string(),
+            Schema {
+                schema_type: Some("string".to_string()),
+                ..Default::default()
+            },
+        );
+
+        let schema = Schema {
+            schema_type: Some("object".to_string()),
+            properties: Some(properties),
+            ..Default::default()
+        };
+
+        assert_eq!(schema.schema_type, Some("object".to_string()));
+        assert!(schema.properties.is_some());
+        assert_eq!(schema.properties.as_ref().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_schema_array_type() {
+        let schema = Schema {
+            schema_type: Some("array".to_string()),
+            items: Some(Box::new(Schema {
+                schema_type: Some("string".to_string()),
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+
+        assert_eq!(schema.schema_type, Some("array".to_string()));
+        assert!(schema.items.is_some());
+    }
+
+    #[test]
+    fn test_media_type_with_schema() {
+        let media_type = MediaType {
+            schema: Some(Schema {
+                schema_type: Some("object".to_string()),
+                ..Default::default()
+            }),
+        };
+
+        assert!(media_type.schema.is_some());
+    }
+
+    #[test]
+    fn test_request_body() {
+        let mut content = HashMap::new();
+        content.insert(
+            "application/json".to_string(),
+            MediaType {
+                schema: Some(Schema::default()),
+            },
+        );
+
+        let request_body = RequestBody {
+            description: Some("User data".to_string()),
+            content,
+            required: Some(true),
+        };
+
+        assert!(request_body.required.unwrap());
+        assert_eq!(request_body.content.len(), 1);
+    }
+
+    #[test]
+    fn test_tag_creation() {
+        let tag = Tag {
+            name: "users".to_string(),
+            description: Some("User operations".to_string()),
+        };
+
+        assert_eq!(tag.name, "users");
+        assert!(tag.description.is_some());
+    }
+
+    #[test]
+    fn test_components() {
+        let mut schemas = HashMap::new();
+        schemas.insert("User".to_string(), Schema::default());
+
+        let components = Components {
+            schemas,
+            security_schemes: HashMap::new(),
+        };
+
+        assert!(!components.schemas.is_empty());
+        assert_eq!(components.schemas.len(), 1);
+    }
+
+    #[test]
+    fn test_schema_serialization() {
+        let schema = Schema {
+            schema_type: Some("string".to_string()),
+            format: Some("email".to_string()),
+            ..Default::default()
+        };
+
+        let json = serde_json::to_string(&schema).unwrap();
+        let deserialized: Schema = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(schema.schema_type, deserialized.schema_type);
+        assert_eq!(schema.format, deserialized.format);
+    }
+
+    #[test]
+    fn test_operation_with_tags() {
+        let mut operation = Operation::default();
+        operation.tags = vec!["users".to_string(), "admin".to_string()];
+
+        assert_eq!(operation.tags.len(), 2);
+        assert!(operation.tags.contains(&"users".to_string()));
+    }
+
+    #[test]
+    fn test_schema_with_ref() {
+        let schema = Schema {
+            reference: Some("#/components/schemas/User".to_string()),
+            ..Default::default()
+        };
+
+        assert!(schema.reference.is_some());
+        assert!(schema.schema_type.is_none());
+    }
+
+    #[test]
+    fn test_response_creation() {
+        let response = Response {
+            description: "Success".to_string(),
+            content: Some(HashMap::new()),
+        };
+
+        assert_eq!(response.description, "Success");
+        assert!(response.content.is_some());
+    }
+
+    #[test]
+    fn test_schema_defaults() {
+        let schema = Schema::default();
+        assert!(schema.schema_type.is_none());
+        assert!(schema.format.is_none());
+        assert!(schema.properties.is_none());
+    }
+}

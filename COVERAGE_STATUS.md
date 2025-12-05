@@ -428,7 +428,7 @@ cargo tarpaulin --workspace --all-features | grep "^Coverage"
 **Immediate**:
 1. Fix armature-jwt failing tests
 2. Add tests to armature-cache
-3. Add tests to armature-cron  
+3. Add tests to armature-cron
 4. Add tests to armature-queue
 
 **Short Term**:

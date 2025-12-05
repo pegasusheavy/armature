@@ -21,7 +21,7 @@
 
 use armature::prelude::*;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 #[injectable]
 pub struct SecureService;
 
@@ -33,16 +33,16 @@ impl SecureService {
 
 #[controller("/api")]
 pub struct SecureController {
-    secure_service: std::sync::Arc<SecureService>,
+    secure_service: SecureService,
 }
 
 impl SecureController {
-    pub fn new(secure_service: std::sync::Arc<SecureService>) -> Self {
+    pub fn new(secure_service: SecureService) -> Self {
         Self { secure_service }
     }
 
     #[get("/")]
-    pub async fn index(&self, _req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         Ok(HttpResponse::ok().with_json(&serde_json::json!({
             "message": "Welcome to the secure API",
             "endpoints": [
@@ -53,7 +53,7 @@ impl SecureController {
     }
 
     #[get("/secure")]
-    pub async fn secure(&self, req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn secure(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         let result = self.secure_service.process_secure_request(&req.path);
 
         Ok(HttpResponse::ok().with_json(&serde_json::json!({
@@ -67,7 +67,7 @@ impl SecureController {
     }
 
     #[get("/status")]
-    pub async fn status(&self, _req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn status(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         Ok(HttpResponse::ok().with_json(&serde_json::json!({
             "status": "operational",
             "tls": "enabled",
@@ -76,10 +76,10 @@ impl SecureController {
     }
 }
 
-#[module({
+#[module(
     providers: [SecureService],
-    controllers: [SecureController],
-})]
+    controllers: [SecureController]
+)]
 pub struct AppModule {}
 
 #[cfg(feature = "self-signed-certs")]

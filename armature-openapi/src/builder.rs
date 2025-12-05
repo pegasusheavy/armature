@@ -311,3 +311,113 @@ pub fn ref_schema(reference: impl Into<String>) -> Schema {
         ..Default::default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_openapi_builder_basic() {
+        let spec = OpenApiBuilder::new("Test API", "1.0.0").build();
+
+        assert_eq!(spec.info.title, "Test API");
+        assert_eq!(spec.info.version, "1.0.0");
+        assert_eq!(spec.openapi, "3.0.0");
+    }
+
+    #[test]
+    fn test_openapi_builder_with_description() {
+        let spec = OpenApiBuilder::new("Test API", "1.0.0")
+            .description("A test API")
+            .build();
+
+        assert_eq!(spec.info.description, Some("A test API".to_string()));
+    }
+
+    #[test]
+    fn test_operation_builder_basic() {
+        let operation = OperationBuilder::new()
+            .summary("Get user")
+            .description("Get a user by ID")
+            .operation_id("getUser")
+            .build();
+
+        assert_eq!(operation.summary, Some("Get user".to_string()));
+        assert_eq!(operation.description, Some("Get a user by ID".to_string()));
+        assert_eq!(operation.operation_id, Some("getUser".to_string()));
+    }
+
+    #[test]
+    fn test_operation_builder_with_tag() {
+        let operation = OperationBuilder::new().tag("users").tag("admin").build();
+
+        assert_eq!(operation.tags.len(), 2);
+        assert!(operation.tags.contains(&"users".to_string()));
+        assert!(operation.tags.contains(&"admin".to_string()));
+    }
+
+    #[test]
+    fn test_string_schema() {
+        let schema = string_schema();
+        assert_eq!(schema.schema_type, Some("string".to_string()));
+    }
+
+    #[test]
+    fn test_integer_schema() {
+        let schema = integer_schema();
+        assert_eq!(schema.schema_type, Some("integer".to_string()));
+        assert_eq!(schema.format, Some("int64".to_string()));
+    }
+
+    #[test]
+    fn test_number_schema() {
+        let schema = number_schema();
+        assert_eq!(schema.schema_type, Some("number".to_string()));
+        assert_eq!(schema.format, Some("double".to_string()));
+    }
+
+    #[test]
+    fn test_boolean_schema() {
+        let schema = boolean_schema();
+        assert_eq!(schema.schema_type, Some("boolean".to_string()));
+    }
+
+    #[test]
+    fn test_array_schema() {
+        let items = string_schema();
+        let schema = array_schema(items);
+
+        assert_eq!(schema.schema_type, Some("array".to_string()));
+        assert!(schema.items.is_some());
+    }
+
+    #[test]
+    fn test_object_schema() {
+        let mut properties = HashMap::new();
+        properties.insert("name".to_string(), string_schema());
+        properties.insert("age".to_string(), integer_schema());
+
+        let required = vec!["name".to_string()];
+        let schema = object_schema(properties, required);
+
+        assert_eq!(schema.schema_type, Some("object".to_string()));
+        assert_eq!(schema.properties.as_ref().unwrap().len(), 2);
+        assert_eq!(schema.required.len(), 1);
+    }
+
+    #[test]
+    fn test_ref_schema() {
+        let schema = ref_schema("User");
+        assert_eq!(
+            schema.reference,
+            Some("#/components/schemas/User".to_string())
+        );
+    }
+
+    #[test]
+    fn test_operation_builder_default() {
+        let builder = OperationBuilder::default();
+        let operation = builder.build();
+        assert!(operation.summary.is_none());
+    }
+}

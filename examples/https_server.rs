@@ -27,28 +27,28 @@
 
 use armature::prelude::*;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
+#[injectable]
 pub struct ApiService;
 
-#[injectable]
 impl ApiService {
     pub fn get_message(&self) -> String {
         "Hello from HTTPS server!".to_string()
     }
 }
 
+#[controller("/")]
 pub struct ApiController {
-    api_service: std::sync::Arc<ApiService>,
+    api_service: ApiService,
 }
 
-#[controller("/")]
 impl ApiController {
-    pub fn new(api_service: std::sync::Arc<ApiService>) -> Self {
+    pub fn new(api_service: ApiService) -> Self {
         Self { api_service }
     }
 
     #[get("/")]
-    pub async fn index(&self, _req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         Ok(HttpResponse::ok().with_body(
             r#"
 <!DOCTYPE html>
@@ -84,12 +84,14 @@ impl ApiController {
     </ul>
 </body>
 </html>
-            "#,
+            "#
+            .as_bytes()
+            .to_vec(),
         ))
     }
 
     #[get("/message")]
-    pub async fn message(&self, _req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn message(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let msg = self.api_service.get_message();
         Ok(HttpResponse::ok().with_json(&serde_json::json!({
             "message": msg,
@@ -99,7 +101,7 @@ impl ApiController {
     }
 
     #[get("/health")]
-    pub async fn health(&self, _req: HttpRequest) -> Result<HttpResponse> {
+    pub async fn health(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         Ok(HttpResponse::ok().with_json(&serde_json::json!({
             "status": "healthy",
             "tls": "enabled"
@@ -107,14 +109,15 @@ impl ApiController {
     }
 }
 
-#[module({
+#[derive(Default)]
+#[module(
     providers: [ApiService],
-    controllers: [ApiController],
-})]
+    controllers: [ApiController]
+)]
 pub struct AppModule {}
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Error> {
     println!("🔒 Starting HTTPS server example\n");
 
     let app = Application::create::<AppModule>();
