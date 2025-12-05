@@ -96,14 +96,12 @@ where
 
 /// Cache interceptor
 pub struct CacheInterceptor {
-    _ttl_seconds: u64,
+    pub ttl_seconds: u64,
 }
 
 impl CacheInterceptor {
     pub fn new(ttl_seconds: u64) -> Self {
-        Self {
-            _ttl_seconds: ttl_seconds,
-        }
+        Self { ttl_seconds }
     }
 }
 

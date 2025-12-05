@@ -89,6 +89,28 @@ impl EmptyQuery {
     }
 }
 
+/// Helper to create an empty mutation root
+#[derive(Default)]
+pub struct EmptyMutation;
+
+#[async_graphql::Object]
+impl EmptyMutation {
+    async fn _empty(&self) -> &str {
+        ""
+    }
+}
+
+/// Helper to create an empty subscription root
+#[derive(Default)]
+pub struct EmptySubscription;
+
+#[async_graphql::Subscription]
+impl EmptySubscription {
+    async fn _empty(&self) -> impl async_graphql::futures_util::Stream<Item = &str> {
+        async_graphql::futures_util::stream::empty()
+    }
+}
+
 /// Macro to merge multiple resolver objects into a single root
 #[macro_export]
 macro_rules! merge_resolvers {
@@ -138,8 +160,8 @@ mod tests {
     fn test_schema_builder() {
         let _schema = ProgrammaticSchemaBuilder::new()
             .query(TestQuery::default())
-            .mutation(EmptyMutation)
-            .subscription(EmptySubscription)
+            .mutation(EmptyMutation::default())
+            .subscription(EmptySubscription::default())
             .build();
     }
 }
