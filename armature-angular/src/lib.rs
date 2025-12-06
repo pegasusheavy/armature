@@ -1,4 +1,59 @@
-// Angular SSR integration for Armature framework
+//! Angular SSR (Server-Side Rendering) integration for Armature framework.
+//!
+//! This crate provides server-side rendering capabilities for Angular Universal
+//! applications, allowing you to render Angular components on the server.
+//!
+//! ## Features
+//!
+//! - 🚀 **Angular Universal** - Full SSR support for Angular 17+
+//! - 📦 **Static Assets** - Serve compiled Angular assets
+//! - 🔄 **Route Rendering** - Server-side route rendering
+//! - ⚡ **Performance** - Fast Node.js integration
+//! - 🎯 **Route Control** - Exclude specific routes from SSR
+//!
+//! ## Quick Start - Configuration
+//!
+//! ```
+//! use armature_angular::AngularConfig;
+//! use std::path::PathBuf;
+//!
+//! let config = AngularConfig::new()
+//!     .with_node_path(PathBuf::from("node"))
+//!     .with_server_bundle(PathBuf::from("dist/server/main.js"))
+//!     .with_browser_dist(PathBuf::from("dist/browser"))
+//!     .exclude_route("/admin".to_string());
+//!
+//! assert_eq!(config.node_path, PathBuf::from("node"));
+//! assert!(config.excluded_routes.contains(&"/admin".to_string()));
+//! ```
+//!
+//! ## Creating an Angular Service
+//!
+//! ```ignore
+//! use armature_angular::{AngularConfig, AngularService, RenderOptions};
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let config = AngularConfig {
+//!     node_path: "node".to_string(),
+//!     server_bundle_path: "dist/server/main.js".to_string(),
+//!     browser_dist_path: "dist/browser".to_string(),
+//!     index_html: "index.html".to_string(),
+//!     excluded_routes: vec![],
+//! };
+//!
+//! let service = AngularService::new(config)?;
+//!
+//! // Check if a route should be SSR
+//! assert!(service.should_render("/home"));
+//! assert!(!service.should_render("/assets/logo.png"));
+//!
+//! // Render a route
+//! let options = RenderOptions::default();
+//! let html = service.render("/home", options).await?;
+//! println!("Rendered HTML: {}", html);
+//! # Ok(())
+//! # }
+//! ```
 
 pub mod config;
 pub mod error;
