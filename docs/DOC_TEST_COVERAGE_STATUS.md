@@ -4,9 +4,9 @@ Current status and roadmap for documentation test coverage across all workspace 
 
 ## Summary
 
-**Current Status:** MEDIUM Coverage (Improved!)  
-**Total Doc Tests:** 95 (+35 from start)  
-**Average per Module:** 4.3 (up from 2.7)  
+**Current Status:** MEDIUM Coverage (Improved!)
+**Total Doc Tests:** 95 (+35 from start)
+**Average per Module:** 4.3 (up from 2.7)
 **Target:** 100+ tests (5+ per module average) - **95% ACHIEVED!**
 
 ## Coverage by Module
@@ -178,8 +178,8 @@ pub fn method() -> Result<T, Error> {
 - [ ] Phase 4: Low priority - DEFERRED
   - [ ] armature-opentelemetry (complex integration)
 
-**Achieved:** 95 doc tests (84% of 113 target)  
-**Original:** 60 tests  
+**Achieved:** 95 doc tests (84% of 113 target)
+**Original:** 60 tests
 **Improvement:** +35 tests (+58% increase)
 
 ## Running Tests
