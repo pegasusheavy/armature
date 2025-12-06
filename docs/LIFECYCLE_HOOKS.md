@@ -219,12 +219,12 @@ use armature_core::Application;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create application (hooks are called automatically)
     let app = Application::create::<AppModule>().await;
-    
+
     // Application runs...
-    
+
     // Graceful shutdown
     app.shutdown(Some("SIGTERM".to_string())).await?;
-    
+
     Ok(())
 }
 ```
@@ -285,13 +285,13 @@ struct CacheService {
 impl OnModuleInit for CacheService {
     async fn on_module_init(&self) -> LifecycleResult {
         let mut init = self.initialized.write().await;
-        
+
         // Guard against multiple initializations
         if *init {
             println!("Cache already initialized, skipping");
             return Ok(());
         }
-        
+
         // Initialize cache
         println!("Initializing cache...");
         *init = true;
@@ -323,11 +323,11 @@ impl Provider for DatabaseService {}
 impl OnModuleInit for DatabaseService {
     async fn on_module_init(&self) -> LifecycleResult {
         println!("📊 Connecting to database: {}", self.connection_string);
-        
+
         // Create connection pool
         let pool = create_pool(&self.connection_string).await?;
         *self.pool.write().await = Some(pool);
-        
+
         println!("✅ Database connection established");
         Ok(())
     }
@@ -337,12 +337,12 @@ impl OnModuleInit for DatabaseService {
 impl OnModuleDestroy for DatabaseService {
     async fn on_module_destroy(&self) -> LifecycleResult {
         println!("📊 Closing database connections...");
-        
+
         // Close pool
         if let Some(pool) = self.pool.write().await.take() {
             pool.close().await?;
         }
-        
+
         println!("✅ Database connections closed");
         Ok(())
     }
@@ -368,17 +368,17 @@ impl Provider for WorkerService {}
 impl OnApplicationBootstrap for WorkerService {
     async fn on_application_bootstrap(&self) -> LifecycleResult {
         println!("🔄 Starting background worker...");
-        
+
         *self.running.write().await = true;
         let running = self.running.clone();
-        
+
         let handle = tokio::spawn(async move {
             while *running.read().await {
                 // Do work
                 tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
             }
         });
-        
+
         *self.handle.write().await = Some(handle);
         println!("✅ Background worker started");
         Ok(())
@@ -393,15 +393,15 @@ impl OnApplicationShutdown for WorkerService {
         } else {
             println!("🛑 Stopping worker...");
         }
-        
+
         // Signal worker to stop
         *self.running.write().await = false;
-        
+
         // Wait for worker to finish
         if let Some(handle) = self.handle.write().await.take() {
             handle.await?;
         }
-        
+
         println!("✅ Worker stopped gracefully");
         Ok(())
     }
@@ -424,10 +424,10 @@ impl Provider for HealthCheckService {}
 impl OnApplicationBootstrap for HealthCheckService {
     async fn on_application_bootstrap(&self) -> LifecycleResult {
         println!("✅ Application ready - health checks enabled");
-        
+
         // Notify load balancer that we're ready
         self.notify_ready().await?;
-        
+
         Ok(())
     }
 }
@@ -436,13 +436,13 @@ impl OnApplicationBootstrap for HealthCheckService {
 impl BeforeApplicationShutdown for HealthCheckService {
     async fn before_application_shutdown(&self, _signal: Option<String>) -> LifecycleResult {
         println!("⚠️  Marking application as unhealthy...");
-        
+
         // Notify load balancer to stop sending traffic
         self.notify_shutting_down().await?;
-        
+
         // Wait for existing connections to drain
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-        
+
         println!("✅ Application marked unhealthy, connections drained");
         Ok(())
     }
@@ -525,7 +525,7 @@ async fn run_with_signal_handling(app: Application) -> Result<(), Box<dyn std::e
             app.shutdown(Some("SIGTERM".to_string())).await?;
         }
     }
-    
+
     Ok(())
 }
 ```
@@ -540,11 +540,11 @@ You can test lifecycle hooks directly:
 #[tokio::test]
 async fn test_service_lifecycle() {
     let service = Arc::new(MyService::new());
-    
+
     // Test initialization
     assert!(service.on_module_init().await.is_ok());
     assert!(service.is_initialized().await);
-    
+
     // Test cleanup
     assert!(service.on_module_destroy().await.is_ok());
     assert!(!service.is_initialized().await);
@@ -567,7 +567,7 @@ impl OnModuleInit for MyService {
             println!("Skipping initialization (SKIP_INIT set)");
             return Ok(());
         }
-        
+
         // Normal initialization
         self.initialize().await?;
         Ok(())

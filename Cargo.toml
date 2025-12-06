@@ -153,6 +153,10 @@ armature-jwt = { path = "armature-jwt" }
 armature-queue = { path = "armature-queue" }
 armature-cron = { path = "armature-cron" }
 jsonwebtoken = "9.2"
+
+# SQLx for database example
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
+chrono = "0.4"
 uuid = { version = "1.6", features = ["v4"] }
 
 # Examples require runtime dependencies

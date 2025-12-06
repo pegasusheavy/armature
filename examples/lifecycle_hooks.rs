@@ -27,10 +27,10 @@ impl OnModuleInit for DatabaseService {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  📊 DatabaseService: Connecting to database...");
         println!("     Connection string: {}", self.connection_string);
-        
+
         // Simulate database connection
         *self.connected.write().await = true;
-        
+
         println!("     ✅ Database connected!");
         Ok(())
     }
@@ -42,10 +42,10 @@ impl OnModuleDestroy for DatabaseService {
         &self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  📊 DatabaseService: Closing database connection...");
-        
+
         // Simulate database disconnection
         *self.connected.write().await = false;
-        
+
         println!("     ✅ Database connection closed!");
         Ok(())
     }
@@ -66,10 +66,10 @@ impl OnModuleInit for CacheService {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  💾 CacheService: Initializing Redis cache...");
         println!("     Redis URL: {}", self.redis_url);
-        
+
         // Simulate Redis connection
         *self.initialized.write().await = true;
-        
+
         println!("     ✅ Cache initialized!");
         Ok(())
     }
@@ -81,10 +81,10 @@ impl OnModuleDestroy for CacheService {
         &self,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  💾 CacheService: Flushing and closing cache...");
-        
+
         // Simulate cache cleanup
         *self.initialized.write().await = false;
-        
+
         println!("     ✅ Cache closed!");
         Ok(())
     }

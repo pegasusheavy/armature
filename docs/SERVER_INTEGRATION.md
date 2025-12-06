@@ -111,7 +111,7 @@ There are **three main approaches** to integrate external servers:
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Application::create::<AppModule>().await;
-    
+
     // Listen on localhost only (NGINX will forward)
     app.listen(3000).await?;
     Ok(())
@@ -128,10 +128,10 @@ upstream armature_backend {
     server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
     server 127.0.0.1:3001 max_fails=3 fail_timeout=30s;
     server 127.0.0.1:3002 max_fails=3 fail_timeout=30s;
-    
+
     # Load balancing method
     least_conn;
-    
+
     # Keep-alive connections
     keepalive 32;
 }
@@ -167,7 +167,7 @@ server {
         alias /var/www/armature/static/;
         expires 1y;
         add_header Cache-Control "public, immutable";
-        
+
         # Gzip compression
         gzip on;
         gzip_types text/css application/javascript image/svg+xml;
@@ -177,23 +177,23 @@ server {
     # API routes (proxy to Armature)
     location / {
         proxy_pass http://armature_backend;
-        
+
         # Headers
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Timeouts
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
-        
+
         # WebSocket support
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        
+
         # Buffering
         proxy_buffering on;
         proxy_buffer_size 4k;
@@ -335,10 +335,10 @@ pub extern "C" fn armature_handle_request(
     let method = unsafe { CStr::from_ptr(method as *const c_char) }
         .to_str()
         .unwrap();
-    
+
     // Route through Armature
     // ... implementation
-    
+
     0 // NGX_OK
 }
 ```
@@ -435,14 +435,14 @@ use armature::prelude::*;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Application::create::<AppModule>().await;
-    
+
     // Wrap Armature with Ferron
     let ferron = FerronServer::new()
         .with_handler(app)
         .with_static("/static", "/var/www/static")
         .with_rate_limiting()
         .build();
-    
+
     ferron.listen("0.0.0.0:3000").await?;
     Ok(())
 }
@@ -495,7 +495,7 @@ use std::net::SocketAddr;
 pub trait HttpServer: Send + Sync + 'static {
     /// Start the HTTP server
     async fn listen(&self, addr: SocketAddr) -> Result<(), Error>;
-    
+
     /// Start the HTTPS server
     async fn listen_tls(
         &self,
@@ -503,10 +503,10 @@ pub trait HttpServer: Send + Sync + 'static {
         cert: &[u8],
         key: &[u8],
     ) -> Result<(), Error>;
-    
+
     /// Graceful shutdown
     async fn shutdown(&self) -> Result<(), Error>;
-    
+
     /// Get server name
     fn name(&self) -> &str;
 }
@@ -537,7 +537,7 @@ impl HttpServer for HyperServer {
         // ... existing code
         Ok(())
     }
-    
+
     fn name(&self) -> &str {
         "Hyper"
     }
@@ -559,18 +559,18 @@ impl HttpServer for NginxServer {
     async fn listen(&self, _addr: SocketAddr) -> Result<(), Error> {
         // Listen on Unix socket
         let listener = UnixListener::bind(&self.socket_path)?;
-        
+
         loop {
             let (stream, _) = listener.accept().await?;
             let router = self.router.clone();
-            
+
             tokio::spawn(async move {
                 // Handle FastCGI/SCGI protocol
                 handle_nginx_connection(stream, router).await;
             });
         }
     }
-    
+
     fn name(&self) -> &str {
         "NGINX-FastCGI"
     }
@@ -601,7 +601,7 @@ impl HttpServer for FerronServer {
         })
         .await
     }
-    
+
     fn name(&self) -> &str {
         "Ferron"
     }
@@ -628,17 +628,17 @@ impl Application {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Application::create::<AppModule>().await;
-    
+
     // Choose backend
     #[cfg(feature = "nginx")]
     let server = NginxServer::new(app.router.clone());
-    
+
     #[cfg(feature = "ferron")]
     let server = FerronServer::new(app.router.clone());
-    
+
     #[cfg(not(any(feature = "nginx", feature = "ferron")))]
     let server = HyperServer::new(app.router.clone(), app.lifecycle.clone());
-    
+
     app.with_server(server).await?;
     Ok(())
 }
