@@ -49,6 +49,23 @@ use tokio::sync::RwLock;
 pub type LifecycleResult = Result<(), Box<dyn std::error::Error + Send + Sync>>;
 
 /// Hook called after module dependencies are resolved
+///
+/// ## Example
+///
+/// ```
+/// use armature_core::lifecycle::{OnModuleInit, LifecycleResult};
+/// use async_trait::async_trait;
+///
+/// struct MyService;
+///
+/// #[async_trait]
+/// impl OnModuleInit for MyService {
+///     async fn on_module_init(&self) -> LifecycleResult {
+///         println!("Service initialized!");
+///         Ok(())
+///     }
+/// }
+/// ```
 #[async_trait]
 pub trait OnModuleInit: Send + Sync {
     /// Called once the module has been initialized
@@ -84,6 +101,31 @@ pub trait BeforeApplicationShutdown: Send + Sync {
 }
 
 /// Manages lifecycle hooks for all registered components
+///
+/// ## Example
+///
+/// ```
+/// use armature_core::lifecycle::{LifecycleManager, OnModuleInit, LifecycleResult};
+/// use async_trait::async_trait;
+/// use std::sync::Arc;
+///
+/// struct TestService;
+///
+/// #[async_trait]
+/// impl OnModuleInit for TestService {
+///     async fn on_module_init(&self) -> LifecycleResult {
+///         Ok(())
+///     }
+/// }
+///
+/// # tokio::runtime::Runtime::new().unwrap().block_on(async {
+/// let manager = LifecycleManager::new();
+/// let service = Arc::new(TestService);
+///
+/// manager.register_on_init("TestService".to_string(), service).await;
+/// manager.call_module_init_hooks().await.unwrap();
+/// # });
+/// ```
 pub struct LifecycleManager {
     init_hooks: Arc<RwLock<Vec<(String, Arc<dyn OnModuleInit>)>>>,
     destroy_hooks: Arc<RwLock<Vec<(String, Arc<dyn OnModuleDestroy>)>>>,
@@ -95,6 +137,18 @@ pub struct LifecycleManager {
 
 impl LifecycleManager {
     /// Create a new lifecycle manager
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use armature_core::lifecycle::LifecycleManager;
+    ///
+    /// let manager = LifecycleManager::new();
+    /// # tokio::runtime::Runtime::new().unwrap().block_on(async {
+    /// let counts = manager.hook_counts().await;
+    /// assert_eq!(counts.init, 0);
+    /// # });
+    /// ```
     pub fn new() -> Self {
         Self {
             init_hooks: Arc::new(RwLock::new(Vec::new())),
@@ -257,6 +311,32 @@ impl LifecycleManager {
     }
 
     /// Execute all OnApplicationShutdown hooks
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use armature_core::lifecycle::{LifecycleManager, OnApplicationShutdown, LifecycleResult};
+    /// use async_trait::async_trait;
+    /// use std::sync::Arc;
+    ///
+    /// struct ShutdownService;
+    ///
+    /// #[async_trait]
+    /// impl OnApplicationShutdown for ShutdownService {
+    ///     async fn on_application_shutdown(&self, signal: Option<String>) -> LifecycleResult {
+    ///         println!("Shutting down with signal: {:?}", signal);
+    ///         Ok(())
+    ///     }
+    /// }
+    ///
+    /// # tokio::runtime::Runtime::new().unwrap().block_on(async {
+    /// let manager = LifecycleManager::new();
+    /// let service = Arc::new(ShutdownService);
+    ///
+    /// manager.register_on_shutdown("ShutdownService".to_string(), service).await;
+    /// manager.call_shutdown_hooks(Some("SIGTERM".to_string())).await.unwrap();
+    /// # });
+    /// ```
     pub async fn call_shutdown_hooks(
         &self,
         signal: Option<String>,

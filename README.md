@@ -13,6 +13,7 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 - **Modular Architecture**: Organize your application into modules with providers and controllers
 - **Service Dependencies**: Services can depend on other services with automatic resolution
 - **Singleton Pattern**: Services are created once and shared across the application
+- **Lifecycle Hooks**: NestJS-style hooks (OnModuleInit, OnModuleDestroy, OnApplicationBootstrap, OnApplicationShutdown) for resource management
 - **Authentication & Authorization**: Optional comprehensive auth system with guards, RBAC, and strategies
 - **OAuth2/OIDC Providers**: Built-in support for Google, Microsoft, AWS Cognito, Okta, and Auth0
 - **SAML 2.0 Support**: Enterprise SSO with Service Provider implementation
@@ -189,6 +190,48 @@ let service = container.resolve::<MyService>()?;
 ```
 
 Services are singletons by default and shared across the application.
+
+## Lifecycle Hooks
+
+Armature provides NestJS-inspired lifecycle hooks for managing service initialization and cleanup:
+
+```rust
+use armature::prelude::*;
+use armature::lifecycle::{OnModuleInit, OnModuleDestroy, LifecycleResult};
+use async_trait::async_trait;
+
+#[injectable]
+struct DatabaseService {
+    connected: Arc<RwLock<bool>>,
+}
+
+#[async_trait]
+impl OnModuleInit for DatabaseService {
+    async fn on_module_init(&self) -> LifecycleResult {
+        println!("Connecting to database...");
+        *self.connected.write().await = true;
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl OnModuleDestroy for DatabaseService {
+    async fn on_module_destroy(&self) -> LifecycleResult {
+        println!("Closing database connection...");
+        *self.connected.write().await = false;
+        Ok(())
+    }
+}
+```
+
+Available hooks:
+- `OnModuleInit` - Called after module initialization
+- `OnModuleDestroy` - Called before module destruction
+- `OnApplicationBootstrap` - Called after full application bootstrap
+- `OnApplicationShutdown` - Called during graceful shutdown
+- `BeforeApplicationShutdown` - Called before shutdown hooks
+
+See the [Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md) for complete documentation.
 
 ## Routing
 
@@ -428,6 +471,7 @@ MIT
 Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 - **[Dependency Injection Guide](docs/DI_GUIDE.md)** - Complete DI system documentation
+- **[Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md)** - Service lifecycle management with hooks
 - **[Configuration Guide](docs/CONFIG_GUIDE.md)** - Configuration management system
 - **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
 - **[Angular SSR Guide](docs/ANGULAR_SSR_GUIDE.md)** - Angular Universal server-side rendering
