@@ -49,9 +49,9 @@ MEMBERS=(
 test_member() {
     local member=$1
     TOTAL=$((TOTAL + 1))
-    
+
     echo -n "Testing $member... "
-    
+
     if cargo test --doc -p "$member" --quiet 2>&1 | grep -q "test result: ok"; then
         echo -e "${GREEN}✓ PASSED${NC}"
         PASSED=$((PASSED + 1))

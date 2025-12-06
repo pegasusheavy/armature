@@ -8,10 +8,10 @@ Documentation testing ensures that code examples in documentation actually work.
 
 ## Why Document Tests?
 
-✅ **Ensures examples work** - Code in docs stays up-to-date  
-✅ **Prevents bit rot** - Breaking changes caught immediately  
-✅ **Living documentation** - Examples are always tested  
-✅ **Better onboarding** - New users get working code  
+✅ **Ensures examples work** - Code in docs stays up-to-date
+✅ **Prevents bit rot** - Breaking changes caught immediately
+✅ **Living documentation** - Examples are always tested
+✅ **Better onboarding** - New users get working code
 
 ## Writing Doc Tests
 
@@ -383,20 +383,20 @@ pub async fn fetch_data() -> Result<Vec<u8>, Error> {
 
 ### DO
 
-✅ Test every public API  
-✅ Show realistic examples  
-✅ Include error handling  
-✅ Hide boilerplate with `#`  
-✅ Use `no_run` for resource-intensive examples  
-✅ Keep examples simple and focused  
+✅ Test every public API
+✅ Show realistic examples
+✅ Include error handling
+✅ Hide boilerplate with `#`
+✅ Use `no_run` for resource-intensive examples
+✅ Keep examples simple and focused
 
 ### DON'T
 
-❌ Use `ignore` for real code  
-❌ Write examples that can break  
-❌ Omit necessary imports  
-❌ Show only happy path  
-❌ Make examples too complex  
+❌ Use `ignore` for real code
+❌ Write examples that can break
+❌ Omit necessary imports
+❌ Show only happy path
+❌ Make examples too complex
 
 ## Coverage Report
 
@@ -428,10 +428,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Run doc tests
         run: cargo test --doc --all --all-features
-      
+
       - name: Check doc coverage
         run: ./scripts/test-docs.sh
 ```
