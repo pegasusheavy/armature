@@ -23,11 +23,11 @@ Armature's Hot Module Reload (HMR) system provides **automatic reloading** of yo
 
 ### What Gets Hot Reloaded?
 
-✅ **JavaScript/TypeScript** - Full page reload  
-✅ **CSS/SCSS/Less** - Hot reload without page refresh  
-✅ **HTML Templates** - Full page reload  
-✅ **Vue/Svelte Components** - Hot reload  
-✅ **Static Assets** - Automatic cache busting  
+✅ **JavaScript/TypeScript** - Full page reload
+✅ **CSS/SCSS/Less** - Hot reload without page refresh
+✅ **HTML Templates** - Full page reload
+✅ **Vue/Svelte Components** - Hot reload
+✅ **Static Assets** - Automatic cache busting
 
 ### Development vs Production
 
@@ -121,7 +121,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔥 HMR enabled - watching for changes...");
 
     // Your application setup...
-    
+
     Ok(())
 }
 ```
@@ -176,22 +176,22 @@ async fn render_page(hmr_manager: &HmrManager) -> String {
 pub struct HmrConfig {
     /// Enable/disable HMR (default: true)
     pub enabled: bool,
-    
+
     /// Paths to watch (default: ["src", "public"])
     pub watch_paths: Vec<PathBuf>,
-    
+
     /// File extensions to watch (default: js, ts, css, html, etc.)
     pub watch_extensions: Vec<String>,
-    
+
     /// Patterns to ignore (default: node_modules, dist, .git)
     pub ignore_patterns: Vec<String>,
-    
+
     /// Debounce delay in milliseconds (default: 100)
     pub debounce_ms: u64,
-    
+
     /// WebSocket port (default: 3001)
     pub websocket_port: u16,
-    
+
     /// Enable verbose logging (default: false)
     pub verbose: bool,
 }
@@ -205,20 +205,20 @@ let hmr_config = HmrConfig::new()
     .watch_path(PathBuf::from("src"))
     .watch_path(PathBuf::from("client"))
     .watch_path(PathBuf::from("styles"))
-    
+
     // Watch specific extensions
     .watch_extension("ts".to_string())
     .watch_extension("tsx".to_string())
     .watch_extension("vue".to_string())
     .watch_extension("scss".to_string())
-    
+
     // Ignore patterns
     .ignore_pattern("node_modules".to_string())
     .ignore_pattern("dist".to_string())
     .ignore_pattern("build".to_string())
     .ignore_pattern(".next".to_string())
     .ignore_pattern(".nuxt".to_string())
-    
+
     // Fine-tune behavior
     .debounce(200)
     .websocket_port(3002)
@@ -263,11 +263,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         hmr_manager: Arc<HmrManager>,
     ) -> Result<HttpResponse, Error> {
         let response = react_service.render(&req).await?;
-        
+
         // Inject HMR script into HTML
         let html = String::from_utf8(response.body)?;
         let html_with_hmr = inject_hmr_script(html, &hmr_manager).await;
-        
+
         Ok(HttpResponse::ok()
             .with_header("Content-Type", "text/html; charset=utf-8")
             .with_body(html_with_hmr.into_bytes()))
@@ -275,7 +275,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🔥 React app with HMR running!");
     println!("   Open http://localhost:3000");
-    
+
     Ok(())
 }
 ```
@@ -317,14 +317,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async move {
         while let Ok(event) = hmr_rx.recv().await {
             println!("🔥 HMR Event: {:?}", event);
-            
+
             // Notify connected clients
             // (WebSocket broadcast implementation)
         }
     });
 
     println!("🔥 Vue app with HMR running!");
-    
+
     Ok(())
 }
 ```
@@ -363,7 +363,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🔥 Angular app with HMR running!");
     println!("   Open http://localhost:4200");
-    
+
     Ok(())
 }
 ```
@@ -400,7 +400,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let svelte_service = SvelteService::new(svelte_config);
 
     println!("🔥 Svelte app with HMR running!");
-    
+
     Ok(())
 }
 ```
@@ -489,7 +489,7 @@ async fn handle_hmr_events(hmr_manager: Arc<HmrManager>) {
         match event.kind {
             HmrEventKind::Modified => {
                 println!("📝 File modified: {:?}", event.path);
-                
+
                 // Custom handling
                 if let Some(ext) = event.extension {
                     match ext.as_str() {
@@ -541,13 +541,13 @@ Watch different directories for different frameworks:
 let hmr_config = HmrConfig::new()
     // Backend Rust code
     .watch_path(PathBuf::from("src"))
-    
+
     // Frontend React code
     .watch_path(PathBuf::from("client/src"))
-    
+
     // Shared types
     .watch_path(PathBuf::from("shared"))
-    
+
     // Static assets
     .watch_path(PathBuf::from("public"));
 ```
@@ -558,11 +558,11 @@ let hmr_config = HmrConfig::new()
 let hmr_config = HmrConfig::new()
     // Higher debounce for slower machines
     .debounce(300) // Wait 300ms
-    
+
     // Watch only specific extensions
     .watch_extension("tsx".to_string())
     .watch_extension("css".to_string())
-    
+
     // Ignore more patterns
     .ignore_pattern("test".to_string())
     .ignore_pattern("spec".to_string())
@@ -689,13 +689,13 @@ let hmr_config = HmrConfig::new()
 
 Armature's HMR system provides:
 
-✅ **Automatic file watching** with the `notify` crate  
-✅ **WebSocket-based notifications** for instant updates  
-✅ **CSS hot reload** without page refresh  
-✅ **Smart debouncing** to prevent rapid-fire reloads  
-✅ **Framework-agnostic** - works with React, Vue, Angular, Svelte  
-✅ **Production-safe** - easily disabled for production builds  
-✅ **Configurable** - watch paths, extensions, debounce, etc.  
+✅ **Automatic file watching** with the `notify` crate
+✅ **WebSocket-based notifications** for instant updates
+✅ **CSS hot reload** without page refresh
+✅ **Smart debouncing** to prevent rapid-fire reloads
+✅ **Framework-agnostic** - works with React, Vue, Angular, Svelte
+✅ **Production-safe** - easily disabled for production builds
+✅ **Configurable** - watch paths, extensions, debounce, etc.
 
 **Perfect for rapid development with SSR frameworks!** 🔥🚀
 

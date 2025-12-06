@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 // In your SSR render function:
 async fn render_page(hmr_manager: &HmrManager) -> String {
     let html = "<html><body><h1>Hello</h1></body></html>".to_string();
-    
+
     // Inject HMR client
     inject_hmr_script(html, hmr_manager).await
 }
@@ -94,12 +94,12 @@ let hmr_config = HmrConfig::new()
 
 ## What You Get
 
-✅ **Automatic file watching**  
-✅ **WebSocket notifications**  
-✅ **CSS hot reload** (no page refresh)  
-✅ **JavaScript full reload**  
-✅ **Automatic browser connection**  
-✅ **Reconnection on disconnect**  
+✅ **Automatic file watching**
+✅ **WebSocket notifications**
+✅ **CSS hot reload** (no page refresh)
+✅ **JavaScript full reload**
+✅ **Automatic browser connection**
+✅ **Reconnection on disconnect**
 
 ## Development vs Production
 

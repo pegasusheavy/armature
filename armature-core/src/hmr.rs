@@ -48,22 +48,22 @@ pub enum HmrEventKind {
 pub struct HmrConfig {
     /// Enable HMR (typically only in development)
     pub enabled: bool,
-    
+
     /// Paths to watch for changes
     pub watch_paths: Vec<PathBuf>,
-    
+
     /// File extensions to watch (e.g., ["js", "ts", "css", "html"])
     pub watch_extensions: Vec<String>,
-    
+
     /// Paths to ignore
     pub ignore_patterns: Vec<String>,
-    
+
     /// Debounce delay (ms) to avoid rapid-fire events
     pub debounce_ms: u64,
-    
+
     /// WebSocket port for HMR client
     pub websocket_port: u16,
-    
+
     /// Enable verbose logging
     pub verbose: bool,
 }
@@ -178,7 +178,7 @@ impl HmrManager {
         }
 
         println!("🔥 HMR enabled - watching for changes...");
-        
+
         if self.config.verbose {
             println!("   Watching paths:");
             for path in &self.config.watch_paths {
@@ -316,23 +316,23 @@ impl HmrManager {
             r#"<script>
 (function() {{
   console.log('🔥 HMR Client initialized');
-  
+
   let ws;
   let reconnectAttempts = 0;
   const maxReconnectAttempts = 10;
-  
+
   function connect() {{
     ws = new WebSocket('ws://localhost:{}');
-    
+
     ws.onopen = function() {{
       console.log('🔥 HMR Connected');
       reconnectAttempts = 0;
     }};
-    
+
     ws.onmessage = function(event) {{
       const data = JSON.parse(event.data);
       console.log('🔥 HMR Update:', data);
-      
+
       if (data.type === 'full-reload') {{
         console.log('🔥 HMR: Full page reload');
         window.location.reload();
@@ -344,7 +344,7 @@ impl HmrManager {
         window.location.reload();
       }}
     }};
-    
+
     ws.onclose = function() {{
       console.log('🔥 HMR Disconnected');
       if (reconnectAttempts < maxReconnectAttempts) {{
@@ -352,12 +352,12 @@ impl HmrManager {
         setTimeout(connect, 1000 * reconnectAttempts);
       }}
     }};
-    
+
     ws.onerror = function(error) {{
       console.error('🔥 HMR Error:', error);
     }};
   }}
-  
+
   function reloadCSS(path) {{
     const links = document.querySelectorAll('link[rel="stylesheet"]');
     links.forEach(link => {{
@@ -367,7 +367,7 @@ impl HmrManager {
       }}
     }});
   }}
-  
+
   connect();
 }})();
 </script>"#,
