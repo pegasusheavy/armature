@@ -86,6 +86,25 @@
 //! assert_eq!(swagger_config.path, "/api-docs");
 //! assert_eq!(swagger_config.title, "My API Documentation");
 //! ```
+//!
+//! ## Adding Multiple Servers
+//!
+//! ```
+//! use armature_openapi::OpenApiBuilder;
+//!
+//! let spec = OpenApiBuilder::new("Multi-Env API", "1.0.0")
+//!     .server("https://api.production.com", Some("Production server".to_string()))
+//!     .server("https://api.staging.com", Some("Staging server".to_string()))
+//!     .server("http://localhost:3000", Some("Local development".to_string()));
+//!
+//! let built_spec = spec.build();
+//!
+//! assert_eq!(built_spec.servers.len(), 3);
+//! assert_eq!(built_spec.servers[0].url, "https://api.production.com");
+//! assert_eq!(built_spec.servers[1].url, "https://api.staging.com");
+//! assert_eq!(built_spec.servers[2].url, "http://localhost:3000");
+//! assert_eq!(built_spec.servers[0].description, Some("Production server".to_string()));
+//! ```
 
 pub mod builder;
 pub mod spec;

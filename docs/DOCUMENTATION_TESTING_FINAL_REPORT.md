@@ -125,7 +125,7 @@ The comprehensive documentation testing initiative for the Armature framework ha
   ⭐ Excellent (10+): 2 modules
     - armature-acme (15 tests)
     - armature-cache (14 tests)
-  
+
   ✓ Good (5-9): 11 modules
     - armature-auth (8 tests)
     - armature-testing (7 tests)
@@ -356,7 +356,7 @@ Every doc test in the project now follows these standards:
 ===================
 Start:   60 tests (2.7 avg) - 53% of target
 Phase 1: 80 tests (3.6 avg) - 71% of target
-Phase 2: 96 tests (4.4 avg) - 85% of target  
+Phase 2: 96 tests (4.4 avg) - 85% of target
 Phase 3: 104 tests (4.7 avg) - 92% of target
 Phase 4: 114 tests (5.2 avg) - 101% of target ✅
 ```

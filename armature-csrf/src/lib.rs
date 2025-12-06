@@ -66,6 +66,25 @@
 //! assert!(expired.validate().is_err());
 //! ```
 //!
+//! ## Session-Bound Tokens
+//!
+//! ```rust
+//! use armature_csrf::CsrfToken;
+//!
+//! // Generate a session-bound CSRF token
+//! let session_id = "user-session-abc123".to_string();
+//! let token = CsrfToken::generate_with_session(3600, session_id.clone());
+//!
+//! // Token is bound to the session
+//! assert_eq!(token.session_id, Some(session_id));
+//! assert!(!token.value.is_empty());
+//! assert!(!token.is_expired());
+//!
+//! // Regular token without session binding
+//! let regular_token = CsrfToken::generate(3600);
+//! assert_eq!(regular_token.session_id, None);
+//! ```
+//!
 //! ## Usage with Armature
 //!
 //! ```ignore
