@@ -143,7 +143,7 @@ use futures::future::try_join_all;
 #[async_trait]
 pub trait CacheStore: Send + Sync {
     // Existing methods...
-    
+
     /// Get multiple keys in parallel
     async fn get_many(&self, keys: &[&str]) -> CacheResult<Vec<Option<String>>> {
         let futures = keys.iter().map(|key| self.get_json(key));
@@ -207,13 +207,13 @@ cache.delete_many(&["session:*", "temp:*"]).await?;
 async fn get_many_optimized(&self, keys: &[&str]) -> CacheResult<Vec<Option<String>>> {
     let keys: Vec<String> = keys.iter().map(|k| self.build_key(k)).collect();
     let mut conn = self.connection.clone();
-    
+
     // Single Redis command instead of N round trips
     let values: Vec<Option<String>> = redis::cmd("MGET")
         .arg(&keys)
         .query_async(&mut conn)
         .await?;
-    
+
     Ok(values)
 }
 ```
@@ -296,14 +296,14 @@ pub async fn save_files_parallel(
 #[post("/upload/images")]
 async fn upload_images(form: MultipartForm) -> Result<Json<UploadResponse>, Error> {
     let files: Vec<FormFile> = form.files;
-    
+
     // Save all images in parallel (5-10x faster)
     let paths = save_files_parallel(files, "uploads/images").await?;
-    
+
     // Process images in parallel (resize, thumbnail, etc.)
     let futures = paths.iter().map(|path| process_image(path));
     let processed = try_join_all(futures).await?;
-    
+
     Ok(Json(UploadResponse { files: processed }))
 }
 ```
@@ -360,14 +360,14 @@ pub async fn pre_render_site(
     output_dir: &str,
 ) -> Result<StaticSiteStats, Error> {
     let routes = self.discover_routes().await?;
-    
+
     println!("🎨 Pre-rendering {} routes in parallel...", routes.len());
-    
+
     let start = std::time::Instant::now();
-    
+
     // Render all routes in parallel
     let rendered = self.render_many_parallel(routes).await?;
-    
+
     // Write files in parallel
     let mut set = JoinSet::new();
     for (route, html) in rendered {
@@ -376,7 +376,7 @@ pub async fn pre_render_site(
             output_dir,
             route.trim_start_matches('/')
         );
-        
+
         set.spawn(async move {
             // Create directories if needed
             if let Some(parent) = std::path::Path::new(&path).parent() {
@@ -394,7 +394,7 @@ pub async fn pre_render_site(
     }
 
     let elapsed = start.elapsed();
-    
+
     Ok(StaticSiteStats {
         pages_rendered: written,
         time_taken: elapsed,
@@ -412,17 +412,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let angular_config = AngularConfig::new()
         .dist_path("dist/my-app/browser")
         .server_path("dist/my-app/server");
-    
+
     let service = AngularService::new(angular_config);
-    
+
     // Pre-render 100 pages in parallel
     // Sequential: ~100 seconds (1s per page)
     // Parallel:   ~5 seconds (on 8-core CPU)
     let stats = service.pre_render_site("build/static").await?;
-    
+
     println!("✅ Rendered {} pages in {:?}", stats.pages_rendered, stats.time_taken);
     println!("   Performance: {:.1} pages/sec", stats.pages_per_second);
-    
+
     Ok(())
 }
 ```
@@ -488,7 +488,7 @@ pub async fn process_batch(
         let handler = self.get_handler(&job.job_type)?.clone();
         let queue = self.queue.clone();
         let job_id = job.id;
-        
+
         set.spawn(async move {
             match handler(job.clone()).await {
                 Ok(_) => {
@@ -530,7 +530,7 @@ pub fn register_cpu_intensive_handler<F>(
     F: Fn(Job) -> QueueResult<()> + Send + Sync + 'static,
 {
     let handler = Arc::new(handler);
-    
+
     let wrapped = Arc::new(move |job: Job| {
         let handler = handler.clone();
         Box::pin(async move {
@@ -553,12 +553,12 @@ let mut worker = Worker::new(queue.clone());
 // Register CPU-intensive image processing handler
 worker.register_cpu_intensive_handler("process_image", |job| {
     let image_path = job.data["path"].as_str().unwrap();
-    
+
     // CPU-intensive work (resize, thumbnail, watermark)
     let img = image::open(image_path)?;
     let thumbnail = img.resize(200, 200, image::imageops::FilterType::Lanczos3);
     thumbnail.save(format!("{}.thumb.jpg", image_path))?;
-    
+
     Ok(())
 });
 
@@ -593,7 +593,7 @@ pub trait ParallelMiddleware: Send + Sync {
     fn dependencies(&self) -> Vec<&str> {
         vec![]
     }
-    
+
     /// Process request (read-only)
     async fn process(&self, req: &HttpRequest) -> Result<(), Error>;
 }
@@ -660,7 +660,7 @@ pub async fn get_users_parallel(
     let futures = user_ids.iter().map(|id| {
         db.get_user_by_id(*id)
     });
-    
+
     let results = try_join_all(futures).await?;
     Ok(results.into_iter().flatten().collect())
 }
@@ -672,15 +672,15 @@ pub async fn bulk_insert_users(
 ) -> Result<Vec<User>, Error> {
     // Use database transaction for atomicity
     let mut tx = db.begin_transaction().await?;
-    
+
     // Insert in parallel within transaction
     let futures = users.iter().map(|user| {
         db.insert_user_tx(&mut tx, user)
     });
-    
+
     let results = try_join_all(futures).await?;
     tx.commit().await?;
-    
+
     Ok(results)
 }
 ```
@@ -698,19 +698,19 @@ pub async fn bulk_insert_users(
 pub struct ParallelConfig {
     /// Number of CPU threads for Rayon (default: num_cpus)
     pub cpu_threads: usize,
-    
+
     /// Max blocking threads for Tokio (default: 512)
     pub blocking_threads: usize,
-    
+
     /// Enable parallel validation (default: true)
     pub parallel_validation: bool,
-    
+
     /// Enable batch cache operations (default: true)
     pub batch_cache_ops: bool,
-    
+
     /// Enable parallel file processing (default: true)
     pub parallel_files: bool,
-    
+
     /// Batch size for queue jobs (default: 10)
     pub queue_batch_size: usize,
 }
@@ -838,11 +838,11 @@ mod tests {
     #[tokio::test]
     async fn test_parallel_validation_correctness() {
         let data = create_test_data();
-        
+
         // Both should produce same results
         let sequential_result = validator.validate_sequential(&data);
         let parallel_result = validator.validate_parallel(&data);
-        
+
         assert_eq!(sequential_result, parallel_result);
     }
 
@@ -851,11 +851,11 @@ mod tests {
         let start = Instant::now();
         let _ = validator.validate_parallel(&large_data).await;
         let parallel_time = start.elapsed();
-        
+
         let start = Instant::now();
         let _ = validator.validate_sequential(&large_data).await;
         let sequential_time = start.elapsed();
-        
+
         // Parallel should be faster for large datasets
         assert!(parallel_time < sequential_time);
     }

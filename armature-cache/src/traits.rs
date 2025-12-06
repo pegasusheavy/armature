@@ -121,7 +121,7 @@ pub trait CacheStore: Send + Sync {
     /// // Fetch 100 user profiles in parallel
     /// let keys: Vec<&str> = (1..=100).map(|i| format!("user:{}", i)).collect();
     /// let profiles = cache.get_many(&keys).await?;
-    /// 
+    ///
     /// // Sequential: ~1000ms (10ms * 100)
     /// // Parallel:   ~15ms (max of all parallel requests)
     /// # Ok(())
@@ -222,7 +222,7 @@ pub trait CacheStore: Send + Sync {
     /// # async fn example(cache: &impl CacheStore) -> CacheResult<()> {
     /// let keys = vec!["user:1", "user:2", "user:3"];
     /// let exists = cache.exists_many(&keys).await?;
-    /// 
+    ///
     /// for (key, exists) in keys.iter().zip(exists.iter()) {
     ///     println!("{}: {}", key, exists);
     /// }
@@ -253,7 +253,7 @@ pub trait CacheStore: Send + Sync {
     /// # async fn example(cache: &impl CacheStore) -> CacheResult<()> {
     /// let keys = vec!["session:1", "session:2"];
     /// let ttls = cache.ttl_many(&keys).await?;
-    /// 
+    ///
     /// for (key, ttl) in keys.iter().zip(ttls.iter()) {
     ///     match ttl {
     ///         Some(duration) => println!("{}: expires in {:?}", key, duration),
