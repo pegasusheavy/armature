@@ -96,6 +96,40 @@
 //! // CSS context
 //! let css = XssEncoder::encode_css("expression(alert('XSS'))");
 //! ```
+//!
+//! ## HTML Entity Encoding
+//!
+//! ```rust
+//! use armature_xss::XssEncoder;
+//!
+//! // Encode dangerous characters for HTML
+//! let input = "<script>alert('XSS')</script>";
+//! let encoded = XssEncoder::encode_html(input);
+//!
+//! // Verify encoding
+//! assert!(encoded.contains("&lt;"));
+//! assert!(encoded.contains("&gt;"));
+//! assert!(!encoded.contains("<script>"));
+//! assert!(!encoded.contains("</script>"));
+//! ```
+//!
+//! ## XSS Pattern Detection
+//!
+//! ```rust
+//! use armature_xss::XssValidator;
+//!
+//! // Detect script tags
+//! assert!(XssValidator::contains_xss("<script>alert('XSS')</script>"));
+//!
+//! // Detect event handlers
+//! assert!(XssValidator::contains_xss("<img src=x onerror=alert('XSS')>"));
+//!
+//! // Detect javascript: URLs
+//! assert!(XssValidator::contains_xss("<a href='javascript:alert(1)'>Click</a>"));
+//!
+//! // Safe content should pass
+//! assert!(!XssValidator::contains_xss("<p>Hello World</p>"));
+//! ```
 
 pub mod encoder;
 pub mod error;
