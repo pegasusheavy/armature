@@ -188,7 +188,7 @@ impl AcmeController {
     fn serve_challenge(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         let token = req.param("token")?;
         let challenges = self.challenges.lock().unwrap();
-        
+
         if let Some(key_auth) = challenges.get(token) {
             Ok(HttpResponse::ok()
                 .with_header("Content-Type", "text/plain")
@@ -556,12 +556,12 @@ Challenge type enumeration.
 
 Armature's ACME module provides:
 
-✅ **Automatic certificate management** with ACME protocol  
-✅ **Multiple providers** (Let's Encrypt, ZeroSSL, etc.)  
-✅ **All challenge types** (HTTP-01, DNS-01, TLS-ALPN-01)  
-✅ **Account management** and External Account Binding  
-✅ **Automatic renewal** before expiration  
-✅ **Seamless integration** with Armature HTTPS servers  
+✅ **Automatic certificate management** with ACME protocol
+✅ **Multiple providers** (Let's Encrypt, ZeroSSL, etc.)
+✅ **All challenge types** (HTTP-01, DNS-01, TLS-ALPN-01)
+✅ **Account management** and External Account Binding
+✅ **Automatic renewal** before expiration
+✅ **Seamless integration** with Armature HTTPS servers
 ✅ **Production-ready** with error handling and retry logic
 
 For more examples, see:
