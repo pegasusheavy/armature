@@ -91,7 +91,7 @@ Current status and roadmap for documentation test coverage across all workspace 
 1. **armature-opentelemetry** (+2 tests)
    - Basic tracing setup
    - Metrics collection
-   
+
 2. **armature-config** (+2 tests)
    - Environment-based config
    - Config validation

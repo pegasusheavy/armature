@@ -70,6 +70,59 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! ## Nested Configuration
+//!
+//! ```
+//! use armature_config::ConfigManager;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let manager = ConfigManager::new();
+//!
+//! // Set nested configuration using dot notation
+//! manager.set("database.host", "localhost")?;
+//! manager.set("database.port", 5432i64)?;
+//! manager.set("database.username", "admin")?;
+//! manager.set("cache.enabled", true)?;
+//! manager.set("cache.ttl", 3600i64)?;
+//!
+//! // Retrieve nested values
+//! let db_host: String = manager.get("database.host")?;
+//! let db_port: i64 = manager.get("database.port")?;
+//! let cache_enabled: bool = manager.get("cache.enabled")?;
+//!
+//! assert_eq!(db_host, "localhost");
+//! assert_eq!(db_port, 5432);
+//! assert!(cache_enabled);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Default Values
+//!
+//! ```
+//! use armature_config::ConfigManager;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let manager = ConfigManager::new();
+//!
+//! // Set a value
+//! manager.set("max_connections", 100i64)?;
+//!
+//! // Get existing value
+//! let max_conn = manager.get_or("max_connections", 50i64);
+//! assert_eq!(max_conn, 100);
+//!
+//! // Get non-existent value (returns default)
+//! let min_conn = manager.get_or("min_connections", 10i64);
+//! assert_eq!(min_conn, 10);
+//!
+//! // Check if key exists
+//! assert!(manager.has("max_connections"));
+//! assert!(!manager.has("min_connections"));
+//! # Ok(())
+//! # }
+//! ```
 
 pub mod config_service;
 pub mod env;
