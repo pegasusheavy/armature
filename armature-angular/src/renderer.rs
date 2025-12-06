@@ -123,7 +123,7 @@ impl AngularRenderer {
     /// # async fn example(renderer: &AngularRenderer) -> Result<()> {
     /// let routes = vec!["/", "/about", "/contact"];
     /// let rendered = renderer.render_many_parallel(routes).await?;
-    /// 
+    ///
     /// for (route, html) in rendered {
     ///     println!("Rendered {}: {} bytes", route, html.len());
     /// }
@@ -173,7 +173,7 @@ impl AngularRenderer {
     /// # async fn example(renderer: &AngularRenderer) -> Result<()> {
     /// let routes = vec!["/", "/about", "/contact", "/blog/post1"];
     /// let stats = renderer.pre_render_site("build/static", routes).await?;
-    /// 
+    ///
     /// println!("Rendered {} pages in {:?}", stats.pages_rendered, stats.duration);
     /// # Ok(())
     /// # }

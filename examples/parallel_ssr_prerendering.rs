@@ -260,7 +260,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Sequential:");
     println!("  ⏱️  Time: {:?}", seq_duration);
-    println!("  📊 Throughput: {:.1} pages/sec", 
+    println!("  📊 Throughput: {:.1} pages/sec",
         sequential.len() as f64 / seq_duration.as_secs_f64());
     println!();
 
