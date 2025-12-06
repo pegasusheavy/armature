@@ -3,27 +3,88 @@
 //! This crate provides tools for generating OpenAPI specifications and serving
 //! interactive API documentation via Swagger UI.
 //!
-//! # Features
+//! ## Features
 //!
-//! - **Programmatic API**: Build OpenAPI specs with a fluent builder API
-//! - **Swagger UI**: Serve interactive API documentation
-//! - **JSON/YAML Export**: Export specifications in multiple formats
-//! - **Type-Safe**: Strongly typed OpenAPI 3.0 specification
+//! - 📝 **Programmatic API** - Build OpenAPI specs with fluent builder
+//! - 📊 **Swagger UI** - Interactive API documentation
+//! - 📤 **JSON/YAML Export** - Multiple export formats
+//! - 🔒 **Type-Safe** - Strongly typed OpenAPI 3.0 specification
+//! - 🔐 **Auth Schemes** - Bearer, API Key, OAuth2, OpenID
+//! - 📋 **Schema Support** - Request/response schemas
 //!
-//! # Examples
+//! ## Quick Start - Basic API Spec
 //!
-//! ## Basic Usage
-//!
-//! ```no_run
-//! use armature_openapi::*;
+//! ```
+//! use armature_openapi::OpenApiBuilder;
 //!
 //! let spec = OpenApiBuilder::new("My API", "1.0.0")
 //!     .description("A wonderful API")
 //!     .server("http://localhost:3000", None)
-//!     .add_bearer_auth("bearer")
 //!     .build();
 //!
-//! let config = SwaggerConfig::new("/api-docs", spec);
+//! assert_eq!(spec.info.title, "My API");
+//! assert_eq!(spec.info.version, "1.0.0");
+//! assert_eq!(spec.servers.len(), 1);
+//! ```
+//!
+//! ## Adding Authentication
+//!
+//! ```
+//! use armature_openapi::{OpenApiBuilder, ApiKeyLocation};
+//!
+//! let spec = OpenApiBuilder::new("Secure API", "1.0.0")
+//!     .add_bearer_auth("bearer")
+//!     .add_api_key_auth("api_key", "X-API-Key", ApiKeyLocation::Header)
+//!     .build();
+//!
+//! assert!(spec.components.is_some());
+//! let components = spec.components.unwrap();
+//! assert!(components.security_schemes.contains_key("bearer"));
+//! assert!(components.security_schemes.contains_key("api_key"));
+//! ```
+//!
+//! ## Adding Paths and Operations
+//!
+//! ```
+//! use armature_openapi::{OpenApiBuilder, PathItem, Operation, Response};
+//! use std::collections::HashMap;
+//!
+//! let mut get_operation = Operation::default();
+//! get_operation.summary = Some("Get user by ID".to_string());
+//! get_operation.operation_id = Some("getUserById".to_string());
+//!
+//! let mut responses = HashMap::new();
+//! responses.insert("200".to_string(), Response {
+//!     description: "Successful response".to_string(),
+//!     content: None,
+//! });
+//! get_operation.responses = responses;
+//!
+//! let mut path_item = PathItem::default();
+//! path_item.get = Some(get_operation);
+//!
+//! let mut spec = OpenApiBuilder::new("User API", "1.0.0").build();
+//! spec.paths.insert("/users/{id}".to_string(), path_item);
+//!
+//! assert!(spec.paths.contains_key("/users/{id}"));
+//! assert!(spec.paths.get("/users/{id}").unwrap().get.is_some());
+//! ```
+//!
+//! ## Swagger UI Configuration
+//!
+//! ```
+//! use armature_openapi::{OpenApiBuilder, SwaggerConfig};
+//!
+//! let spec = OpenApiBuilder::new("My API", "1.0.0")
+//!     .description("API with Swagger UI")
+//!     .build();
+//!
+//! let swagger_config = SwaggerConfig::new("/api-docs", spec)
+//!     .with_title("My API Documentation");
+//!
+//! // Configuration ready
+//! assert_eq!(swagger_config.path, "/api-docs");
+//! assert_eq!(swagger_config.title, "My API Documentation");
 //! ```
 
 pub mod builder;
