@@ -470,17 +470,58 @@ MIT
 
 ## Documentation
 
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
+🌐 **Live Documentation Website**: [https://pegasusheavy.gitlab.io/armature/](https://pegasusheavy.gitlab.io/armature/)
 
+Comprehensive documentation (34 guides) is available in the [`docs/`](docs/) directory:
+
+**Getting Started:**
 - **[Dependency Injection Guide](docs/DI_GUIDE.md)** - Complete DI system documentation
-- **[Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md)** - Service lifecycle management with hooks
 - **[Configuration Guide](docs/CONFIG_GUIDE.md)** - Configuration management system
-- **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
+
+**Core Features:**
+- **[Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md)** - Service lifecycle management with hooks
+- **[Authentication Guide](docs/AUTH_GUIDE.md)** - JWT, OAuth2, and SAML authentication
+- **[Guards & Interceptors](docs/GUARDS_INTERCEPTORS.md)** - Request processing and authorization
+
+**SSR Frameworks:**
 - **[Angular SSR Guide](docs/ANGULAR_SSR_GUIDE.md)** - Angular Universal server-side rendering
+- **[Vue SSR Guide](docs/VUE_SSR_GUIDE.md)** - Vue 3 server-side rendering
+- **[Hot Module Reload Guide](docs/HMR_GUIDE.md)** - Live reload for development
+
+**Advanced:**
+- **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
 - **[WebSocket & SSE Guide](docs/WEBSOCKET_SSE_GUIDE.md)** - Real-time communication guide
-- **[NestJS Ecosystem Analysis](docs/NESTJS_ECOSYSTEM_ANALYSIS.md)** - Feature roadmap and comparisons
-- **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
-- **[Contributing Guide](docs/CONTRIBUTING.md)** - How to contribute to the project
+- **[Logging Guide](docs/LOGGING_GUIDE.md)** - Structured logging with tracing
+- **[Parallel Processing Guide](docs/PARALLEL_PROCESSING_GUIDE.md)** - Multithreading and optimization
+
+**And 20+ more guides covering testing, security, deployment, and more!**
+
+## Website Development
+
+The documentation website is an Angular 21 application located in the [`web/`](web/) directory.
+
+**Local Development:**
+
+```bash
+cd web
+pnpm install
+pnpm start
+```
+
+Then open [http://localhost:4200](http://localhost:4200) in your browser.
+
+**Building for Production:**
+
+```bash
+cd web
+pnpm run build
+```
+
+The built website will be in `web/dist/web/browser/`.
+
+**GitLab Pages Deployment:**
+
+The website automatically deploys to GitLab Pages when changes are merged to the `main` branch.
 
 ## Contributing
 
