@@ -36,6 +36,7 @@ pub mod config;
 pub mod error;
 pub mod helpers;
 pub mod manager;
+pub mod parallel;
 pub mod traits;
 
 #[cfg(feature = "redis")]

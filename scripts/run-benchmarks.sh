@@ -136,10 +136,10 @@ run_benchmark() {
     local name=$1
     local bench_name=$2
     local icon=$3
-    
+
     echo -e "${PURPLE}${icon} Running ${name}...${NC}"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    
+
     if cargo bench --bench "$bench_name" $BENCH_OPTS; then
         echo -e "${GREEN}✅ ${name} completed${NC}\n"
     else
@@ -161,15 +161,15 @@ else
     if [[ "$RUN_CORE" == true ]]; then
         run_benchmark "Core Benchmarks" "core_benchmarks" "🔧"
     fi
-    
+
     if [[ "$RUN_SECURITY" == true ]]; then
         run_benchmark "Security Benchmarks" "security_benchmarks" "🔒"
     fi
-    
+
     if [[ "$RUN_VALIDATION" == true ]]; then
         run_benchmark "Validation Benchmarks" "validation_benchmarks" "✅"
     fi
-    
+
     if [[ "$RUN_DATA" == true ]]; then
         run_benchmark "Data Benchmarks" "data_benchmarks" "💾"
     fi
@@ -193,7 +193,7 @@ if [[ -f "$REPORT_PATH" ]]; then
     echo -e "${YELLOW}📊 HTML report available at:${NC}"
     echo -e "   ${REPORT_PATH}"
     echo ""
-    
+
     # Open report if requested
     if [[ "$OPEN_REPORT" == true ]]; then
         echo -e "${GREEN}🌐 Opening report in browser...${NC}"

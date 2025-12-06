@@ -5,7 +5,7 @@ use serde_json::json;
 
 fn bench_queue_job_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("queue_job");
-    
+
     group.bench_function("job_new", |b| {
         b.iter(|| {
             QueueJob::new(
@@ -15,23 +15,23 @@ fn bench_queue_job_creation(c: &mut Criterion) {
             )
         })
     });
-    
+
     group.bench_function("uuid_generation", |b| {
         b.iter(|| {
             let _id = uuid::Uuid::new_v4();
         })
     });
-    
+
     group.bench_function("json_serialization", |b| {
         let data = json!({"type": "test", "payload": {"key": "value"}});
         b.iter(|| serde_json::to_string(black_box(&data)).unwrap())
     });
-    
+
     group.bench_function("json_parsing", |b| {
         let json_str = r#"{"type":"test","payload":{"key":"value"}}"#;
         b.iter(|| serde_json::from_str::<serde_json::Value>(black_box(json_str)).unwrap())
     });
-    
+
     group.finish();
 }
 
@@ -48,28 +48,28 @@ fn bench_queue_config(c: &mut Criterion) {
 
 fn bench_cron_expression_parsing(c: &mut Criterion) {
     let mut group = c.benchmark_group("cron_expression");
-    
+
     let expressions = vec![
         "0 0 * * * *",           // Every hour
         "*/5 * * * * *",         // Every 5 seconds
         "0 0 12 * * MON-FRI",    // Weekdays at noon
         "0 0 0 1 * *",           // First of month
     ];
-    
+
     for expr in expressions {
         group.bench_with_input(BenchmarkId::from_parameter(expr), expr, |b, expr| {
             b.iter(|| CronExpression::parse(black_box(expr)).unwrap())
         });
     }
-    
+
     group.bench_function("parse_preset_hourly", |b| {
         b.iter(|| CronExpression::parse(black_box(CronPresets::EVERY_HOUR)).unwrap())
     });
-    
+
     group.bench_function("parse_preset_daily", |b| {
         b.iter(|| CronExpression::parse(black_box(CronPresets::DAILY)).unwrap())
     });
-    
+
     group.bench_function("string_split", |b| {
         let expr = "0 0 * * * *";
         b.iter(|| {
@@ -77,7 +77,7 @@ fn bench_cron_expression_parsing(c: &mut Criterion) {
             black_box(parts);
         })
     });
-    
+
     group.finish();
 }
 
