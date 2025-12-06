@@ -135,7 +135,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .init();
 
         info!("Application started with rolling file logging");
-        
+
         for i in 0..5 {
             info!(iteration = i, "Processing batch");
         }

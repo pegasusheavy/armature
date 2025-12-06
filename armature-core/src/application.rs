@@ -143,7 +143,7 @@ impl Application {
     ///     let config = LogConfig::new()
     ///         .level(LogLevel::Debug)
     ///         .format(LogFormat::Pretty);
-    ///     
+    ///
     ///     let _guard = Application::init_logging_with_config(config);
     ///     // Application code...
     /// }

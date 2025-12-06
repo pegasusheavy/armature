@@ -124,7 +124,7 @@ pub mod static_files;
 
 pub use config::AngularConfig;
 pub use error::{AngularError, Result};
-pub use renderer::{AngularRenderer, RenderOptions};
+pub use renderer::{AngularRenderer, RenderOptions, StaticSiteStats};
 pub use static_files::StaticFileService;
 
 use armature_core::Provider;

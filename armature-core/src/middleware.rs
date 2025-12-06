@@ -477,22 +477,22 @@ impl Default for LoggingMiddleware {
 impl Middleware for LoggingMiddleware {
     async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
         use std::time::Instant;
-        
+
         let start = Instant::now();
         let method = req.method.clone();
         let path = req.path.clone();
-        
+
         // Log request
         if self.log_request_body && !req.body.is_empty() {
             let body_preview = if req.body.len() > self.max_body_size {
-                format!("{}... ({} bytes)", 
+                format!("{}... ({} bytes)",
                     String::from_utf8_lossy(&req.body[..self.max_body_size]),
                     req.body.len()
                 )
             } else {
                 String::from_utf8_lossy(&req.body).to_string()
             };
-            
+
             crate::logging::info!(
                 method = %method,
                 path = %path,
@@ -516,14 +516,14 @@ impl Middleware for LoggingMiddleware {
             Ok(response) => {
                 if self.log_response_body && !response.body.is_empty() {
                     let body_preview = if response.body.len() > self.max_body_size {
-                        format!("{}... ({} bytes)", 
+                        format!("{}... ({} bytes)",
                             String::from_utf8_lossy(&response.body[..self.max_body_size]),
                             response.body.len()
                         )
                     } else {
                         String::from_utf8_lossy(&response.body).to_string()
                     };
-                    
+
                     crate::logging::info!(
                         method = %method,
                         path = %path,
