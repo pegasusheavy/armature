@@ -11,6 +11,7 @@ pub mod interceptor;
 pub mod middleware;
 pub mod routing;
 pub mod sse;
+pub mod static_assets;
 pub mod status;
 pub mod tls;
 pub mod traits;
@@ -27,6 +28,7 @@ pub use interceptor::*;
 pub use middleware::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use sse::*;
+pub use static_assets::*;
 pub use status::*;
 pub use tls::*;
 pub use traits::*;

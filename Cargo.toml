@@ -282,6 +282,10 @@ name = "form_processing"
 path = "examples/form_processing.rs"
 
 [[example]]
+name = "static_assets"
+path = "examples/static_assets.rs"
+
+[[example]]
 name = "acme_letsencrypt"
 path = "examples/acme_letsencrypt.rs"
 required-features = ["acme"]

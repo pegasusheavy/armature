@@ -55,7 +55,7 @@ pub fn validate_parallel(
         })
         .flatten()
         .collect();
-    
+
     if all_errors.is_empty() {
         Ok(())
     } else {
@@ -99,10 +99,10 @@ use rayon::prelude::*;
 pub fn parse_parallel(&self, body: &[u8]) -> Result<Vec<FormField>, Error> {
     let boundary_marker = format!("--{}", self.boundary);
     let body_str = String::from_utf8_lossy(body);
-    
+
     // Split by boundary
     let parts: Vec<&str> = body_str.split(&boundary_marker).collect();
-    
+
     // Parse parts in parallel
     let fields: Result<Vec<_>, _> = parts
         .par_iter()  // Parallel iterator
@@ -110,7 +110,7 @@ pub fn parse_parallel(&self, body: &[u8]) -> Result<Vec<FormField>, Error> {
         .filter(|part| !part.trim().is_empty() && part.trim() != "--")
         .map(|part| self.parse_part(part))
         .collect();
-    
+
     Ok(fields?.into_iter().flatten().collect())
 }
 ```
@@ -128,22 +128,22 @@ pub async fn save_files_parallel(
     base_path: &str,
 ) -> Result<Vec<String>, Error> {
     let mut set = JoinSet::new();
-    
+
     for file in files {
         let path = format!("{}/{}", base_path, file.filename);
         let data = file.data.clone();
-        
+
         set.spawn(async move {
             tokio::fs::write(&path, &data).await?;
             Ok::<_, Error>(path)
         });
     }
-    
+
     let mut saved_paths = Vec::new();
     while let Some(result) = set.join_next().await {
         saved_paths.push(result??);
     }
-    
+
     Ok(saved_paths)
 }
 ```
@@ -180,10 +180,10 @@ Add parallel batch operations:
 /// Get multiple keys in parallel
 async fn get_many(&self, keys: &[&str]) -> CacheResult<Vec<Option<String>>> {
     use futures::future::join_all;
-    
+
     let futures = keys.iter().map(|key| self.get_json(key));
     let results = join_all(futures).await;
-    
+
     results.into_iter().collect()
 }
 
@@ -194,11 +194,11 @@ async fn set_many(
     ttl: Option<Duration>,
 ) -> CacheResult<()> {
     use futures::future::try_join_all;
-    
+
     let futures = items.iter().map(|(key, value)| {
         self.set_json(key, value.clone(), ttl)
     });
-    
+
     try_join_all(futures).await?;
     Ok(())
 }
@@ -206,7 +206,7 @@ async fn set_many(
 /// Delete multiple keys in parallel
 async fn delete_many(&self, keys: &[&str]) -> CacheResult<()> {
     use futures::future::try_join_all;
-    
+
     let futures = keys.iter().map(|key| self.delete(key));
     try_join_all(futures).await?;
     Ok(())
@@ -264,7 +264,7 @@ pub fn register_cpu_intensive_handler<F, Fut>(
             .map_err(|e| QueueError::ExecutionFailed(e.to_string()))?
         }) as Pin<Box<dyn Future<Output = QueueResult<()>> + Send>>
     });
-    
+
     // Register handler...
 }
 ```
@@ -281,9 +281,9 @@ pub async fn process_batch(
     max_batch_size: usize,
 ) -> QueueResult<Vec<JobId>> {
     use tokio::task::JoinSet;
-    
+
     let mut jobs = Vec::new();
-    
+
     // Dequeue multiple jobs
     for _ in 0..max_batch_size {
         if let Some(job) = self.queue.dequeue().await? {
@@ -298,7 +298,7 @@ pub async fn process_batch(
             break;
         }
     }
-    
+
     // Process all jobs in parallel
     let mut set = JoinSet::new();
     for job in jobs {
@@ -308,12 +308,12 @@ pub async fn process_batch(
             Ok::<_, QueueError>(job.id)
         });
     }
-    
+
     let mut processed = Vec::new();
     while let Some(result) = set.join_next().await {
         processed.push(result??);
     }
-    
+
     Ok(processed)
 }
 ```
@@ -354,16 +354,16 @@ pub async fn process_parallel(
 ) -> Result<Vec<MiddlewareResult>, Error> {
     // Group middleware by dependencies
     let (independent, dependent) = self.group_middleware();
-    
+
     // Run independent middleware in parallel
     let futures = independent.iter().map(|m| m.process(request));
     let results = join_all(futures).await;
-    
+
     // Run dependent middleware sequentially
     for middleware in dependent {
         middleware.process(request).await?;
     }
-    
+
     Ok(results)
 }
 ```
@@ -403,7 +403,7 @@ pub async fn render_many_parallel(
     routes: Vec<String>,
 ) -> Result<HashMap<String, String>, Error> {
     let mut set = JoinSet::new();
-    
+
     for route in routes {
         let renderer = self.clone();
         set.spawn(async move {
@@ -411,13 +411,13 @@ pub async fn render_many_parallel(
             Ok::<_, Error>((route, html))
         });
     }
-    
+
     let mut rendered = HashMap::new();
     while let Some(result) = set.join_next().await {
         let (route, html) = result??;
         rendered.insert(route, html);
     }
-    
+
     Ok(rendered)
 }
 ```
@@ -433,9 +433,9 @@ pub async fn pre_render_site(
     output_dir: &str,
 ) -> Result<usize, Error> {
     use rayon::prelude::*;
-    
+
     let routes = self.get_static_routes();
-    
+
     // Render pages in parallel
     let results: Vec<_> = routes
         .par_iter()
@@ -444,11 +444,11 @@ pub async fn pre_render_site(
                 .block_on(self.render(route, None))
         })
         .collect();
-    
+
     // Write to disk in parallel
     use tokio::fs::write;
     let mut set = JoinSet::new();
-    
+
     for (route, html) in routes.into_iter().zip(results) {
         let html = html?;
         let path = format!("{}/{}.html", output_dir, route.trim_start_matches('/'));
@@ -456,13 +456,13 @@ pub async fn pre_render_site(
             write(&path, html).await
         });
     }
-    
+
     let mut count = 0;
     while let Some(result) = set.join_next().await {
         result??;
         count += 1;
     }
-    
+
     Ok(count)
 }
 ```
@@ -494,7 +494,7 @@ pub async fn get_dashboard_data(&self) -> Result<DashboardData, Error> {
         self.fetch_comments(),
         self.fetch_stats(),
     )?;
-    
+
     Ok(DashboardData {
         user,
         posts,
@@ -637,7 +637,7 @@ criterion_main!(benches);
 Armature's **async foundation** (Tokio) provides excellent concurrency for I/O operations. Adding **parallelization with Rayon** for CPU-bound operations and **concurrent batch operations** will significantly improve performance for:
 
 - **Large form validation** → 2-4x faster
-- **Bulk file uploads** → 5-10x faster  
+- **Bulk file uploads** → 5-10x faster
 - **Batch cache operations** → 10-100x faster
 - **Static site generation** → 10-20x faster
 - **Queue throughput** → 3-5x higher
