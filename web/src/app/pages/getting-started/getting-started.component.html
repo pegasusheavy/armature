@@ -1,8 +1,6 @@
 <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-50 to-primary-100">
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">
-      Quick Start
-    </h2>
+    <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">Quick Start</h2>
     <div class="bg-gray-900 rounded-xl p-8 shadow-2xl overflow-x-auto">
       <pre class="text-sm text-gray-100"><code class="language-rust">use armature::prelude::*;
 
@@ -45,14 +43,12 @@ async fn main() -> Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; &#123;
 
 <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">
-      Installation
-    </h2>
-    
+    <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">Installation</h2>
+
     <div class="space-y-8">
       <div>
         <h3 class="text-2xl font-bold text-gray-900 mb-4">
-          <fa-icon [icon]="['fas', 'download']" class="text-primary-600 mr-2"></fa-icon>
+          <fa-icon [icon]="['fas', 'download']" class="text-primary-600 mr-2" />
           Add to your Cargo.toml
         </h3>
         <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
@@ -64,91 +60,99 @@ tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
 
       <div>
         <h3 class="text-2xl font-bold text-gray-900 mb-4">
-          <fa-icon [icon]="['fas', 'rocket']" class="text-primary-600 mr-2"></fa-icon>
+          <fa-icon [icon]="['fas', 'rocket']" class="text-primary-600 mr-2" />
           Run your app
         </h3>
         <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
           <pre class="text-sm text-gray-100"><code>cargo run</code></pre>
         </div>
         <p class="mt-4 text-gray-600">
-          Your server is now running at <code class="bg-gray-100 px-2 py-1 rounded">http://127.0.0.1:3000</code>
+          Your server is now running at
+          <code class="bg-gray-100 px-2 py-1 rounded">http://127.0.0.1:3000</code>
         </p>
       </div>
 
       <div>
         <h3 class="text-2xl font-bold text-gray-900 mb-4">
-          <fa-icon [icon]="['fas', 'book']" class="text-primary-600 mr-2"></fa-icon>
+          <fa-icon [icon]="['fas', 'book']" class="text-primary-600 mr-2" />
           Next Steps
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              📖 Read the Documentation
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">📖 Read the Documentation</h4>
             <p class="text-gray-700 text-sm mb-3">
               Explore 34 comprehensive guides covering all framework features.
             </p>
-            <a routerLink="/docs" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              routerLink="/docs"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               View Docs →
             </a>
           </div>
 
           <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              💻 Browse Examples
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">💻 Browse Examples</h4>
             <p class="text-gray-700 text-sm mb-3">
               Check out 30+ working examples covering all features.
             </p>
-            <a href="https://gitlab.com/pegasusheavy/armature/-/tree/develop/examples" target="_blank" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              href="https://gitlab.com/pegasusheavy/armature/-/tree/develop/examples"
+              target="_blank"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               View Examples →
             </a>
           </div>
 
           <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              🔐 Add Authentication
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">🔐 Add Authentication</h4>
             <p class="text-gray-700 text-sm mb-3">
               Integrate JWT, OAuth2, or SAML authentication in minutes.
             </p>
-            <a routerLink="/docs/auth-guide" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              routerLink="/docs/auth-guide"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               Auth Guide →
             </a>
           </div>
 
           <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              🔥 Hot Module Reload
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">🔥 Hot Module Reload</h4>
             <p class="text-gray-700 text-sm mb-3">
               Live reload JS/TS/CSS during development with WebSocket notifications.
             </p>
-            <a routerLink="/docs/hmr-quick-start" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              routerLink="/docs/hmr-quick-start"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               HMR Guide →
             </a>
           </div>
 
           <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              ♻️ Lifecycle Hooks
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">♻️ Lifecycle Hooks</h4>
             <p class="text-gray-700 text-sm mb-3">
               Manage resources with NestJS-inspired lifecycle hooks.
             </p>
-            <a routerLink="/docs/lifecycle-hooks" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              routerLink="/docs/lifecycle-hooks"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               Lifecycle Guide →
             </a>
           </div>
 
           <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg">
-            <h4 class="font-bold text-gray-900 mb-2">
-              📊 Logging & Observability
-            </h4>
+            <h4 class="font-bold text-gray-900 mb-2">📊 Logging & Observability</h4>
             <p class="text-gray-700 text-sm mb-3">
               Structured logging with tracing, metrics, and OpenTelemetry.
             </p>
-            <a routerLink="/docs/logging-guide" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            <a
+              routerLink="/docs/logging-guide"
+              class="text-primary-600 hover:text-primary-700 font-medium text-sm"
+            >
               Logging Guide →
             </a>
           </div>
@@ -157,4 +161,3 @@ tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
     </div>
   </div>
 </section>
-

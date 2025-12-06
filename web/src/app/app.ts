@@ -1,21 +1,21 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { 
-  faBolt, 
-  faShieldAlt, 
-  faProjectDiagram, 
-  faUserShield, 
-  faPalette, 
-  faServer, 
-  faCheckCircle, 
-  faRocket, 
+import {
+  faBolt,
+  faShieldAlt,
+  faProjectDiagram,
+  faUserShield,
+  faPalette,
+  faServer,
+  faCheckCircle,
+  faRocket,
   faCode,
   faChevronDown,
   faCube,
   faBuilding,
   faDownload,
-  faBook
+  faBook,
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
@@ -26,7 +26,7 @@ import { FooterComponent } from './components/footer/footer.component';
   selector: 'app-root',
   imports: [RouterOutlet, NavComponent, FooterComponent, FontAwesomeModule],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrls: ['./app.scss'],
 })
 export class App {
   constructor(library: FaIconLibrary) {
@@ -47,7 +47,7 @@ export class App {
       faDownload,
       faBook
     );
-    
+
     // Add brand icons
     library.addIcons(faGithub);
   }

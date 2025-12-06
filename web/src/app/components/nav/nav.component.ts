@@ -7,7 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   selector: 'app-nav',
   imports: [CommonModule, RouterLink, RouterLinkActive, FontAwesomeModule],
   templateUrl: './nav.component.html',
-  styleUrl: './nav.component.scss'
+  styleUrl: './nav.component.scss',
 })
 export class NavComponent {
   isMenuOpen = false;
@@ -16,4 +16,3 @@ export class NavComponent {
     this.isMenuOpen = !this.isMenuOpen;
   }
 }
-

@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
   selector: 'app-faq',
   imports: [CommonModule, FontAwesomeModule],
   templateUrl: './faq.component.html',
-  styleUrl: './faq.component.scss'
+  styleUrl: './faq.component.scss',
 })
 export class FaqComponent {}
-

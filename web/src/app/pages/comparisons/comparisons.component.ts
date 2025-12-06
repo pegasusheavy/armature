@@ -5,7 +5,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   selector: 'app-comparisons',
   imports: [FontAwesomeModule],
   templateUrl: './comparisons.component.html',
-  styleUrl: './comparisons.component.scss'
+  styleUrl: './comparisons.component.scss',
 })
 export class ComparisonsComponent {}
-

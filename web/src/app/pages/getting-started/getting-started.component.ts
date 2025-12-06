@@ -5,7 +5,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
   selector: 'app-getting-started',
   imports: [FontAwesomeModule],
   templateUrl: './getting-started.component.html',
-  styleUrl: './getting-started.component.scss'
+  styleUrl: './getting-started.component.scss',
 })
 export class GettingStartedComponent {}
-

@@ -3,17 +3,14 @@
   <aside class="docs-sidebar">
     <div class="sidebar-content">
       <h2>Documentation</h2>
-      
+
       @for (category of getCategories(); track category) {
         <div class="doc-category">
           <h3>{{ category }}</h3>
           <ul>
             @for (doc of docsByCategory()[category]; track doc.id) {
               <li>
-                <a 
-                  [routerLink]="['/docs', doc.id]" 
-                  [class.active]="currentDoc()?.id === doc.id"
-                >
+                <a [routerLink]="['/docs', doc.id]" [class.active]="currentDoc()?.id === doc.id">
                   {{ doc.title }}
                 </a>
               </li>
@@ -42,4 +39,3 @@
     }
   </main>
 </div>
-

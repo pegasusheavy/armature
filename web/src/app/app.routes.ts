@@ -7,10 +7,18 @@ import { DocsComponent } from './pages/docs/docs.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, title: 'Armature - Modern Rust Web Framework' },
-  { path: 'comparisons', component: ComparisonsComponent, title: 'Framework Comparisons - Armature' },
-  { path: 'getting-started', component: GettingStartedComponent, title: 'Getting Started - Armature' },
+  {
+    path: 'comparisons',
+    component: ComparisonsComponent,
+    title: 'Framework Comparisons - Armature',
+  },
+  {
+    path: 'getting-started',
+    component: GettingStartedComponent,
+    title: 'Getting Started - Armature',
+  },
   { path: 'docs', component: DocsComponent, title: 'Documentation - Armature' },
   { path: 'docs/:id', component: DocsComponent, title: 'Documentation - Armature' },
   { path: 'faq', component: FaqComponent, title: 'FAQ - Armature' },
-  { path: '**', redirectTo: '', pathMatch: 'full' }
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
