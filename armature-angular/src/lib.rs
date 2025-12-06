@@ -27,6 +27,68 @@
 //! assert!(config.excluded_routes.contains(&"/admin".to_string()));
 //! ```
 //!
+//! ## Cache Configuration
+//!
+//! ```
+//! use armature_angular::AngularConfig;
+//! use std::path::PathBuf;
+//!
+//! // Enable caching with custom TTL
+//! let with_cache = AngularConfig::new()
+//!     .with_node_path(PathBuf::from("node"))
+//!     .with_server_bundle(PathBuf::from("dist/server/main.js"))
+//!     .with_browser_dist(PathBuf::from("dist/browser"))
+//!     .with_cache(true, 3600); // Enable cache with 1 hour TTL
+//!
+//! assert!(with_cache.enable_cache);
+//! assert_eq!(with_cache.cache_ttl, 3600);
+//!
+//! // Disable caching (default)
+//! let without_cache = AngularConfig::new();
+//! assert!(!without_cache.enable_cache);
+//! ```
+//!
+//! ## Excluding Multiple Routes
+//!
+//! ```
+//! use armature_angular::AngularConfig;
+//! use std::path::PathBuf;
+//!
+//! let config = AngularConfig::new()
+//!     .with_node_path(PathBuf::from("node"))
+//!     .with_server_bundle(PathBuf::from("dist/server/main.js"))
+//!     .with_browser_dist(PathBuf::from("dist/browser"))
+//!     .exclude_route("/admin".to_string())
+//!     .exclude_route("/downloads".to_string())
+//!     .exclude_route("/static".to_string());
+//!
+//! // Default config includes "/api" and "/assets", plus 3 more = 5 total
+//! assert_eq!(config.excluded_routes.len(), 5);
+//! assert!(config.excluded_routes.contains(&"/admin".to_string()));
+//! assert!(config.excluded_routes.contains(&"/downloads".to_string()));
+//! assert!(config.excluded_routes.contains(&"/static".to_string()));
+//! ```
+//!
+//! ## Render Timeout Configuration
+//!
+//! ```
+//! use armature_angular::AngularConfig;
+//! use std::path::PathBuf;
+//!
+//! // Set custom render timeout (in milliseconds)
+//! let config = AngularConfig::new()
+//!     .with_node_path(PathBuf::from("node"))
+//!     .with_server_bundle(PathBuf::from("dist/server/main.js"))
+//!     .with_browser_dist(PathBuf::from("dist/browser"))
+//!     .with_timeout(10000); // 10 seconds
+//!
+//! assert_eq!(config.render_timeout, 10000);
+//!
+//! // Default timeout is 5000ms (5 seconds)
+//! let default_config = AngularConfig::new();
+//! assert_eq!(default_config.render_timeout, 5000);
+//! ```
+//!
 //! ## Creating an Angular Service
 //!
 //! ```ignore
