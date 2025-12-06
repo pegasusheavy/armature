@@ -4,6 +4,7 @@ use crate::{
     Container, Error, HttpRequest, HttpResponse, HttpsConfig, LifecycleManager, Module, Router,
     TlsConfig,
 };
+use crate::logging::{debug, error, info, trace, warn};
 use http_body_util::{BodyExt, Full};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -33,39 +34,52 @@ impl Application {
 
     /// Create a new application from a root module with lifecycle support
     pub async fn create<M: Module + Default>() -> Self {
-        println!("🚀 Bootstrapping Armature application...\n");
+        info!("Bootstrapping Armature application");
+        debug!(module_type = std::any::type_name::<M>(), "Creating application from root module");
 
         let container = Container::new();
+        debug!("DI container initialized");
+        
         let mut router = Router::new();
+        debug!("Router initialized");
+        
         let lifecycle = Arc::new(LifecycleManager::new());
+        debug!("Lifecycle manager initialized");
 
         // Initialize the root module
         let root_module = M::default();
+        debug!("Root module instantiated");
 
-        println!("📦 Registering modules and dependencies:");
+        info!("Registering modules and dependencies");
 
         // Register all providers and controllers from the module tree
         Self::register_module(&container, &mut router, &root_module);
 
-        println!("\n🔄 Executing lifecycle hooks:");
+        info!("Executing lifecycle hooks");
 
         // Call module init hooks
+        debug!("Calling OnModuleInit hooks");
         if let Err(errors) = lifecycle.call_module_init_hooks().await {
-            eprintln!("\n⚠️  Some module init hooks failed:");
+            warn!(error_count = errors.len(), "Some module init hooks failed");
             for (name, error) in errors {
-                eprintln!("  ✗ {}: {}", name, error);
+                error!(hook_name = %name, error = %error, "Module init hook failed");
             }
+        } else {
+            debug!("All OnModuleInit hooks completed successfully");
         }
 
         // Call bootstrap hooks
+        debug!("Calling OnApplicationBootstrap hooks");
         if let Err(errors) = lifecycle.call_bootstrap_hooks().await {
-            eprintln!("\n⚠️  Some bootstrap hooks failed:");
+            warn!(error_count = errors.len(), "Some bootstrap hooks failed");
             for (name, error) in errors {
-                eprintln!("  ✗ {}: {}", name, error);
+                error!(hook_name = %name, error = %error, "Bootstrap hook failed");
             }
+        } else {
+            debug!("All OnApplicationBootstrap hooks completed successfully");
         }
 
-        println!("\n✅ Application bootstrap complete!\n");
+        info!("Application bootstrap complete");
 
         Self {
             container,
@@ -81,33 +95,42 @@ impl Application {
 
     /// Gracefully shutdown the application
     pub async fn shutdown(&self, signal: Option<String>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-        println!("\n🛑 Gracefully shutting down application...");
+        info!(signal = ?signal, "Gracefully shutting down application");
 
         // Call before shutdown hooks
+        debug!("Calling BeforeApplicationShutdown hooks");
         if let Err(errors) = self.lifecycle.call_before_shutdown_hooks(signal.clone()).await {
-            eprintln!("\n⚠️  Some before shutdown hooks failed:");
+            warn!(error_count = errors.len(), "Some before shutdown hooks failed");
             for (name, error) in errors {
-                eprintln!("  ✗ {}: {}", name, error);
+                error!(hook_name = %name, error = %error, "Before shutdown hook failed");
             }
+        } else {
+            debug!("All BeforeApplicationShutdown hooks completed successfully");
         }
 
         // Call shutdown hooks
+        debug!("Calling OnApplicationShutdown hooks");
         if let Err(errors) = self.lifecycle.call_shutdown_hooks(signal.clone()).await {
-            eprintln!("\n⚠️  Some shutdown hooks failed:");
+            warn!(error_count = errors.len(), "Some shutdown hooks failed");
             for (name, error) in errors {
-                eprintln!("  ✗ {}: {}", name, error);
+                error!(hook_name = %name, error = %error, "Shutdown hook failed");
             }
+        } else {
+            debug!("All OnApplicationShutdown hooks completed successfully");
         }
 
         // Call module destroy hooks
+        debug!("Calling OnModuleDestroy hooks");
         if let Err(errors) = self.lifecycle.call_module_destroy_hooks().await {
-            eprintln!("\n⚠️  Some module destroy hooks failed:");
+            warn!(error_count = errors.len(), "Some module destroy hooks failed");
             for (name, error) in errors {
-                eprintln!("  ✗ {}: {}", name, error);
+                error!(hook_name = %name, error = %error, "Module destroy hook failed");
             }
+        } else {
+            debug!("All OnModuleDestroy hooks completed successfully");
         }
 
-        println!("✅ Application shutdown complete\n");
+        info!("Application shutdown complete");
         Ok(())
     }
 
@@ -156,20 +179,31 @@ impl Application {
 
     /// Register a module and its imports recursively
     fn register_module(container: &Container, router: &mut Router, module: &dyn Module) {
+        let module_type = std::any::type_name_of_val(module);
+        debug!(module_type = module_type, "Registering module");
+        
         // First, recursively register imported modules
-        for imported_module in module.imports() {
-            Self::register_module(container, router, imported_module.as_ref());
+        let imports = module.imports();
+        if !imports.is_empty() {
+            debug!(module_type = module_type, import_count = imports.len(), "Registering imported modules");
+            for imported_module in imports {
+                Self::register_module(container, router, imported_module.as_ref());
+            }
         }
 
         // Register all providers
-        for provider_reg in module.providers() {
+        let providers = module.providers();
+        debug!(module_type = module_type, provider_count = providers.len(), "Registering providers");
+        for provider_reg in providers {
             // Call the registration function which will register the provider in the container
             (provider_reg.register_fn)(container);
-            println!("✓ Registered provider: {}", provider_reg.type_name);
+            debug!(module_type = module_type, provider = provider_reg.type_name, "Provider registered");
         }
 
         // Register all controllers
-        for controller_reg in module.controllers() {
+        let controllers = module.controllers();
+        debug!(module_type = module_type, controller_count = controllers.len(), "Registering controllers");
+        for controller_reg in controllers {
             // Instantiate controller with DI
             match (controller_reg.factory)(container) {
                 Ok(controller_instance) => {
@@ -177,38 +211,50 @@ impl Application {
                     if let Err(e) =
                         (controller_reg.route_registrar)(container, router, controller_instance)
                     {
-                        eprintln!(
-                            "Failed to register routes for {}: {}",
-                            controller_reg.type_name, e
+                        error!(
+                            module_type = module_type,
+                            controller = controller_reg.type_name,
+                            error = %e,
+                            "Failed to register routes for controller"
                         );
                     } else {
-                        println!(
-                            "Registered controller: {} at {}",
-                            controller_reg.type_name, controller_reg.base_path
+                        debug!(
+                            module_type = module_type,
+                            controller = controller_reg.type_name,
+                            base_path = controller_reg.base_path,
+                            "Controller registered"
                         );
                     }
                 }
                 Err(e) => {
-                    eprintln!(
-                        "Failed to instantiate controller {}: {}",
-                        controller_reg.type_name, e
+                    error!(
+                        module_type = module_type,
+                        controller = controller_reg.type_name,
+                        error = %e,
+                        "Failed to instantiate controller"
                     );
                 }
             }
         }
+        
+        debug!(module_type = module_type, "Module registration complete");
     }
 
     /// Start the HTTP server on the specified port
     pub async fn listen(self, port: u16) -> Result<(), Error> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
+        
+        debug!(address = %addr, "Binding to address");
         let listener = TcpListener::bind(addr).await?;
-
-        println!("🚀 Server listening on http://{}", addr);
+        
+        info!(address = %addr, "HTTP server listening");
 
         let router = self.router.clone();
 
         loop {
-            let (stream, _) = listener.accept().await?;
+            let (stream, client_addr) = listener.accept().await?;
+            trace!(client_address = %client_addr, "Connection accepted");
+            
             let io = TokioIo::new(stream);
             let router = router.clone();
 
@@ -219,7 +265,7 @@ impl Application {
                 });
 
                 if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
-                    eprintln!("Error serving connection: {:?}", err);
+                    error!(error = %err, client = %client_addr, "Error serving connection");
                 }
             });
         }
@@ -248,21 +294,26 @@ impl Application {
     /// ```
     pub async fn listen_https(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
+        
+        debug!(address = %addr, "Binding to address (HTTPS)");
         let listener = TcpListener::bind(addr).await?;
 
-        println!("🔒 HTTPS Server listening on https://{}", addr);
+        info!(address = %addr, "HTTPS server listening");
 
         let acceptor = TlsAcceptor::from(tls_config.server_config);
         let router = self.router.clone();
 
         loop {
-            let (stream, _) = listener.accept().await?;
+            let (stream, client_addr) = listener.accept().await?;
+            trace!(client_address = %client_addr, "HTTPS connection accepted");
+            
             let acceptor = acceptor.clone();
             let router = router.clone();
 
             tokio::spawn(async move {
                 match acceptor.accept(stream).await {
                     Ok(tls_stream) => {
+                        debug!(client = %client_addr, "TLS handshake successful");
                         let io = TokioIo::new(tls_stream);
 
                         let service = service_fn(move |req: Request<IncomingBody>| {
@@ -272,11 +323,11 @@ impl Application {
 
                         if let Err(err) = http1::Builder::new().serve_connection(io, service).await
                         {
-                            eprintln!("Error serving HTTPS connection: {:?}", err);
+                            error!(error = %err, client = %client_addr, "Error serving HTTPS connection");
                         }
                     }
                     Err(err) => {
-                        eprintln!("TLS handshake failed: {:?}", err);
+                        error!(error = %err, client = %client_addr, "TLS handshake failed");
                     }
                 }
             });
@@ -429,13 +480,20 @@ async fn handle_request(
     req: Request<IncomingBody>,
     router: Arc<Router>,
 ) -> Result<Response<Full<bytes::Bytes>>, hyper::Error> {
+    use std::time::Instant;
+    
+    let start = Instant::now();
+    
     // Convert hyper request to our HttpRequest
     let method = req.method().to_string();
     let path = req.uri().path().to_string();
+    
+    trace!(method = %method, path = %path, "Incoming request");
 
-    let mut armature_req = HttpRequest::new(method, path);
+    let mut armature_req = HttpRequest::new(method.clone(), path.clone());
 
     // Copy headers
+    let header_count = req.headers().len();
     for (name, value) in req.headers() {
         if let Ok(value_str) = value.to_str() {
             armature_req
@@ -443,15 +501,26 @@ async fn handle_request(
                 .insert(name.to_string(), value_str.to_string());
         }
     }
+    trace!(header_count = header_count, "Headers parsed");
 
     // Read body
     let body_bytes = req.collect().await?.to_bytes();
+    let body_size = body_bytes.len();
     armature_req.body = body_bytes.to_vec();
+    
+    if body_size > 0 {
+        trace!(body_size = body_size, "Request body received");
+    }
 
     // Route the request
+    debug!(method = %method, path = %path, "Routing request");
     let response = match router.route(armature_req).await {
-        Ok(resp) => resp,
+        Ok(resp) => {
+            debug!(method = %method, path = %path, status = resp.status, "Request handled successfully");
+            resp
+        },
         Err(err) => {
+            warn!(method = %method, path = %path, error = %err, "Request handling failed");
             // Convert error to response
             let status = err.status_code();
             let body = serde_json::json!({
@@ -463,6 +532,15 @@ async fn handle_request(
                 .unwrap_or_else(|_| HttpResponse::internal_server_error())
         }
     };
+
+    let duration = start.elapsed();
+    debug!(
+        method = %method, 
+        path = %path, 
+        status = response.status,
+        duration_ms = duration.as_millis(),
+        "Request completed"
+    );
 
     // Convert our HttpResponse to hyper Response
     let mut builder = Response::builder().status(response.status);
