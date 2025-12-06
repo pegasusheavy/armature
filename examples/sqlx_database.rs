@@ -57,7 +57,7 @@ pub struct UpdateUserRequest {
 pub struct DatabaseService {
     /// Connection string for the database
     connection_string: String,
-    
+
     /// SQLx connection pool (initialized after OnModuleInit)
     pool: Arc<RwLock<Option<PgPool>>>,
 }

@@ -98,7 +98,7 @@ cargo run --example sqlx_database
    ✅ Hooks registered
 
 ═══════════════════════════════════════════════════════════════
-                  INITIALIZATION PHASE                         
+                  INITIALIZATION PHASE
 ═══════════════════════════════════════════════════════════════
 
 📊 DatabaseService: Connecting to PostgreSQL...
@@ -108,7 +108,7 @@ cargo run --example sqlx_database
    ✅ Migrations complete!
 
 ═══════════════════════════════════════════════════════════════
-                  DEPENDENCY INJECTION                         
+                  DEPENDENCY INJECTION
 ═══════════════════════════════════════════════════════════════
 
 🔌 Injecting DatabaseService into UserService...
@@ -118,7 +118,7 @@ cargo run --example sqlx_database
    ✅ UserController created
 
 ═══════════════════════════════════════════════════════════════
-                  DATABASE OPERATIONS                          
+                  DATABASE OPERATIONS
 ═══════════════════════════════════════════════════════════════
 
 📝 Creating test users...
@@ -138,7 +138,7 @@ cargo run --example sqlx_database
    }
 
 ═══════════════════════════════════════════════════════════════
-                  GRACEFUL SHUTDOWN                            
+                  GRACEFUL SHUTDOWN
 ═══════════════════════════════════════════════════════════════
 
 📊 DatabaseService: Closing connections (signal: SIGTERM)...
@@ -200,7 +200,7 @@ impl UserService {
         self.db.get_all_users().await
             .map_err(|e| format!("Failed to fetch users: {}", e))
     }
-    
+
     // ... other methods
 }
 
@@ -382,16 +382,16 @@ pub async fn transfer_ownership(
     resource_id: i32,
 ) -> Result<(), sqlx::Error> {
     let pool = self.pool().await?;
-    
+
     let mut tx = pool.begin().await?;
-    
+
     // Update resource owner
     sqlx::query("UPDATE resources SET owner_id = $1 WHERE id = $2")
         .bind(to_id)
         .bind(resource_id)
         .execute(&mut *tx)
         .await?;
-    
+
     // Log transfer
     sqlx::query("INSERT INTO transfers (from_id, to_id, resource_id) VALUES ($1, $2, $3)")
         .bind(from_id)
@@ -399,7 +399,7 @@ pub async fn transfer_ownership(
         .bind(resource_id)
         .execute(&mut *tx)
         .await?;
-    
+
     tx.commit().await?;
     Ok(())
 }

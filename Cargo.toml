@@ -154,8 +154,10 @@ armature-queue = { path = "armature-queue" }
 armature-cron = { path = "armature-cron" }
 jsonwebtoken = "9.2"
 
-# SQLx for database example
+# Database ORMs for examples
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
+diesel = { version = "2.1", features = ["postgres", "r2d2", "chrono"] }
+sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
 chrono = "0.4"
 uuid = { version = "1.6", features = ["v4"] }
 
