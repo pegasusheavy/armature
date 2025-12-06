@@ -154,3 +154,4 @@ fn test_xss_config_builder() {
     assert_eq!(config.exclude_paths.len(), 1);
 }
 
+

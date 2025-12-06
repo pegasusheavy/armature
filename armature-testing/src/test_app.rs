@@ -111,7 +111,7 @@ impl TestAppBuilder {
     pub fn with_router(self, router: Router) -> Self {
         Self { router, ..self }
     }
-    
+
     /// Add a test route with a handler
     ///
     /// # Examples

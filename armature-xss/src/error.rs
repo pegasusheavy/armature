@@ -20,3 +20,4 @@ pub enum XssError {
 
 pub type Result<T> = std::result::Result<T, XssError>;
 
+

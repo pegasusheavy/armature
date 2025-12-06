@@ -17,7 +17,44 @@ pub enum HashAlgorithm {
     Argon2,
 }
 
-/// Password hasher
+/// Password hasher for secure password hashing and verification.
+///
+/// Supports multiple algorithms including Bcrypt and Argon2.
+///
+/// # Examples
+///
+/// Using Argon2 (recommended):
+///
+/// ```
+/// use armature_auth::{PasswordHasher, PasswordVerifier, password::HashAlgorithm};
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let hasher = PasswordHasher::new(HashAlgorithm::Argon2);
+///
+/// // Hash a password
+/// let hash = hasher.hash("supersecret")?;
+///
+/// // Verify correct password
+/// assert!(hasher.verify("supersecret", &hash)?);
+///
+/// // Verify incorrect password
+/// assert!(!hasher.verify("wrongpassword", &hash)?);
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Using Bcrypt:
+///
+/// ```
+/// use armature_auth::{PasswordHasher, PasswordVerifier, password::HashAlgorithm};
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let hasher = PasswordHasher::new(HashAlgorithm::Bcrypt);
+/// let hash = hasher.hash("mypassword")?;
+/// assert!(hasher.verify("mypassword", &hash)?);
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone)]
 pub struct PasswordHasher {
     algorithm: HashAlgorithm,

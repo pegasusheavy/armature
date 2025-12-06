@@ -118,3 +118,4 @@ fn test_oauth2_scopes() {
     assert_eq!(config.scopes.len(), 2);
 }
 
+

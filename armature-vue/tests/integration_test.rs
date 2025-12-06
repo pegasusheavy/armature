@@ -46,3 +46,4 @@ fn test_vue_config_server_path() {
     assert!(path.ends_with("entry-server.js"));
 }
 
+

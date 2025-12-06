@@ -90,3 +90,4 @@ else
     echo -e "${GREEN}Coverage: GOOD - Well documented!${NC}"
 fi
 
+

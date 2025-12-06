@@ -46,3 +46,4 @@ fn test_svelte_config_server_path() {
     assert!(path.ends_with("index.js"));
 }
 
+

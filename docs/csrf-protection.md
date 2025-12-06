@@ -414,3 +414,4 @@ async fn logout(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
 
 For more examples, see `examples/csrf_protection.rs`.
 
+

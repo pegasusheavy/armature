@@ -170,3 +170,4 @@ fn test_openapi_spec_serialization() {
     assert!(json_str.contains("1.0.0"));
 }
 
+

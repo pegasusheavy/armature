@@ -57,3 +57,4 @@ updates:
       - dependency-name: "@angular/*"
         update-types: ["version-update:semver-major"]
 
+

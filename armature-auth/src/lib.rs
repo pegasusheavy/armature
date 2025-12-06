@@ -1,4 +1,135 @@
-// Authentication and authorization for Armature
+//! Authentication and authorization for Armature.
+//!
+//! This crate provides comprehensive authentication and authorization
+//! capabilities including JWT, OAuth2, SAML, password hashing, and guards.
+//!
+//! ## Features
+//!
+//! - 🔐 **JWT Authentication** - Token-based auth with `armature-jwt`
+//! - 🌐 **OAuth2** - Google, Auth0, Microsoft, AWS Cognito, Okta
+//! - 🔑 **SAML** - Enterprise SAML 2.0 authentication
+//! - 🔒 **Password Hashing** - Secure bcrypt-based hashing
+//! - 🛡️ **Guards** - Route protection with auth and role guards
+//! - 👤 **User Context** - Request-scoped user information
+//!
+//! ## Quick Start - Password Authentication
+//!
+//! ```
+//! use armature_auth::{AuthService, PasswordHasher, PasswordVerifier};
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let auth_service = AuthService::new();
+//!
+//! // Hash a password
+//! let hash = auth_service.hash_password("secret123")?;
+//!
+//! // Verify password
+//! let is_valid = auth_service.verify_password("secret123", &hash)?;
+//! assert!(is_valid);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## JWT Authentication
+//!
+//! ```no_run
+//! use armature_auth::AuthService;
+//! use armature_jwt::{JwtConfig, JwtManager};
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! // Create JWT manager
+//! let jwt_config = JwtConfig::new("your-secret-key".to_string());
+//! let jwt_manager = JwtManager::new(jwt_config)?;
+//!
+//! // Create auth service with JWT
+//! let auth_service = AuthService::with_jwt(jwt_manager);
+//!
+//! // JWT manager is now available
+//! assert!(auth_service.jwt_manager().is_some());
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## OAuth2 - Google Example
+//!
+//! ```no_run
+//! use armature_auth::{GoogleProvider, providers::GoogleConfig, OAuth2Provider};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let config = GoogleConfig::new(
+//!     "client-id".to_string(),
+//!     "client-secret".to_string(),
+//!     "https://myapp.com/callback".to_string(),
+//! );
+//!
+//! let provider = GoogleProvider::new(config)?;
+//!
+//! // Generate authorization URL
+//! let (auth_url, state) = provider.authorization_url()?;
+//! println!("Redirect user to: {}", auth_url);
+//! println!("State: {}", state.secret());
+//!
+//! // After callback, exchange code for token
+//! let token = provider.exchange_code("auth-code".to_string()).await?;
+//! println!("Access token: {}", token.access_token);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Route Guards
+//!
+//! ```ignore
+//! use armature_auth::{AuthGuard, RoleGuard};
+//! use armature_core::{Controller, Get};
+//!
+//! #[controller("/admin")]
+//! struct AdminController;
+//!
+//! impl AdminController {
+//!     // Require authentication
+//!     #[get("/dashboard")]
+//!     #[guard(AuthGuard)]
+//!     async fn dashboard(&self) -> Result<HttpResponse, Error> {
+//!         Ok(HttpResponse::ok())
+//!     }
+//!
+//!     // Require specific role
+//!     #[get("/users")]
+//!     #[guard(RoleGuard::new("admin"))]
+//!     async fn users(&self) -> Result<HttpResponse, Error> {
+//!         Ok(HttpResponse::ok())
+//!     }
+//! }
+//! ```
+//!
+//! ## SAML Authentication
+//!
+//! ```ignore
+//! use armature_auth::{SamlServiceProvider, SamlConfig, IdpMetadata};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let config = SamlConfig {
+//!     entity_id: "https://myapp.com".to_string(),
+//!     acs_url: "https://myapp.com/callback".to_string(),
+//!     sls_url: None,
+//!     idp_metadata: IdpMetadata::Url("https://idp.example.com/metadata".to_string()),
+//!     sp_certificate: None,
+//!     sp_private_key: None,
+//!     contact_person: None,
+//!     allow_unsigned_assertions: false,
+//!     required_attributes: vec![],
+//! };
+//!
+//! let provider = SamlServiceProvider::new(config);
+//!
+//! // Generate SAML auth request
+//! let auth_request = provider.create_auth_request()?;
+//! println!("SAML Request: {}", auth_request.saml_request);
+//! # Ok(())
+//! # }
+//! ```
 
 pub mod error;
 pub mod guard;
@@ -29,7 +160,29 @@ use armature_core::Provider;
 use armature_jwt::JwtManager;
 use std::sync::Arc;
 
-/// Authentication service
+/// Authentication service for managing user authentication.
+///
+/// Provides password hashing, verification, and optional JWT token management.
+///
+/// # Examples
+///
+/// Basic password authentication:
+///
+/// ```
+/// use armature_auth::{AuthService, PasswordVerifier};
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let service = AuthService::new();
+///
+/// // Hash password
+/// let hash = service.hash_password("mypassword")?;
+///
+/// // Verify password
+/// assert!(service.verify_password("mypassword", &hash)?);
+/// assert!(!service.verify_password("wrongpassword", &hash)?);
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone)]
 pub struct AuthService {
     jwt_manager: Option<Arc<JwtManager>>,
