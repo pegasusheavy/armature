@@ -306,26 +306,47 @@ docs:build:
     - if: $CI_COMMIT_BRANCH == "main"
 
 # GitLab Pages deployment
+# Deploys the Angular documentation website from gh-pages branch
 pages:
   stage: docs
   image: node:20
   before_script:
     - corepack enable
     - corepack prepare pnpm@latest --activate
+    - git config --global user.email "ci@gitlab.com"
+    - git config --global user.name "GitLab CI"
   script:
+    # Fetch and checkout gh-pages branch
+    - git fetch origin gh-pages
+    - git checkout gh-pages
     - cd web
+    # Install dependencies
     - pnpm install
+    # Build Angular app for production
     - pnpm run build
     - cd ..
+    # Prepare public directory for GitLab Pages
     - mkdir -p public
-    - cp -r web/dist/web/* public/ || echo "No web dist found"
+    - cp -r web/dist/web/browser/* public/ 2>/dev/null || cp -r web/dist/web/* public/ || echo "⚠️  Warning: Could not copy build output"
+    # Create index redirect if needed
+    - test -f public/index.html || echo '<meta http-equiv="refresh" content="0; url=/armature">' > public/index.html
+    # Add .nojekyll to disable Jekyll processing
+    - touch public/.nojekyll
+    # Return to original branch
+    - git checkout -
   artifacts:
     paths:
       - public
+    expire_in: 30 days
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
-  only:
-    - develop
+    - if: $CI_COMMIT_BRANCH == "gh-pages"
+  cache:
+    key:
+      files:
+        - web/pnpm-lock.yaml
+    paths:
+      - web/node_modules/
 
 # ============================================================================
 # RELEASE STAGE
