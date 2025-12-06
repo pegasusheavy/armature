@@ -29,6 +29,43 @@
 //! let csrf = CsrfMiddleware::new(config);
 //! ```
 //!
+//! ## Token Generation
+//!
+//! ```rust
+//! use armature_csrf::{CsrfConfig, CsrfMiddleware};
+//!
+//! let config = CsrfConfig::default();
+//! let csrf = CsrfMiddleware::new(config);
+//!
+//! // Generate a new CSRF token
+//! let token = csrf.generate_token().unwrap();
+//!
+//! // Token has a value and timestamps
+//! assert!(!token.value.is_empty());
+//! assert!(token.value.len() > 32);
+//! assert!(token.created_at < token.expires_at);
+//! ```
+//!
+//! ## Token Validation
+//!
+//! ```rust
+//! use armature_csrf::{CsrfToken};
+//!
+//! // Generate a token with 3600 second TTL
+//! let token = CsrfToken::generate(3600);
+//!
+//! // Validate the token (should succeed)
+//! assert!(token.validate().is_ok());
+//!
+//! // Check if token is expired
+//! assert!(!token.is_expired());
+//!
+//! // Expired token would fail validation
+//! let expired = CsrfToken::generate(-1); // Expires immediately
+//! assert!(expired.is_expired());
+//! assert!(expired.validate().is_err());
+//! ```
+//!
 //! ## Usage with Armature
 //!
 //! ```ignore
