@@ -13,17 +13,48 @@
 //! - 🔒 HTML escaping (configurable)
 //! - 📝 Custom helper registration
 //!
-//! ## Example
+//! ## Quick Start - Configuration
 //!
-//! ```no_run
+//! ```
+//! use armature_handlebars::HandlebarsConfig;
+//!
+//! // Basic configuration
+//! let config = HandlebarsConfig::new("templates")
+//!     .with_extension(".hbs")
+//!     .with_dev_mode(false);
+//!
+//! assert_eq!(config.template_dir.to_str(), Some("templates"));
+//! assert_eq!(config.template_extension, ".hbs");
+//! assert_eq!(config.dev_mode, false);
+//! ```
+//!
+//! ## Advanced Configuration
+//!
+//! ```
+//! use armature_handlebars::HandlebarsConfig;
+//!
+//! let config = HandlebarsConfig::new("templates")
+//!     .with_extension(".html")
+//!     .with_dev_mode(true)
+//!     .with_strict_mode(true)
+//!     .with_partials_dir("templates/partials")
+//!     .with_escape_html(true);
+//!
+//! assert_eq!(config.strict_mode, true);
+//! assert_eq!(config.escape_html, true);
+//! assert!(config.partials_dir.is_some());
+//! ```
+//!
+//! ## Creating a Service
+//!
+//! ```ignore
 //! use armature_handlebars::{HandlebarsConfig, HandlebarsService};
 //! use serde_json::json;
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! // Create configuration
 //! let config = HandlebarsConfig::new("templates")
-//!     .with_extension(".hbs")
-//!     .with_dev_mode(false);
+//!     .with_extension(".hbs");
 //!
 //! // Create service
 //! let service = HandlebarsService::new(config)?;
