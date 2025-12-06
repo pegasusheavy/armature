@@ -43,37 +43,37 @@ let config = GraphQLConfig::production("/graphql");
 pub struct GraphQLConfig {
     /// GraphQL endpoint path
     pub endpoint: String,
-    
+
     /// Enable GraphQL Playground (interactive GraphQL IDE)
     pub enable_playground: bool,
-    
+
     /// Playground endpoint path (if enabled)
     pub playground_endpoint: String,
-    
+
     /// Enable GraphiQL (lighter alternative to Playground)
     pub enable_graphiql: bool,
-    
+
     /// GraphiQL endpoint path (if enabled)
     pub graphiql_endpoint: String,
-    
+
     /// Enable schema documentation endpoint
     pub enable_schema_docs: bool,
-    
+
     /// Schema documentation endpoint path
     pub schema_docs_endpoint: String,
-    
+
     /// Enable introspection queries (required for playgrounds and docs)
     pub enable_introspection: bool,
-    
+
     /// Maximum query depth (0 = unlimited)
     pub max_depth: usize,
-    
+
     /// Maximum query complexity (0 = unlimited)
     pub max_complexity: usize,
-    
+
     /// Enable query validation
     pub enable_validation: bool,
-    
+
     /// Enable Apollo Tracing
     pub enable_tracing: bool,
 }
@@ -284,12 +284,12 @@ async fn playground(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
     if !is_authenticated(&req) {
         return Err(Error::Unauthorized);
     }
-    
+
     // Only allow in development or for authorized users
     if !cfg!(debug_assertions) && !is_admin(&req) {
         return Err(Error::Forbidden);
     }
-    
+
     Ok(/* playground HTML */)
 }
 ```
@@ -369,25 +369,25 @@ impl GraphQLController {
         // Execute GraphQL query
         // ...
     }
-    
+
     #[get("/playground")]
     async fn playground(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         if !self.config.enable_playground {
             return Err(Error::NotFound);
         }
-        
+
         let html = graphql_playground_html(&self.config.endpoint);
         Ok(HttpResponse::ok()
             .with_header("Content-Type", "text/html")
             .with_body(html.into_bytes()))
     }
-    
+
     #[get("/schema")]
     async fn schema_docs(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         if !self.config.enable_schema_docs {
             return Err(Error::NotFound);
         }
-        
+
         let html = generate_schema_docs_html(&self.schema, &self.config.endpoint, "My API");
         Ok(HttpResponse::ok()
             .with_header("Content-Type", "text/html")
@@ -431,11 +431,11 @@ impl GraphQLController {
 
 Armature's GraphQL configuration provides:
 
-✅ **Flexible playground options** (Playground, GraphiQL)  
-✅ **Interactive schema documentation**  
-✅ **Development vs production configurations**  
-✅ **Security controls** (introspection, complexity limits)  
-✅ **Customizable endpoints**  
+✅ **Flexible playground options** (Playground, GraphiQL)
+✅ **Interactive schema documentation**
+✅ **Development vs production configurations**
+✅ **Security controls** (introspection, complexity limits)
+✅ **Customizable endpoints**
 ✅ **Easy integration** with Armature framework
 
 For complete examples, see:

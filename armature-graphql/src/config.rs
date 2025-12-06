@@ -3,37 +3,37 @@
 pub struct GraphQLConfig {
     /// GraphQL endpoint path
     pub endpoint: String,
-    
+
     /// Enable GraphQL Playground (interactive GraphQL IDE)
     pub enable_playground: bool,
-    
+
     /// Playground endpoint path (if enabled)
     pub playground_endpoint: String,
-    
+
     /// Enable GraphiQL (lighter alternative to Playground)
     pub enable_graphiql: bool,
-    
+
     /// GraphiQL endpoint path (if enabled)
     pub graphiql_endpoint: String,
-    
+
     /// Enable schema documentation endpoint
     pub enable_schema_docs: bool,
-    
+
     /// Schema documentation endpoint path
     pub schema_docs_endpoint: String,
-    
+
     /// Enable introspection queries (required for playgrounds and docs)
     pub enable_introspection: bool,
-    
+
     /// Maximum query depth (0 = unlimited)
     pub max_depth: usize,
-    
+
     /// Maximum query complexity (0 = unlimited)
     pub max_complexity: usize,
-    
+
     /// Enable query validation
     pub enable_validation: bool,
-    
+
     /// Enable Apollo Tracing
     pub enable_tracing: bool,
 }
