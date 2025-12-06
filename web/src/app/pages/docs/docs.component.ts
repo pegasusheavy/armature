@@ -324,3 +324,4 @@ export class DocsComponent implements OnInit {
     return Object.keys(this.docsByCategory());
   }
 }
+
