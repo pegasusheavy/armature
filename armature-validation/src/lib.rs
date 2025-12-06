@@ -75,6 +75,73 @@
 //! // Positive number
 //! assert!(IsPositive::validate_i32(42, "count").is_ok());
 //! ```
+//!
+//! ## String Validators
+//!
+//! ```
+//! use armature_validation::{IsEmail, IsUrl, MaxLength, Matches};
+//!
+//! // Email validation
+//! assert!(IsEmail::validate("user@example.com", "email").is_ok());
+//! assert!(IsEmail::validate("invalid-email", "email").is_err());
+//!
+//! // URL validation
+//! assert!(IsUrl::validate("https://example.com", "website").is_ok());
+//! assert!(IsUrl::validate("not-a-url", "website").is_err());
+//!
+//! // Length constraints
+//! assert!(MaxLength(100).validate("short text", "description").is_ok());
+//! assert!(MaxLength(5).validate("this is too long", "description").is_err());
+//!
+//! // Pattern matching with regex
+//! let starts_with_capital = Matches::new("^[A-Z]").unwrap();
+//! assert!(starts_with_capital.validate("Hello", "name").is_ok());
+//! assert!(starts_with_capital.validate("hello", "name").is_err());
+//! ```
+//!
+//! ## Custom Validators
+//!
+//! ```
+//! use armature_validation::{Validator, ValidationError};
+//! use std::any::Any;
+//!
+//! // Create a custom validator
+//! struct IsStrongPassword;
+//!
+//! impl Validator for IsStrongPassword {
+//!     fn validate(&self, value: &dyn Any, field: &str) -> Result<(), ValidationError> {
+//!         let value = value.downcast_ref::<String>()
+//!             .ok_or_else(|| ValidationError::new(field, "Expected string"))?;
+//!
+//!         let has_uppercase = value.chars().any(|c| c.is_uppercase());
+//!         let has_lowercase = value.chars().any(|c| c.is_lowercase());
+//!         let has_digit = value.chars().any(|c| c.is_numeric());
+//!         let long_enough = value.len() >= 8;
+//!
+//!         if has_uppercase && has_lowercase && has_digit && long_enough {
+//!             Ok(())
+//!         } else {
+//!             Err(ValidationError::new(
+//!                 field,
+//!                 "Password must be at least 8 characters with uppercase, lowercase, and digits"
+//!             ))
+//!         }
+//!     }
+//!
+//!     fn name(&self) -> &'static str {
+//!         "IsStrongPassword"
+//!     }
+//! }
+//!
+//! // Use the custom validator
+//! let validator = IsStrongPassword;
+//! let strong = "MyP@ssw0rd".to_string();
+//! let weak = "password".to_string();
+//!
+//! assert!(validator.validate(&strong, "password").is_ok());
+//! assert!(validator.validate(&weak, "password").is_err());
+//! assert_eq!(validator.name(), "IsStrongPassword");
+//! ```
 
 mod errors;
 mod pipe;
