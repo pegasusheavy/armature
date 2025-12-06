@@ -7,7 +7,7 @@ fn test_cron_expression_parsing() {
     // Valid expression
     let expr = CronExpression::parse("0 0 * * * *");
     assert!(expr.is_ok());
-    
+
     // Invalid expression
     let expr = CronExpression::parse("invalid");
     assert!(expr.is_err());
@@ -38,7 +38,7 @@ async fn test_job_creation() {
             Ok(())
         }),
     );
-    
+
     assert_eq!(job.name(), "test_job");
     assert!(!job.is_running());
 }
@@ -46,10 +46,10 @@ async fn test_job_creation() {
 #[tokio::test]
 async fn test_job_execution() {
     use std::sync::{Arc, Mutex};
-    
+
     let executed = Arc::new(Mutex::new(false));
     let executed_clone = executed.clone();
-    
+
     let job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
@@ -61,10 +61,10 @@ async fn test_job_execution() {
             })
         },
     );
-    
+
     // Execute job manually
     job.execute().await.unwrap();
-    
+
     assert!(*executed.lock().unwrap());
 }
 
@@ -75,12 +75,12 @@ async fn test_job_enable_disable() {
         CronExpression::parse("0 0 * * * *").unwrap(),
         |_ctx| Box::pin(async { Ok(()) }),
     );
-    
+
     assert!(job.is_enabled());
-    
+
     job.disable();
     assert!(!job.is_enabled());
-    
+
     job.enable();
     assert!(job.is_enabled());
 }
@@ -92,7 +92,7 @@ async fn test_job_status() {
         CronExpression::parse("0 0 * * * *").unwrap(),
         |_ctx| Box::pin(async { Ok(()) }),
     );
-    
+
     let status = job.status();
     assert!(matches!(status, JobStatus::Scheduled));
 }
@@ -108,7 +108,7 @@ async fn test_job_context() {
             Ok(())
         }),
     );
-    
+
     job.execute().await.unwrap();
 }
 
@@ -121,15 +121,15 @@ async fn test_scheduler_creation() {
 #[tokio::test]
 async fn test_scheduler_add_job() {
     let scheduler = Scheduler::new();
-    
+
     let job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
         |_ctx| Box::pin(async { Ok(()) }),
     );
-    
+
     scheduler.add_job(job).await;
-    
+
     // Verify job was added (if scheduler has a method to check)
     // This depends on the Scheduler API
 }

@@ -4,6 +4,7 @@
 pub mod application;
 pub mod container;
 pub mod error;
+pub mod form;
 pub mod guard;
 pub mod http;
 pub mod interceptor;
@@ -19,6 +20,7 @@ pub mod websocket;
 pub use application::*;
 pub use container::*;
 pub use error::*;
+pub use form::*;
 pub use guard::*;
 pub use http::*;
 pub use interceptor::*;

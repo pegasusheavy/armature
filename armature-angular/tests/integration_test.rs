@@ -5,7 +5,7 @@ use armature_angular::*;
 #[test]
 fn test_angular_config_creation() {
     let config = AngularConfig::new("/path/to/dist");
-    
+
     assert_eq!(config.dist_dir, "/path/to/dist");
     assert_eq!(config.server_bundle, "main.server.mjs");
 }
@@ -18,7 +18,7 @@ fn test_angular_config_builder() {
         .with_cache(true)
         .with_compression(false)
         .exclude_route("/api/*");
-    
+
     assert_eq!(config.server_bundle, "custom.mjs");
     assert_eq!(config.index_html, "custom-index.html");
     assert!(config.enable_cache);

@@ -5,7 +5,7 @@ use armature_svelte::*;
 #[test]
 fn test_svelte_config_creation() {
     let config = SvelteConfig::new("/path/to/build");
-    
+
     assert_eq!(config.build_dir, "/path/to/build");
     assert_eq!(config.server_entry, "index.js");
 }
@@ -18,7 +18,7 @@ fn test_svelte_config_builder() {
         .with_prerender(true)
         .with_cache(true)
         .with_compression(false);
-    
+
     assert_eq!(config.server_entry, "custom-server.js");
     assert!(config.enable_hydration);
     assert!(config.enable_prerender);

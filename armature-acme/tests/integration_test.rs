@@ -8,7 +8,7 @@ fn test_acme_config_lets_encrypt_production() {
         vec!["admin@example.com".to_string()],
         vec!["example.com".to_string()],
     );
-    
+
     assert!(config.directory_url.contains("acme-v02.api.letsencrypt.org"));
     assert_eq!(config.email_contacts.len(), 1);
     assert_eq!(config.domains.len(), 1);
@@ -20,7 +20,7 @@ fn test_acme_config_lets_encrypt_staging() {
         vec!["admin@example.com".to_string()],
         vec!["example.com".to_string()],
     );
-    
+
     assert!(config.directory_url.contains("acme-staging-v02.api.letsencrypt.org"));
 }
 
@@ -33,7 +33,7 @@ fn test_acme_config_builder() {
     .with_challenge_type(ChallengeType::Dns01)
     .with_cert_dir("/etc/certs")
     .with_renew_before_days(7);
-    
+
     assert_eq!(config.challenge_type, ChallengeType::Dns01);
     assert_eq!(config.cert_dir, "/etc/certs");
     assert_eq!(config.renew_before_days, 7);
@@ -61,7 +61,7 @@ fn test_acme_config_zerossl() {
         "eab_kid".to_string(),
         "eab_hmac_key".to_string(),
     );
-    
+
     assert!(config.directory_url.contains("zerossl.com"));
     assert_eq!(config.eab_kid, Some("eab_kid".to_string()));
 }
@@ -72,7 +72,7 @@ fn test_acme_config_buypass() {
         vec!["admin@example.com".to_string()],
         vec!["example.com".to_string()],
     );
-    
+
     assert!(config.directory_url.contains("buypass.com"));
 }
 
@@ -84,7 +84,7 @@ fn test_acme_config_google_trust_services() {
         "eab_kid".to_string(),
         "eab_hmac_key".to_string(),
     );
-    
+
     assert!(config.directory_url.contains("dv.acme-v02.api.pki.goog"));
 }
 

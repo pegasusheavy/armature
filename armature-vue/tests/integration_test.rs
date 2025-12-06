@@ -5,7 +5,7 @@ use armature_vue::*;
 #[test]
 fn test_vue_config_creation() {
     let config = VueConfig::new("/path/to/dist");
-    
+
     assert_eq!(config.build_dir, "/path/to/dist");
     assert_eq!(config.server_entry, "entry-server.js");
 }
@@ -18,7 +18,7 @@ fn test_vue_config_builder() {
         .with_template("custom-template.html")
         .with_cache(true)
         .with_compression(false);
-    
+
     assert_eq!(config.server_entry, "custom-server.js");
     assert_eq!(config.client_manifest, "custom-manifest.json");
     assert_eq!(config.template, "custom-template.html");

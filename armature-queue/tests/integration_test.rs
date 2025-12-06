@@ -16,7 +16,7 @@ fn test_queue_config_builder() {
         .with_max_retries(5)
         .with_retry_delay(10)
         .with_retention_time(86400);
-    
+
     assert_eq!(config.max_retries, 5);
     assert_eq!(config.retry_delay, 10);
     assert_eq!(config.retention_time, 86400);
@@ -25,7 +25,7 @@ fn test_queue_config_builder() {
 #[test]
 fn test_job_creation() {
     let job = Job::new("send_email", json!({"to": "user@example.com"}));
-    
+
     assert_eq!(job.job_type, "send_email");
     assert!(!job.payload.is_null());
     assert_eq!(job.retry_count, 0);
@@ -39,7 +39,7 @@ fn test_job_builder() {
         .priority(JobPriority::High)
         .max_retries(3)
         .build();
-    
+
     assert_eq!(job.job_type, "process_data");
     assert_eq!(job.priority, JobPriority::High);
     assert_eq!(job.max_retries, Some(3));
@@ -57,7 +57,7 @@ fn test_job_priority() {
 fn test_job_ready() {
     let job = Job::new("test", json!({}));
     assert!(job.is_ready());
-    
+
     // Job scheduled for future
     let future_job = Job::builder()
         .job_type("test")
@@ -70,7 +70,7 @@ fn test_job_ready() {
 #[test]
 fn test_job_retry_logic() {
     let mut job = Job::new("test", json!({}));
-    
+
     assert!(job.can_retry());
     job.retry_count = job.max_retries.unwrap_or(3);
     assert!(!job.can_retry());
@@ -98,18 +98,18 @@ fn test_queue_error_display() {
 async fn test_queue_enqueue_and_process() {
     let config = QueueConfig::new("redis://localhost:6379", "test_queue");
     let queue = Queue::new(config).await.unwrap();
-    
+
     // Enqueue a job
     let job_id = queue.enqueue("send_email", json!({"to": "test@example.com"}))
         .await
         .unwrap();
-    
+
     assert!(!job_id.is_empty());
-    
+
     // Process the job
     let job = queue.process_next().await.unwrap();
     assert!(job.is_some());
-    
+
     let job = job.unwrap();
     assert_eq!(job.job_type, "send_email");
 }
@@ -119,16 +119,16 @@ async fn test_queue_enqueue_and_process() {
 async fn test_queue_with_priority() {
     let config = QueueConfig::new("redis://localhost:6379", "test_queue");
     let queue = Queue::new(config).await.unwrap();
-    
+
     // Enqueue jobs with different priorities
     queue.enqueue_with_priority("low", json!({}), JobPriority::Low)
         .await
         .unwrap();
-    
+
     queue.enqueue_with_priority("high", json!({}), JobPriority::High)
         .await
         .unwrap();
-    
+
     // High priority should be processed first
     let job = queue.process_next().await.unwrap().unwrap();
     assert_eq!(job.job_type, "high");
@@ -139,7 +139,7 @@ async fn test_queue_with_priority() {
 async fn test_worker_creation() {
     let config = QueueConfig::new("redis://localhost:6379", "test_queue");
     let queue = Queue::new(config).await.unwrap();
-    
+
     let worker = Worker::new(queue);
     assert!(format!("{:?}", worker).contains("Worker"));
 }

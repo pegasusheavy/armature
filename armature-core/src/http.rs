@@ -31,6 +31,27 @@ impl HttpRequest {
         serde_json::from_slice(&self.body).map_err(|e| crate::Error::Deserialization(e.to_string()))
     }
 
+    /// Parse URL-encoded form data
+    pub fn form<T: for<'de> Deserialize<'de>>(&self) -> Result<T, crate::Error> {
+        crate::form::parse_form(&self.body)
+    }
+
+    /// Parse URL-encoded form data into a HashMap
+    pub fn form_map(&self) -> Result<HashMap<String, String>, crate::Error> {
+        crate::form::parse_form_map(&self.body)
+    }
+
+    /// Parse multipart form data
+    pub fn multipart(&self) -> Result<Vec<crate::form::FormField>, crate::Error> {
+        let content_type = self.headers
+            .get("Content-Type")
+            .or_else(|| self.headers.get("content-type"))
+            .ok_or_else(|| crate::Error::BadRequest("Missing Content-Type header".to_string()))?;
+        
+        let parser = crate::form::MultipartParser::from_content_type(content_type)?;
+        parser.parse(&self.body)
+    }
+
     /// Get a path parameter by name
     pub fn param(&self, name: &str) -> Option<&String> {
         self.path_params.get(name)

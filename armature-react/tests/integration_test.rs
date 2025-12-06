@@ -5,7 +5,7 @@ use armature_react::*;
 #[test]
 fn test_react_config_creation() {
     let config = ReactConfig::new("/path/to/build");
-    
+
     assert_eq!(config.build_dir, "/path/to/build");
     assert_eq!(config.server_entry, "server.js");
 }
@@ -17,7 +17,7 @@ fn test_react_config_builder() {
         .with_index_html("custom-index.html")
         .with_cache(true)
         .with_compression(false);
-    
+
     assert_eq!(config.server_entry, "custom-server.js");
     assert_eq!(config.index_html, "custom-index.html");
     assert!(config.enable_cache);

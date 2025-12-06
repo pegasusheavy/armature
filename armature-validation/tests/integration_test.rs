@@ -104,7 +104,7 @@ fn test_validation_rules_builder() {
             Ok(())
         }
     });
-    
+
     assert!(rules.validate("user123").is_ok());
     assert!(rules.validate("ab").is_err());
 }
@@ -112,7 +112,7 @@ fn test_validation_rules_builder() {
 #[test]
 fn test_validation_error_creation() {
     let error = ValidationError::new("email", "invalid email format");
-    
+
     assert_eq!(error.field, "email");
     assert_eq!(error.message, "invalid email format");
 }

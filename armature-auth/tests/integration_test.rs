@@ -12,7 +12,7 @@ fn test_oauth2_provider_config_google() {
         "client_secret".to_string(),
         "http://localhost:3000/callback".to_string(),
     );
-    
+
     assert_eq!(config.name, "google");
     assert!(config.authorization_url.contains("accounts.google.com"));
     assert!(config.token_url.contains("oauth2.googleapis.com"));
@@ -25,7 +25,7 @@ fn test_oauth2_provider_config_github() {
         "client_secret".to_string(),
         "http://localhost:3000/callback".to_string(),
     );
-    
+
     assert_eq!(config.name, "github");
     assert!(config.authorization_url.contains("github.com"));
 }
@@ -39,7 +39,7 @@ fn test_oauth2_config_builder() {
             "http://localhost/callback".to_string(),
         ))
         .with_pkce(true);
-    
+
     assert_eq!(config.strategy, "default");
     assert!(config.use_pkce);
     assert_eq!(config.providers.len(), 1);
@@ -51,7 +51,7 @@ fn test_saml_config_creation() {
         "https://idp.example.com/metadata".to_string(),
         "https://sp.example.com".to_string(),
     );
-    
+
     assert_eq!(config.idp_metadata_url, "https://idp.example.com/metadata");
     assert_eq!(config.sp_entity_id, "https://sp.example.com");
 }
@@ -65,7 +65,7 @@ fn test_saml_config_builder() {
     .with_cert_path("/path/to/cert.pem")
     .with_key_path("/path/to/key.pem")
     .with_assertion_consumer_service_url("https://sp.example.com/acs");
-    
+
     assert_eq!(config.cert_path, Some("/path/to/cert.pem".to_string()));
     assert_eq!(config.key_path, Some("/path/to/key.pem".to_string()));
     assert_eq!(config.acs_url, Some("https://sp.example.com/acs".to_string()));
@@ -85,7 +85,7 @@ fn test_oauth2_provider_config_microsoft() {
         "client_secret".to_string(),
         "http://localhost:3000/callback".to_string(),
     );
-    
+
     assert_eq!(config.name, "microsoft");
     assert!(config.authorization_url.contains("login.microsoftonline.com"));
 }
@@ -100,7 +100,7 @@ fn test_oauth2_provider_config_custom() {
         "https://custom.com/oauth/token".to_string(),
         "http://localhost:3000/callback".to_string(),
     );
-    
+
     assert_eq!(config.name, "custom_provider");
     assert_eq!(config.authorization_url, "https://custom.com/oauth/authorize");
     assert_eq!(config.token_url, "https://custom.com/oauth/token");
@@ -114,7 +114,7 @@ fn test_oauth2_scopes() {
         "callback".to_string(),
     )
     .with_scopes(vec!["profile".to_string(), "email".to_string()]);
-    
+
     assert_eq!(config.scopes.len(), 2);
 }
 

@@ -5,7 +5,7 @@ use armature_graphql::*;
 #[test]
 fn test_graphql_config_default() {
     let config = GraphQLConfig::default();
-    
+
     assert_eq!(config.endpoint, "/graphql");
     assert!(config.enable_playground);
     assert!(config.enable_introspection);
@@ -14,7 +14,7 @@ fn test_graphql_config_default() {
 #[test]
 fn test_graphql_config_production() {
     let config = GraphQLConfig::production();
-    
+
     assert!(!config.enable_playground);
     assert!(!config.enable_graphiql);
     assert!(!config.enable_introspection);
@@ -23,7 +23,7 @@ fn test_graphql_config_production() {
 #[test]
 fn test_graphql_config_development() {
     let config = GraphQLConfig::development();
-    
+
     assert!(config.enable_playground);
     assert!(config.enable_graphiql);
     assert!(config.enable_introspection);
@@ -39,7 +39,7 @@ fn test_graphql_config_builder() {
         .with_max_complexity(100)
         .with_validation(true)
         .with_tracing(false);
-    
+
     assert_eq!(config.endpoint, "/api/graphql");
     assert!(config.enable_playground);
     assert!(!config.enable_graphiql);
@@ -53,7 +53,7 @@ fn test_graphql_config_builder() {
 #[test]
 fn test_graphql_playground_html() {
     let html = graphql_playground_html("/graphql", "Test API");
-    
+
     assert!(html.contains("<!DOCTYPE html>"));
     assert!(html.contains("GraphQL Playground"));
     assert!(html.contains("/graphql"));
@@ -62,7 +62,7 @@ fn test_graphql_playground_html() {
 #[test]
 fn test_graphiql_html() {
     let html = graphiql_html("/graphql", "Test API");
-    
+
     assert!(html.contains("<!DOCTYPE html>"));
     assert!(html.contains("GraphiQL"));
     assert!(html.contains("/graphql"));

@@ -8,7 +8,7 @@ fn test_security_middleware_default() {
     let security = SecurityMiddleware::default();
     let response = HttpResponse::ok();
     let secured = security.apply(response);
-    
+
     // Should have security headers
     assert!(secured.headers.contains_key("Strict-Transport-Security"));
     assert!(secured.headers.contains_key("X-Frame-Options"));
@@ -21,10 +21,10 @@ fn test_security_middleware_custom() {
         .with_hsts(HstsConfig::new(31536000))
         .with_frame_guard(FrameGuard::Deny)
         .hide_powered_by(true);
-    
+
     let response = HttpResponse::ok();
     let secured = security.apply(response);
-    
+
     assert_eq!(
         secured.headers.get("X-Frame-Options"),
         Some(&"DENY".to_string())
@@ -37,7 +37,7 @@ fn test_hsts_config() {
     let hsts = HstsConfig::new(31536000)
         .include_subdomains(true)
         .preload(true);
-    
+
     let header = hsts.to_header();
     assert!(header.contains("max-age=31536000"));
     assert!(header.contains("includeSubDomains"));
@@ -60,7 +60,7 @@ fn test_csp_config() {
         .default_src(vec!["'self'".to_string()])
         .script_src(vec!["'self'".to_string(), "'unsafe-inline'".to_string()])
         .style_src(vec!["'self'".to_string()]);
-    
+
     let header = csp.to_header();
     assert!(header.contains("default-src 'self'"));
     assert!(header.contains("script-src 'self' 'unsafe-inline'"));
@@ -96,7 +96,7 @@ fn test_expect_ct_config() {
     let expect_ct = ExpectCtConfig::new(86400)
         .enforce(true)
         .report_uri("https://example.com/report".to_string());
-    
+
     let header = expect_ct.to_header();
     assert!(header.contains("max-age=86400"));
     assert!(header.contains("enforce"));
@@ -123,10 +123,10 @@ fn test_security_middleware_all_headers() {
         .with_referrer_policy(ReferrerPolicy::StrictOrigin)
         .with_dns_prefetch_control(DnsPrefetchControl::Disabled)
         .hide_powered_by(true);
-    
+
     let response = HttpResponse::ok();
     let secured = security.apply(response);
-    
+
     // Verify headers are present
     assert!(secured.headers.contains_key("Strict-Transport-Security"));
     assert!(secured.headers.contains_key("X-Frame-Options"));
