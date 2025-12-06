@@ -88,23 +88,22 @@ fn test_ends_with_validator() {
 }
 
 #[test]
-fn test_is_strongpassword_validator() {
-    assert!(IsStrongPassword::validate("MyP@ssw0rd", "password").is_ok());
-    assert!(IsStrongPassword::validate("weak", "password").is_err());
-    assert!(IsStrongPassword::validate("NoNumbers!", "password").is_err());
+fn test_matches_validator() {
+    let regex = regex::Regex::new(r"^\d{3}-\d{3}-\d{4}$").unwrap();
+    assert!(Matches(regex.clone()).validate("123-456-7890", "phone").is_ok());
+    assert!(Matches(regex).validate("invalid", "phone").is_err());
 }
 
 #[test]
 fn test_validation_rules_builder() {
-    let rules = ValidationRules::for_field("username")
-        .add(|value: &str, field: &str| {
-            if value.len() < 3 {
-                Err(ValidationError::new(field, "must be at least 3 characters"))
-            } else {
-                Ok(())
-            }
-        })
-        .build();
+    let rules = ValidationRules::for_field("username");
+    let rules = rules.add(|value: &str, field: &str| {
+        if value.len() < 3 {
+            Err(ValidationError::new(field, "must be at least 3 characters"))
+        } else {
+            Ok(())
+        }
+    });
     
     assert!(rules.validate("user123").is_ok());
     assert!(rules.validate("ab").is_err());

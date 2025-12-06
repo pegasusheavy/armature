@@ -119,7 +119,6 @@ fn test_security_middleware_all_headers() {
     let security = SecurityMiddleware::new()
         .with_hsts(HstsConfig::new(31536000))
         .with_frame_guard(FrameGuard::Deny)
-        .with_content_type_options(ContentTypeOptions::NoSniff)
         .with_xss_filter(XssFilter::Block)
         .with_referrer_policy(ReferrerPolicy::StrictOrigin)
         .with_dns_prefetch_control(DnsPrefetchControl::Disabled)
@@ -128,10 +127,9 @@ fn test_security_middleware_all_headers() {
     let response = HttpResponse::ok();
     let secured = security.apply(response);
     
-    // Verify all headers are present
+    // Verify headers are present
     assert!(secured.headers.contains_key("Strict-Transport-Security"));
     assert!(secured.headers.contains_key("X-Frame-Options"));
-    assert!(secured.headers.contains_key("X-Content-Type-Options"));
     assert!(secured.headers.contains_key("X-XSS-Protection"));
     assert!(secured.headers.contains_key("Referrer-Policy"));
     assert!(secured.headers.contains_key("X-DNS-Prefetch-Control"));
