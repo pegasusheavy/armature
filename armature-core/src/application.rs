@@ -1,6 +1,9 @@
 // Application bootstrapper and HTTP server
 
-use crate::{Container, Error, HttpRequest, HttpResponse, HttpsConfig, Module, Router, TlsConfig};
+use crate::{
+    Container, Error, HttpRequest, HttpResponse, HttpsConfig, LifecycleManager, Module, Router,
+    TlsConfig,
+};
 use http_body_util::{BodyExt, Full};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -15,6 +18,7 @@ use tokio_rustls::TlsAcceptor;
 pub struct Application {
     pub container: Container,
     pub router: Arc<Router>,
+    pub lifecycle: Arc<LifecycleManager>,
 }
 
 impl Application {
@@ -23,15 +27,17 @@ impl Application {
         Self {
             container,
             router: Arc::new(router),
+            lifecycle: Arc::new(LifecycleManager::new()),
         }
     }
 
-    /// Create a new application from a root module
-    pub fn create<M: Module + Default>() -> Self {
+    /// Create a new application from a root module with lifecycle support
+    pub async fn create<M: Module + Default>() -> Self {
         println!("🚀 Bootstrapping Armature application...\n");
 
         let container = Container::new();
         let mut router = Router::new();
+        let lifecycle = Arc::new(LifecycleManager::new());
 
         // Initialize the root module
         let root_module = M::default();
@@ -41,12 +47,68 @@ impl Application {
         // Register all providers and controllers from the module tree
         Self::register_module(&container, &mut router, &root_module);
 
+        println!("\n🔄 Executing lifecycle hooks:");
+
+        // Call module init hooks
+        if let Err(errors) = lifecycle.call_module_init_hooks().await {
+            eprintln!("\n⚠️  Some module init hooks failed:");
+            for (name, error) in errors {
+                eprintln!("  ✗ {}: {}", name, error);
+            }
+        }
+
+        // Call bootstrap hooks
+        if let Err(errors) = lifecycle.call_bootstrap_hooks().await {
+            eprintln!("\n⚠️  Some bootstrap hooks failed:");
+            for (name, error) in errors {
+                eprintln!("  ✗ {}: {}", name, error);
+            }
+        }
+
         println!("\n✅ Application bootstrap complete!\n");
 
         Self {
             container,
             router: Arc::new(router),
+            lifecycle,
         }
+    }
+
+    /// Get a reference to the lifecycle manager
+    pub fn lifecycle(&self) -> &Arc<LifecycleManager> {
+        &self.lifecycle
+    }
+
+    /// Gracefully shutdown the application
+    pub async fn shutdown(&self, signal: Option<String>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        println!("\n🛑 Gracefully shutting down application...");
+
+        // Call before shutdown hooks
+        if let Err(errors) = self.lifecycle.call_before_shutdown_hooks(signal.clone()).await {
+            eprintln!("\n⚠️  Some before shutdown hooks failed:");
+            for (name, error) in errors {
+                eprintln!("  ✗ {}: {}", name, error);
+            }
+        }
+
+        // Call shutdown hooks
+        if let Err(errors) = self.lifecycle.call_shutdown_hooks(signal.clone()).await {
+            eprintln!("\n⚠️  Some shutdown hooks failed:");
+            for (name, error) in errors {
+                eprintln!("  ✗ {}: {}", name, error);
+            }
+        }
+
+        // Call module destroy hooks
+        if let Err(errors) = self.lifecycle.call_module_destroy_hooks().await {
+            eprintln!("\n⚠️  Some module destroy hooks failed:");
+            for (name, error) in errors {
+                eprintln!("  ✗ {}: {}", name, error);
+            }
+        }
+
+        println!("✅ Application shutdown complete\n");
+        Ok(())
     }
 
     /// Register a module and its imports recursively

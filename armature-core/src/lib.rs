@@ -53,6 +53,7 @@ pub mod form;
 pub mod guard;
 pub mod http;
 pub mod interceptor;
+pub mod lifecycle;
 pub mod middleware;
 pub mod routing;
 pub mod sse;
@@ -70,6 +71,7 @@ pub use form::*;
 pub use guard::*;
 pub use http::*;
 pub use interceptor::*;
+pub use lifecycle::*;
 pub use middleware::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use sse::*;
