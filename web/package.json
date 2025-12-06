@@ -16,6 +16,7 @@
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "vitest",
+    "test:ui": "vitest --ui",
     "test:ci": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint \"src/**/*.{ts,html}\"",
@@ -39,9 +40,11 @@
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "marked": "^15.0.6",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zone.js": "^0.16.0"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.1.2",
     "@angular-eslint/builder": "^21.0.1",
     "@angular-eslint/eslint-plugin": "^21.0.1",
     "@angular-eslint/eslint-plugin-template": "^21.0.1",
@@ -50,10 +53,12 @@
     "@angular/build": "^21.0.1",
     "@angular/cli": "^21.0.1",
     "@angular/compiler-cli": "^21.0.0",
+    "@angular/platform-browser-dynamic": "^21.0.3",
     "@testing-library/angular": "^18.1.1",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.1",
     "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/ui": "^4.0.15",
     "autoprefixer": "^10.4.22",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",

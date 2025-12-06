@@ -1,8 +1,17 @@
-// Vitest setup file
-import { afterEach } from 'vitest';
+// Angular testing setup for Vitest
+import 'zone.js';
+import 'zone.js/testing';
+import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
+import { beforeEach } from 'vitest';
 
-// Cleanup after each test
-afterEach(() => {
-  // Cleanup DOM elements
-  document.body.innerHTML = '';
+// Initialize the Angular testing environment
+getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
+
+// Reset testing module before each test
+beforeEach(() => {
+  getTestBed().resetTestingModule();
 });
