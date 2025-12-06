@@ -48,22 +48,22 @@ echo "--------------------------|-----------|--------"
 
 for member in "${MEMBERS[@]}"; do
     TOTAL_MEMBERS=$((TOTAL_MEMBERS + 1))
-    
+
     # Run doc tests and capture output
     OUTPUT=$(cargo test --doc -p "$member" --quiet 2>&1 || true)
-    
+
     # Extract test count
     TEST_COUNT=$(echo "$OUTPUT" | grep "running.*tests" | head -1 | grep -oP '\d+' | head -1)
-    
+
     if [ -z "$TEST_COUNT" ]; then
         TEST_COUNT=0
     fi
-    
+
     TOTAL_TESTS=$((TOTAL_TESTS + TEST_COUNT))
-    
+
     # Format output
     printf "%-25s | %-9s | " "$member" "$TEST_COUNT"
-    
+
     if [ "$TEST_COUNT" -eq 0 ]; then
         echo -e "${RED}⚠️  NO TESTS${NC}"
     elif [ "$TEST_COUNT" -lt 5 ]; then

@@ -1,6 +1,6 @@
 // Test Application Builder
 
-use armature_core::{Application, Container, Module, Provider, Router};
+use armature_core::{Application, Container, HttpRequest, HttpResponse, Error, Module, Provider, Router};
 use std::sync::Arc;
 
 /// Test application for integration testing
@@ -27,12 +27,55 @@ impl TestApp {
     }
 
     /// Create a test client for making requests
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use armature_testing::TestAppBuilder;
+    /// use armature_core::HttpResponse;
+    ///
+    /// # tokio_test::block_on(async {
+    /// let app = TestAppBuilder::new()
+    ///     .with_route("/test", |_req| async {
+    ///         Ok(HttpResponse::ok().with_body(b"OK".to_vec()))
+    ///     })
+    ///     .build();
+    ///
+    /// let client = app.client();
+    /// let response = client.get("/test").await;
+    /// assert_eq!(response.status(), Some(200));
+    /// # });
+    /// ```
     pub fn client(&self) -> crate::TestClient {
         crate::TestClient::new(self.app.router.clone())
     }
 }
 
-/// Builder for test applications
+/// Builder for test applications.
+///
+/// Provides a fluent API for creating test applications with custom
+/// routes, services, and configuration.
+///
+/// # Examples
+///
+/// Basic test app:
+///
+/// ```no_run
+/// use armature_testing::TestAppBuilder;
+/// use armature_core::{HttpResponse, Error};
+///
+/// # tokio_test::block_on(async {
+/// let app = TestAppBuilder::new()
+///     .with_route("/test", |_req| async {
+///         Ok(HttpResponse::ok().with_body(b"test".to_vec()))
+///     })
+///     .build();
+///
+/// let client = app.client();
+/// let response = client.get("/test").await;
+/// assert_eq!(response.status(), Some(200));
+/// # });
+/// ```
 pub struct TestAppBuilder {
     container: Container,
     router: Router,
@@ -67,6 +110,34 @@ impl TestAppBuilder {
     /// Set custom router
     pub fn with_router(self, router: Router) -> Self {
         Self { router, ..self }
+    }
+    
+    /// Add a test route with a handler
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use armature_testing::TestAppBuilder;
+    /// use armature_core::HttpResponse;
+    ///
+    /// let app = TestAppBuilder::new()
+    ///     .with_route("/api/health", |_req| async {
+    ///         Ok(HttpResponse::ok().with_body(b"OK".to_vec()))
+    ///     })
+    ///     .build();
+    /// ```
+    pub fn with_route<F, Fut>(mut self, path: &str, handler: F) -> Self
+    where
+        F: Fn(armature_core::HttpRequest) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = Result<armature_core::HttpResponse, armature_core::Error>> + Send + 'static,
+    {
+        use armature_core::{HttpMethod, Route};
+        self.router.add_route(Route {
+            method: HttpMethod::GET,
+            path: path.to_string(),
+            handler: Arc::new(move |req| Box::pin(handler(req))),
+        });
+        self
     }
 
     /// Build the test application

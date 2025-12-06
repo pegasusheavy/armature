@@ -4,9 +4,9 @@ Current status and roadmap for documentation test coverage across all workspace 
 
 ## Summary
 
-**Current Status:** MEDIUM Coverage  
-**Total Doc Tests:** 60  
-**Average per Module:** 2.7  
+**Current Status:** MEDIUM Coverage
+**Total Doc Tests:** 60
+**Average per Module:** 2.7
 **Target:** 100+ tests (5+ per module average)
 
 ## Coverage by Module
@@ -120,13 +120,13 @@ Current status and roadmap for documentation test coverage across all workspace 
 
 ### Every Doc Test Should:
 
-✅ Compile without errors  
-✅ Demonstrate real-world usage  
-✅ Include necessary imports  
-✅ Handle errors appropriately  
-✅ Be concise and focused  
-✅ Use `no_run` for expensive operations  
-✅ Use `ignore` only when necessary  
+✅ Compile without errors
+✅ Demonstrate real-world usage
+✅ Include necessary imports
+✅ Handle errors appropriately
+✅ Be concise and focused
+✅ Use `no_run` for expensive operations
+✅ Use `ignore` only when necessary
 
 ### Example Template:
 
