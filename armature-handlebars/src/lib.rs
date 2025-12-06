@@ -66,6 +66,46 @@
 //! # }
 //! ```
 //!
+//! ## Strict Mode Configuration
+//!
+//! ```
+//! use armature_handlebars::HandlebarsConfig;
+//!
+//! // Strict mode will error on missing variables
+//! let strict = HandlebarsConfig::new("templates")
+//!     .with_strict_mode(true)
+//!     .with_escape_html(true);
+//!
+//! assert!(strict.strict_mode);
+//! assert!(strict.escape_html);
+//!
+//! // Lenient mode (default) allows missing variables
+//! let lenient = HandlebarsConfig::new("templates")
+//!     .with_strict_mode(false);
+//!
+//! assert!(!lenient.strict_mode);
+//! ```
+//!
+//! ## Development Mode
+//!
+//! ```
+//! use armature_handlebars::HandlebarsConfig;
+//!
+//! // Development mode enables hot-reloading
+//! let dev_config = HandlebarsConfig::new("templates")
+//!     .with_dev_mode(true)
+//!     .with_extension(".hbs");
+//!
+//! assert!(dev_config.dev_mode);
+//! assert_eq!(dev_config.template_extension, ".hbs");
+//!
+//! // Production mode (default)
+//! let prod_config = HandlebarsConfig::new("templates")
+//!     .with_dev_mode(false);
+//!
+//! assert!(!prod_config.dev_mode);
+//! ```
+//!
 //! ## Built-in Helpers
 //!
 //! - **Comparison**: `eq`, `ne`, `lt`, `gt`, `lte`, `gte`

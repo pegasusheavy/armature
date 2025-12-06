@@ -36,6 +36,45 @@
 //! assert!(!custom.enable_metrics);
 //! ```
 //!
+//! ## Tracing and Metrics Configuration
+//!
+//! ```
+//! use armature_opentelemetry::TelemetryConfig;
+//!
+//! // Enable only tracing (disable metrics)
+//! let tracing_only = TelemetryConfig::new("tracing-service")
+//!     .with_tracing(true)
+//!     .with_metrics(false);
+//!
+//! assert!(tracing_only.enable_tracing);
+//! assert!(!tracing_only.enable_metrics);
+//!
+//! // Enable only metrics (disable tracing)
+//! let metrics_only = TelemetryConfig::new("metrics-service")
+//!     .with_tracing(false)
+//!     .with_metrics(true);
+//!
+//! assert!(!metrics_only.enable_tracing);
+//! assert!(metrics_only.enable_metrics);
+//! ```
+//!
+//! ## Service Metadata Configuration
+//!
+//! ```
+//! use armature_opentelemetry::TelemetryConfig;
+//!
+//! // Configure full service metadata
+//! let config = TelemetryConfig::new("user-api")
+//!     .with_version("2.1.0")
+//!     .with_namespace("microservices")
+//!     .with_environment("staging");
+//!
+//! assert_eq!(config.service_name, "user-api");
+//! assert_eq!(config.service_version, Some("2.1.0".to_string()));
+//! assert_eq!(config.service_namespace, Some("microservices".to_string()));
+//! assert_eq!(config.environment, Some("staging".to_string()));
+//! ```
+//!
 //! ## Creating KeyValue Attributes
 //!
 //! ```
