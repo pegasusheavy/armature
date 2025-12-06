@@ -1,0 +1,45 @@
+<div class="docs-container">
+  <!-- Sidebar Navigation -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-content">
+      <h2>Documentation</h2>
+      
+      @for (category of getCategories(); track category) {
+        <div class="doc-category">
+          <h3>{{ category }}</h3>
+          <ul>
+            @for (doc of docsByCategory()[category]; track doc.id) {
+              <li>
+                <a 
+                  [routerLink]="['/docs', doc.id]" 
+                  [class.active]="currentDoc()?.id === doc.id"
+                >
+                  {{ doc.title }}
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="docs-content">
+    @if (loading()) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading documentation...</p>
+      </div>
+    } @else if (error()) {
+      <div class="error">
+        <h2>Error</h2>
+        <p>{{ error() }}</p>
+        <a routerLink="/docs/readme" class="btn-primary">Go to Getting Started</a>
+      </div>
+    } @else {
+      <article class="markdown-content" [innerHTML]="content()"></article>
+    }
+  </main>
+</div>
+

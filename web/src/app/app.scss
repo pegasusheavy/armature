@@ -1,0 +1,63 @@
+/* Component-specific styles */
+.hero-section {
+  @apply min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+}
+
+.hero-content {
+  @apply max-w-4xl mx-auto text-center;
+}
+
+.hero-title {
+  @apply text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hero-subtitle {
+  @apply text-xl sm:text-2xl text-blue-100 mb-8 max-w-2xl mx-auto;
+}
+
+.cta-buttons {
+  @apply flex flex-col sm:flex-row gap-4 justify-center items-center;
+}
+
+.btn {
+  @apply px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 transform hover:scale-105;
+}
+
+.btn-primary {
+  @apply bg-white text-primary-600 hover:bg-gray-100 shadow-lg hover:shadow-xl;
+}
+
+.btn-secondary {
+  @apply bg-transparent text-white border-2 border-white hover:bg-white hover:text-primary-600;
+}
+
+.features-section {
+  @apply py-20 px-4 sm:px-6 lg:px-8 bg-white;
+}
+
+.features-grid {
+  @apply max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8;
+}
+
+.feature-card {
+  @apply p-8 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-xl transition-shadow duration-300;
+}
+
+.feature-icon {
+  @apply text-4xl mb-4;
+}
+
+.feature-title {
+  @apply text-xl font-bold text-gray-900 mb-3;
+}
+
+.feature-description {
+  @apply text-gray-600 leading-relaxed;
+}
+
+.footer {
+  @apply py-8 px-4 bg-gray-900 text-white text-center;
+}
+
