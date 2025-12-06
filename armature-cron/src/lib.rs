@@ -1,14 +1,47 @@
 //! Cron job scheduling for Armature framework.
 //!
 //! Provides a robust cron job scheduler with support for:
-//! - Standard cron expressions
-//! - Named jobs with metadata
-//! - Async job execution
-//! - Job lifecycle hooks
-//! - Error handling and retry logic
-//! - Job overlap prevention
+//! - ⏰ Standard cron expressions
+//! - 📛 Named jobs with metadata
+//! - 🚀 Async job execution
+//! - 🪝 Job lifecycle hooks
+//! - ❌ Error handling and retry logic
+//! - 🔒 Job overlap prevention
 //!
-//! # Examples
+//! ## Quick Start - Cron Expressions
+//!
+//! ```
+//! use armature_cron::CronExpression;
+//!
+//! // Parse a cron expression for "every hour"
+//! let expr = CronExpression::parse("0 0 * * * *").unwrap();
+//!
+//! // Get next execution time
+//! let now = chrono::Utc::now();
+//! let next = expr.next_after(now);
+//!
+//! assert!(next.is_some());
+//! assert!(next.unwrap() > now);
+//! ```
+//!
+//! ## Cron Expression Presets
+//!
+//! ```
+//! use armature_cron::expression::{CronExpression, CronPresets};
+//!
+//! // Use preset expressions
+//! let every_minute = CronExpression::parse(CronPresets::EVERY_MINUTE).unwrap();
+//! let every_hour = CronExpression::parse(CronPresets::EVERY_HOUR).unwrap();
+//! let daily = CronExpression::parse(CronPresets::DAILY).unwrap();
+//!
+//! // Verify they parse correctly
+//! let now = chrono::Utc::now();
+//! assert!(every_minute.next_after(now).unwrap() > now);
+//! assert!(every_hour.next_after(now).unwrap() > now);
+//! assert!(daily.next_after(now).unwrap() > now);
+//! ```
+//!
+//! ## Complete Example
 //!
 //! ```no_run
 //! use armature_cron::*;
