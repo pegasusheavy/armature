@@ -1,6 +1,6 @@
-# Deployment Scripts
+# Armature Scripts
 
-Scripts for managing Armature releases and version synchronization.
+Scripts for managing Armature releases, version synchronization, and performance benchmarking.
 
 ## Scripts
 
@@ -50,6 +50,43 @@ Comprehensive deployment script that handles the entire release process.
 **Output:**
 - Commit: `chore: bump version to X.Y.Z`
 - Tag: `vX.Y.Z`
+
+### `run-benchmarks.sh`
+
+Comprehensive benchmark runner for performance testing.
+
+**Usage:**
+
+```bash
+# Run all benchmarks
+./scripts/run-benchmarks.sh --all
+
+# Run specific suite
+./scripts/run-benchmarks.sh --core
+./scripts/run-benchmarks.sh --security
+./scripts/run-benchmarks.sh --validation
+./scripts/run-benchmarks.sh --data
+
+# Run with options
+./scripts/run-benchmarks.sh --all --open           # Open HTML report
+./scripts/run-benchmarks.sh --all --quick          # Quick run (fewer samples)
+./scripts/run-benchmarks.sh --all --baseline main  # Save as baseline
+./scripts/run-benchmarks.sh --all --compare main   # Compare with baseline
+```
+
+**Features:**
+- Run all or specific benchmark suites
+- Save and compare baselines
+- Generate HTML reports
+- Quick mode for faster iteration
+- Automatic browser opening
+- Performance metrics summary
+
+**Benchmark Suites:**
+- **Core**: HTTP, routing, middleware, status codes
+- **Security**: JWT, CSRF, XSS protection
+- **Validation**: Form validation, email, URL, patterns
+- **Data**: Queue jobs, cron expressions, JSON parsing
 
 ## Typical Workflow
 

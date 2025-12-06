@@ -141,6 +141,16 @@ xss = ["armature-xss"]
 
 [dev-dependencies]
 tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+regex = "1.10"
+armature-validation = { path = "armature-validation" }
+armature-csrf = { path = "armature-csrf" }
+armature-xss = { path = "armature-xss" }
+armature-jwt = { path = "armature-jwt" }
+armature-queue = { path = "armature-queue" }
+armature-cron = { path = "armature-cron" }
+jsonwebtoken = "9.2"
+uuid = { version = "1.6", features = ["v4"] }
 
 # Examples require runtime dependencies
 [[example]]
@@ -275,3 +285,20 @@ path = "examples/form_processing.rs"
 name = "acme_letsencrypt"
 path = "examples/acme_letsencrypt.rs"
 required-features = ["acme"]
+
+# Benchmarks
+[[bench]]
+name = "core_benchmarks"
+harness = false
+
+[[bench]]
+name = "security_benchmarks"
+harness = false
+
+[[bench]]
+name = "validation_benchmarks"
+harness = false
+
+[[bench]]
+name = "data_benchmarks"
+harness = false

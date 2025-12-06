@@ -47,7 +47,7 @@ impl HttpRequest {
             .get("Content-Type")
             .or_else(|| self.headers.get("content-type"))
             .ok_or_else(|| crate::Error::BadRequest("Missing Content-Type header".to_string()))?;
-        
+
         let parser = crate::form::MultipartParser::from_content_type(content_type)?;
         parser.parse(&self.body)
     }

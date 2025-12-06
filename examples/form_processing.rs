@@ -108,11 +108,11 @@ impl FormController {
     async fn login(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse URL-encoded form data into struct
         let form: LoginForm = req.form()?;
-        
+
         println!("📧 Login attempt:");
         println!("  Email: {}", form.email);
         println!("  Remember me: {:?}", form.remember_me.as_deref().unwrap_or("false"));
-        
+
         Ok(HttpResponse::ok()
             .with_json(&serde_json::json!({
                 "status": "success",
@@ -126,13 +126,13 @@ impl FormController {
     async fn contact(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse URL-encoded form data
         let form: ContactForm = req.form()?;
-        
+
         println!("💌 Contact form submitted:");
         println!("  Name: {}", form.name);
         println!("  Email: {}", form.email);
         println!("  Subject: {}", form.subject);
         println!("  Message: {}", form.message);
-        
+
         Ok(HttpResponse::ok()
             .with_json(&serde_json::json!({
                 "status": "success",
@@ -148,11 +148,11 @@ impl FormController {
     async fn upload(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse multipart form data
         let fields = req.multipart()?;
-        
+
         let mut title = String::new();
         let mut description = String::new();
         let mut file_info = None;
-        
+
         for field in fields {
             match field.name.as_str() {
                 "title" => title = field.value.unwrap_or_default(),
@@ -165,7 +165,7 @@ impl FormController {
                         println!("  Size: {} bytes", file.size);
                         println!("  Extension: {:?}", file.extension());
                         println!("  Is image: {}", file.is_image());
-                        
+
                         file_info = Some(serde_json::json!({
                             "filename": file.filename,
                             "content_type": file.content_type,
@@ -177,7 +177,7 @@ impl FormController {
                 _ => {}
             }
         }
-        
+
         Ok(HttpResponse::ok()
             .with_json(&serde_json::json!({
                 "status": "success",
@@ -192,17 +192,17 @@ impl FormController {
     async fn upload_multiple(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse multipart form data
         let fields = req.multipart()?;
-        
+
         let mut album_name = String::new();
         let mut files_info = Vec::new();
-        
+
         for field in fields {
             match field.name.as_str() {
                 "album_name" => album_name = field.value.unwrap_or_default(),
                 "files" => {
                     if let Some(file) = field.file {
                         println!("📁 File {}: {} ({} bytes)", files_info.len() + 1, file.filename, file.size);
-                        
+
                         files_info.push(serde_json::json!({
                             "filename": file.filename,
                             "content_type": file.content_type,
@@ -213,9 +213,9 @@ impl FormController {
                 _ => {}
             }
         }
-        
+
         println!("📦 Album '{}' uploaded with {} files", album_name, files_info.len());
-        
+
         Ok(HttpResponse::ok()
             .with_json(&serde_json::json!({
                 "status": "success",
@@ -230,12 +230,12 @@ impl FormController {
     async fn form_map_example(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse form data into HashMap (useful for dynamic forms)
         let form_data = req.form_map()?;
-        
+
         println!("📋 Form data (HashMap):");
         for (key, value) in &form_data {
             println!("  {}: {}", key, value);
         }
-        
+
         Ok(HttpResponse::ok()
             .with_json(&serde_json::json!({
                 "status": "success",
