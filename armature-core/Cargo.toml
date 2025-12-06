@@ -25,6 +25,11 @@ tokio-stream = "0.1"
 # Hot Module Reload (HMR)
 notify = "6.1"
 
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+tracing-appender = "0.2"
+
 # TLS/HTTPS support
 rustls = "0.23"
 tokio-rustls = "0.26"

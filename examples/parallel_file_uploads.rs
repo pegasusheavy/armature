@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
 
-    println!("   ✅ {} test files created (total: {:.1} MB)", 
+    println!("   ✅ {} test files created (total: {:.1} MB)",
         test_files.len(),
         (test_files.len() * file_size) as f64 / 1024.0 / 1024.0
     );
@@ -67,7 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sequential_time = start.elapsed();
     println!("   Time taken: {:?}", sequential_time);
     println!("   Rate: {:.1} files/sec", num_files as f64 / sequential_time.as_secs_f64());
-    println!("   Throughput: {:.1} MB/sec", 
+    println!("   Throughput: {:.1} MB/sec",
         (num_files * file_size) as f64 / 1024.0 / 1024.0 / sequential_time.as_secs_f64()
     );
 
@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   Time taken: {:?}", parallel_time);
     println!("   Files saved: {}", saved_paths.len());
     println!("   Rate: {:.1} files/sec", num_files as f64 / parallel_time.as_secs_f64());
-    println!("   Throughput: {:.1} MB/sec", 
+    println!("   Throughput: {:.1} MB/sec",
         (num_files * file_size) as f64 / 1024.0 / 1024.0 / parallel_time.as_secs_f64()
     );
 
@@ -192,7 +192,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let upload_time = start.elapsed();
 
     println!("   ✅ Uploaded {} images in {:?}", uploaded.len(), upload_time);
-    println!("   Throughput: {:.1} MB/sec", 
+    println!("   Throughput: {:.1} MB/sec",
         50.0 / upload_time.as_secs_f64()  // 10 images * 5MB = 50MB
     );
 

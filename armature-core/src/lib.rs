@@ -55,6 +55,7 @@ pub mod hmr;
 pub mod http;
 pub mod interceptor;
 pub mod lifecycle;
+pub mod logging;
 pub mod middleware;
 pub mod routing;
 pub mod sse;
@@ -74,6 +75,7 @@ pub use hmr::*;
 pub use http::*;
 pub use interceptor::*;
 pub use lifecycle::*;
+pub use logging::*;
 pub use middleware::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use sse::*;

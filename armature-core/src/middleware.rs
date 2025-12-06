@@ -416,6 +416,147 @@ impl Middleware for CompressionMiddleware {
     }
 }
 
+/// HTTP Request/Response Logging Middleware
+///
+/// Automatically logs HTTP requests and responses with configurable detail level.
+/// Logs include method, path, status code, duration, and optional request/response bodies.
+///
+/// # Examples
+///
+/// ```no_run
+/// use armature_core::{MiddlewareChain, LoggingMiddleware};
+///
+/// let mut chain = MiddlewareChain::new();
+/// chain.use_middleware(LoggingMiddleware::new());
+/// ```
+pub struct LoggingMiddleware {
+    /// Log request bodies
+    pub log_request_body: bool,
+    /// Log response bodies
+    pub log_response_body: bool,
+    /// Maximum body size to log (in bytes)
+    pub max_body_size: usize,
+}
+
+impl LoggingMiddleware {
+    /// Create a new logging middleware with default settings
+    pub fn new() -> Self {
+        Self {
+            log_request_body: false,
+            log_response_body: false,
+            max_body_size: 1024, // 1KB
+        }
+    }
+
+    /// Enable request body logging
+    pub fn with_request_body(mut self, enable: bool) -> Self {
+        self.log_request_body = enable;
+        self
+    }
+
+    /// Enable response body logging
+    pub fn with_response_body(mut self, enable: bool) -> Self {
+        self.log_response_body = enable;
+        self
+    }
+
+    /// Set maximum body size to log
+    pub fn with_max_body_size(mut self, size: usize) -> Self {
+        self.max_body_size = size;
+        self
+    }
+}
+
+impl Default for LoggingMiddleware {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[async_trait]
+impl Middleware for LoggingMiddleware {
+    async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
+        use std::time::Instant;
+        
+        let start = Instant::now();
+        let method = req.method.clone();
+        let path = req.path.clone();
+        
+        // Log request
+        if self.log_request_body && !req.body.is_empty() {
+            let body_preview = if req.body.len() > self.max_body_size {
+                format!("{}... ({} bytes)", 
+                    String::from_utf8_lossy(&req.body[..self.max_body_size]),
+                    req.body.len()
+                )
+            } else {
+                String::from_utf8_lossy(&req.body).to_string()
+            };
+            
+            crate::logging::info!(
+                method = %method,
+                path = %path,
+                body = %body_preview,
+                "HTTP request received"
+            );
+        } else {
+            crate::logging::info!(
+                method = %method,
+                path = %path,
+                "HTTP request received"
+            );
+        }
+
+        // Process request
+        let result = next(req).await;
+        let duration = start.elapsed();
+
+        // Log response
+        match &result {
+            Ok(response) => {
+                if self.log_response_body && !response.body.is_empty() {
+                    let body_preview = if response.body.len() > self.max_body_size {
+                        format!("{}... ({} bytes)", 
+                            String::from_utf8_lossy(&response.body[..self.max_body_size]),
+                            response.body.len()
+                        )
+                    } else {
+                        String::from_utf8_lossy(&response.body).to_string()
+                    };
+                    
+                    crate::logging::info!(
+                        method = %method,
+                        path = %path,
+                        status = response.status,
+                        duration_ms = duration.as_millis(),
+                        body = %body_preview,
+                        "HTTP response sent"
+                    );
+                } else {
+                    crate::logging::info!(
+                        method = %method,
+                        path = %path,
+                        status = response.status,
+                        duration_ms = duration.as_millis(),
+                        "HTTP response sent"
+                    );
+                }
+            }
+            Err(err) => {
+                crate::logging::error!(
+                    method = %method,
+                    path = %path,
+                    duration_ms = duration.as_millis(),
+                    error = %err,
+                    "HTTP request failed"
+                );
+            }
+        }
+
+        result
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

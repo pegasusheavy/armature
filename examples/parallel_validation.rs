@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let sequential_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, sequential_time);
-    println!("   Avg per validation: {:.2}ms", 
+    println!("   Avg per validation: {:.2}ms",
         sequential_time.as_millis() as f64 / iterations as f64
     );
 
@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let parallel_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, parallel_time);
-    println!("   Avg per validation: {:.2}ms", 
+    println!("   Avg per validation: {:.2}ms",
         parallel_time.as_millis() as f64 / iterations as f64
     );
 
@@ -116,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Build a large form with 30 fields
     for i in 1..=30 {
         let field_name = format!("field_{}", i);
-        
+
         large_validator = large_validator.field(
             ValidationRules::for_field(&field_name)
                 .add(|v, f| NotEmpty::validate(v, f))
@@ -138,7 +138,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let large_seq_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, large_seq_time);
-    println!("   Avg per validation: {:.2}ms", 
+    println!("   Avg per validation: {:.2}ms",
         large_seq_time.as_millis() as f64 / iterations as f64
     );
 
@@ -152,7 +152,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let large_par_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, large_par_time);
-    println!("   Avg per validation: {:.2}ms", 
+    println!("   Avg per validation: {:.2}ms",
         large_par_time.as_millis() as f64 / iterations as f64
     );
 
@@ -215,12 +215,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📊 Simulating 1000 API requests with validation...");
 
     let api_requests = 1000;
-    
+
     // Sequential
     println!("\n🐌 Sequential processing...");
     let start = Instant::now();
     let mut valid_count = 0;
-    
+
     for i in 0..api_requests {
         if i % 10 == 0 {
             // 10% invalid data
@@ -235,7 +235,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let api_seq_time = start.elapsed();
     println!("   Processed {} requests in {:?}", api_requests, api_seq_time);
-    println!("   Throughput: {:.0} requests/sec", 
+    println!("   Throughput: {:.0} requests/sec",
         api_requests as f64 / api_seq_time.as_secs_f64()
     );
     println!("   Valid: {}, Invalid: {}", valid_count, api_requests - valid_count);
@@ -244,7 +244,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n⚡ Parallel processing...");
     let start = Instant::now();
     let mut valid_count = 0;
-    
+
     for i in 0..api_requests {
         if i % 10 == 0 {
             let _ = validator.validate_parallel(&invalid_data).await;
@@ -257,7 +257,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let api_par_time = start.elapsed();
     println!("   Processed {} requests in {:?}", api_requests, api_par_time);
-    println!("   Throughput: {:.0} requests/sec", 
+    println!("   Throughput: {:.0} requests/sec",
         api_requests as f64 / api_par_time.as_secs_f64()
     );
     println!("   Valid: {}, Invalid: {}", valid_count, api_requests - valid_count);

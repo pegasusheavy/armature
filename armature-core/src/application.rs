@@ -111,6 +111,49 @@ impl Application {
         Ok(())
     }
 
+    /// Initialize logging with default configuration
+    ///
+    /// This is a convenience method that initializes JSON logging to STDOUT.
+    /// For more control, use `LogConfig` directly.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use armature_core::Application;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let _guard = Application::init_logging();
+    ///     // Application code...
+    /// }
+    /// ```
+    pub fn init_logging() -> Option<crate::logging::tracing_appender::non_blocking::WorkerGuard> {
+        crate::logging::LogConfig::default().init()
+    }
+
+    /// Initialize logging with custom configuration
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use armature_core::{Application, LogConfig, LogLevel, LogFormat};
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = LogConfig::new()
+    ///         .level(LogLevel::Debug)
+    ///         .format(LogFormat::Pretty);
+    ///     
+    ///     let _guard = Application::init_logging_with_config(config);
+    ///     // Application code...
+    /// }
+    /// ```
+    pub fn init_logging_with_config(
+        config: crate::logging::LogConfig,
+    ) -> Option<crate::logging::tracing_appender::non_blocking::WorkerGuard> {
+        config.init()
+    }
+
     /// Register a module and its imports recursively
     fn register_module(container: &Container, router: &mut Router, module: &dyn Module) {
         // First, recursively register imported modules

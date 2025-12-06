@@ -26,6 +26,7 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 - **Vue.js SSR**: Optional Vue 3 server-side rendering support
 - **Svelte SSR**: Optional Svelte/SvelteKit server-side rendering support
 - **Hot Module Reload (HMR)**: File watching and automatic reload for rapid development with all SSR frameworks
+- **Comprehensive Logging**: Highly configurable structured logging with JSON/Pretty/Plain formats, multiple outputs, and HTTP middleware
 - **Testing Utilities**: Comprehensive testing framework with mocks, spies, and assertions
 - **Validation Framework**: Powerful validation with built-in validators and custom rules
 - **WebSocket Support**: Full-duplex real-time communication with rooms and broadcasting
