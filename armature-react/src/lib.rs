@@ -28,6 +28,71 @@
 //! assert!(config.cache_enabled);
 //! ```
 //!
+//! ## Cache Configuration
+//!
+//! ```
+//! use armature_react::ReactConfig;
+//! use std::path::PathBuf;
+//!
+//! // Enable caching with custom TTL
+//! let cached = ReactConfig::new(PathBuf::from("dist"))
+//!     .with_cache(true)
+//!     .with_cache_ttl(7200); // 2 hours
+//!
+//! assert!(cached.cache_enabled);
+//! assert_eq!(cached.cache_ttl, 7200);
+//!
+//! // Disable caching (default)
+//! let uncached = ReactConfig::new(PathBuf::from("dist"))
+//!     .with_cache(false);
+//!
+//! assert!(!uncached.cache_enabled);
+//! ```
+//!
+//! ## Production vs Development Configuration
+//!
+//! ```
+//! use armature_react::ReactConfig;
+//! use std::path::PathBuf;
+//!
+//! // Production configuration (optimized, with caching)
+//! let prod_config = ReactConfig::new(PathBuf::from("dist"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("server.js".to_string())
+//!     .with_cache(true)
+//!     .with_cache_ttl(3600);
+//!
+//! assert!(prod_config.cache_enabled);
+//! assert_eq!(prod_config.cache_ttl, 3600);
+//!
+//! // Development configuration (no caching)
+//! let dev_config = ReactConfig::new(PathBuf::from("build"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("dev-server.js".to_string())
+//!     .with_cache(false);
+//!
+//! assert!(!dev_config.cache_enabled);
+//! assert_eq!(dev_config.server_entry, "dev-server.js");
+//! ```
+//!
+//! ## Static Assets Configuration
+//!
+//! ```
+//! use armature_react::ReactConfig;
+//! use std::path::PathBuf;
+//!
+//! // Configure static assets with compression
+//! let config = ReactConfig::new(PathBuf::from("dist"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("server/index.js".to_string())
+//!     .with_static_dir(PathBuf::from("dist/public"))
+//!     .with_compression(true);
+//!
+//! assert_eq!(config.static_dir, PathBuf::from("dist/public"));
+//! assert_eq!(config.server_entry, "server/index.js");
+//! assert!(config.compression);
+//! ```
+//!
 //! ## Creating a React Service
 //!
 //! ```ignore

@@ -28,6 +28,63 @@
 //! assert!(config.cache_enabled);
 //! ```
 //!
+//! ## Cache Configuration
+//!
+//! ```
+//! use armature_svelte::SvelteConfig;
+//! use std::path::PathBuf;
+//!
+//! // Enable caching with custom TTL
+//! let cached = SvelteConfig::new(PathBuf::from("dist"))
+//!     .with_cache(true)
+//!     .with_cache_ttl(1800); // 30 minutes
+//!
+//! assert!(cached.cache_enabled);
+//! assert_eq!(cached.cache_ttl, 1800);
+//!
+//! // Disable caching for development
+//! let uncached = SvelteConfig::new(PathBuf::from("build"))
+//!     .with_cache(false);
+//!
+//! assert!(!uncached.cache_enabled);
+//! ```
+//!
+//! ## SvelteKit Configuration
+//!
+//! ```
+//! use armature_svelte::SvelteConfig;
+//! use std::path::PathBuf;
+//!
+//! // SvelteKit specific configuration
+//! let sveltekit_config = SvelteConfig::new(PathBuf::from(".svelte-kit/output"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("server/index.js".to_string())
+//!     .with_static_dir(PathBuf::from(".svelte-kit/output/client"))
+//!     .with_cache(true)
+//!     .with_cache_ttl(3600);
+//!
+//! assert_eq!(sveltekit_config.server_entry, "server/index.js");
+//! assert_eq!(sveltekit_config.cache_ttl, 3600);
+//! assert_eq!(sveltekit_config.build_dir, PathBuf::from(".svelte-kit/output"));
+//! ```
+//!
+//! ## Adapter Configuration
+//!
+//! ```
+//! use armature_svelte::SvelteConfig;
+//! use std::path::PathBuf;
+//!
+//! // Configure for different adapters
+//! let adapter_node_config = SvelteConfig::new(PathBuf::from("build"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("index.js".to_string())
+//!     .with_static_dir(PathBuf::from("build/client"));
+//!
+//! assert_eq!(adapter_node_config.static_dir, PathBuf::from("build/client"));
+//! assert_eq!(adapter_node_config.server_entry, "index.js");
+//! assert_eq!(adapter_node_config.build_dir, PathBuf::from("build"));
+//! ```
+//!
 //! ## Creating a Svelte Service
 //!
 //! ```ignore

@@ -28,6 +28,63 @@
 //! assert!(config.cache_enabled);
 //! ```
 //!
+//! ## Cache Configuration
+//!
+//! ```
+//! use armature_vue::VueConfig;
+//! use std::path::PathBuf;
+//!
+//! // Enable caching with custom TTL
+//! let cached = VueConfig::new(PathBuf::from("dist"))
+//!     .with_cache(true)
+//!     .with_cache_ttl(3600); // 1 hour
+//!
+//! assert!(cached.cache_enabled);
+//! assert_eq!(cached.cache_ttl, 3600);
+//!
+//! // Disable caching
+//! let uncached = VueConfig::new(PathBuf::from("dist"))
+//!     .with_cache(false);
+//!
+//! assert!(!uncached.cache_enabled);
+//! ```
+//!
+//! ## Production Configuration
+//!
+//! ```
+//! use armature_vue::VueConfig;
+//! use std::path::PathBuf;
+//!
+//! // Full production configuration
+//! let prod_config = VueConfig::new(PathBuf::from("dist"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("entry-server.js".to_string())
+//!     .with_static_dir(PathBuf::from("dist/client"))
+//!     .with_cache(true)
+//!     .with_cache_ttl(7200);
+//!
+//! assert_eq!(prod_config.server_entry, "entry-server.js");
+//! assert_eq!(prod_config.cache_ttl, 7200);
+//! assert!(prod_config.cache_enabled);
+//! ```
+//!
+//! ## Static Directory Configuration
+//!
+//! ```
+//! use armature_vue::VueConfig;
+//! use std::path::PathBuf;
+//!
+//! // Configure static assets directory
+//! let config = VueConfig::new(PathBuf::from("dist"))
+//!     .with_node_path("node".to_string())
+//!     .with_server_entry("server/index.js".to_string())
+//!     .with_static_dir(PathBuf::from("dist/client/assets"));
+//!
+//! assert_eq!(config.static_dir, PathBuf::from("dist/client/assets"));
+//! assert_eq!(config.server_entry, "server/index.js");
+//! assert_eq!(config.build_dir, PathBuf::from("dist"));
+//! ```
+//!
 //! ## Creating a Vue Service
 //!
 //! ```ignore
