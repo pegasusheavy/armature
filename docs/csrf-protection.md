@@ -73,13 +73,13 @@ impl ApiController {
     async fn get_form(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         // Generate token
         let token = self.service.csrf.generate_token().unwrap();
-        
+
         // Create response
         let mut response = HttpResponse::ok();
-        
+
         // Add token as cookie
         response = self.service.csrf.add_token_cookie(response, &token).unwrap();
-        
+
         Ok(response)
     }
 
@@ -87,7 +87,7 @@ impl ApiController {
     async fn submit(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         // Validate CSRF token
         self.service.csrf.validate_request(&req)?;
-        
+
         // Process request
         Ok(HttpResponse::ok())
     }
@@ -291,12 +291,12 @@ impl ApiController {
 // Regenerate token after authentication
 async fn login(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
     // Authenticate user...
-    
+
     // Generate new CSRF token
     let token = self.csrf.generate_token().unwrap();
     let mut response = HttpResponse::ok();
     response = self.csrf.add_token_cookie(response, &token).unwrap();
-    
+
     Ok(response)
 }
 ```
@@ -341,9 +341,9 @@ impl CsrfMiddleware {
     pub fn new(config: CsrfConfig) -> Self;
     pub fn needs_protection(&self, request: &HttpRequest) -> bool;
     pub fn generate_token(&self) -> Result<CsrfToken, CsrfError>;
-    pub fn add_token_cookie(&self, response: HttpResponse, token: &CsrfToken) 
+    pub fn add_token_cookie(&self, response: HttpResponse, token: &CsrfToken)
         -> Result<HttpResponse, CsrfError>;
-    pub fn validate_request(&self, request: &HttpRequest) 
+    pub fn validate_request(&self, request: &HttpRequest)
         -> Result<(), ArmatureError>;
 }
 ```
