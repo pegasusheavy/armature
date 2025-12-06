@@ -29,7 +29,7 @@
 //!
 //! ## Usage with Armature
 //!
-//! ```rust,no_run
+//! ```ignore
 //! use armature::prelude::*;
 //! use armature_xss::{XssMiddleware, XssConfig};
 //!

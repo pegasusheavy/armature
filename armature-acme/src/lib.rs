@@ -122,7 +122,6 @@
 //! Use ACME certificates with Armature's HTTPS server:
 //!
 //! ```no_run
-//! use armature::prelude::*;
 //! use armature_acme::{AcmeClient, AcmeConfig};
 //!
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {

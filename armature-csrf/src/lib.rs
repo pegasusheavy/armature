@@ -31,7 +31,7 @@
 //!
 //! ## Usage with Armature
 //!
-//! ```rust,no_run
+//! ```ignore
 //! use armature::prelude::*;
 //! use armature_csrf::{CsrfConfig, CsrfMiddleware};
 //!

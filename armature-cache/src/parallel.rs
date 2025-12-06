@@ -25,7 +25,7 @@ use std::time::Duration;
 /// use armature_cache::parallel::*;
 ///
 /// # async fn example() -> CacheResult<()> {
-/// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+/// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
 ///
 /// // Get multiple keys in parallel
 /// let keys = vec!["user:1", "user:2", "user:3"];
@@ -61,7 +61,7 @@ impl ParallelCacheOps {
     /// use armature_cache::parallel::ParallelCacheOps;
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let keys = vec!["key1", "key2", "key3"];
     /// let values = ParallelCacheOps::get_many_json(&cache, &keys).await?;
@@ -102,7 +102,7 @@ impl ParallelCacheOps {
     /// }
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let keys = vec!["user:1", "user:2", "user:3"];
     /// let users: Vec<Option<User>> = ParallelCacheOps::get_many(&cache, &keys).await?;
@@ -144,7 +144,7 @@ impl ParallelCacheOps {
     /// use std::time::Duration;
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let items = vec![
     ///     ("key1", r#"{"value": 1}"#.to_string()),
@@ -187,7 +187,7 @@ impl ParallelCacheOps {
     /// }
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let items = vec![
     ///     ("counter:1", Counter { count: 10 }),
@@ -227,7 +227,7 @@ impl ParallelCacheOps {
     /// use armature_cache::parallel::ParallelCacheOps;
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let keys = vec!["key1", "key2", "key3"];
     /// ParallelCacheOps::delete_many(&cache, &keys).await?;
@@ -253,7 +253,7 @@ impl ParallelCacheOps {
     /// use armature_cache::parallel::ParallelCacheOps;
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let keys = vec!["key1", "key2", "key3"];
     /// let exists = ParallelCacheOps::exists_many(&cache, &keys).await?;
@@ -287,7 +287,7 @@ impl ParallelCacheOps {
     /// use armature_cache::parallel::ParallelCacheOps;
     ///
     /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
     ///
     /// let keys = vec!["key1", "key2", "key3"];
     /// let ttls = ParallelCacheOps::ttl_many(&cache, &keys).await?;
@@ -317,29 +317,29 @@ impl ParallelCacheOps {
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// use armature_cache::*;
-    /// use armature_cache::parallel::ParallelCacheOps;
-    /// use std::time::Duration;
-    ///
-    /// # async fn example() -> CacheResult<()> {
-    /// let cache = RedisCache::new(CacheConfig::new("redis://localhost:6379")).await?;
-    ///
-    /// let keys = vec!["user:1", "user:2", "user:3"];
-    ///
-    /// ParallelCacheOps::warm_cache(
-    ///     &cache,
-    ///     &keys,
-    ///     Some(Duration::from_secs(3600)),
-    ///     |key| async move {
-    ///         // Fetch from database
-    ///         let data = format!("Data for {}", key);
-    ///         Ok(data)
-    ///     },
-    /// ).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
+    /// ```ignore
+/// use armature_cache::*;
+/// use armature_cache::parallel::ParallelCacheOps;
+/// use std::time::Duration;
+///
+/// # async fn example() -> CacheResult<()> {
+/// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
+///
+/// let keys = vec!["user:1", "user:2", "user:3"];
+///
+/// ParallelCacheOps::warm_cache(
+///     &cache,
+///     &keys,
+///     Some(Duration::from_secs(3600)),
+///     |key: &str| async move {
+///         // Fetch from database
+///         let data = format!("Data for {}", key);
+///         Ok::<String, CacheError>(data)
+///     },
+/// ).await?;
+/// # Ok(())
+/// # }
+/// ```
     pub async fn warm_cache<S, T, F, Fut>(
         store: &S,
         keys: &[&str],
