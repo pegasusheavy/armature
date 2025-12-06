@@ -1,0 +1,81 @@
+#!/bin/sh
+# Commit message hook for Armature Framework
+# Enforces conventional commit message format
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Skip merge commits
+if echo "$commit_msg" | grep -q "^Merge"; then
+    exit 0
+fi
+
+# Skip revert commits
+if echo "$commit_msg" | grep -q "^Revert"; then
+    exit 0
+fi
+
+# Conventional commit types
+valid_types="feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+
+# Check commit message format
+if ! echo "$commit_msg" | grep -qE "^($valid_types)(\(.+\))?: .{1,}"; then
+    echo ""
+    echo "❌ Invalid commit message format!"
+    echo ""
+    echo "Commit messages must follow the Conventional Commits specification:"
+    echo ""
+    echo "  <type>[optional scope]: <description>"
+    echo ""
+    echo "Types:"
+    echo "  feat:     New feature"
+    echo "  fix:      Bug fix"
+    echo "  docs:     Documentation only changes"
+    echo "  style:    Code style changes (formatting, missing semicolons, etc)"
+    echo "  refactor: Code changes that neither fix a bug nor add a feature"
+    echo "  perf:     Performance improvements"
+    echo "  test:     Adding or updating tests"
+    echo "  build:    Build system or dependency changes"
+    echo "  ci:       CI/CD configuration changes"
+    echo "  chore:    Other changes that don't modify src or test files"
+    echo ""
+    echo "Examples:"
+    echo "  feat: add user authentication module"
+    echo "  feat(auth): implement JWT token validation"
+    echo "  fix: resolve memory leak in cache module"
+    echo "  docs(readme): update installation instructions"
+    echo "  ci: update GitLab CI pipeline configuration"
+    echo ""
+    echo "Your commit message:"
+    echo "  $commit_msg"
+    echo ""
+    exit 1
+fi
+
+# Check for emoji in commit message (optional warning)
+if echo "$commit_msg" | grep -qE "^[^a-zA-Z]"; then
+    # First character is not a letter (possibly emoji)
+    first_char=$(echo "$commit_msg" | cut -c1)
+    # Check if it's a valid conventional commit type
+    if ! echo "$commit_msg" | grep -qE "^($valid_types)"; then
+        echo ""
+        echo "ℹ️  Note: Leading emojis in commit messages are optional."
+        echo "   Current message starts with: $first_char"
+        echo "   Conventional format: <type>: <description>"
+        echo ""
+        # Don't fail, just inform
+    fi
+fi
+
+# Check commit message length
+first_line=$(echo "$commit_msg" | head -n 1)
+if [ ${#first_line} -gt 100 ]; then
+    echo ""
+    echo "⚠️  Warning: Commit message first line is ${#first_line} characters."
+    echo "   Recommended: Keep it under 72 characters for better readability."
+    echo ""
+    # Don't fail, just warn
+fi
+
+exit 0
+

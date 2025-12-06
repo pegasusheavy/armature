@@ -1,0 +1,95 @@
+#!/bin/sh
+# Pre-push hook for Armature Framework
+# Runs tests and checks before allowing push
+
+set -e
+
+echo "🚀 Running pre-push checks..."
+echo ""
+
+# Get the current branch name
+current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+# Check if pushing to protected branches
+if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
+    echo "❌ Direct push to '$current_branch' is not allowed!"
+    echo "   Please create a pull request instead."
+    echo ""
+    exit 1
+fi
+
+# 1. Run quick compile check
+echo "🔨 Running cargo check..."
+if ! cargo check --workspace --all-features; then
+    echo ""
+    echo "❌ Cargo check failed!"
+    echo "   Fix compilation errors before pushing."
+    echo ""
+    exit 1
+fi
+echo "✅ Cargo check passed"
+echo ""
+
+# 2. Run tests
+echo "🧪 Running tests..."
+if ! cargo test --workspace --all-features; then
+    echo ""
+    echo "❌ Tests failed!"
+    echo "   Fix failing tests before pushing."
+    echo ""
+    exit 1
+fi
+echo "✅ All tests passed"
+echo ""
+
+# 3. Run doc tests
+echo "📚 Running doc tests..."
+if ! cargo test --doc --all-features; then
+    echo ""
+    echo "❌ Doc tests failed!"
+    echo "   Fix failing doc tests before pushing."
+    echo ""
+    exit 1
+fi
+echo "✅ Doc tests passed"
+echo ""
+
+# 4. Check for security vulnerabilities (if cargo-audit is installed)
+if command -v cargo-audit >/dev/null 2>&1; then
+    echo "🔐 Running security audit..."
+    if ! cargo audit; then
+        echo ""
+        echo "⚠️  Security vulnerabilities found!"
+        echo "   Review and address them before pushing to protected branches."
+        echo ""
+        # Don't fail on audit warnings for feature branches
+        if [ "$current_branch" = "develop" ]; then
+            echo "   Continuing anyway for develop branch..."
+        fi
+    else
+        echo "✅ No security vulnerabilities found"
+        echo ""
+    fi
+else
+    echo "ℹ️  cargo-audit not installed. Skipping security audit."
+    echo "   Install with: cargo install cargo-audit"
+    echo ""
+fi
+
+# 5. Build documentation (quick check)
+echo "📖 Checking documentation builds..."
+if ! cargo doc --workspace --all-features --no-deps --quiet; then
+    echo ""
+    echo "❌ Documentation build failed!"
+    echo "   Fix doc errors before pushing."
+    echo ""
+    exit 1
+fi
+echo "✅ Documentation builds successfully"
+echo ""
+
+echo "✨ Pre-push checks complete! Safe to push."
+echo ""
+
+exit 0
+
