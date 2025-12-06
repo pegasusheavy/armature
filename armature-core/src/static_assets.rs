@@ -58,7 +58,7 @@ impl CacheStrategy {
 pub enum CompressionAlgorithm {
     /// Gzip compression
     Gzip,
-    
+
     /// Brotli compression (higher compression ratio than gzip)
     Brotli,
 }
@@ -71,7 +71,7 @@ impl CompressionAlgorithm {
             CompressionAlgorithm::Brotli => "br",
         }
     }
-    
+
     /// Get file extension for pre-compressed files
     pub fn file_extension(&self) -> &'static str {
         match self {
@@ -86,13 +86,13 @@ impl CompressionAlgorithm {
 pub enum CompressionLevel {
     /// Fastest compression (lowest ratio)
     Fast,
-    
+
     /// Balanced compression and speed
     Default,
-    
+
     /// Best compression (slowest)
     Best,
-    
+
     /// Custom level (0-11 for Brotli, 0-9 for Gzip)
     Custom(u32),
 }
@@ -109,7 +109,7 @@ impl CompressionLevel {
             }
         }
     }
-    
+
     /// Get brotli compression level
     pub fn brotli_level(&self) -> u32 {
         match self {
@@ -126,22 +126,22 @@ impl CompressionLevel {
 pub struct CompressionConfig {
     /// Enable compression
     pub enabled: bool,
-    
+
     /// Compression level
     pub level: CompressionLevel,
-    
+
     /// Preferred algorithm (tried first)
     pub prefer_brotli: bool,
-    
+
     /// Enable serving pre-compressed files (.gz, .br)
     pub serve_precompressed: bool,
-    
+
     /// Minimum file size to compress (bytes)
     pub min_size: usize,
-    
+
     /// Maximum file size to compress (bytes)
     pub max_size: usize,
-    
+
     /// File types to compress (if None, compress all compressible types)
     pub compress_types: Option<Vec<FileType>>,
 }
@@ -159,7 +159,7 @@ impl CompressionConfig {
             compress_types: None, // Compress all compressible types
         }
     }
-    
+
     /// Disable compression
     pub fn disabled() -> Self {
         Self {
@@ -167,67 +167,67 @@ impl CompressionConfig {
             ..Self::new()
         }
     }
-    
+
     /// Set compression level
     pub fn with_level(mut self, level: CompressionLevel) -> Self {
         self.level = level;
         self
     }
-    
+
     /// Prefer Brotli over Gzip
     pub fn prefer_brotli(mut self, prefer: bool) -> Self {
         self.prefer_brotli = prefer;
         self
     }
-    
+
     /// Enable/disable serving pre-compressed files
     pub fn serve_precompressed(mut self, enable: bool) -> Self {
         self.serve_precompressed = enable;
         self
     }
-    
+
     /// Set minimum file size to compress
     pub fn with_min_size(mut self, size: usize) -> Self {
         self.min_size = size;
         self
     }
-    
+
     /// Set maximum file size to compress
     pub fn with_max_size(mut self, size: usize) -> Self {
         self.max_size = size;
         self
     }
-    
+
     /// Set file types to compress
     pub fn with_compress_types(mut self, types: Vec<FileType>) -> Self {
         self.compress_types = Some(types);
         self
     }
-    
+
     /// Check if a file should be compressed
     pub fn should_compress(&self, file_type: FileType, size: usize) -> bool {
         if !self.enabled {
             return false;
         }
-        
+
         if size < self.min_size || size > self.max_size {
             return false;
         }
-        
+
         // Check if file type is compressible
         let is_compressible = match file_type {
-            FileType::JavaScript | FileType::Stylesheet | FileType::Html 
+            FileType::JavaScript | FileType::Stylesheet | FileType::Html
             | FileType::Json => true,
             FileType::Image => false, // Images are usually already compressed
             FileType::Font => false,  // Fonts are usually already compressed
             FileType::Video | FileType::Audio => false, // Media is already compressed
             FileType::Other => false,
         };
-        
+
         if !is_compressible {
             return false;
         }
-        
+
         // Check allowed types if specified
         if let Some(ref types) = self.compress_types {
             types.contains(&file_type)
@@ -332,31 +332,31 @@ impl FileType {
 pub struct StaticAssetsConfig {
     /// Root directory for static files
     pub root_dir: PathBuf,
-    
+
     /// Default cache strategy
     pub default_strategy: CacheStrategy,
-    
+
     /// File type-specific cache strategies
     pub type_strategies: HashMap<FileType, CacheStrategy>,
-    
+
     /// Enable ETag generation and validation
     pub enable_etag: bool,
-    
+
     /// Enable Last-Modified headers
     pub enable_last_modified: bool,
-    
+
     /// Enable CORS for static assets
     pub enable_cors: bool,
-    
+
     /// Custom CORS origin (if None, uses *)
     pub cors_origin: Option<String>,
-    
+
     /// Fallback file for SPA (e.g., "index.html")
     pub fallback: Option<String>,
-    
+
     /// List of index files to try (e.g., ["index.html", "index.htm"])
     pub index_files: Vec<String>,
-    
+
     /// Compression configuration
     pub compression: CompressionConfig,
 }
@@ -365,7 +365,7 @@ impl StaticAssetsConfig {
     /// Create a new configuration with root directory
     pub fn new(root_dir: impl Into<PathBuf>) -> Self {
         let mut type_strategies = HashMap::new();
-        
+
         // Default strategies per file type
         type_strategies.insert(FileType::JavaScript, CacheStrategy::Public(Duration::from_secs(3600)));
         type_strategies.insert(FileType::Stylesheet, CacheStrategy::Public(Duration::from_secs(3600)));
@@ -375,7 +375,7 @@ impl StaticAssetsConfig {
         type_strategies.insert(FileType::Json, CacheStrategy::NoCache);
         type_strategies.insert(FileType::Video, CacheStrategy::Public(Duration::from_secs(86400)));
         type_strategies.insert(FileType::Audio, CacheStrategy::Public(Duration::from_secs(86400)));
-        
+
         Self {
             root_dir: root_dir.into(),
             default_strategy: CacheStrategy::Public(Duration::from_secs(3600)),
@@ -437,25 +437,25 @@ impl StaticAssetsConfig {
         self.index_files = files;
         self
     }
-    
+
     /// Set compression configuration
     pub fn with_compression(mut self, compression: CompressionConfig) -> Self {
         self.compression = compression;
         self
     }
-    
+
     /// Enable/disable compression
     pub fn with_compression_enabled(mut self, enable: bool) -> Self {
         self.compression.enabled = enable;
         self
     }
-    
+
     /// Set compression level
     pub fn with_compression_level(mut self, level: CompressionLevel) -> Self {
         self.compression.level = level;
         self
     }
-    
+
     /// Configure for Single Page Application (SPA)
     pub fn spa_mode(self) -> Self {
         self.with_fallback("index.html")
@@ -464,7 +464,7 @@ impl StaticAssetsConfig {
             .with_type_strategy(FileType::Stylesheet, CacheStrategy::Immutable)
             .with_compression_enabled(true)
     }
-    
+
     /// Configure for maximum performance (aggressive caching and compression)
     pub fn max_performance(self) -> Self {
         self.with_type_strategy(FileType::JavaScript, CacheStrategy::Immutable)
@@ -478,7 +478,7 @@ impl StaticAssetsConfig {
                     .serve_precompressed(true)
             )
     }
-    
+
     /// Configure for development (no caching, no compression)
     pub fn development(self) -> Self {
         self.with_default_strategy(CacheStrategy::NoCache)
@@ -549,21 +549,21 @@ impl StaticAssetServer {
         let metadata = tokio::fs::metadata(path)
             .await
             .map_err(|e| Error::Internal(format!("Failed to read file metadata: {}", e)))?;
-        
+
         let modified = metadata.modified().ok();
         let file_size = metadata.len() as usize;
         let file_type = FileType::from_path(path);
-        
+
         // Determine compression
         let compression = self.select_compression(req, file_type, file_size);
-        
+
         // Generate ETag (include compression in ETag)
         let etag = if self.config.enable_etag {
             Some(self.generate_etag_with_compression(path, &metadata, compression.as_ref()))
         } else {
             None
         };
-        
+
         // Check conditional headers
         if let Some(ref etag_value) = etag {
             if let Some(if_none_match) = req.headers.get("If-None-Match") {
@@ -572,7 +572,7 @@ impl StaticAssetServer {
                 }
             }
         }
-        
+
         if self.config.enable_last_modified {
             if let Some(modified_time) = modified {
                 if let Some(if_modified_since) = req.headers.get("If-Modified-Since") {
@@ -584,7 +584,7 @@ impl StaticAssetServer {
                 }
             }
         }
-        
+
         // Try to serve pre-compressed file first
         let (content, used_compression) = if let Some(algo) = compression {
             if self.config.compression.serve_precompressed {
@@ -595,7 +595,7 @@ impl StaticAssetServer {
                     let raw_content = tokio::fs::read(path)
                         .await
                         .map_err(|e| Error::Internal(format!("Failed to read file: {}", e)))?;
-                    
+
                     let compressed = self.compress_content(&raw_content, algo)?;
                     (compressed, Some(algo))
                 }
@@ -604,7 +604,7 @@ impl StaticAssetServer {
                 let raw_content = tokio::fs::read(path)
                     .await
                     .map_err(|e| Error::Internal(format!("Failed to read file: {}", e)))?;
-                
+
                 let compressed = self.compress_content(&raw_content, algo)?;
                 (compressed, Some(algo))
             }
@@ -615,20 +615,20 @@ impl StaticAssetServer {
                 .map_err(|e| Error::Internal(format!("Failed to read file: {}", e)))?;
             (content, None)
         };
-        
+
         // Build response
         let mut response = HttpResponse::ok().with_body(content);
-        
+
         // Content-Type
         let content_type = file_type.mime_type(path);
         response.headers.insert("Content-Type".to_string(), content_type);
-        
+
         // Content-Encoding
         if let Some(algo) = used_compression {
             response.headers.insert("Content-Encoding".to_string(), algo.to_header_value().to_string());
             response.headers.insert("Vary".to_string(), "Accept-Encoding".to_string());
         }
-        
+
         // Cache-Control
         let cache_strategy = self.config.type_strategies
             .get(&file_type)
@@ -638,12 +638,12 @@ impl StaticAssetServer {
             "Cache-Control".to_string(),
             cache_strategy.to_header_value(),
         );
-        
+
         // ETag
         if let Some(etag_value) = etag {
             response.headers.insert("ETag".to_string(), etag_value);
         }
-        
+
         // Last-Modified
         if self.config.enable_last_modified {
             if let Some(modified_time) = modified {
@@ -651,17 +651,17 @@ impl StaticAssetServer {
                 response.headers.insert("Last-Modified".to_string(), formatted);
             }
         }
-        
+
         // CORS
         if self.config.enable_cors {
             let origin = self.config.cors_origin.as_deref().unwrap_or("*");
             response.headers.insert("Access-Control-Allow-Origin".to_string(), origin.to_string());
             response.headers.insert("Access-Control-Allow-Methods".to_string(), "GET, HEAD, OPTIONS".to_string());
         }
-        
+
         Ok(response)
     }
-    
+
     /// Select compression algorithm based on Accept-Encoding header and configuration
     fn select_compression(
         &self,
@@ -672,20 +672,20 @@ impl StaticAssetServer {
         if !self.config.compression.should_compress(file_type, file_size) {
             return None;
         }
-        
+
         // Parse Accept-Encoding header
         let accept_encoding = req.headers.get("Accept-Encoding")
             .or_else(|| req.headers.get("accept-encoding"))?;
-        
+
         let encodings: Vec<&str> = accept_encoding
             .split(',')
             .map(|s| s.trim().split(';').next().unwrap_or(""))
             .collect();
-        
+
         // Check if client supports our compression algorithms
         let supports_brotli = encodings.iter().any(|&e| e == "br");
         let supports_gzip = encodings.iter().any(|&e| e == "gzip");
-        
+
         // Select based on preference and support
         if self.config.compression.prefer_brotli && supports_brotli {
             Some(CompressionAlgorithm::Brotli)
@@ -697,7 +697,7 @@ impl StaticAssetServer {
             None
         }
     }
-    
+
     /// Try to serve a pre-compressed file
     async fn try_serve_precompressed(
         &self,
@@ -711,7 +711,7 @@ impl StaticAssetServer {
                 algo.file_extension()
             )
         );
-        
+
         if compressed_path.exists() {
             let content = tokio::fs::read(&compressed_path)
                 .await
@@ -721,7 +721,7 @@ impl StaticAssetServer {
             Ok(None)
         }
     }
-    
+
     /// Compress content on-the-fly
     fn compress_content(
         &self,
@@ -731,7 +731,7 @@ impl StaticAssetServer {
         match algo {
             CompressionAlgorithm::Gzip => {
                 use flate2::write::GzEncoder;
-                
+
                 let mut encoder = GzEncoder::new(
                     Vec::new(),
                     self.config.compression.level.gzip_level()
@@ -745,13 +745,13 @@ impl StaticAssetServer {
                 let mut output = Vec::new();
                 let mut params = brotli::enc::BrotliEncoderParams::default();
                 params.quality = self.config.compression.level.brotli_level() as i32;
-                
+
                 brotli::BrotliCompress(
                     &mut std::io::Cursor::new(content),
                     &mut output,
                     &params
                 ).map_err(|e| Error::Internal(format!("Brotli compression failed: {}", e)))?;
-                
+
                 Ok(output)
             }
         }
@@ -798,27 +798,27 @@ impl StaticAssetServer {
     ) -> String {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
-        
+
         let mut hasher = DefaultHasher::new();
-        
+
         // Hash file path
         path.to_string_lossy().hash(&mut hasher);
-        
+
         // Hash file size
         metadata.len().hash(&mut hasher);
-        
+
         // Hash modification time
         if let Ok(modified) = metadata.modified() {
             if let Ok(duration) = modified.duration_since(SystemTime::UNIX_EPOCH) {
                 duration.as_secs().hash(&mut hasher);
             }
         }
-        
+
         // Hash compression algorithm
         if let Some(algo) = compression {
             algo.to_header_value().hash(&mut hasher);
         }
-        
+
         format!("\"{}\"", hasher.finish())
     }
 
@@ -849,41 +849,41 @@ mod tests {
             CacheStrategy::NoCache.to_header_value(),
             "no-cache, no-store, must-revalidate"
         );
-        
+
         assert_eq!(
             CacheStrategy::Public(Duration::from_secs(3600)).to_header_value(),
             "public, max-age=3600"
         );
-        
+
         assert_eq!(
             CacheStrategy::Immutable.to_header_value(),
             "public, max-age=31536000, immutable"
         );
     }
-    
+
     #[test]
     fn test_file_type_detection() {
         assert_eq!(
             FileType::from_path(Path::new("script.js")),
             FileType::JavaScript
         );
-        
+
         assert_eq!(
             FileType::from_path(Path::new("style.css")),
             FileType::Stylesheet
         );
-        
+
         assert_eq!(
             FileType::from_path(Path::new("image.png")),
             FileType::Image
         );
-        
+
         assert_eq!(
             FileType::from_path(Path::new("font.woff2")),
             FileType::Font
         );
     }
-    
+
     #[test]
     fn test_config_builder() {
         let config = StaticAssetsConfig::new("public")
@@ -891,17 +891,17 @@ mod tests {
             .with_etag(true)
             .with_cors_origin("https://example.com")
             .with_compression_enabled(true);
-        
+
         assert_eq!(config.default_strategy, CacheStrategy::NoCache);
         assert!(config.enable_etag);
         assert_eq!(config.cors_origin, Some("https://example.com".to_string()));
         assert!(config.compression.enabled);
     }
-    
+
     #[test]
     fn test_spa_mode() {
         let config = StaticAssetsConfig::new("public").spa_mode();
-        
+
         assert_eq!(config.fallback, Some("index.html".to_string()));
         assert_eq!(
             config.type_strategies.get(&FileType::Html),
@@ -913,7 +913,7 @@ mod tests {
         );
         assert!(config.compression.enabled);
     }
-    
+
     #[test]
     fn test_compression_algorithm() {
         assert_eq!(CompressionAlgorithm::Gzip.to_header_value(), "gzip");
@@ -921,7 +921,7 @@ mod tests {
         assert_eq!(CompressionAlgorithm::Gzip.file_extension(), ".gz");
         assert_eq!(CompressionAlgorithm::Brotli.file_extension(), ".br");
     }
-    
+
     #[test]
     fn test_compression_level() {
         assert_eq!(CompressionLevel::Fast.brotli_level(), 4);
@@ -930,48 +930,48 @@ mod tests {
         assert_eq!(CompressionLevel::Custom(8).brotli_level(), 8);
         assert_eq!(CompressionLevel::Custom(20).brotli_level(), 11); // Capped at 11
     }
-    
+
     #[test]
     fn test_compression_config_should_compress() {
         let config = CompressionConfig::new();
-        
+
         // Should compress JS/CSS/HTML (compressible types)
         assert!(config.should_compress(FileType::JavaScript, 5000));
         assert!(config.should_compress(FileType::Stylesheet, 5000));
         assert!(config.should_compress(FileType::Html, 5000));
-        
+
         // Should not compress already compressed types
         assert!(!config.should_compress(FileType::Image, 5000));
         assert!(!config.should_compress(FileType::Font, 5000));
         assert!(!config.should_compress(FileType::Video, 5000));
-        
+
         // Should not compress files below min size
         assert!(!config.should_compress(FileType::JavaScript, 500)); // < 1KB
-        
+
         // Should not compress files above max size
         assert!(!config.should_compress(FileType::JavaScript, 20_000_000)); // > 10MB
     }
-    
+
     #[test]
     fn test_compression_disabled() {
         let config = CompressionConfig::disabled();
-        
+
         assert!(!config.enabled);
         assert!(!config.should_compress(FileType::JavaScript, 5000));
     }
-    
+
     #[test]
     fn test_development_mode_disables_compression() {
         let config = StaticAssetsConfig::new("public").development();
-        
+
         assert!(!config.compression.enabled);
         assert_eq!(config.default_strategy, CacheStrategy::NoCache);
     }
-    
+
     #[test]
     fn test_max_performance_enables_best_compression() {
         let config = StaticAssetsConfig::new("public").max_performance();
-        
+
         assert!(config.compression.enabled);
         assert_eq!(config.compression.level, CompressionLevel::Best);
         assert!(config.compression.prefer_brotli);

@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example 1: Basic static asset serving with compression
     println!("\n📦 Example 1: Basic Static Assets (with Gzip compression)");
     println!("   URL: http://localhost:3000/static/");
-    
+
     let basic_config = StaticAssetsConfig::new("demo/public")
         .with_default_strategy(CacheStrategy::Public(Duration::from_secs(3600)))
         .with_compression(
@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .with_level(CompressionLevel::Default)
                 .prefer_brotli(false) // Prefer gzip for compatibility
         );
-    
+
     let basic_server = StaticAssetServer::new(basic_config)?;
 
     router.add_route(Route {
@@ -100,11 +100,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example 3: Maximum performance (immutable assets + Brotli)
     println!("📦 Example 3: Maximum Performance Mode (Brotli + Best compression)");
     println!("   URL: http://localhost:3000/cdn/");
-    
+
     let cdn_config = StaticAssetsConfig::new("demo/cdn")
         .max_performance()  // Aggressive caching + best compression
         .with_cors_origin("*");
-    
+
     let cdn_server = StaticAssetServer::new(cdn_config)?;
 
     router.add_route(Route {
@@ -349,13 +349,13 @@ async fn setup_demo_directory() -> std::io::Result<()> {
         "<!-- Padding to make file larger -->".repeat(100)
     );
     fs::write("demo/public/index.html", large_html).await?;
-    
+
     let large_css = format!(
         "body {{ margin: 0; padding: 20px; }} {}",
         "/* Padding comment */\n.class {} ".repeat(100)
     );
     fs::write("demo/public/styles.css", large_css).await?;
-    
+
     let large_js = format!(
         "console.log('Static script loaded');\n{}",
         "// Padding comment\nfunction noop() {}\n".repeat(100)
@@ -376,7 +376,7 @@ async fn setup_demo_directory() -> std::io::Result<()> {
         "function module() {{ return 'code'; }}\n".repeat(200)
     );
     fs::write("demo/cdn/bundle.123456.js", cdn_js).await?;
-    
+
     let cdn_css = format!(
         "/* Hashed styles */\n{}",
         ".component {{ display: block; }}\n".repeat(200)

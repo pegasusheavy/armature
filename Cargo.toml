@@ -20,7 +20,7 @@ members = [
     "armature-security",
     "armature-acme",
     "armature-csrf",
-    "armature-xss",
+    "armature-xss", "armature-handlebars",
 ]
 resolver = "2"
 
@@ -88,6 +88,7 @@ armature-security = { path = "armature-security", optional = true }
 armature-acme = { path = "armature-acme", optional = true }
 armature-csrf = { path = "armature-csrf", optional = true }
 armature-xss = { path = "armature-xss", optional = true }
+armature-handlebars = { path = "armature-handlebars", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.35", features = ["full"] }
@@ -118,6 +119,7 @@ full = [
     "acme",
     "csrf",
     "xss",
+    "handlebars",
 ]
 graphql = ["armature-graphql"]
 config = ["armature-config"]
@@ -138,6 +140,7 @@ security = ["armature-security"]
 acme = ["armature-acme"]
 csrf = ["armature-csrf"]
 xss = ["armature-xss"]
+handlebars = ["armature-handlebars"]
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -284,6 +287,11 @@ path = "examples/form_processing.rs"
 [[example]]
 name = "static_assets"
 path = "examples/static_assets.rs"
+
+[[example]]
+name = "handlebars_templates"
+path = "examples/handlebars_templates.rs"
+required-features = ["handlebars"]
 
 [[example]]
 name = "acme_letsencrypt"

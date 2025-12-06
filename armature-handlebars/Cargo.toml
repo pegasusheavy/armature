@@ -1,0 +1,23 @@
+[package]
+name = "armature-handlebars"
+version = "0.1.0"
+edition = "2024"
+authors = ["Joseph R. Quinn"]
+license = "Apache-2.0"
+description = "Handlebars templating integration for Armature framework"
+repository = "https://github.com/quinnjr/armature"
+keywords = ["web", "framework", "handlebars", "templates", "ssr"]
+categories = ["web-programming", "template-engine"]
+
+[dependencies]
+armature-core = { path = "../armature-core" }
+handlebars = "5.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+async-trait = "0.1"
+tokio = { version = "1.35", features = ["full"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"

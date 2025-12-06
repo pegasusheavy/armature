@@ -69,6 +69,9 @@ pub use armature_csrf;
 #[cfg(feature = "xss")]
 pub use armature_xss;
 
+#[cfg(feature = "handlebars")]
+pub use armature_handlebars;
+
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{
