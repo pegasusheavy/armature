@@ -5,7 +5,7 @@ Comprehensive examples showing how to integrate popular Rust ORMs with Armature'
 ## Available Examples
 
 ### 1. **SQLx** - SQL-First Async Database Library
-📄 **File:** `sqlx_database.rs`  
+📄 **File:** `sqlx_database.rs`
 🔗 **Docs:** [README_SQLX.md](README_SQLX.md)
 
 **Best For:**
@@ -514,19 +514,19 @@ All ORMs work great with Armature's testing utilities:
 async fn test_user_service() {
     // Create test database service
     let db = DatabaseService::new(test_database_url());
-    
+
     // Initialize
     db.on_module_init().await.unwrap();
-    
+
     // Create service
     let service = UserService::new(db);
-    
+
     // Test operations
     let user = service.create_user(CreateUserRequest {
         username: "test".to_string(),
         email: "test@example.com".to_string(),
     }).await.unwrap();
-    
+
     assert_eq!(user.username, "test");
 }
 ```

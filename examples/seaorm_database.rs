@@ -67,7 +67,7 @@ pub struct UpdateUserRequest {
 pub struct SeaOrmDatabaseService {
     /// Connection string for the database
     connection_string: String,
-    
+
     /// SeaORM database connection (initialized after OnModuleInit)
     db: Arc<RwLock<Option<DatabaseConnection>>>,
 }

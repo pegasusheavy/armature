@@ -22,6 +22,9 @@ tokio-tungstenite = "0.21"
 futures-util = "0.3"
 tokio-stream = "0.1"
 
+# Hot Module Reload (HMR)
+notify = "6.1"
+
 # TLS/HTTPS support
 rustls = "0.23"
 tokio-rustls = "0.26"

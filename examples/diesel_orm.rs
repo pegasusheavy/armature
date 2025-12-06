@@ -79,7 +79,7 @@ type PgPooledConnection = PooledConnection<ConnectionManager<PgConnection>>;
 pub struct DieselDatabaseService {
     /// Connection string for the database
     connection_string: String,
-    
+
     /// R2D2 connection pool (initialized after OnModuleInit)
     pool: Arc<RwLock<Option<PgPool>>>,
 }
@@ -99,7 +99,7 @@ impl DieselDatabaseService {
         let pool = pool_guard
             .as_ref()
             .ok_or_else(|| diesel::result::Error::NotFound)?;
-        
+
         pool.get()
             .map_err(|_| diesel::result::Error::NotFound)
     }
