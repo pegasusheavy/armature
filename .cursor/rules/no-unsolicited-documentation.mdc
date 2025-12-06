@@ -1,0 +1,96 @@
+# No Unsolicited Documentation or Summaries
+
+## Rule
+
+**DO NOT** generate summaries, markdown documentation, or other documentation files unless the user explicitly requests them.
+
+## What NOT to Do
+
+❌ **Don't create unsolicited summaries:**
+- Task summaries
+- Implementation summaries
+- Session summaries
+- Progress reports
+- Markdown recap documents
+
+❌ **Don't create unsolicited documentation:**
+- README files (unless explicitly requested)
+- CHANGELOG updates (unless explicitly requested)
+- Implementation guides
+- Status reports
+- Progress documentation
+
+❌ **Don't add verbose explanations:**
+- Long explanations of what was done
+- Detailed breakdowns of changes
+- Extensive commit message formatting in responses
+
+## What TO Do
+
+✅ **Only provide:**
+- Direct answers to questions
+- Implementation of requested features
+- Error fixes and corrections
+- Brief confirmations of completed work
+
+✅ **Create documentation when:**
+- User explicitly asks: "create a README", "document this", "write a guide"
+- Project documentation standards require it (see `documentation.mdc`)
+- Feature documentation is required by workspace rules
+
+✅ **Keep responses concise:**
+- Focus on the task at hand
+- Provide essential information only
+- Let the work speak for itself
+
+## Examples
+
+### ❌ Bad (Unsolicited Summary)
+
+```
+I've completed the task. Here's what I did:
+
+## Summary
+- Created 5 new files
+- Modified 3 existing files
+- Added comprehensive documentation
+
+## Files Changed
+1. file1.rs - Added feature X
+2. file2.rs - Fixed bug Y
+...
+(extensive breakdown)
+```
+
+### ✅ Good (Concise Confirmation)
+
+```
+Task complete. Created the authentication module with JWT support.
+```
+
+### ❌ Bad (Creating Unsolicited Docs)
+
+```
+Let me also create a SUMMARY.md to document what we've done...
+```
+
+### ✅ Good (Only When Asked)
+
+```
+User: "Create a summary of the authentication features"
+Assistant: (creates SUMMARY.md)
+```
+
+## Exception: Required Documentation
+
+The **only exception** is when documentation is required by workspace rules:
+
+1. **Feature documentation** - As per `documentation.mdc`, every feature MUST have documentation in `docs/`
+2. **API documentation** - Inline Rust doc comments (`///`) are required
+3. **Examples** - Working examples are required for new features
+
+These are NOT optional and should be created automatically with new features.
+
+## Summary
+
+**Key Principle:** Only generate what is explicitly requested or required by project standards. Don't create summaries, recaps, or extra documentation files unless asked.
