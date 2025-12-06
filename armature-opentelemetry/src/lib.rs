@@ -9,7 +9,54 @@
 //!
 //! # Examples
 //!
-//! ## Basic Tracing
+//! ## Telemetry Configuration
+//!
+//! ```
+//! use armature_opentelemetry::TelemetryConfig;
+//!
+//! // Create configuration with service name
+//! let config = TelemetryConfig::new("my-service");
+//!
+//! assert_eq!(config.service_name, "my-service");
+//! assert!(config.enable_tracing);
+//! assert!(config.enable_metrics);
+//!
+//! // Customize configuration with builder pattern
+//! let custom = TelemetryConfig::new("api-service")
+//!     .with_version("1.0.0")
+//!     .with_environment("production")
+//!     .with_namespace("backend")
+//!     .with_tracing(true)
+//!     .with_metrics(false);
+//!
+//! assert_eq!(custom.service_name, "api-service");
+//! assert_eq!(custom.service_version, Some("1.0.0".to_string()));
+//! assert_eq!(custom.environment, Some("production".to_string()));
+//! assert!(custom.enable_tracing);
+//! assert!(!custom.enable_metrics);
+//! ```
+//!
+//! ## Creating KeyValue Attributes
+//!
+//! ```
+//! use armature_opentelemetry::{KeyValue, StringValue};
+//!
+//! // Create key-value pairs for telemetry attributes
+//! let service_attr = KeyValue::new("service.name", "my-api");
+//! let version_attr = KeyValue::new("service.version", "1.0.0");
+//! let env_attr = KeyValue::new("environment", "production");
+//!
+//! // Key-value pairs are used for span attributes and resource attributes
+//! let attributes = vec![
+//!     service_attr,
+//!     version_attr,
+//!     env_attr,
+//! ];
+//!
+//! assert_eq!(attributes.len(), 3);
+//! ```
+//!
+//! ## Complete Example (requires external collector)
 //!
 //! ```no_run
 //! use armature_opentelemetry::*;
