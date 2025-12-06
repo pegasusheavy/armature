@@ -88,6 +88,52 @@ Comprehensive benchmark runner for performance testing.
 - **Validation**: Form validation, email, URL, patterns
 - **Data**: Queue jobs, cron expressions, JSON parsing
 
+### `test-docs.sh`
+
+Runs documentation tests across all workspace members.
+
+**Usage:**
+
+```bash
+# Run all documentation tests
+./scripts/test-docs.sh
+```
+
+**Features:**
+- Tests all workspace crates individually
+- Color-coded output (✓ PASSED / ✗ FAILED)
+- Summary report with pass/fail counts
+- Exits with error if any tests fail
+- Perfect for CI/CD pipelines
+
+**Example Output:**
+
+```
+📚 Armature Documentation Test Runner
+======================================
+
+Testing armature-core... ✓ PASSED
+Testing armature-macro... ✓ PASSED
+Testing armature-handlebars... ✓ PASSED
+...
+
+======================================
+Summary:
+  Total:  22
+  Passed: 22
+  Failed: 0
+
+✅ All documentation tests passed!
+```
+
+**CI Integration:**
+
+```yaml
+# .github/workflows/doc-tests.yml
+- name: Run documentation tests
+  run: ./scripts/test-docs.sh
+```
+
 ## Typical Workflow
 
 ### 1. Prepare Release

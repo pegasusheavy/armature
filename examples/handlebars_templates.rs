@@ -35,7 +35,7 @@ impl UserService {
     fn new() -> Self {
         Self
     }
-    
+
     fn get_users(&self) -> Vec<User> {
         vec![
             User {
@@ -61,7 +61,7 @@ impl UserService {
             },
         ]
     }
-    
+
     fn get_user(&self, id: u64) -> Option<User> {
         self.get_users().into_iter().find(|u| u.id == id)
     }
@@ -76,7 +76,7 @@ impl PostService {
     fn new() -> Self {
         Self
     }
-    
+
     fn get_posts(&self) -> Vec<Post> {
         vec![
             Post {
@@ -95,7 +95,7 @@ impl PostService {
             },
         ]
     }
-    
+
     fn get_post(&self, id: u64) -> Option<Post> {
         self.get_posts().into_iter().find(|p| p.id == id)
     }
@@ -115,7 +115,7 @@ impl HomeController {
             "title": "Armature Handlebars Example",
             "description": "Server-side rendering with Handlebars templates",
         });
-        
+
         self.handlebars
             .render_response("index", &data)
             .await
@@ -133,36 +133,36 @@ struct UserController {
 impl UserController {
     async fn list_users(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let users = self.user_service.get_users();
-        
+
         let data = serde_json::json!({
             "title": "Users",
             "users": users,
         });
-        
+
         self.handlebars
             .render_response("users/list", &data)
             .await
             .map_err(|e| Error::Internal(e.to_string()))
     }
-    
+
     async fn get_user(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req.path_params.get("id").ok_or_else(|| {
             Error::BadRequest("Missing user id".to_string())
         })?;
-        
+
         let id: u64 = id_str.parse().map_err(|_| {
             Error::BadRequest("Invalid user id".to_string())
         })?;
-        
+
         let user = self.user_service.get_user(id).ok_or_else(|| {
             Error::NotFound("User not found".to_string())
         })?;
-        
+
         let data = serde_json::json!({
             "title": format!("User: {}", user.name),
             "user": user,
         });
-        
+
         self.handlebars
             .render_response("users/detail", &data)
             .await
@@ -180,36 +180,36 @@ struct PostController {
 impl PostController {
     async fn list_posts(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let posts = self.post_service.get_posts();
-        
+
         let data = serde_json::json!({
             "title": "Blog Posts",
             "posts": posts,
         });
-        
+
         self.handlebars
             .render_response("posts/list", &data)
             .await
             .map_err(|e| Error::Internal(e.to_string()))
     }
-    
+
     async fn get_post(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req.path_params.get("id").ok_or_else(|| {
             Error::BadRequest("Missing post id".to_string())
         })?;
-        
+
         let id: u64 = id_str.parse().map_err(|_| {
             Error::BadRequest("Invalid post id".to_string())
         })?;
-        
+
         let post = self.post_service.get_post(id).ok_or_else(|| {
             Error::NotFound("Post not found".to_string())
         })?;
-        
+
         let data = serde_json::json!({
             "title": post.title.clone(),
             "post": post,
         });
-        
+
         self.handlebars
             .render_response("posts/detail", &data)
             .await
@@ -378,7 +378,7 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         r#"<div class="card">
     <h1>{{title}}</h1>
     <p>{{description}}</p>
-    
+
     <h2>Features Demonstrated:</h2>
     <ul>
         <li>✅ Handlebars template rendering</li>
@@ -388,7 +388,7 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         <li>✅ Iteration with {{{{raw}}}}{{#each}}{{{{/raw}}}}</li>
         <li>✅ Hot-reload in dev mode</li>
     </ul>
-    
+
     <h3>Examples:</h3>
     <ul>
         <li><a href="/users">View Users</a> - List all users with filtering</li>
@@ -404,14 +404,14 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         r#"<div class="card">
     <h1>{{upper title}}</h1>
     <p>Total users: {{len users}}</p>
-    
+
     {{#each users}}
     <div class="card">
         <h3>{{this.name}}</h3>
         <p>Email: {{this.email}}</p>
         <p>
             Role: <span class="badge badge-{{this.role}}">{{upper this.role}}</span>
-            Status: 
+            Status:
             {{#if this.active}}
                 <span class="badge badge-active">ACTIVE</span>
             {{else}}
@@ -430,25 +430,25 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         "demo/templates/users/detail.hbs",
         r#"<div class="card">
     <h1>{{title}}</h1>
-    
+
     <p><strong>ID:</strong> {{user.id}}</p>
     <p><strong>Name:</strong> {{user.name}}</p>
     <p><strong>Email:</strong> {{user.email}}</p>
     <p><strong>Role:</strong> <span class="badge badge-{{user.role}}">{{upper user.role}}</span></p>
-    <p><strong>Status:</strong> 
+    <p><strong>Status:</strong>
         {{#if user.active}}
             <span class="badge badge-active">ACTIVE</span>
         {{else}}
             <span class="badge badge-inactive">INACTIVE</span>
         {{/if}}
     </p>
-    
+
     {{#if (eq user.role "admin")}}
         <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
             ⚠️ This user has administrator privileges.
         </div>
     {{/if}}
-    
+
     <p style="margin-top: 2rem;">
         <a href="/users">← Back to Users</a>
     </p>
@@ -462,7 +462,7 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         r#"<div class="card">
     <h1>{{title}}</h1>
     <p>{{len posts}} posts available</p>
-    
+
     {{#each posts}}
     <div class="card">
         <h2>{{this.title}}</h2>
@@ -486,15 +486,15 @@ async fn setup_demo_templates() -> std::io::Result<()> {
         r#"<div class="card">
     <h1>{{post.title}}</h1>
     <p><small>By {{post.author}} | Views: {{post.views}}</small></p>
-    
+
     {{#if (gt post.views 1000)}}
         <span class="badge badge-active">🔥 Popular Post</span>
     {{/if}}
-    
+
     <div style="margin: 2rem 0;">
         {{post.content}}
     </div>
-    
+
     <p style="margin-top: 2rem;">
         <a href="/posts">← Back to Posts</a>
     </p>

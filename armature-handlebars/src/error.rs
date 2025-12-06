@@ -11,27 +11,27 @@ pub enum HandlebarsError {
     /// Template not found
     #[error("Template not found: {0}")]
     TemplateNotFound(String),
-    
+
     /// Template rendering error
     #[error("Template rendering error: {0}")]
     RenderError(String),
-    
+
     /// Template parsing error
     #[error("Template parsing error: {0}")]
     ParseError(String),
-    
+
     /// IO error when loading templates
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
-    
+
     /// Serialization error
     #[error("Serialization error: {0}")]
     Serialization(#[from] serde_json::Error),
-    
+
     /// Helper registration error
     #[error("Helper registration error: {0}")]
     HelperError(String),
-    
+
     /// Configuration error
     #[error("Configuration error: {0}")]
     ConfigError(String),

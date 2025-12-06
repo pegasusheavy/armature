@@ -82,19 +82,19 @@ impl HandlebarsService {
         let engine = HandlebarsEngine::new(config)?;
         Ok(Self { engine })
     }
-    
+
     /// Render a template with data
     pub async fn render<T: Serialize>(&self, template: &str, data: &T) -> Result<String> {
         // Use tokio::task::spawn_blocking for CPU-intensive template rendering
         let engine = self.engine.clone();
         let template = template.to_string();
         let data_json = serde_json::to_value(data)?;
-        
+
         tokio::task::spawn_blocking(move || engine.render(&template, &data_json))
             .await
             .map_err(|e| HandlebarsError::RenderError(e.to_string()))?
     }
-    
+
     /// Render a template and return as HTTP response
     pub async fn render_response<T: Serialize>(
         &self,
@@ -102,33 +102,33 @@ impl HandlebarsService {
         data: &T,
     ) -> Result<HttpResponse> {
         let html = self.render(template, data).await?;
-        
+
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/html; charset=utf-8".to_string())
             .with_body(html.into_bytes()))
     }
-    
+
     /// Render a template string (not from file)
     pub async fn render_template<T: Serialize>(&self, template_str: &str, data: &T) -> Result<String> {
         let engine = self.engine.clone();
         let template_str = template_str.to_string();
         let data_json = serde_json::to_value(data)?;
-        
+
         tokio::task::spawn_blocking(move || engine.render_template(&template_str, &data_json))
             .await
             .map_err(|e| HandlebarsError::RenderError(e.to_string()))?
     }
-    
+
     /// Register a template from string
     pub fn register_template(&self, name: &str, template: &str) -> Result<()> {
         self.engine.register_template(name, template)
     }
-    
+
     /// Register a partial
     pub fn register_partial(&self, name: &str, template: &str) -> Result<()> {
         self.engine.register_partial(name, template)
     }
-    
+
     /// Register a custom helper
     pub fn register_helper<F>(&self, name: &str, helper: F) -> Result<()>
     where
@@ -136,17 +136,17 @@ impl HandlebarsService {
     {
         self.engine.register_helper(name, helper)
     }
-    
+
     /// Check if a template exists
     pub fn has_template(&self, name: &str) -> bool {
         self.engine.has_template(name)
     }
-    
+
     /// Get list of registered template names
     pub fn get_templates(&self) -> Vec<String> {
         self.engine.get_templates()
     }
-    
+
     /// Reload all templates from disk
     pub async fn reload_templates(&self) -> Result<()> {
         let engine = self.engine.clone();
@@ -154,12 +154,12 @@ impl HandlebarsService {
             .await
             .map_err(|e| HandlebarsError::RenderError(e.to_string()))?
     }
-    
+
     /// Get configuration
     pub fn config(&self) -> &HandlebarsConfig {
         self.engine.config()
     }
-    
+
     /// Get engine reference
     pub fn engine(&self) -> &HandlebarsEngine {
         &self.engine
@@ -185,12 +185,12 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let templates_dir = temp_dir.path().join("templates");
         fs::create_dir(&templates_dir).unwrap();
-        
+
         fs::write(
             templates_dir.join("hello.hbs"),
             "<h1>Hello {{name}}!</h1>"
         ).unwrap();
-        
+
         temp_dir
     }
 
@@ -199,21 +199,21 @@ mod tests {
         let temp_dir = create_test_templates();
         let config = HandlebarsConfig::new(temp_dir.path().join("templates"));
         let service = HandlebarsService::new(config).unwrap();
-        
+
         let data = json!({"name": "Armature"});
         let result = service.render("hello", &data).await.unwrap();
         assert_eq!(result, "<h1>Hello Armature!</h1>");
     }
-    
+
     #[tokio::test]
     async fn test_service_render_response() {
         let temp_dir = create_test_templates();
         let config = HandlebarsConfig::new(temp_dir.path().join("templates"));
         let service = HandlebarsService::new(config).unwrap();
-        
+
         let data = json!({"name": "Armature"});
         let response = service.render_response("hello", &data).await.unwrap();
-        
+
         assert_eq!(response.status, 200);
         assert_eq!(
             response.headers.get("Content-Type"),
@@ -224,13 +224,13 @@ mod tests {
             "<h1>Hello Armature!</h1>"
         );
     }
-    
+
     #[tokio::test]
     async fn test_service_render_template_string() {
         let temp_dir = create_test_templates();
         let config = HandlebarsConfig::new(temp_dir.path().join("templates"));
         let service = HandlebarsService::new(config).unwrap();
-        
+
         let data = json!({"value": 123});
         let result = service.render_template("Value: {{value}}", &data).await.unwrap();
         assert_eq!(result, "Value: 123");
