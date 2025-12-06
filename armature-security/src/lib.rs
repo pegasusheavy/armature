@@ -3,21 +3,106 @@
 //! This module provides a comprehensive set of security headers and protections
 //! to help secure your Armature applications against common web vulnerabilities.
 //!
-//! # Example
+//! ## Features
+//!
+//! - 🛡️ **Content Security Policy** - Prevent XSS attacks
+//! - 🔒 **HSTS** - Force HTTPS connections
+//! - 🚫 **Frame Guard** - Prevent clickjacking
+//! - 🎭 **XSS Filter** - Browser XSS protection
+//! - 📝 **Content Type Options** - Prevent MIME sniffing
+//! - 🌐 **Referrer Policy** - Control referrer information
+//! - 🔐 **11 Security Headers** - Comprehensive protection
+//!
+//! ## Quick Start - Default Security
+//!
+//! ```
+//! use armature_security::SecurityMiddleware;
+//!
+//! // Use default security settings (recommended for most apps)
+//! let security = SecurityMiddleware::default();
+//!
+//! // Apply to a response
+//! let mut response = armature_core::HttpResponse::ok();
+//! let response = security.apply(response);
+//!
+//! // Now response has all default security headers
+//! assert!(response.headers.contains_key("X-Frame-Options"));
+//! assert!(response.headers.contains_key("X-Content-Type-Options"));
+//! ```
+//!
+//! ## Custom Configuration
 //!
 //! ```
 //! use armature_security::SecurityMiddleware;
 //! use armature_security::hsts::HstsConfig;
 //! use armature_security::frame_guard::FrameGuard;
+//! use armature_security::referrer_policy::ReferrerPolicy;
 //!
-//! // Use default security settings (recommended)
-//! let security = SecurityMiddleware::default();
-//!
-//! // Or customize as needed
 //! let security = SecurityMiddleware::new()
-//!     .with_hsts(HstsConfig::new(31536000))
+//!     .with_hsts(HstsConfig::new(31536000).include_subdomains(true))
 //!     .with_frame_guard(FrameGuard::Deny)
+//!     .with_referrer_policy(ReferrerPolicy::StrictOrigin)
 //!     .hide_powered_by(true);
+//!
+//! let response = security.apply(armature_core::HttpResponse::ok());
+//! assert_eq!(response.headers.get("X-Frame-Options"), Some(&"DENY".to_string()));
+//! ```
+//!
+//! ## Content Security Policy
+//!
+//! ```
+//! use armature_security::SecurityMiddleware;
+//! use armature_security::content_security_policy::CspConfig;
+//!
+//! let csp = CspConfig::new()
+//!     .default_src(vec!["'self'".to_string()])
+//!     .script_src(vec!["'self'".to_string(), "'unsafe-inline'".to_string()])
+//!     .style_src(vec!["'self'".to_string(), "https://fonts.googleapis.com".to_string()]);
+//!
+//! let security = SecurityMiddleware::new().with_csp(csp);
+//! let response = security.apply(armature_core::HttpResponse::ok());
+//!
+//! assert!(response.headers.contains_key("Content-Security-Policy"));
+//! ```
+//!
+//! ## HSTS (HTTP Strict Transport Security)
+//!
+//! ```
+//! use armature_security::SecurityMiddleware;
+//! use armature_security::hsts::HstsConfig;
+//!
+//! // HSTS for 1 year with subdomains
+//! let hsts = HstsConfig::new(31536000)
+//!     .include_subdomains(true)
+//!     .preload(true);
+//!
+//! let security = SecurityMiddleware::new().with_hsts(hsts);
+//! let response = security.apply(armature_core::HttpResponse::ok());
+//!
+//! let hsts_header = response.headers.get("Strict-Transport-Security").unwrap();
+//! assert!(hsts_header.contains("max-age=31536000"));
+//! assert!(hsts_header.contains("includeSubDomains"));
+//! ```
+//!
+//! ## Frame Guard (Clickjacking Protection)
+//!
+//! ```
+//! use armature_security::SecurityMiddleware;
+//! use armature_security::frame_guard::FrameGuard;
+//!
+//! // Deny all framing
+//! let security = SecurityMiddleware::new()
+//!     .with_frame_guard(FrameGuard::Deny);
+//!
+//! let response = security.apply(armature_core::HttpResponse::ok());
+//! assert_eq!(response.headers.get("X-Frame-Options"), Some(&"DENY".to_string()));
+//!
+//! // Allow framing from same origin
+//! let security = SecurityMiddleware::new()
+//!     .with_frame_guard(FrameGuard::SameOrigin);
+//!
+//! let response = security.apply(armature_core::HttpResponse::ok());
+//! assert_eq!(response.headers.get("X-Frame-Options"), Some(&"SAMEORIGIN".to_string()));
 //! ```
 
 pub mod content_security_policy;
