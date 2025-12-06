@@ -63,6 +63,12 @@ pub use armature_security;
 #[cfg(feature = "acme")]
 pub use armature_acme;
 
+#[cfg(feature = "csrf")]
+pub use armature_csrf;
+
+#[cfg(feature = "xss")]
+pub use armature_xss;
+
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{

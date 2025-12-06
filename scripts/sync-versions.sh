@@ -27,13 +27,13 @@ if [ -n "$1" ]; then
     NEW_VERSION="$1"
     echo -e "New version: ${GREEN}$NEW_VERSION${NC}"
     echo
-    
+
     # Validate version format (basic semver check)
     if ! [[ $NEW_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9\.]+)?$ ]]; then
         echo -e "${RED}Error: Invalid version format. Use semver format (e.g., 0.1.0 or 1.0.0-beta.1)${NC}"
         exit 1
     fi
-    
+
     # Confirm version bump
     read -p "Update all crates from $CURRENT_VERSION to $NEW_VERSION? (y/N) " -n 1 -r
     echo
@@ -41,15 +41,15 @@ if [ -n "$1" ]; then
         echo "Aborted."
         exit 0
     fi
-    
+
     echo
     echo "Updating versions..."
     echo
-    
+
     # Update workspace version
     sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$ROOT_DIR/Cargo.toml"
     echo "✓ Updated root Cargo.toml"
-    
+
     # Update all workspace member versions
     for crate_dir in "$ROOT_DIR"/armature-*; do
         if [ -d "$crate_dir" ]; then
@@ -66,7 +66,7 @@ if [ -n "$1" ]; then
             fi
         fi
     done
-    
+
     echo
     echo -e "${GREEN}All versions updated to $NEW_VERSION${NC}"
     echo
@@ -77,12 +77,12 @@ if [ -n "$1" ]; then
     echo "4. Commit: git commit -am \"chore: bump version to $NEW_VERSION\""
     echo "5. Tag: git tag v$NEW_VERSION"
     echo "6. Push: git push && git push --tags"
-    
+
 else
     # Just list current versions
     echo "Workspace member versions:"
     echo
-    
+
     for crate_dir in "$ROOT_DIR"/armature-*; do
         if [ -d "$crate_dir" ]; then
             crate_name=$(basename "$crate_dir")
@@ -101,7 +101,7 @@ else
             fi
         fi
     done
-    
+
     echo
     echo "Usage: $0 [new_version]"
     echo "Example: $0 0.2.0"

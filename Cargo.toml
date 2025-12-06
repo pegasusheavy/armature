@@ -19,6 +19,8 @@ members = [
     "armature-opentelemetry",
     "armature-security",
     "armature-acme",
+    "armature-csrf",
+    "armature-xss",
 ]
 resolver = "2"
 
@@ -84,6 +86,8 @@ armature-queue = { path = "armature-queue", optional = true }
 armature-opentelemetry = { path = "armature-opentelemetry", optional = true }
 armature-security = { path = "armature-security", optional = true }
 armature-acme = { path = "armature-acme", optional = true }
+armature-csrf = { path = "armature-csrf", optional = true }
+armature-xss = { path = "armature-xss", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.35", features = ["full"] }
@@ -112,6 +116,8 @@ full = [
     "opentelemetry",
     "security",
     "acme",
+    "csrf",
+    "xss",
 ]
 graphql = ["armature-graphql"]
 config = ["armature-config"]
@@ -130,6 +136,8 @@ queue = ["armature-queue"]
 opentelemetry = ["armature-opentelemetry"]
 security = ["armature-security"]
 acme = ["armature-acme"]
+csrf = ["armature-csrf"]
+xss = ["armature-xss"]
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -248,6 +256,16 @@ required-features = ["security"]
 name = "acme_certificate"
 path = "examples/acme_certificate.rs"
 required-features = ["acme"]
+
+[[example]]
+name = "csrf_protection"
+path = "examples/csrf_protection.rs"
+required-features = ["csrf"]
+
+[[example]]
+name = "xss_protection"
+path = "examples/xss_protection.rs"
+required-features = ["xss"]
 
 [[example]]
 name = "acme_letsencrypt"
