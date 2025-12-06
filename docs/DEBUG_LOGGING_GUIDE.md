@@ -76,7 +76,7 @@ RUST_LOG=armature=debug,hyper=info cargo run
 
 **What's Logged:**
 - Module registration
-- Provider registration  
+- Provider registration
 - Controller registration
 - Lifecycle hook execution
 - Application startup
@@ -433,7 +433,7 @@ async fn main() {
 
     // Bootstrap application - watch logs
     let app = Application::create::<AppModule>().await;
-    
+
     // Start server
     app.listen(3000).await.unwrap();
 }

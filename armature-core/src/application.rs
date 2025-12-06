@@ -39,10 +39,10 @@ impl Application {
 
         let container = Container::new();
         debug!("DI container initialized");
-        
+
         let mut router = Router::new();
         debug!("Router initialized");
-        
+
         let lifecycle = Arc::new(LifecycleManager::new());
         debug!("Lifecycle manager initialized");
 
@@ -181,7 +181,7 @@ impl Application {
     fn register_module(container: &Container, router: &mut Router, module: &dyn Module) {
         let module_type = std::any::type_name_of_val(module);
         debug!(module_type = module_type, "Registering module");
-        
+
         // First, recursively register imported modules
         let imports = module.imports();
         if !imports.is_empty() {
@@ -236,17 +236,17 @@ impl Application {
                 }
             }
         }
-        
+
         debug!(module_type = module_type, "Module registration complete");
     }
 
     /// Start the HTTP server on the specified port
     pub async fn listen(self, port: u16) -> Result<(), Error> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
-        
+
         debug!(address = %addr, "Binding to address");
         let listener = TcpListener::bind(addr).await?;
-        
+
         info!(address = %addr, "HTTP server listening");
 
         let router = self.router.clone();
@@ -254,7 +254,7 @@ impl Application {
         loop {
             let (stream, client_addr) = listener.accept().await?;
             trace!(client_address = %client_addr, "Connection accepted");
-            
+
             let io = TokioIo::new(stream);
             let router = router.clone();
 
@@ -294,7 +294,7 @@ impl Application {
     /// ```
     pub async fn listen_https(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
-        
+
         debug!(address = %addr, "Binding to address (HTTPS)");
         let listener = TcpListener::bind(addr).await?;
 
@@ -306,7 +306,7 @@ impl Application {
         loop {
             let (stream, client_addr) = listener.accept().await?;
             trace!(client_address = %client_addr, "HTTPS connection accepted");
-            
+
             let acceptor = acceptor.clone();
             let router = router.clone();
 
@@ -481,13 +481,13 @@ async fn handle_request(
     router: Arc<Router>,
 ) -> Result<Response<Full<bytes::Bytes>>, hyper::Error> {
     use std::time::Instant;
-    
+
     let start = Instant::now();
-    
+
     // Convert hyper request to our HttpRequest
     let method = req.method().to_string();
     let path = req.uri().path().to_string();
-    
+
     trace!(method = %method, path = %path, "Incoming request");
 
     let mut armature_req = HttpRequest::new(method.clone(), path.clone());
@@ -507,7 +507,7 @@ async fn handle_request(
     let body_bytes = req.collect().await?.to_bytes();
     let body_size = body_bytes.len();
     armature_req.body = body_bytes.to_vec();
-    
+
     if body_size > 0 {
         trace!(body_size = body_size, "Request body received");
     }
@@ -535,8 +535,8 @@ async fn handle_request(
 
     let duration = start.elapsed();
     debug!(
-        method = %method, 
-        path = %path, 
+        method = %method,
+        path = %path,
         status = response.status,
         duration_ms = duration.as_millis(),
         "Request completed"

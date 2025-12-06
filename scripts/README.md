@@ -168,14 +168,14 @@ git push origin v0.2.0
 git push --tags
 ```
 
-### 4. Create GitHub Release
+### 4. Create GitLab Release
 
 ```bash
-# Using GitHub CLI
-gh release create v0.2.0 --generate-notes
+# Using GitLab CLI
+glab release create v0.2.0 --notes "Release notes here"
 
-# Or manually on GitHub
-# Go to: https://github.com/quinnjr/armature/releases/new
+# Or manually on GitLab
+# Go to: https://gitlab.com/pegasusheavy/armature/-/releases/new
 ```
 
 ### 5. Publish to crates.io
@@ -252,12 +252,13 @@ Due to dependencies, publish in this order:
 
 ## CI/CD Integration
 
-These scripts are designed to work with GitHub Actions:
+These scripts are designed to work with GitLab CI:
 
 ```yaml
-# .github/workflows/release.yml
-- name: Deploy
-  run: ./scripts/deploy.sh ${{ github.ref_name }}
+# .gitlab-ci.yml
+deploy:
+  script:
+    - ./scripts/deploy.sh $CI_COMMIT_TAG
 ```
 
 ## Requirements

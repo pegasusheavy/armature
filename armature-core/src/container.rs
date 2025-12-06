@@ -24,11 +24,11 @@ impl Container {
     pub fn register<T: Provider>(&self, instance: T) {
         let type_id = TypeId::of::<T>();
         let type_name = std::any::type_name::<T>();
-        
+
         trace!(provider = type_name, "Acquiring write lock for registration");
         let mut providers = self.providers.write().unwrap();
         providers.insert(type_id, Arc::new(instance));
-        
+
         debug!(provider = type_name, "Provider registered in DI container");
     }
 
@@ -37,11 +37,11 @@ impl Container {
     pub fn register_boxed<T: Provider>(&self, instance: Box<T>) {
         let type_id = TypeId::of::<T>();
         let type_name = std::any::type_name::<T>();
-        
+
         trace!(provider = type_name, "Registering boxed provider");
         let mut providers = self.providers.write().unwrap();
         providers.insert(type_id, Arc::new(*instance));
-        
+
         debug!(provider = type_name, "Boxed provider registered");
     }
 
@@ -50,7 +50,7 @@ impl Container {
         trace!(type_id = ?type_id, "Registering provider by TypeId");
         let mut providers = self.providers.write().unwrap();
         providers.insert(type_id, instance);
-        
+
         debug!(type_id = ?type_id, "Provider registered by TypeId");
     }
 
@@ -61,7 +61,7 @@ impl Container {
     {
         let type_name = std::any::type_name::<T>();
         debug!(provider = type_name, "Creating provider from factory");
-        
+
         let instance = factory();
         self.register(instance);
     }
@@ -70,7 +70,7 @@ impl Container {
     pub fn resolve<T: Provider>(&self) -> Result<Arc<T>, Error> {
         let type_id = TypeId::of::<T>();
         let type_name = std::any::type_name::<T>();
-        
+
         trace!(provider = type_name, "Attempting to resolve provider");
         let providers = self.providers.read().unwrap();
 
@@ -83,12 +83,12 @@ impl Container {
                     type_name
                 ))
             });
-        
+
         match &result {
             Ok(_) => debug!(provider = type_name, "Provider resolved successfully"),
             Err(_) => debug!(provider = type_name, "Provider not found in container"),
         }
-        
+
         result
     }
 
@@ -96,10 +96,10 @@ impl Container {
     pub fn has<T: Provider>(&self) -> bool {
         let type_id = TypeId::of::<T>();
         let type_name = std::any::type_name::<T>();
-        
+
         let providers = self.providers.read().unwrap();
         let exists = providers.contains_key(&type_id);
-        
+
         trace!(provider = type_name, exists = exists, "Checked provider existence");
         exists
     }
@@ -109,7 +109,7 @@ impl Container {
         let mut providers = self.providers.write().unwrap();
         let count = providers.len();
         providers.clear();
-        
+
         debug!(provider_count = count, "Cleared all providers from container");
     }
 }
