@@ -1,0 +1,212 @@
+# GitLab Triage Policy for Armature
+# Replaces GitHub Actions stale.yml workflow
+#
+# To enable: Settings → Repository → Triage Policies
+# Or use gitlab-triage gem for automation
+
+resource_rules:
+  issues:
+    rules:
+      # Mark issues as stale after 60 days of inactivity
+      - name: "Mark stale issues"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 60
+          state: opened
+          labels:
+            - "^(?!pinned|security|roadmap|breaking-change|good-first-issue).*$"
+          forbidden_labels:
+            - stale
+        actions:
+          comment: |
+            This issue has been automatically marked as stale because it has not had
+            recent activity. It will be closed in 7 days if no further activity occurs.
+            Thank you for your contributions.
+          labels:
+            - stale
+
+      # Close stale issues after 7 more days (67 days total)
+      - name: "Close stale issues"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 67
+          state: opened
+          labels:
+            - stale
+        actions:
+          comment: |
+            This issue has been automatically closed due to inactivity.
+            If this is still a problem, please feel free to reopen the issue.
+          status: close
+
+      # Remove stale label if issue is updated
+      - name: "Remove stale label on activity"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: newer_than
+            interval_type: days
+            interval: 60
+          state: opened
+          labels:
+            - stale
+        actions:
+          remove_labels:
+            - stale
+
+  merge_requests:
+    rules:
+      # Mark merge requests as stale after 30 days
+      - name: "Mark stale merge requests"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 30
+          state: opened
+          labels:
+            - "^(?!pinned|security|breaking-change|in-progress).*$"
+          forbidden_labels:
+            - stale
+        actions:
+          comment: |
+            This merge request has been automatically marked as stale because it has not had
+            recent activity. It will be closed in 7 days if no further activity occurs.
+            Please update the MR or reach out to reviewers if you'd like to continue working on this.
+          labels:
+            - stale
+
+      # Close stale MRs after 7 more days (37 days total)
+      - name: "Close stale merge requests"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: older_than
+            interval_type: days
+            interval: 37
+          state: opened
+          labels:
+            - stale
+        actions:
+          comment: |
+            This merge request has been automatically closed due to inactivity.
+            You can reopen it anytime if you'd like to continue working on it.
+          status: close
+
+      # Remove stale label if MR is updated
+      - name: "Remove stale label on MR activity"
+        conditions:
+          date:
+            attribute: updated_at
+            condition: newer_than
+            interval_type: days
+            interval: 30
+          state: opened
+          labels:
+            - stale
+        actions:
+          remove_labels:
+            - stale
+
+      # Auto-label MRs by size
+      - name: "Label small MRs"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:changes_count].to_i <= 10
+          forbidden_labels:
+            - "size/*"
+        actions:
+          labels:
+            - "size/xs"
+
+      - name: "Label medium MRs"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:changes_count].to_i > 10 && resource[:changes_count].to_i <= 100
+          forbidden_labels:
+            - "size/*"
+        actions:
+          labels:
+            - "size/s"
+
+      - name: "Label large MRs"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:changes_count].to_i > 100 && resource[:changes_count].to_i <= 500
+          forbidden_labels:
+            - "size/*"
+        actions:
+          labels:
+            - "size/m"
+
+      - name: "Label very large MRs"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:changes_count].to_i > 500 && resource[:changes_count].to_i <= 1000
+          forbidden_labels:
+            - "size/*"
+        actions:
+          labels:
+            - "size/l"
+
+      - name: "Label extra large MRs"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:changes_count].to_i > 1000
+          forbidden_labels:
+            - "size/*"
+        actions:
+          labels:
+            - "size/xl"
+
+      # Auto-label new contributors
+      - name: "Welcome first-time contributors"
+        conditions:
+          state: opened
+          ruby: |
+            resource[:author][:username] &&
+            resource[:author][:created_at] &&
+            (Time.now - Time.parse(resource[:author][:created_at])) < (30 * 24 * 60 * 60)
+        actions:
+          comment: |
+            👋 Welcome to Armature! Thanks for your first merge request.
+
+            Please make sure:
+            - ✅ Your MR description clearly explains the changes
+            - ✅ All tests pass (`cargo test --all-features`)
+            - ✅ You've run `cargo fmt` and `cargo clippy`
+            - ✅ Documentation is updated if needed
+
+            A maintainer will review your MR as soon as possible. Thanks for contributing! 🎉
+          labels:
+            - "first-contribution"
+
+      # Label MRs that need triage
+      - name: "Label needs-triage"
+        conditions:
+          state: opened
+          date:
+            attribute: created_at
+            condition: newer_than
+            interval_type: hours
+            interval: 1
+          forbidden_labels:
+            - "needs-triage"
+            - "ready"
+            - "in-review"
+        actions:
+          labels:
+            - "needs-triage"
+
