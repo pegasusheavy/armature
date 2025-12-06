@@ -6,7 +6,7 @@
 //! ## Features
 //!
 //! - ⚛️ **React SSR** - Full SSR support for React 18+
-//! - 📦 **Static Assets** - Serve compiled React assets  
+//! - 📦 **Static Assets** - Serve compiled React assets
 //! - 🔄 **Component Rendering** - Server-side component rendering
 //! - ⚡ **Performance** - Fast Node.js integration
 //! - 🎯 **Route Control** - Exclude specific routes from SSR
