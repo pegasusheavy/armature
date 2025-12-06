@@ -6,6 +6,7 @@ authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"
 description = "Handlebars templating integration for Armature framework"
 repository = "https://gitlab.com/pegasusheavy/armature"
+homepage = "https://pegasusheavy.gitlab.io/armature"
 keywords = ["web", "framework", "handlebars", "templates", "ssr"]
 categories = ["web-programming", "template-engine"]
 

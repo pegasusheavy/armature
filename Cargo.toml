@@ -31,7 +31,7 @@ rust-version = "1.85"
 authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"
 repository = "https://gitlab.com/pegasusheavy/armature"
-homepage = "https://gitlab.com/pegasusheavy/armature"
+homepage = "https://pegasusheavy.gitlab.io/armature"
 
 [package]
 name = "armature"
@@ -42,7 +42,7 @@ authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"
 readme = "README.md"
 repository = "https://gitlab.com/pegasusheavy/armature"
-homepage = "https://gitlab.com/pegasusheavy/armature"
+homepage = "https://pegasusheavy.gitlab.io/armature"
 documentation = "https://docs.rs/armature"
 description = "A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS. Features dependency injection, decorators, middleware, authentication (JWT/OAuth2/SAML), validation, OpenAPI/Swagger, SSR, caching, job queues, and observability."
 keywords = ["web", "framework", "http", "async", "nestjs"]
