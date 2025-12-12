@@ -95,43 +95,4 @@ export class HomeComponent {
   goToSlide(index: number): void {
     this.currentSlide = index;
   }
-
-  codeExample = `use armature::prelude::*;
-
-#[controller("/api")]
-struct ApiController;
-
-#[controller]
-impl ApiController {
-    #[get("/hello/:name")]
-    async fn hello(&self, name: Path<String>) -> Json<Message> {
-        Json(Message {
-            text: format!("Hello, {}!", name.0),
-        })
-    }
-
-    #[post("/users")]
-    async fn create_user(
-        &self,
-        body: Json<CreateUser>,
-        db: Inject<Database>,
-    ) -> Result<Json<User>, Error> {
-        let user = db.users().create(&body.0).await?;
-        Ok(Json(user))
-    }
-}
-
-#[module]
-struct AppModule {
-    #[controller]
-    api: ApiController,
-}
-
-#[tokio::main]
-async fn main() -> Result<()> {
-    Application::create::<AppModule>()
-        .await
-        .listen(3000)
-        .await
-}`;
 }

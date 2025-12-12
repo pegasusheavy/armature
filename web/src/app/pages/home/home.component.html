@@ -74,7 +74,44 @@
             </div>
             <span class="text-slate-400 text-sm font-mono ml-2">main.rs</span>
           </div>
-          <pre class="p-6 overflow-x-auto text-sm leading-relaxed"><code class="language-rust text-slate-300">{{ codeExample }}</code></pre>
+          <pre class="p-6 overflow-x-auto text-sm leading-relaxed"><code class="language-rust text-slate-300">use armature::prelude::*;
+
+#[controller("/api")]
+struct ApiController;
+
+#[controller]
+impl ApiController &#123;
+    #[get("/hello/:name")]
+    async fn hello(&amp;self, name: Path&lt;String&gt;) -&gt; Json&lt;Message&gt; &#123;
+        Json(Message &#123;
+            text: format!("Hello, &#123;&#125;!", name.0),
+        &#125;)
+    &#125;
+
+    #[post("/users")]
+    async fn create_user(
+        &amp;self,
+        body: Json&lt;CreateUser&gt;,
+        db: Inject&lt;Database&gt;,
+    ) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
+        let user = db.users().create(&amp;body.0).await?;
+        Ok(Json(user))
+    &#125;
+&#125;
+
+#[module]
+struct AppModule &#123;
+    #[controller]
+    api: ApiController,
+&#125;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;()&gt; &#123;
+    Application::create::&lt;AppModule&gt;()
+        .await
+        .listen(3000)
+        .await
+&#125;</code></pre>
         </div>
       </div>
 
