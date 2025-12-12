@@ -1,7 +1,11 @@
-/* Tailwind CSS 4+ imports */
-@use "tailwindcss" as tw;
+/* Tailwind CSS 4 */
+@use "tailwindcss";
 
-/* Custom theme configuration using CSS variables */
+/* Content sources for JIT */
+@source "./app/**/*.html";
+@source "./app/**/*.ts";
+
+/* Custom theme configuration */
 @theme {
   /* Custom colors */
   --color-primary-50: #f0f9ff;
@@ -246,4 +250,26 @@ pre {
 
 code {
   font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+
+/* Utility classes */
+.mr-2 {
+  margin-right: 0.5rem;
+}
+
+.mr-3 {
+  margin-right: 0.75rem;
+}
+
+/* Text color utilities (for CLI demo) */
+.text-green-400 {
+  color: #4ade80;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-cyan-400 {
+  color: #22d3ee;
 }
