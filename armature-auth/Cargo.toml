@@ -41,8 +41,6 @@ saml = ["dep:samael", "dep:flate2", "dep:quick-xml"]
 
 [dev-dependencies]
 tokio-test = "0.4"
-# Enable SAML for tests
-samael = "0.0.19"
-flate2 = "1.0.17"
-quick-xml = { version = "0.38", features = ["serialize"] }
+# Note: SAML tests require the `saml` feature to be enabled
+# Run with: cargo test --features saml
 

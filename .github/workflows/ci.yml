@@ -1,5 +1,5 @@
 # GitHub Actions CI Pipeline for Armature Framework
-# 
+#
 # This pipeline tests the framework with and without SAML support.
 # SAML requires openssl/xmlsec1 system libraries, so it's tested separately.
 
