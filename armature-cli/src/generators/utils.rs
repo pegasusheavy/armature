@@ -1,0 +1,130 @@
+//! Utility functions for code generation.
+
+use heck::{ToKebabCase, ToPascalCase, ToSnakeCase};
+use std::path::{Path, PathBuf};
+
+use crate::error::{CliError, CliResult};
+
+/// Convert a name to various case formats.
+pub struct NameCases {
+    pub pascal: String,
+    pub snake: String,
+    pub kebab: String,
+    pub original: String,
+}
+
+impl NameCases {
+    /// Create name cases from the original name.
+    pub fn from(name: &str) -> Self {
+        // Handle path-like names (e.g., "api/users")
+        let base_name = name.split('/').last().unwrap_or(name);
+
+        Self {
+            pascal: base_name.to_pascal_case(),
+            snake: base_name.to_snake_case(),
+            kebab: base_name.to_kebab_case(),
+            original: name.to_string(),
+        }
+    }
+}
+
+/// Find the project root by looking for Cargo.toml.
+pub fn find_project_root() -> CliResult<PathBuf> {
+    let mut current = std::env::current_dir()?;
+
+    loop {
+        if current.join("Cargo.toml").exists() {
+            // Check if it's an Armature project by looking for armature in dependencies
+            let cargo_toml = std::fs::read_to_string(current.join("Cargo.toml"))?;
+            if cargo_toml.contains("armature") {
+                return Ok(current);
+            }
+        }
+
+        if !current.pop() {
+            return Err(CliError::NotInProject);
+        }
+    }
+}
+
+/// Get the source directory for the project.
+pub fn get_src_dir() -> CliResult<PathBuf> {
+    let root = find_project_root()?;
+    Ok(root.join("src"))
+}
+
+/// Ensure a directory exists, creating it if necessary.
+pub fn ensure_dir(path: &Path) -> CliResult<()> {
+    if !path.exists() {
+        std::fs::create_dir_all(path)?;
+    }
+    Ok(())
+}
+
+/// Write a file, checking if it already exists.
+pub fn write_file(path: &Path, content: &str, overwrite: bool) -> CliResult<()> {
+    if path.exists() && !overwrite {
+        return Err(CliError::FileExists(path.display().to_string()));
+    }
+
+    // Ensure parent directory exists
+    if let Some(parent) = path.parent() {
+        ensure_dir(parent)?;
+    }
+
+    std::fs::write(path, content)?;
+    Ok(())
+}
+
+/// Update the mod.rs file to include a new module.
+pub fn update_mod_file(dir: &Path, module_name: &str) -> CliResult<()> {
+    let mod_file = dir.join("mod.rs");
+    let mod_line = format!("pub mod {};\n", module_name);
+
+    if mod_file.exists() {
+        let content = std::fs::read_to_string(&mod_file)?;
+        if !content.contains(&format!("mod {};", module_name)) {
+            let new_content = format!("{}{}", content, mod_line);
+            std::fs::write(&mod_file, new_content)?;
+        }
+    } else {
+        std::fs::write(&mod_file, mod_line)?;
+    }
+
+    Ok(())
+}
+
+/// Parse a comma-separated list of names.
+pub fn parse_list(input: Option<&str>) -> Vec<String> {
+    input
+        .map(|s| {
+            s.split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Check if cargo-watch is installed.
+pub fn has_cargo_watch() -> bool {
+    which::which("cargo-watch").is_ok()
+}
+
+/// Install cargo-watch if not present.
+pub fn install_cargo_watch() -> CliResult<()> {
+    use std::process::Command;
+
+    let status = Command::new("cargo")
+        .args(["install", "cargo-watch"])
+        .status()?;
+
+    if !status.success() {
+        return Err(CliError::Command(
+            "Failed to install cargo-watch".to_string(),
+        ));
+    }
+
+    Ok(())
+}
+

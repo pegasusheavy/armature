@@ -16,6 +16,7 @@ members = [
     "armature-security",
     "armature-acme",
     "armature-ratelimit",
+    "armature-cli",
 ]
 resolver = "2"
 

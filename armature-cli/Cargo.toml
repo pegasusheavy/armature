@@ -1,0 +1,41 @@
+[package]
+name = "armature-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Pegasus Heavy Industries LLC"]
+description = "CLI tool for Armature framework - code generation and development server"
+license = "Apache-2.0"
+repository = "https://github.com/pegasusheavy/armature"
+keywords = ["cli", "code-generation", "development", "web-framework"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "armature"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive", "color", "suggestions"] }
+colored = "3.0"
+dialoguer = { version = "0.11", features = ["fuzzy-select"] }
+indicatif = "0.17"
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+notify = "8.0"
+notify-debouncer-mini = "0.6"
+walkdir = "2.5"
+thiserror = "2.0"
+heck = "0.5"
+include_dir = "0.7"
+handlebars = "6.3"
+ctrlc = "3.4"
+which = "7.0"
+chrono = "0.4"
+dirs = "6.0"
+
+[dev-dependencies]
+tempfile = "3.20"
+assert_cmd = "2.0"
+predicates = "3.1"
+

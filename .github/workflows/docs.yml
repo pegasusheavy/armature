@@ -9,16 +9,8 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
   # ============================================================================
@@ -96,19 +88,18 @@ jobs:
           path: web/dist/web/browser/
 
   # ============================================================================
-  # DEPLOY TO GITHUB PAGES
+  # DEPLOY TO GH-PAGES BRANCH
   # ============================================================================
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy to gh-pages branch
     needs: [build-rust-docs, build-website]
     runs-on: ubuntu-latest
     # Only deploy on push to main or develop, not on PRs
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download website artifact
         uses: actions/download-artifact@v6
         with:
@@ -124,14 +115,13 @@ jobs:
       - name: Add .nojekyll
         run: touch public/.nojekyll
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: public/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'docs: deploy website and API docs'
