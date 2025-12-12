@@ -54,6 +54,9 @@ pub use armature_acme;
 #[cfg(feature = "ratelimit")]
 pub use armature_ratelimit;
 
+#[cfg(feature = "compression")]
+pub use armature_compression;
+
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{
