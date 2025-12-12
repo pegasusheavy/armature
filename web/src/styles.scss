@@ -1,5 +1,5 @@
-/* Tailwind CSS 4 */
-@import "tailwindcss";
+/* Tailwind CSS 4+ imports */
+@use "tailwindcss" as tw;
 
 /* Custom theme configuration using CSS variables */
 @theme {
@@ -21,7 +21,9 @@
 }
 
 /* Global styles */
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -34,7 +36,8 @@ body {
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  background-color: var(--color-gray-50);
+  color: var(--color-gray-900);
 }
 
 /* Custom utility classes */
@@ -57,72 +60,188 @@ button {
 
 /* Focus styles */
 :focus-visible {
-  @apply outline-2 outline-offset-2 outline-primary-500;
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 /* Hero Section */
 .hero-section {
-  @apply min-h-screen flex items-center justify-center px-4 py-20;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
 }
 
 .hero-content {
-  @apply text-center max-w-4xl mx-auto;
+  text-align: center;
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-title {
-  @apply text-5xl md:text-7xl font-bold text-white mb-6;
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 4.5rem;
+  }
+}
+
 .hero-subtitle {
-  @apply text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed;
+  font-size: 1.25rem;
+  color: #d1d5db;
+  margin-bottom: 2.5rem;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.625;
+}
+
+@media (min-width: 768px) {
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
 }
 
 .cta-buttons {
-  @apply flex flex-col sm:flex-row gap-4 justify-center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .cta-buttons {
+    flex-direction: row;
+  }
 }
 
 .btn {
-  @apply px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 inline-flex items-center justify-center;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl;
+  background-color: var(--color-primary-600);
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-700);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary {
-  @apply bg-white/10 text-white border border-white/20 hover:bg-white/20;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Features Section */
 .features-section {
-  @apply py-20 px-4 sm:px-6 lg:px-8 bg-white;
+  padding: 5rem 1rem;
+  background-color: white;
+}
+
+@media (min-width: 640px) {
+  .features-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .features-section {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 .features-grid {
-  @apply max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .feature-card {
-  @apply p-6 rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all duration-200 bg-white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
 }
 
 .feature-icon {
-  @apply w-14 h-14 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center mb-4;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
 
 .feature-title {
-  @apply text-xl font-bold text-gray-900 mb-2;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
 }
 
 .feature-description {
-  @apply text-gray-600 leading-relaxed;
+  color: #4b5563;
+  line-height: 1.625;
 }
 
 /* Code blocks */
 pre {
-  @apply rounded-lg overflow-x-auto;
+  border-radius: 0.5rem;
+  overflow-x: auto;
 }
 
 code {
