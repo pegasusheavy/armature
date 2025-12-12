@@ -22,6 +22,7 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 - **Configuration Management**: Optional NestJS-style config system with env, .env, JSON, and TOML support
 - **GraphQL Support**: Optional type-safe GraphQL API with queries, mutations, and subscriptions
 - **Rate Limiting**: Token bucket, sliding window, and fixed window algorithms with Redis support
+- **Response Compression**: Automatic gzip, brotli, and zstd compression with content-type awareness
 - **Comprehensive Logging**: Highly configurable structured logging with JSON/Pretty/Plain formats, multiple outputs, and HTTP middleware
 - **Testing Utilities**: Comprehensive testing framework with mocks, spies, and assertions
 - **Validation Framework**: Powerful validation with built-in validators and custom rules
@@ -443,6 +444,11 @@ armature/
 │       ├── routes.rs       # Route macros
 │       ├── module.rs       # #[module] macro
 │       └── params.rs       # Parameter extraction
+├── armature-compression/ # HTTP response compression
+│   └── src/
+│       ├── algorithm.rs  # Compression algorithms (gzip, brotli, zstd)
+│       ├── config.rs     # Configuration builder
+│       └── middleware.rs # Compression middleware
 ├── src/
 │   └── lib.rs          # Main library (re-exports)
 ├── examples/           # Example applications
@@ -531,15 +537,17 @@ armature dev --port 8080
 
 ## Roadmap
 
-- [ ] Full DI integration with auto-wiring
-- [ ] Middleware support (`#[use_middleware]`)
-- [ ] Guards and interceptors
-- [ ] WebSocket support
-- [ ] GraphQL integration
-- [ ] OpenAPI/Swagger generation
+- [x] Full DI integration with auto-wiring
+- [x] Middleware support
+- [x] Guards and interceptors
+- [x] WebSocket support
+- [x] GraphQL integration
+- [x] OpenAPI/Swagger generation
+- [x] Authentication/authorization modules (JWT, OAuth2, SAML)
+- [x] Testing utilities
+- [x] Response compression (gzip, brotli, zstd)
 - [ ] Database integration modules
-- [ ] Authentication/authorization modules
-- [ ] Testing utilities
+- [ ] `#[use_middleware]` decorator syntax
 
 ## Acknowledgments
 
@@ -568,6 +576,7 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - **[Authentication Guide](docs/AUTH_GUIDE.md)** - JWT, OAuth2, and SAML authentication
 - **[Guards & Interceptors](docs/GUARDS_INTERCEPTORS.md)** - Request processing and authorization
 - **[Rate Limiting Guide](docs/RATE_LIMITING_GUIDE.md)** - API rate limiting with multiple algorithms
+- **[Compression Guide](docs/modules/compression.md)** - HTTP response compression middleware
 
 **Advanced:**
 - **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
