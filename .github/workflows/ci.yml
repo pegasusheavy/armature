@@ -1,4 +1,7 @@
 # GitHub Actions CI Pipeline for Armature Framework
+#
+# This pipeline tests the framework with and without SAML support.
+# SAML requires openssl/xmlsec1 system libraries, so it's tested separately.
 
 name: CI
 
@@ -32,7 +35,7 @@ jobs:
         run: cargo fmt -- --check
 
   clippy:
-    name: Clippy
+    name: Clippy (without SAML)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,10 +44,26 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --features full -- -D warnings
+
+  clippy-saml:
+    name: Clippy (with SAML)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run Clippy with SAML
+        run: cargo clippy --all-targets --features full-with-saml -- -D warnings
 
   # ============================================================================
-  # TEST
+  # TEST (Cross-platform without SAML - pure Rust)
   # ============================================================================
 
   test:
@@ -66,25 +85,51 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: cargo build --verbose --all-features
-      - name: Run tests
-        run: cargo test --verbose --all-features
-      - name: Run doc tests
-        run: cargo test --doc --all-features
+      - name: Build (without SAML)
+        run: cargo build --verbose --features full
+      - name: Run tests (without SAML)
+        run: cargo test --verbose --features full
+      - name: Run doc tests (without SAML)
+        run: cargo test --doc --features full
+
+  # ============================================================================
+  # TEST (SAML - Linux only, requires system libraries)
+  # ============================================================================
+
+  test-saml:
+    name: Test SAML (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build with SAML
+        run: cargo build --verbose --features full-with-saml
+      - name: Run tests with SAML
+        run: cargo test --verbose --features full-with-saml
+      - name: Run doc tests with SAML
+        run: cargo test --doc --features full-with-saml
 
   doc-tests:
     name: Documentation Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run doc tests
-        run: cargo test --doc --all --all-features
+        run: cargo test --doc --all --features full-with-saml
       - name: Check documentation
         run: |
-          cargo doc --all --all-features --no-deps 2>&1 | tee doc-warnings.txt
+          cargo doc --all --features full-with-saml --no-deps 2>&1 | tee doc-warnings.txt
           if grep -q "warning: missing documentation" doc-warnings.txt; then
             echo "⚠️  Found items without documentation"
             grep "warning: missing documentation" doc-warnings.txt || true
@@ -97,6 +142,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Build all examples
@@ -104,7 +153,7 @@ jobs:
           for example in examples/*.rs; do
             name=$(basename "$example" .rs)
             echo "Building example: $name"
-            cargo build --example "$name" --all-features || echo "Failed to build $name"
+            cargo build --example "$name" --features full-with-saml || echo "Failed to build $name"
           done
 
   coverage:
@@ -112,6 +161,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: llvm-tools-preview
@@ -119,7 +172,7 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+        run: cargo llvm-cov --features full-with-saml --workspace --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -135,9 +188,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rustsec/audit-check@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Run security audit
+        run: cargo audit
 
   minimal-versions:
     name: Minimal Versions Check
@@ -145,29 +200,37 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      # Note: We test minimal versions WITHOUT SAML because:
+      # 1. SAML requires system libraries (openssl, xmlsec1) which have version-specific issues
+      # 2. The core framework should work with minimal versions of pure Rust dependencies
+      # 3. openssl-sys minimum versions have known build script bugs
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - name: Check minimal versions
         run: |
           cargo update -Z minimal-versions
-          cargo check --all-features
+          cargo check --features full
 
   # ============================================================================
   # MSRV
   # ============================================================================
 
   msrv:
-    name: MSRV Check (1.85)
+    name: MSRV Check (1.88)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.85
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl libssl-dev pkg-config
+      - uses: dtolnay/rust-toolchain@1.88
       - uses: Swatinem/rust-cache@v2
       - name: Check MSRV
         run: |
-          cargo check --all-features
-          cargo build --all-features
-          cargo test --all-features
+          cargo check --features full-with-saml
+          cargo build --features full-with-saml
+          cargo test --features full-with-saml
 
   # ============================================================================
   # BUILD
@@ -179,10 +242,16 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     steps:
       - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Build release
-        run: cargo build --release --all-features
+      - name: Build release (with SAML)
+        run: cargo build --release --features full-with-saml
+      - name: Build release (without SAML - pure Rust)
+        run: cargo build --release --features full
 
   # ============================================================================
   # BENCHMARKS
@@ -195,13 +264,16 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+      - name: Install SAML system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run benchmarks
         run: |
           if ls benches/*.rs 1> /dev/null 2>&1; then
-            cargo bench --all-features
+            cargo bench --features full-with-saml
           else
             echo "No benchmarks found yet"
           fi
-

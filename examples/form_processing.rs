@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -116,12 +117,12 @@ impl FormController {
             form.remember_me.as_deref().unwrap_or("false")
         );
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "success",
             "message": "Login successful",
             "email": form.email,
             "remember_me": form.remember_me.is_some()
-        }))?)
+        }))
     }
 
     #[post("/contact")]
@@ -135,14 +136,14 @@ impl FormController {
         println!("  Subject: {}", form.subject);
         println!("  Message: {}", form.message);
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "success",
             "message": "Thank you for your message!",
             "data": {
                 "name": form.name,
                 "subject": form.subject
             }
-        }))?)
+        }))
     }
 
     #[post("/upload")]
@@ -179,13 +180,13 @@ impl FormController {
             }
         }
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "success",
             "message": "File uploaded successfully",
             "title": title,
             "description": description,
             "file": file_info
-        }))?)
+        }))
     }
 
     #[post("/upload-multiple")]
@@ -225,13 +226,13 @@ impl FormController {
             files_info.len()
         );
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "success",
             "message": format!("Uploaded {} files to album '{}'", files_info.len(), album_name),
             "album_name": album_name,
             "files_count": files_info.len(),
             "files": files_info
-        }))?)
+        }))
     }
 
     #[post("/form-map")]
@@ -244,10 +245,10 @@ impl FormController {
             println!("  {}: {}", key, value);
         }
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "success",
             "fields": form_data
-        }))?)
+        }))
     }
 }
 

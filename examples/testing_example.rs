@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Testing Example - Demonstrates testing utilities
 
 use armature::prelude::*;

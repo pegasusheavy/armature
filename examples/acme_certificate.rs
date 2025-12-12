@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 /// Example demonstrating ACME certificate management with Let's Encrypt
 ///
 /// This example shows how to obtain and manage SSL/TLS certificates

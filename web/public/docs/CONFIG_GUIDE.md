@@ -407,7 +407,8 @@ let host = config.get_or("server.host", "0.0.0.0".to_string());
 let app_config: AppConfig = config.manager().load_validated()?;
 
 // Use validated config
-let app = Application::create_with_config(app_config);
+let app = Application::create::<AppModule>().await;
+// Configuration is available via the DI container
 ```
 
 ### 4. Use Type-Safe Configuration

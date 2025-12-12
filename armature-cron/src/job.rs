@@ -375,7 +375,7 @@ mod tests {
             let c = counter_clone.clone();
             async move {
                 let count = c.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                if count % 2 == 0 {
+                if count.is_multiple_of(2) {
                     Ok(())
                 } else {
                     Err(CronError::ExecutionFailed("odd execution".to_string()))

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use armature_core::*;
 use armature_macro::*;
 use std::sync::Arc;
@@ -21,10 +22,10 @@ struct ApiController {
 impl ApiController {
     #[get("/data")]
     async fn get_data(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "message": "Hello from API",
             "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
-        }))?)
+        }))
     }
 }
 
@@ -181,10 +182,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         path: "/api/data".to_string(),
         handler: Arc::new(|_req| {
             Box::pin(async {
-                Ok(HttpResponse::ok().with_json(&serde_json::json!({
+                HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "This is an API endpoint, not a static asset",
                     "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
-                }))?)
+                }))
             })
         }),
     });

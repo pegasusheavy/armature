@@ -186,7 +186,7 @@ impl SamlServiceProvider {
     /// Generate relay state
     fn generate_relay_state(&self) -> String {
         use rand::RngCore;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut bytes = [0u8; 32];
         rng.fill_bytes(&mut bytes);
         general_purpose::URL_SAFE_NO_PAD.encode(bytes)
@@ -278,13 +278,13 @@ impl SamlProvider for SamlServiceProvider {
 /// Extract NameID from SAML response (simplified)
 fn extract_name_id(xml: &str) -> Result<String> {
     // Simple extraction - in production use proper XML parser
-    if let Some(start) = xml.find("<saml:NameID") {
-        if let Some(content_start) = xml[start..].find('>') {
-            let content_start = start + content_start + 1;
-            if let Some(content_end) = xml[content_start..].find("</saml:NameID>") {
-                let name_id = xml[content_start..content_start + content_end].trim();
-                return Ok(name_id.to_string());
-            }
+    if let Some(start) = xml.find("<saml:NameID")
+        && let Some(content_start) = xml[start..].find('>')
+    {
+        let content_start = start + content_start + 1;
+        if let Some(content_end) = xml[content_start..].find("</saml:NameID>") {
+            let name_id = xml[content_start..content_start + content_end].trim();
+            return Ok(name_id.to_string());
         }
     }
     Err(AuthError::InvalidToken(

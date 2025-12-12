@@ -75,7 +75,11 @@ armature-opentelemetry = { version = "0.1", features = ["otlp", "prometheus"] }
 
 ```rust
 use armature::prelude::*;
-use armature::armature_opentelemetry::*;
+use armature_opentelemetry::*;
+
+#[module()]
+#[derive(Default)]
+struct AppModule;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -89,13 +93,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .await?;
 
-    // Create application with telemetry middleware
-    let (container, router) = Application::create::<AppModule>().await?;
-    let app = Application::new(container, router)
-        .with_middleware(telemetry.middleware());
+    // Create application
+    let app = Application::create::<AppModule>().await;
 
     // Run server
-    app.listen("0.0.0.0:3000").await?;
+    app.listen(3000).await?;
 
     // Shutdown gracefully
     telemetry.shutdown().await?;
@@ -563,7 +565,7 @@ Always shutdown telemetry to flush data:
 
 ```rust
 tokio::select! {
-    _ = app.listen("0.0.0.0:3000") => {},
+    _ = app.listen(3000) => {},
     _ = tokio::signal::ctrl_c() => {
         println!("Shutting down...");
         telemetry.shutdown().await?;
@@ -642,12 +644,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .await?;
 
-    let (container, router) = Application::create::<AppModule>().await?;
-    let app = Application::new(container, router)
-        .with_middleware(telemetry.middleware());
+    let app = Application::create::<AppModule>().await;
 
     tokio::select! {
-        _ = app.listen("0.0.0.0:3000") => {},
+        _ = app.listen(3000) => {},
         _ = tokio::signal::ctrl_c() => {
             telemetry.shutdown().await?;
         }

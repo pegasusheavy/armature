@@ -41,6 +41,12 @@ export class DocsComponent implements OnInit {
       filename: 'CONFIG_GUIDE.md',
       category: 'Getting Started',
     },
+    {
+      id: 'project-templates',
+      title: 'Project Templates',
+      filename: 'PROJECT_TEMPLATES.md',
+      category: 'Getting Started',
+    },
 
     // Core Features
     {

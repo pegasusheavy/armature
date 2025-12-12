@@ -1,70 +1,33 @@
-<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-md">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
+    <div class="flex items-center h-16">
       <!-- Logo -->
       <div class="flex-shrink-0">
-        <a routerLink="/" class="text-2xl font-bold text-primary-600 flex items-center gap-2">
-          <span>🦾</span>
+        <a routerLink="/" class="text-xl font-bold text-slate-900 flex items-center gap-2 hover:text-primary-600 transition-colors">
+          <span class="text-2xl">🦾</span>
           <span>Armature</span>
         </a>
       </div>
 
-      <!-- Desktop Navigation -->
-      <div class="hidden md:block">
-        <div class="flex items-center space-x-8">
-          <a
-            routerLink="/"
-            routerLinkActive="text-primary-600"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-          >
-            Home
-          </a>
-          <a
-            routerLink="/docs"
-            routerLinkActive="text-primary-600"
-            class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-          >
-            Documentation
-          </a>
-          <a
-            routerLink="/comparisons"
-            routerLinkActive="text-primary-600"
-            class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-          >
-            Comparisons
-          </a>
-          <a
-            routerLink="/getting-started"
-            routerLinkActive="text-primary-600"
-            class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-          >
-            Getting Started
-          </a>
-          <a
-            routerLink="/faq"
-            routerLinkActive="text-primary-600"
-            class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-          >
-            FAQ
-          </a>
-          <a
-            href="https://github.com/pegasusheavy/armature"
-            target="_blank"
-            class="inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
-          >
-            <fa-icon [icon]="['fab', 'github']" />
-            <span>GitHub</span>
-          </a>
-        </div>
-      </div>
+      <!-- Desktop Navigation - pushed to right -->
+      <nav class="hidden md:flex items-center gap-1 ml-auto">
+        <a routerLink="/" routerLinkActive="text-primary-600" [routerLinkActiveOptions]="{ exact: true }" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Home</a>
+        <a routerLink="/docs" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Docs</a>
+        <a routerLink="/comparisons" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Comparisons</a>
+        <a routerLink="/getting-started" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Getting Started</a>
+        <a routerLink="/faq" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">FAQ</a>
+        <a href="https://github.com/pegasusheavy/armature" target="_blank" class="ml-4 inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 text-sm font-medium">
+          <fa-icon [icon]="['fab', 'github']"></fa-icon>
+          GitHub
+        </a>
+      </nav>
 
       <!-- Mobile menu button -->
-      <div class="md:hidden">
+      <div class="md:hidden ml-auto">
         <button
           (click)="toggleMenu()"
           type="button"
-          class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+          class="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-primary-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
         >
           <span class="sr-only">Open main menu</span>
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,14 +52,14 @@
   </div>
 
   <!-- Mobile menu -->
-  <div *ngIf="isMenuOpen" class="md:hidden border-t border-gray-200">
-    <div class="px-2 pt-2 pb-3 space-y-1 bg-white">
+  <div *ngIf="isMenuOpen" class="md:hidden border-t border-gray-100 bg-white">
+    <div class="px-4 py-4 space-y-2">
       <a
         routerLink="/"
         (click)="toggleMenu()"
         routerLinkActive="bg-primary-50 text-primary-600"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         Home
       </a>
@@ -104,7 +67,7 @@
         routerLink="/docs"
         (click)="toggleMenu()"
         routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         Documentation
       </a>
@@ -112,7 +75,7 @@
         routerLink="/comparisons"
         (click)="toggleMenu()"
         routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         Comparisons
       </a>
@@ -120,7 +83,7 @@
         routerLink="/getting-started"
         (click)="toggleMenu()"
         routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         Getting Started
       </a>
@@ -128,19 +91,21 @@
         routerLink="/faq"
         (click)="toggleMenu()"
         routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         FAQ
       </a>
-      <a
-        href="https://github.com/pegasusheavy/armature"
-        target="_blank"
-        (click)="toggleMenu()"
-        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
-      >
-        <fa-icon [icon]="['fab', 'github']" class="mr-2" />
-        GitHub
-      </a>
+      <div class="pt-2">
+        <a
+          href="https://github.com/pegasusheavy/armature"
+          target="_blank"
+          (click)="toggleMenu()"
+          class="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors"
+        >
+          <fa-icon [icon]="['fab', 'github']" />
+          <span>Star on GitHub</span>
+        </a>
+      </div>
     </div>
   </div>
 </nav>

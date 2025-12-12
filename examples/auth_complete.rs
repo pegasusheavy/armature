@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Complete authentication example with guards and password hashing
 
 use armature_auth::{

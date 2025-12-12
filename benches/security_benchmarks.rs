@@ -1,7 +1,8 @@
 use armature_jwt::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use jsonwebtoken::Algorithm;
 use serde::{Deserialize, Serialize};
+use std::hint::black_box;
 use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -1,7 +1,8 @@
 use armature_cron::{CronExpression, expression::CronPresets};
 use armature_queue::{Job as QueueJob, JobPriority, QueueConfig};
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use serde_json::json;
+use std::hint::black_box;
 
 fn bench_queue_job_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("queue_job");

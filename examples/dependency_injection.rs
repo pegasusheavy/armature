@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Example demonstrating full dependency injection in Armature
 
 use armature::prelude::*;
@@ -12,14 +13,18 @@ struct Product {
     price: f64,
 }
 
+#[derive(Debug, Deserialize)]
+struct CreateProductDto {
+    name: String,
+    price: f64,
+}
+
 // ========== Services (Injectable) ==========
 
 /// Database service - simulates database operations
 #[injectable]
 #[derive(Default, Clone)]
-struct DatabaseService {
-    // In a real app, this would hold a connection pool
-}
+struct DatabaseService;
 
 impl DatabaseService {
     fn connect_info(&self) -> String {
@@ -79,24 +84,38 @@ impl ProductService {
 #[controller("/products")]
 #[derive(Default, Clone)]
 struct ProductController {
-    product_service: ProductService, // This will be auto-injected!
+    product_service: ProductService,
 }
 
 impl ProductController {
-    fn list_products(&self) -> Result<Json<Vec<Product>>, Error> {
-        let products = self.product_service.get_all_products();
+    #[get("")]
+    async fn list_products() -> Result<Json<Vec<Product>>, Error> {
+        let service = ProductService::default();
+        let products = service.get_all_products();
         Ok(Json(products))
     }
 
-    fn get_product(&self, id: u32) -> Result<Json<Product>, Error> {
-        match self.product_service.get_product_by_id(id) {
+    #[get("/:id")]
+    async fn get_product(req: HttpRequest) -> Result<Json<Product>, Error> {
+        let id_str = req
+            .param("id")
+            .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
+        let id: u32 = id_str
+            .parse()
+            .map_err(|_| Error::Validation("Invalid id".to_string()))?;
+
+        let service = ProductService::default();
+        match service.get_product_by_id(id) {
             Some(product) => Ok(Json(product)),
             None => Err(Error::RouteNotFound(format!("Product {} not found", id))),
         }
     }
 
-    fn create_product(&self, name: String, price: f64) -> Result<Json<Product>, Error> {
-        let product = self.product_service.create_product(name, price);
+    #[post("")]
+    async fn create_product(req: HttpRequest) -> Result<Json<Product>, Error> {
+        let dto: CreateProductDto = req.json()?;
+        let service = ProductService::default();
+        let product = service.create_product(dto.name, dto.price);
         Ok(Json(product))
     }
 }
@@ -107,7 +126,8 @@ impl ProductController {
 struct HealthController;
 
 impl HealthController {
-    fn check(&self) -> Result<Json<serde_json::Value>, Error> {
+    #[get("")]
+    async fn check() -> Result<Json<serde_json::Value>, Error> {
         Ok(Json(serde_json::json!({
             "status": "healthy",
             "message": "DI example is running"
@@ -136,10 +156,7 @@ async fn main() {
     println!("  2. ProductService (depends on DatabaseService)");
     println!("  3. ProductController (depends on ProductService)\n");
 
-    // Create application with full DI
-    let app = create_app_with_di();
-
-    println!("\n📚 Available routes:");
+    println!("📚 Available routes:");
     println!("  GET    /health              - Health check");
     println!("  GET    /products            - List all products");
     println!("  GET    /products/:id        - Get product by ID");
@@ -154,100 +171,9 @@ async fn main() {
     println!("    -d '{{\"name\":\"Monitor\",\"price\":299.99}}'");
     println!();
 
+    let app = Application::create::<AppModule>().await;
+
     if let Err(e) = app.listen(3003).await {
         eprintln!("❌ Server error: {}", e);
     }
-}
-
-/// Create application with full DI integration
-fn create_app_with_di() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // In a full implementation, this would use Application::create::<AppModule>()
-    // For now, manually set up DI to demonstrate the pattern
-
-    // Step 1: Register services in dependency order
-    println!("  ✓ Registering DatabaseService");
-    let db_service = DatabaseService::default();
-    container.register(db_service.clone());
-
-    println!("  ✓ Registering ProductService (with DatabaseService injected)");
-    let product_service = ProductService {
-        database: db_service,
-    };
-    container.register(product_service.clone());
-
-    // Step 2: Create controllers with injected dependencies
-    println!("  ✓ Creating ProductController (with ProductService injected)");
-    let product_controller = ProductController {
-        product_service: product_service.clone(),
-    };
-
-    let health_controller = HealthController;
-
-    // Step 3: Register routes with controller instances
-    println!("  ✓ Registering routes");
-
-    // Health routes
-    let health_ctrl_clone = health_controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/health".to_string(),
-        handler: std::sync::Arc::new(move |_req| {
-            let ctrl = health_ctrl_clone.clone();
-            Box::pin(async move { ctrl.check().and_then(|j| j.into_response()) })
-        }),
-    });
-
-    // Product routes
-    let product_ctrl_clone1 = product_controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/products".to_string(),
-        handler: std::sync::Arc::new(move |_req| {
-            let ctrl = product_ctrl_clone1.clone();
-            Box::pin(async move { ctrl.list_products().and_then(|j| j.into_response()) })
-        }),
-    });
-
-    let product_ctrl_clone2 = product_controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/products/:id".to_string(),
-        handler: std::sync::Arc::new(move |req| {
-            let ctrl = product_ctrl_clone2.clone();
-            Box::pin(async move {
-                let id_str = req
-                    .param("id")
-                    .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
-                let id: u32 = id_str
-                    .parse()
-                    .map_err(|_| Error::Validation("Invalid id".to_string()))?;
-                ctrl.get_product(id).and_then(|j| j.into_response())
-            })
-        }),
-    });
-
-    let product_ctrl_clone3 = product_controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::POST,
-        path: "/products".to_string(),
-        handler: std::sync::Arc::new(move |req| {
-            let ctrl = product_ctrl_clone3.clone();
-            Box::pin(async move {
-                #[derive(Deserialize)]
-                struct CreateProductDto {
-                    name: String,
-                    price: f64,
-                }
-
-                let dto: CreateProductDto = req.json()?;
-                ctrl.create_product(dto.name, dto.price)
-                    .and_then(|j| j.into_response())
-            })
-        }),
-    });
-
-    Application::new(container, router)
 }

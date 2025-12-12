@@ -16,6 +16,7 @@ members = [
     "armature-security",
     "armature-acme",
     "armature-ratelimit",
+    "armature-cli",
 ]
 resolver = "2"
 
@@ -104,10 +105,17 @@ full = [
     "acme",
     "ratelimit",
 ]
+# Full feature set including SAML (requires openssl/xmlsec1)
+full-with-saml = ["full", "saml"]
+
 graphql = ["armature-graphql"]
 config = ["armature-config"]
 jwt = ["armature-jwt"]
 auth = ["armature-auth", "armature-jwt"]
+# SAML authentication - requires openssl and xmlsec1 system libraries
+# Ubuntu/Debian: apt-get install libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+# macOS: brew install libxmlsec1
+saml = ["armature-auth/saml"]
 testing = ["armature-testing"]
 validation = ["armature-validation"]
 openapi = ["armature-openapi"]
@@ -130,15 +138,15 @@ armature-queue = { path = "armature-queue" }
 armature-cron = { path = "armature-cron" }
 armature-cache = { path = "armature-cache", features = ["redis"] }
 armature-ratelimit = { path = "armature-ratelimit" }
-jsonwebtoken = "9.2"
-handlebars = "5.1"
+jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
+handlebars = "6.3"
 
-# Database ORMs for examples
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
-diesel = { version = "2.1", features = ["postgres", "r2d2", "chrono"] }
-sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+# Database ORMs for examples - using rustls instead of native-tls to avoid openssl
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
+diesel = { version = "2.2", features = ["postgres", "r2d2", "chrono"] }
+sea-orm = { version = "1.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 chrono = "0.4"
-uuid = { version = "1.6", features = ["v4"] }
+uuid = { version = "1.11", features = ["v4"] }
 
 # Examples require runtime dependencies
 [[example]]
@@ -202,7 +210,7 @@ required-features = ["auth"]
 [[example]]
 name = "saml_simple"
 path = "examples/saml_simple.rs"
-required-features = ["auth"]
+required-features = ["auth", "saml"]
 
 [[example]]
 name = "guards_interceptors"

@@ -48,12 +48,8 @@ impl JwtService {
 
     /// Decode without verification (useful for inspecting tokens)
     pub fn decode_unverified<T: DeserializeOwned>(&self, token: &str) -> Result<T> {
-        let mut validation = Validation::new(self.config.algorithm);
-        validation.insecure_disable_signature_validation();
-        validation.validate_exp = false;
-
         let token_data: TokenData<T> =
-            decode(token, &self.decoding_key, &validation).map_err(JwtError::from)?;
+            jsonwebtoken::dangerous::insecure_decode(token).map_err(JwtError::from)?;
 
         Ok(token_data.claims)
     }

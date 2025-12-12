@@ -21,10 +21,10 @@ pub enum WebSocketMessage {
 impl From<WsMessage> for WebSocketMessage {
     fn from(msg: WsMessage) -> Self {
         match msg {
-            WsMessage::Text(text) => WebSocketMessage::Text(text),
-            WsMessage::Binary(data) => WebSocketMessage::Binary(data),
-            WsMessage::Ping(data) => WebSocketMessage::Ping(data),
-            WsMessage::Pong(data) => WebSocketMessage::Pong(data),
+            WsMessage::Text(text) => WebSocketMessage::Text(text.to_string()),
+            WsMessage::Binary(data) => WebSocketMessage::Binary(data.to_vec()),
+            WsMessage::Ping(data) => WebSocketMessage::Ping(data.to_vec()),
+            WsMessage::Pong(data) => WebSocketMessage::Pong(data.to_vec()),
             WsMessage::Close(_) => WebSocketMessage::Close,
             _ => WebSocketMessage::Close,
         }
@@ -34,10 +34,10 @@ impl From<WsMessage> for WebSocketMessage {
 impl From<WebSocketMessage> for WsMessage {
     fn from(msg: WebSocketMessage) -> Self {
         match msg {
-            WebSocketMessage::Text(text) => WsMessage::Text(text),
-            WebSocketMessage::Binary(data) => WsMessage::Binary(data),
-            WebSocketMessage::Ping(data) => WsMessage::Ping(data),
-            WebSocketMessage::Pong(data) => WsMessage::Pong(data),
+            WebSocketMessage::Text(text) => WsMessage::Text(text.into()),
+            WebSocketMessage::Binary(data) => WsMessage::Binary(data.into()),
+            WebSocketMessage::Ping(data) => WsMessage::Ping(data.into()),
+            WebSocketMessage::Pong(data) => WsMessage::Pong(data.into()),
             WebSocketMessage::Close => WsMessage::Close(None),
         }
     }

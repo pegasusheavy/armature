@@ -335,12 +335,12 @@ mod tests {
         manager.set("string_key", "hello").unwrap();
         manager.set("int_key", 42i64).unwrap();
         manager.set("bool_key", true).unwrap();
-        manager.set("float_key", 3.14).unwrap();
+        manager.set("float_key", 3.15).unwrap();
 
         assert_eq!(manager.get_string("string_key").unwrap(), "hello");
         assert_eq!(manager.get_int("int_key").unwrap(), 42);
-        assert_eq!(manager.get_bool("bool_key").unwrap(), true);
-        assert_eq!(manager.get_float("float_key").unwrap(), 3.14);
+        assert!(manager.get_bool("bool_key").unwrap());
+        assert_eq!(manager.get_float("float_key").unwrap(), 3.15);
     }
 
     #[test]
@@ -405,10 +405,10 @@ mod tests {
     fn test_negative_numbers() {
         let manager = ConfigManager::new();
         manager.set("negative_int", -42i64).unwrap();
-        manager.set("negative_float", -3.14).unwrap();
+        manager.set("negative_float", -3.15).unwrap();
 
         assert_eq!(manager.get_int("negative_int").unwrap(), -42);
-        assert_eq!(manager.get_float("negative_float").unwrap(), -3.14);
+        assert_eq!(manager.get_float("negative_float").unwrap(), -3.15);
     }
 
     #[test]

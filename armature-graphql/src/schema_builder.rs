@@ -159,9 +159,9 @@ mod tests {
     #[test]
     fn test_schema_builder() {
         let _schema = ProgrammaticSchemaBuilder::new()
-            .query(TestQuery::default())
-            .mutation(EmptyMutation::default())
-            .subscription(EmptySubscription::default())
+            .query(TestQuery)
+            .mutation(EmptyMutation)
+            .subscription(EmptySubscription)
             .build();
     }
 }

@@ -1,8 +1,7 @@
+#![allow(dead_code)]
 // Simple SAML 2.0 example
 
-use armature_auth::saml::{
-    ContactInfo, IdpMetadata, SamlConfig, SamlProvider, SamlServiceProvider,
-};
+use armature_auth::saml::{IdpMetadata, SamlConfig, SamlProvider, SamlServiceProvider};
 
 #[tokio::main]
 async fn main() {

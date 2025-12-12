@@ -20,23 +20,34 @@ pub async fn init_metrics(config: &TelemetryConfig) -> TelemetryResult<SdkMeterP
     let provider = match config.metrics.exporter {
         #[cfg(feature = "otlp")]
         MetricsExporter::Otlp => {
-            // TODO: OTLP metrics exporter requires complex setup with opentelemetry 0.22
-            // For now, return a basic provider
-            return Err(TelemetryError::Config(
-                "OTLP metrics exporter not yet implemented for opentelemetry 0.22".to_string(),
-            ));
-        }
+            use opentelemetry_otlp::{MetricExporter, WithExportConfig};
 
-        #[cfg(feature = "prometheus")]
-        MetricsExporter::Prometheus => {
-            let exporter = opentelemetry_prometheus::exporter()
+            let endpoint = config.metrics.otlp_endpoint.as_ref().ok_or_else(|| {
+                TelemetryError::Config("OTLP endpoint not configured for metrics".to_string())
+            })?;
+
+            let exporter = MetricExporter::builder()
+                .with_tonic()
+                .with_endpoint(endpoint.clone())
                 .build()
                 .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
 
+            let reader = opentelemetry_sdk::metrics::PeriodicReader::builder(exporter).build();
+
             SdkMeterProvider::builder()
                 .with_resource(resource)
-                .with_reader(exporter)
+                .with_reader(reader)
                 .build()
+        }
+
+        // Note: opentelemetry-prometheus is discontinued and not compatible with opentelemetry 0.31
+        // Use OTLP with a Prometheus collector/remote-write endpoint instead
+        MetricsExporter::Prometheus => {
+            return Err(TelemetryError::Config(
+                "Prometheus exporter is discontinued. Use OTLP with a Prometheus remote-write \
+                endpoint or an OpenTelemetry Collector with Prometheus exporter instead."
+                    .to_string(),
+            ));
         }
 
         MetricsExporter::None => SdkMeterProvider::builder().with_resource(resource).build(),
@@ -82,18 +93,18 @@ impl HttpMetrics {
         let request_count = meter
             .u64_counter("http.server.request.count")
             .with_description("Total number of HTTP requests")
-            .init();
+            .build();
 
         let request_duration = meter
             .f64_histogram("http.server.request.duration")
             .with_description("HTTP request duration in seconds")
-            .with_unit(opentelemetry::metrics::Unit::new("s"))
-            .init();
+            .with_unit("s")
+            .build();
 
         let active_requests = meter
             .i64_up_down_counter("http.server.active_requests")
             .with_description("Number of active HTTP requests")
-            .init();
+            .build();
 
         Ok(Self {
             request_count,

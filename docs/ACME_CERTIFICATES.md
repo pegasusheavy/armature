@@ -317,7 +317,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tls_config = TlsConfig::from_pem_files(&cert_path, &key_path)?;
 
     // 3. Start HTTPS server
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
     app.listen_https(443, tls_config).await?;
 
     Ok(())
