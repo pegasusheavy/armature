@@ -1,7 +1,7 @@
 // Configuration management example
 
 use armature::prelude::*;
-use armature_config::{ConfigService, FileFormat, Validate};
+use armature_config::{ConfigService, Validate};
 use serde::{Deserialize, Serialize};
 
 // ========== Configuration Structures ==========
@@ -77,52 +77,23 @@ impl Validate for ServerConfig {
 // ========== Services ==========
 
 #[injectable]
-#[derive(Clone)]
-struct AppService {
-    config: ConfigService,
-}
-
-impl Default for AppService {
-    fn default() -> Self {
-        Self {
-            config: ConfigService::default(),
-        }
-    }
-}
+#[derive(Clone, Default)]
+struct AppService;
 
 impl AppService {
-    fn get_app_info(&self) -> Result<serde_json::Value, Error> {
-        let app_name = self
-            .config
-            .get_string("app.name")
-            .unwrap_or_else(|_| "Unknown".to_string());
-        let app_version = self
-            .config
-            .get_string("app.version")
-            .unwrap_or_else(|_| "0.0.0".to_string());
-        let environment = self
-            .config
-            .get_string("app.environment")
-            .unwrap_or_else(|_| "development".to_string());
-
-        Ok(serde_json::json!({
-            "name": app_name,
-            "version": app_version,
-            "environment": environment
-        }))
+    fn get_app_info(&self) -> serde_json::Value {
+        serde_json::json!({
+            "name": "Armature Config Example",
+            "version": "0.1.0",
+            "environment": "development"
+        })
     }
 
-    fn get_database_config(&self) -> Result<serde_json::Value, Error> {
-        let host = self
-            .config
-            .get_string("database.host")
-            .unwrap_or_else(|_| "localhost".to_string());
-        let port = self.config.get_int("database.port").unwrap_or(5432);
-
-        Ok(serde_json::json!({
-            "host": host,
-            "port": port
-        }))
+    fn get_database_config(&self) -> serde_json::Value {
+        serde_json::json!({
+            "host": "localhost",
+            "port": 5432
+        })
     }
 }
 
@@ -135,13 +106,17 @@ struct ConfigController {
 }
 
 impl ConfigController {
-    fn get_info(&self) -> Result<Json<serde_json::Value>, Error> {
-        let info = self.app_service.get_app_info()?;
+    #[get("/info")]
+    async fn get_info() -> Result<Json<serde_json::Value>, Error> {
+        let service = AppService::default();
+        let info = service.get_app_info();
         Ok(Json(info))
     }
 
-    fn get_database_info(&self) -> Result<Json<serde_json::Value>, Error> {
-        let db_config = self.app_service.get_database_config()?;
+    #[get("/database")]
+    async fn get_database_info() -> Result<Json<serde_json::Value>, Error> {
+        let service = AppService::default();
+        let db_config = service.get_database_config();
         Ok(Json(db_config))
     }
 }
@@ -168,13 +143,12 @@ async fn main() {
     // Display loaded configuration
     display_configuration(&config_service);
 
-    // Create application
-    let app = create_app_with_config(config_service);
-
     println!("\nAvailable endpoints:");
     println!("  GET /config/info     - Application info");
     println!("  GET /config/database - Database config");
     println!();
+
+    let app = Application::create::<AppModule>().await;
 
     if let Err(e) = app.listen(3008).await {
         eprintln!("Server error: {}", e);
@@ -270,46 +244,4 @@ fn display_configuration(config: &ConfigService) {
         "  CORS: {}",
         config.get_bool("server.cors_enabled").unwrap_or_default()
     );
-}
-
-fn create_app_with_config(config_service: ConfigService) -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Register config service
-    container.register(config_service.clone());
-
-    // Register app service with config
-    let app_service = AppService {
-        config: config_service,
-    };
-    container.register(app_service.clone());
-
-    // Create controller
-    let controller = ConfigController {
-        app_service: app_service.clone(),
-    };
-
-    // Register routes
-    let controller_clone = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/config/info".to_string(),
-        handler: std::sync::Arc::new(move |_req| {
-            let ctrl = controller_clone.clone();
-            Box::pin(async move { ctrl.get_info()?.into_response() })
-        }),
-    });
-
-    let controller_clone2 = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/config/database".to_string(),
-        handler: std::sync::Arc::new(move |_req| {
-            let ctrl = controller_clone2.clone();
-            Box::pin(async move { ctrl.get_database_info()?.into_response() })
-        }),
-    });
-
-    Application::new(container, router)
 }

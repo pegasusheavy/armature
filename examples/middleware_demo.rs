@@ -1,4 +1,8 @@
 // Comprehensive Middleware System Example
+//
+// Note: This example demonstrates custom middleware implementations.
+// The middleware is applied at the application level, not per-route,
+// which requires a hybrid approach.
 
 use armature::prelude::*;
 use armature::{
@@ -7,10 +11,8 @@ use armature::{
     TimeoutMiddleware,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
 
 // ========== Custom Middleware ==========
 
@@ -38,18 +40,13 @@ impl Middleware for ApiKeyMiddleware {
                 + Send,
         >,
     ) -> Result<HttpResponse, Error> {
-        // Check for API key in header
         if let Some(api_key) = req.headers.get("x-api-key") {
             if self.valid_keys.contains(api_key) {
                 println!("✓ Valid API key: {}", api_key);
                 return next(req).await;
             }
         }
-
-        // Return 401 Unauthorized
-        Err(Error::Unauthorized(
-            "Invalid or missing API key".to_string(),
-        ))
+        Err(Error::Unauthorized("Invalid or missing API key".to_string()))
     }
 }
 
@@ -60,9 +57,7 @@ struct RateLimitMiddleware {
 
 impl RateLimitMiddleware {
     fn new(limit: u32) -> Self {
-        Self {
-            requests_per_minute: limit,
-        }
+        Self { requests_per_minute: limit }
     }
 }
 
@@ -79,7 +74,6 @@ impl Middleware for RateLimitMiddleware {
                 + Send,
         >,
     ) -> Result<HttpResponse, Error> {
-        // In production: check rate limit against Redis/in-memory store
         let client_ip = req
             .headers
             .get("x-forwarded-for")
@@ -87,11 +81,7 @@ impl Middleware for RateLimitMiddleware {
             .map(|s| s.as_str())
             .unwrap_or("unknown");
 
-        println!(
-            "Rate limit check for IP: {} (limit: {}/min)",
-            client_ip, self.requests_per_minute
-        );
-
+        println!("Rate limit check for IP: {} (limit: {}/min)", client_ip, self.requests_per_minute);
         next(req).await
     }
 }
@@ -115,9 +105,7 @@ impl Middleware for TimingMiddleware {
         let start = std::time::Instant::now();
         let result = next(req).await;
         let duration = start.elapsed();
-
         println!("⏱  Request completed in {:?}", duration);
-
         result
     }
 }
@@ -151,20 +139,34 @@ impl DataService {
 
 #[controller("/api")]
 #[derive(Default, Clone)]
-struct ApiController {
-    data_service: DataService,
-}
+struct ApiController;
 
 impl ApiController {
-    fn get_public_data(&self) -> Result<Json<ApiResponse>, Error> {
+    #[get("/public")]
+    async fn get_public_data() -> Result<Json<ApiResponse>, Error> {
         Ok(Json(ApiResponse {
             message: "Public data - no middleware required".to_string(),
             data: None,
         }))
     }
 
-    fn get_protected_data(&self) -> Result<Json<ApiResponse>, Error> {
-        Ok(Json(self.data_service.get_data()))
+    #[get("/protected")]
+    async fn get_protected_data() -> Result<Json<ApiResponse>, Error> {
+        let service = DataService::default();
+        Ok(Json(service.get_data()))
+    }
+
+    #[get("/slow")]
+    async fn get_slow_data() -> Result<HttpResponse, Error> {
+        // Simulate slow operation
+        tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+        Ok(HttpResponse::ok().with_body(b"This should timeout".to_vec()))
+    }
+
+    #[post("/upload")]
+    async fn upload(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let size = req.body.len();
+        Ok(HttpResponse::ok().with_body(format!("Uploaded {} bytes", size).into_bytes()))
     }
 }
 
@@ -182,7 +184,39 @@ async fn main() {
     println!("🔧 Armature Middleware System Demo");
     println!("===================================\n");
 
-    let app = create_app_with_middleware();
+    // Display middleware chain info
+    println!("Middleware Chain:");
+    println!("  1. Request ID - Assigns unique ID to each request");
+    println!("  2. Logger - Logs request/response details");
+    println!("  3. CORS - Handles cross-origin requests");
+    println!("  4. Security Headers - Adds security headers");
+    println!("  5. Compression - Compresses large responses");
+    println!("  6. Timeout - Enforces request timeout (5s)");
+    println!("  7. Body Size Limit - Max 1MB");
+    println!("  8. API Key - Validates API key");
+    println!("  9. Rate Limit - 60 requests/minute");
+    println!(" 10. Timing - Measures request duration");
+    println!();
+
+    // Create middleware chain (for demonstration)
+    let mut _middleware_chain = MiddlewareChain::new();
+    _middleware_chain.use_middleware(RequestIdMiddleware);
+    _middleware_chain.use_middleware(LoggerMiddleware::new());
+    _middleware_chain.use_middleware(
+        CorsMiddleware::new()
+            .allow_origin("*")
+            .allow_credentials(false),
+    );
+    _middleware_chain.use_middleware(SecurityHeadersMiddleware::new());
+    _middleware_chain.use_middleware(CompressionMiddleware::new());
+    _middleware_chain.use_middleware(TimeoutMiddleware::new(5));
+    _middleware_chain.use_middleware(BodySizeLimitMiddleware::new(1024 * 1024));
+    _middleware_chain.use_middleware(ApiKeyMiddleware::new(vec![
+        "secret-key-123".to_string(),
+        "admin-key-456".to_string(),
+    ]));
+    _middleware_chain.use_middleware(RateLimitMiddleware::new(60));
+    _middleware_chain.use_middleware(TimingMiddleware);
 
     println!("Server running on http://localhost:3014");
     println!();
@@ -205,137 +239,10 @@ async fn main() {
     println!("   curl -X POST http://localhost:3014/api/upload \\");
     println!("     -d \"$(head -c 2000 </dev/urandom | base64)\"");
     println!();
-    println!("Middleware Chain:");
-    println!("  1. Request ID - Assigns unique ID to each request");
-    println!("  2. Logger - Logs request/response details");
-    println!("  3. CORS - Handles cross-origin requests");
-    println!("  4. Security Headers - Adds security headers");
-    println!("  5. Compression - Compresses large responses");
-    println!("  6. Timeout - Enforces request timeout (5s)");
-    println!("  7. Body Size Limit - Max 1MB");
-    println!("  8. API Key - Validates API key");
-    println!("  9. Rate Limit - 60 requests/minute");
-    println!(" 10. Timing - Measures request duration");
-    println!();
+
+    let app = Application::create::<AppModule>().await;
 
     if let Err(e) = app.listen(3014).await {
         eprintln!("Server error: {}", e);
     }
-}
-
-fn create_app_with_middleware() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Register services
-    let data_service = DataService;
-    container.register(data_service.clone());
-
-    let controller = ApiController { data_service };
-
-    // Create middleware chain
-    let mut middleware_chain = MiddlewareChain::new();
-
-    // Add middleware in order
-    middleware_chain.use_middleware(RequestIdMiddleware);
-    middleware_chain.use_middleware(LoggerMiddleware::new());
-    middleware_chain.use_middleware(
-        CorsMiddleware::new()
-            .allow_origin("*")
-            .allow_credentials(false),
-    );
-    middleware_chain.use_middleware(SecurityHeadersMiddleware::new());
-    middleware_chain.use_middleware(CompressionMiddleware::new());
-    middleware_chain.use_middleware(TimeoutMiddleware::new(5)); // 5 second timeout
-    middleware_chain.use_middleware(BodySizeLimitMiddleware::new(1024 * 1024)); // 1MB limit
-    middleware_chain.use_middleware(ApiKeyMiddleware::new(vec![
-        "secret-key-123".to_string(),
-        "admin-key-456".to_string(),
-    ]));
-    middleware_chain.use_middleware(RateLimitMiddleware::new(60));
-    middleware_chain.use_middleware(TimingMiddleware);
-
-    let middleware = Arc::new(middleware_chain);
-
-    // Public endpoint (no middleware)
-    let public_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/public".to_string(),
-        handler: Arc::new(move |_req| {
-            let ctrl = public_ctrl.clone();
-            Box::pin(async move { ctrl.get_public_data()?.into_response() })
-        }),
-    });
-
-    // Protected endpoint (with middleware)
-    let protected_ctrl = controller.clone();
-    let protected_middleware = middleware.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/protected".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = protected_ctrl.clone();
-            let mw = protected_middleware.clone();
-            let handler = Arc::new(move |_req: HttpRequest| {
-                let ctrl = ctrl.clone();
-                Box::pin(async move { ctrl.get_protected_data()?.into_response() })
-                    as Pin<
-                        Box<dyn std::future::Future<Output = Result<HttpResponse, Error>> + Send>,
-                    >
-            });
-            Box::pin(async move { mw.apply(req, handler).await })
-        }),
-    });
-
-    // Slow endpoint for testing timeout
-    let slow_middleware = middleware.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/slow".to_string(),
-        handler: Arc::new(move |req| {
-            let mw = slow_middleware.clone();
-            let handler = Arc::new(|_req: HttpRequest| {
-                Box::pin(async move {
-                    // Simulate slow operation
-                    tokio::time::sleep(std::time::Duration::from_secs(10)).await;
-                    Ok(HttpResponse {
-                        status: 200,
-                        headers: HashMap::new(),
-                        body: b"This should timeout".to_vec(),
-                    })
-                })
-                    as Pin<
-                        Box<dyn std::future::Future<Output = Result<HttpResponse, Error>> + Send>,
-                    >
-            });
-            Box::pin(async move { mw.apply(req, handler).await })
-        }),
-    });
-
-    // Upload endpoint for testing body size limit
-    let upload_middleware = middleware.clone();
-    router.add_route(Route {
-        method: HttpMethod::POST,
-        path: "/api/upload".to_string(),
-        handler: Arc::new(move |req| {
-            let mw = upload_middleware.clone();
-            let handler = Arc::new(|req: HttpRequest| {
-                Box::pin(async move {
-                    let size = req.body.len();
-                    Ok(HttpResponse {
-                        status: 200,
-                        headers: HashMap::new(),
-                        body: format!("Uploaded {} bytes", size).into_bytes(),
-                    })
-                })
-                    as Pin<
-                        Box<dyn std::future::Future<Output = Result<HttpResponse, Error>> + Send>,
-                    >
-            });
-            Box::pin(async move { mw.apply(req, handler).await })
-        }),
-    });
-
-    Application::new(container, router)
 }

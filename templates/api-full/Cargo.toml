@@ -8,6 +8,9 @@ rust-version = "1.85"
 # Armature with full features
 armature = { path = "../../", features = ["jwt", "validation", "openapi", "ratelimit"] }
 
+# Async trait for middleware
+async-trait = "0.1"
+
 # Runtime
 tokio = { version = "1.35", features = ["full"] }
 

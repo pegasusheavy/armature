@@ -83,13 +83,14 @@ impl Query {
 
 // Injectable GraphQL service
 #[injectable]
+#[derive(Clone)]
 struct GraphQLService {
     schema: Schema<Query, EmptyMutation, EmptySubscription>,
     config: GraphQLConfig,
 }
 
-impl GraphQLService {
-    fn new() -> Self {
+impl Default for GraphQLService {
+    fn default() -> Self {
         let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
 
         // Configure GraphQL with all features enabled for development
@@ -100,6 +101,9 @@ impl GraphQLService {
 
         Self { schema, config }
     }
+}
+
+impl GraphQLService {
 
     async fn execute_query(&self, query: &str) -> String {
         let request = async_graphql::Request::new(query);
@@ -110,73 +114,75 @@ impl GraphQLService {
 
 // GraphQL controller
 #[controller("/api/graphql")]
-struct GraphQLController {
-    service: GraphQLService,
-}
+#[derive(Default)]
+struct GraphQLController;
 
 impl GraphQLController {
-    fn new(service: GraphQLService) -> Self {
-        Self { service }
-    }
-
     /// Main GraphQL endpoint
-    #[post("/")]
-    async fn graphql_endpoint(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
+    #[post("")]
+    async fn graphql_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let service = GraphQLService::default();
+
         // Parse the GraphQL query from request body
-        let body = req.body();
         let query_data: serde_json::Value =
-            serde_json::from_slice(&body).map_err(|e| Error::BadRequest(e.to_string()))?;
+            serde_json::from_slice(&req.body).map_err(|e| Error::BadRequest(e.to_string()))?;
 
         let query = query_data["query"]
             .as_str()
             .ok_or_else(|| Error::BadRequest("Missing query field".to_string()))?;
 
         // Execute the query
-        let result = self.service.execute_query(query).await;
+        let result = service.execute_query(query).await;
 
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "application/json".to_string())
             .with_body(result.into_bytes()))
     }
 
-    /// GraphQL Playground (only if enabled)
+    /// GraphQL Playground
     #[get("/playground")]
-    async fn playground(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        if !self.service.config.enable_playground {
-            return Err(Error::NotFound);
+    async fn playground() -> Result<HttpResponse, Error> {
+        let service = GraphQLService::default();
+
+        if !service.config.enable_playground {
+            return Err(Error::NotFound("Playground disabled".to_string()));
         }
 
-        let html = graphql_playground_html(&self.service.config.endpoint);
+        let html = graphql_playground_html(&service.config.endpoint);
 
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/html".to_string())
             .with_body(html.into_bytes()))
     }
 
-    /// GraphiQL (only if enabled)
+    /// GraphiQL
     #[get("/graphiql")]
-    async fn graphiql(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        if !self.service.config.enable_graphiql {
-            return Err(Error::NotFound);
+    async fn graphiql() -> Result<HttpResponse, Error> {
+        let service = GraphQLService::default();
+
+        if !service.config.enable_graphiql {
+            return Err(Error::NotFound("GraphiQL disabled".to_string()));
         }
 
-        let html = graphiql_html(&self.service.config.endpoint);
+        let html = graphiql_html(&service.config.endpoint);
 
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/html".to_string())
             .with_body(html.into_bytes()))
     }
 
-    /// Schema documentation endpoint (only if enabled)
+    /// Schema documentation endpoint
     #[get("/schema")]
-    async fn schema_docs(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        if !self.service.config.enable_schema_docs {
-            return Err(Error::NotFound);
+    async fn schema_docs() -> Result<HttpResponse, Error> {
+        let service = GraphQLService::default();
+
+        if !service.config.enable_schema_docs {
+            return Err(Error::NotFound("Schema docs disabled".to_string()));
         }
 
         let html = generate_schema_docs_html(
-            &self.service.schema,
-            &self.service.config.endpoint,
+            &service.schema,
+            &service.config.endpoint,
             "Blog API",
         );
 
@@ -187,8 +193,9 @@ impl GraphQLController {
 
     /// Schema SDL download
     #[get("/schema.graphql")]
-    async fn schema_sdl(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        let sdl = self.service.schema.sdl();
+    async fn schema_sdl() -> Result<HttpResponse, Error> {
+        let service = GraphQLService::default();
+        let sdl = service.schema.sdl();
 
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/plain".to_string())
@@ -201,11 +208,12 @@ impl GraphQLController {
 }
 
 // Module configuration
-#[module]
-struct AppModule {
+#[module(
     providers: [GraphQLService],
-    controllers: [GraphQLController],
-}
+    controllers: [GraphQLController]
+)]
+#[derive(Default)]
+struct AppModule;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -221,7 +229,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   query {{ posts {{ id title content authorId }} }}");
     println!("   query {{ user(id: 1) {{ name email }} }}\n");
 
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
     app.listen(4000).await?;
 
     Ok(())

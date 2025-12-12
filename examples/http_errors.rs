@@ -3,7 +3,6 @@
 use armature::Error;
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 // ========== DTOs ==========
 
@@ -18,6 +17,13 @@ struct ErrorResponse {
 struct Item {
     id: u32,
     name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct StatusInfo {
+    code: u16,
+    name: String,
+    category: String,
 }
 
 // ========== Services ==========
@@ -48,78 +54,47 @@ impl ItemService {
             _ => Err(Error::NotFound("Unknown error code".to_string())),
         }
     }
+
+    fn list_statuses(&self) -> Vec<StatusInfo> {
+        vec![
+            StatusInfo { code: 200, name: "OK".to_string(), category: "Success".to_string() },
+            StatusInfo { code: 201, name: "Created".to_string(), category: "Success".to_string() },
+            StatusInfo { code: 400, name: "Bad Request".to_string(), category: "Client Error".to_string() },
+            StatusInfo { code: 401, name: "Unauthorized".to_string(), category: "Client Error".to_string() },
+            StatusInfo { code: 403, name: "Forbidden".to_string(), category: "Client Error".to_string() },
+            StatusInfo { code: 404, name: "Not Found".to_string(), category: "Client Error".to_string() },
+            StatusInfo { code: 429, name: "Too Many Requests".to_string(), category: "Client Error".to_string() },
+            StatusInfo { code: 500, name: "Internal Server Error".to_string(), category: "Server Error".to_string() },
+            StatusInfo { code: 503, name: "Service Unavailable".to_string(), category: "Server Error".to_string() },
+        ]
+    }
 }
 
 // ========== Controllers ==========
 
 #[controller("/api")]
 #[derive(Default, Clone)]
-struct ErrorController {
-    item_service: ItemService,
-}
+struct ErrorController;
 
 impl ErrorController {
-    fn get_item(&self, id: u32) -> Result<Json<Item>, Error> {
-        self.item_service.get_item(id).map(Json)
+    #[get("/statuses")]
+    async fn list_statuses() -> Result<Json<Vec<StatusInfo>>, Error> {
+        let service = ItemService::default();
+        Ok(Json(service.list_statuses()))
     }
 
-    fn list_statuses(&self) -> Result<Json<Vec<StatusInfo>>, Error> {
-        let statuses = vec![
-            StatusInfo {
-                code: 200,
-                name: "OK".to_string(),
-                category: "Success".to_string(),
-            },
-            StatusInfo {
-                code: 201,
-                name: "Created".to_string(),
-                category: "Success".to_string(),
-            },
-            StatusInfo {
-                code: 400,
-                name: "Bad Request".to_string(),
-                category: "Client Error".to_string(),
-            },
-            StatusInfo {
-                code: 401,
-                name: "Unauthorized".to_string(),
-                category: "Client Error".to_string(),
-            },
-            StatusInfo {
-                code: 403,
-                name: "Forbidden".to_string(),
-                category: "Client Error".to_string(),
-            },
-            StatusInfo {
-                code: 404,
-                name: "Not Found".to_string(),
-                category: "Client Error".to_string(),
-            },
-            StatusInfo {
-                code: 429,
-                name: "Too Many Requests".to_string(),
-                category: "Client Error".to_string(),
-            },
-            StatusInfo {
-                code: 500,
-                name: "Internal Server Error".to_string(),
-                category: "Server Error".to_string(),
-            },
-            StatusInfo {
-                code: 503,
-                name: "Service Unavailable".to_string(),
-                category: "Server Error".to_string(),
-            },
-        ];
-        Ok(Json(statuses))
-    }
-}
+    #[get("/items/:id")]
+    async fn get_item(req: HttpRequest) -> Result<Json<Item>, Error> {
+        let id_str = req
+            .param("id")
+            .ok_or_else(|| Error::BadRequest("Missing ID".to_string()))?;
+        let id: u32 = id_str
+            .parse()
+            .map_err(|_| Error::BadRequest("Invalid ID format".to_string()))?;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct StatusInfo {
-    code: u16,
-    name: String,
-    category: String,
+        let service = ItemService::default();
+        service.get_item(id).map(Json)
+    }
 }
 
 // ========== Module ==========
@@ -135,8 +110,6 @@ struct AppModule;
 async fn main() {
     println!("⚠️  Armature HTTP Status & Error Example");
     println!("=========================================\n");
-
-    let app = create_app();
 
     println!("Server running on http://localhost:3013");
     println!();
@@ -164,87 +137,16 @@ async fn main() {
     println!("6. Forbidden (403):");
     println!("   curl http://localhost:3013/api/items/403");
     println!();
-    println!("7. Conflict (409):");
-    println!("   curl http://localhost:3013/api/items/409");
-    println!();
-    println!("8. I'm a teapot (418):");
+    println!("7. I'm a teapot (418):");
     println!("   curl http://localhost:3013/api/items/418");
     println!();
-    println!("9. Too Many Requests (429):");
-    println!("   curl http://localhost:3013/api/items/429");
+    println!("8. Internal Server Error (500):");
+    println!("   curl http://localhost:3013/api/items/500");
     println!();
-    println!("10. Internal Server Error (500):");
-    println!("    curl http://localhost:3013/api/items/500");
-    println!();
-    println!("11. Service Unavailable (503):");
-    println!("    curl http://localhost:3013/api/items/503");
-    println!();
+
+    let app = Application::create::<AppModule>().await;
 
     if let Err(e) = app.listen(3013).await {
         eprintln!("Server error: {}", e);
     }
-}
-
-fn create_app() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Register service
-    let item_service = ItemService;
-    container.register(item_service.clone());
-
-    let controller = ErrorController { item_service };
-
-    // List all statuses endpoint
-    let list_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/statuses".to_string(),
-        handler: Arc::new(move |_req| {
-            let ctrl = list_ctrl.clone();
-            Box::pin(async move { ctrl.list_statuses()?.into_response() })
-        }),
-    });
-
-    // Get item by ID endpoint (demonstrates various errors)
-    let get_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/items/:id".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = get_ctrl.clone();
-            Box::pin(async move {
-                let id_str = req
-                    .param("id")
-                    .ok_or_else(|| Error::BadRequest("Missing ID".to_string()))?;
-                let id: u32 = id_str
-                    .parse()
-                    .map_err(|_| Error::BadRequest("Invalid ID format".to_string()))?;
-
-                match ctrl.get_item(id) {
-                    Ok(item) => item.into_response(),
-                    Err(e) => {
-                        // Create custom error response
-                        let status = e.status_code();
-                        let error_response = ErrorResponse {
-                            status,
-                            error: e.http_status().reason().to_string(),
-                            message: e.to_string(),
-                        };
-
-                        println!("❌ Error {} - {}", status, e);
-
-                        Ok(HttpResponse {
-                            status,
-                            headers: std::collections::HashMap::new(),
-                            body: serde_json::to_vec(&error_response)
-                                .map_err(|e| Error::Serialization(e.to_string()))?,
-                        })
-                    }
-                }
-            })
-        }),
-    });
-
-    Application::new(container, router)
 }

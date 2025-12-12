@@ -330,6 +330,33 @@ impl Default for SecurityMiddleware {
     }
 }
 
+/// Implement the core Middleware trait for SecurityMiddleware
+/// This allows it to be used in a MiddlewareChain
+#[async_trait::async_trait]
+impl armature_core::Middleware for SecurityMiddleware {
+    async fn handle(
+        &self,
+        req: armature_core::HttpRequest,
+        next: Box<
+            dyn FnOnce(
+                    armature_core::HttpRequest,
+                )
+                    -> std::pin::Pin<
+                        Box<
+                            dyn std::future::Future<
+                                    Output = Result<armature_core::HttpResponse, armature_core::Error>,
+                                > + Send,
+                        >,
+                    > + Send,
+        >,
+    ) -> Result<armature_core::HttpResponse, armature_core::Error> {
+        // Call the next handler first
+        let response = next(req).await?;
+        // Apply security headers to the response
+        Ok(self.apply(response))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

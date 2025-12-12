@@ -11,7 +11,7 @@ struct Task {
 }
 
 #[injectable]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct TaskService;
 
 impl TaskService {
@@ -103,9 +103,6 @@ async fn main() {
     println!("  PUT    /tasks/:id  - Update task");
     println!("  DELETE /tasks/:id  - Delete task");
 
-    let container = Container::new();
-    let router = Router::new();
-    let app = Application::new(container, router);
-
+    let app = Application::create::<AppModule>().await;
     app.listen(3002).await.unwrap();
 }

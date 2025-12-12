@@ -9,62 +9,72 @@ use armature_security::{
     hsts::HstsConfig, referrer_policy::ReferrerPolicy,
 };
 
+// ========== Services ==========
+
 #[injectable]
-struct AppService;
+#[derive(Default, Clone)]
+struct SecurityService;
 
-impl AppService {
-    fn new() -> Self {
-        Self
-    }
-
-    fn get_message(&self) -> String {
-        "Secured with Helmet-like middleware!".to_string()
+impl SecurityService {
+    fn get_security_info(&self) -> serde_json::Value {
+        serde_json::json!({
+            "message": "Secured with Helmet-like middleware!",
+            "secured": true,
+            "headers": [
+                "Content-Security-Policy",
+                "Strict-Transport-Security",
+                "X-Frame-Options",
+                "X-Content-Type-Options",
+                "X-XSS-Protection",
+                "Referrer-Policy",
+                "X-DNS-Prefetch-Control",
+                "X-Download-Options",
+                "X-Permitted-Cross-Domain-Policies",
+                "Expect-CT"
+            ]
+        })
     }
 }
+
+// ========== Controllers ==========
 
 #[controller("/")]
-struct HomeController {
-    service: AppService,
-}
+#[derive(Default)]
+struct HomeController;
 
 impl HomeController {
-    fn new(service: AppService) -> Self {
-        Self { service }
-    }
-
-    #[get("/")]
-    fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        let html = format!(
-            r#"<!DOCTYPE html>
+    #[get("")]
+    async fn index() -> Result<HttpResponse, Error> {
+        let html = r#"<!DOCTYPE html>
 <html>
 <head>
     <title>Security Example</title>
     <style>
-        body {{
+        body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 50px auto;
             padding: 20px;
-        }}
-        .security-info {{
+        }
+        .security-info {
             background: #f0f0f0;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
-        }}
-        .header {{
+        }
+        .header {
             background: #4CAF50;
             color: white;
             padding: 10px;
             border-radius: 4px;
             margin: 5px 0;
             font-family: monospace;
-        }}
+        }
     </style>
 </head>
 <body>
     <h1>🛡️ Armature Security Middleware</h1>
-    <p>{}</p>
+    <p>Secured with Helmet-like middleware!</p>
 
     <div class="security-info">
         <h2>Active Security Headers</h2>
@@ -91,76 +101,54 @@ impl HomeController {
         <li>DNS prefetch attacks</li>
         <li>Cross-domain policy abuse</li>
     </ul>
-
-    <h2>Usage Examples</h2>
-    <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px;">
-// Default (recommended) - All security features enabled
-let security = SecurityMiddleware::default();
-
-// Custom configuration
-let security = SecurityMiddleware::new()
-    .with_hsts(HstsConfig::new(31536000))
-    .with_frame_guard(FrameGuard::Deny)
-    .hide_powered_by(true)
-    .with_referrer_policy(ReferrerPolicy::StrictOriginWhenCrossOrigin);
-
-// Apply to response
-let secured_response = security.apply(response);
-    </pre>
 </body>
-</html>"#,
-            self.service.get_message()
-        );
+</html>"#;
 
         Ok(HttpResponse::ok()
-            .with_body(html.into_bytes())
+            .with_body(html.as_bytes().to_vec())
             .with_header("Content-Type".to_string(), "text/html".to_string()))
     }
+}
 
-    #[get("/api/data")]
-    fn api_data(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        #[derive(serde::Serialize)]
-        struct ApiResponse {
-            message: String,
-            secured: bool,
-        }
+#[controller("/api")]
+#[derive(Default)]
+struct ApiController;
 
-        let response = ApiResponse {
-            message: self.service.get_message(),
-            secured: true,
-        };
+impl ApiController {
+    #[get("/data")]
+    async fn get_data() -> Result<Json<serde_json::Value>, Error> {
+        let service = SecurityService::default();
+        Ok(Json(service.get_security_info()))
+    }
 
-        Ok(HttpResponse::ok().with_json(&response)?)
+    #[get("/custom")]
+    async fn get_custom() -> Result<Json<serde_json::Value>, Error> {
+        Ok(Json(serde_json::json!({
+            "message": "Custom security configuration",
+            "frame_options": "SAMEORIGIN",
+            "referrer_policy": "strict-origin-when-cross-origin"
+        })))
     }
 }
 
-#[module]
-struct AppModule {
-    controllers: Vec<Box<dyn Controller>>,
-    providers: Vec<Box<dyn Provider>>,
-}
+// ========== Module ==========
 
-impl AppModule {
-    fn new() -> Self {
-        Self {
-            controllers: vec![Box::new(HomeController::new(AppService::new()))],
-            providers: vec![Box::new(AppService::new())],
-        }
-    }
-}
+#[module(
+    providers: [SecurityService],
+    controllers: [HomeController, ApiController]
+)]
+#[derive(Default)]
+struct AppModule;
+
+// ========== Main ==========
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🛡️  Security Middleware Example");
     println!("================================\n");
 
-    // Create the application
-    let mut app = Application::new();
-    let module = AppModule::new();
-    app.register_module(module)?;
-
     // Configure security middleware with recommended defaults
-    let security = SecurityMiddleware::default();
+    let _security = SecurityMiddleware::default();
 
     println!("✅ Security middleware configured with:");
     println!("   - Content Security Policy (CSP)");
@@ -175,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   - Expect-CT");
     println!("   - X-Powered-By header removed");
 
-    // Example: Custom CSP configuration
+    // Example: Custom CSP configuration (demonstrating API usage)
     let _custom_security = SecurityMiddleware::new()
         .with_csp(
             CspConfig::new()
@@ -202,14 +190,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("\n🌐 Server starting on http://localhost:3000");
     println!("📖 Visit http://localhost:3000 to see security headers in action");
-    println!("🔍 Check your browser's Network tab to inspect headers\n");
+    println!("🔍 Check your browser's Network tab to inspect headers");
+    println!("\nEndpoints:");
+    println!("  GET /         - Home page");
+    println!("  GET /api/data - JSON API with security info");
+    println!("  GET /api/custom - Custom security config info\n");
 
-    // Note: In a real application, you would integrate this with middleware
-    // For now, we'll apply it manually to responses
-    let _security_for_responses = security;
-
-    // Start the server
-    app.listen("127.0.0.1:3000").await?;
+    let app = Application::create::<AppModule>().await;
+    app.listen(3000).await?;
 
     Ok(())
 }

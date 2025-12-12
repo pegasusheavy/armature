@@ -57,9 +57,30 @@ struct BookController {
 }
 
 impl BookController {
-    fn list(&self) -> Result<Json<Vec<Book>>, Error> {
-        let books = self.book_service.get_all_books();
+    #[get("")]
+    async fn list() -> Result<Json<Vec<Book>>, Error> {
+        let service = BookService::default();
+        let books = service.get_all_books();
         Ok(Json(books))
+    }
+
+    #[get("/:id")]
+    async fn get(req: HttpRequest) -> Result<Json<Book>, Error> {
+        let id_str = req
+            .param("id")
+            .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
+        let id: u32 = id_str
+            .parse()
+            .map_err(|_| Error::Validation("Invalid id".to_string()))?;
+
+        let service = BookService::default();
+        let book = service
+            .get_all_books()
+            .into_iter()
+            .find(|b| b.id == id)
+            .ok_or_else(|| Error::RouteNotFound("Book not found".to_string()))?;
+
+        Ok(Json(book))
     }
 }
 
@@ -79,52 +100,13 @@ async fn main() {
     println!("📚 Armature Automatic DI Example");
     println!("=================================\n");
 
-    // This would work once full DI is integrated:
-    // let app = Application::create::<AppModule>();
-
-    // For now, demonstrate the DI pattern manually:
-    let app = setup_with_di();
-
     println!("Available routes:");
-    println!("  GET /books - List all books\n");
+    println!("  GET /books     - List all books");
+    println!("  GET /books/:id - Get book by ID\n");
+
+    let app = Application::create::<AppModule>().await;
 
     if let Err(e) = app.listen(3004).await {
         eprintln!("Server error: {}", e);
     }
-}
-
-fn setup_with_di() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Step 1: Register services
-    println!("Registering services:");
-    let logger = LoggerService::default();
-    container.register(logger.clone());
-    println!("  ✓ LoggerService");
-
-    let book_service = BookService { logger };
-    container.register(book_service.clone());
-    println!("  ✓ BookService");
-
-    // Step 2: Create controller with injected dependencies
-    println!("\nCreating controllers:");
-    let book_controller = BookController {
-        book_service: book_service.clone(),
-    };
-    println!("  ✓ BookController (with BookService injected)");
-
-    // Step 3: Register routes
-    println!("\nRegistering routes:");
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/books".to_string(),
-        handler: std::sync::Arc::new(move |_req| {
-            let ctrl = book_controller.clone();
-            Box::pin(async move { ctrl.list().and_then(|j| j.into_response()) })
-        }),
-    });
-    println!("  ✓ GET /books\n");
-
-    Application::new(container, router)
 }

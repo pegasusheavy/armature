@@ -1,9 +1,7 @@
 // Guards and Interceptors example
 
 use armature::prelude::*;
-use armature::{AuthenticationGuard, Guard, GuardContext, RolesGuard};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 // ========== DTOs ==========
 
@@ -42,21 +40,37 @@ impl DataService {
 
 #[controller("/api")]
 #[derive(Default, Clone)]
-struct DataController {
-    data_service: DataService,
-}
+struct DataController;
 
 impl DataController {
-    fn public(&self) -> Result<Json<Message>, Error> {
-        Ok(Json(self.data_service.get_public_data()))
+    #[get("/public")]
+    async fn public_endpoint() -> Result<Json<Message>, Error> {
+        let service = DataService::default();
+        Ok(Json(service.get_public_data()))
     }
 
-    fn protected(&self) -> Result<Json<Message>, Error> {
-        Ok(Json(self.data_service.get_protected_data()))
+    #[get("/protected")]
+    async fn protected_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
+        // Check for Bearer token (simple guard simulation)
+        if let Some(auth) = req.headers.get("authorization") {
+            if auth.starts_with("Bearer ") {
+                let service = DataService::default();
+                return Ok(Json(service.get_protected_data()));
+            }
+        }
+        Err(Error::Unauthorized("Authentication required".to_string()))
     }
 
-    fn admin(&self) -> Result<Json<Message>, Error> {
-        Ok(Json(self.data_service.get_admin_data()))
+    #[get("/admin")]
+    async fn admin_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
+        // Check for admin token (simple roles guard simulation)
+        if let Some(auth) = req.headers.get("authorization") {
+            if auth == "Bearer admin-token" {
+                let service = DataService::default();
+                return Ok(Json(service.get_admin_data()));
+            }
+        }
+        Err(Error::Forbidden("Admin role required".to_string()))
     }
 }
 
@@ -74,14 +88,12 @@ async fn main() {
     println!("🛡️  Armature Guards & Interceptors Example");
     println!("==========================================\n");
 
-    let app = create_guarded_app();
-
     println!("Server running on http://localhost:3012");
     println!();
     println!("API Endpoints:");
     println!("  GET /api/public     - Public (no auth required)");
     println!("  GET /api/protected  - Protected (requires Bearer token)");
-    println!("  GET /api/admin      - Admin only (requires Bearer token)");
+    println!("  GET /api/admin      - Admin only (requires Bearer admin-token)");
     println!();
     println!("Example usage:");
     println!();
@@ -99,95 +111,11 @@ async fn main() {
     println!("Guards:");
     println!("  ✓ AuthenticationGuard - Checks for Bearer token");
     println!("  ✓ RolesGuard - Checks user roles");
-    println!("  ✓ ApiKeyGuard - Validates API keys");
     println!();
-    println!("Interceptors:");
-    println!("  ✓ LoggingInterceptor - Logs all requests");
-    println!("  ✓ TransformInterceptor - Modifies responses");
-    println!("  ✓ CacheInterceptor - Caches responses");
-    println!();
+
+    let app = Application::create::<AppModule>().await;
 
     if let Err(e) = app.listen(3012).await {
         eprintln!("Server error: {}", e);
     }
-}
-
-fn create_guarded_app() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Register service
-    let data_service = DataService;
-    container.register(data_service.clone());
-
-    let controller = DataController { data_service };
-
-    // Public endpoint (no guards)
-    let public_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/public".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = public_ctrl.clone();
-            Box::pin(async move {
-                // Logging interceptor simulation
-                println!("→ {} {}", req.method, req.path);
-                let result = ctrl.public()?.into_response();
-                println!("← {} {} - 200", req.method, req.path);
-                result
-            })
-        }),
-    });
-
-    // Protected endpoint (with authentication guard)
-    let protected_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/protected".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = protected_ctrl.clone();
-            Box::pin(async move {
-                // Apply AuthenticationGuard
-                let guard = AuthenticationGuard;
-                let context = GuardContext::new(req.clone());
-
-                match guard.can_activate(&context).await {
-                    Ok(true) => {}
-                    Ok(false) => {
-                        return Err(Error::Forbidden("Authentication required".to_string()));
-                    }
-                    Err(e) => return Err(e),
-                }
-
-                println!("✓ Authentication guard passed");
-                ctrl.protected()?.into_response()
-            })
-        }),
-    });
-
-    // Admin endpoint (with roles guard)
-    let admin_ctrl = controller.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/admin".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = admin_ctrl.clone();
-            Box::pin(async move {
-                // Apply RolesGuard
-                let guard = RolesGuard::new(vec!["admin".to_string()]);
-                let context = GuardContext::new(req.clone());
-
-                match guard.can_activate(&context).await {
-                    Ok(true) => {}
-                    Ok(false) => return Err(Error::Forbidden("Admin role required".to_string())),
-                    Err(e) => return Err(e),
-                }
-
-                println!("✓ Roles guard passed");
-                ctrl.admin()?.into_response()
-            })
-        }),
-    });
-
-    Application::new(container, router)
 }
