@@ -24,50 +24,58 @@
 <section class="bg-slate-800 border-y border-slate-700">
   <div class="max-w-5xl mx-auto">
     <pre class="p-6 text-sm overflow-x-auto leading-relaxed"><code class="text-slate-300"><span class="text-blue-400">use</span> armature::prelude::*;
+<span class="text-blue-400">use</span> serde::&#123;Deserialize, Serialize&#125;;
 
-<span class="text-slate-500">// Define a service with business logic</span>
+<span class="text-purple-400">&#35;[derive(Serialize, Deserialize)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">User</span> &#123; id: <span class="text-cyan-400">u32</span>, name: <span class="text-cyan-400">String</span> &#125;
+
+<span class="text-slate-500">// Injectable service with business logic</span>
 <span class="text-purple-400">&#35;[injectable]</span>
-<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserService</span> &#123;
-    db: Inject&lt;Database&gt;,
-&#125;
+<span class="text-purple-400">&#35;[derive(Default, Clone)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserService</span>;
 
 <span class="text-blue-400">impl</span> UserService &#123;
-    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">find_by_id</span>(&amp;self, id: i32) -&gt; Result&lt;User, Error&gt; &#123;
-        self.db.users.find(id).<span class="text-blue-400">await</span>
+    <span class="text-blue-400">fn</span> <span class="text-yellow-400">find_by_id</span>(&amp;self, id: <span class="text-cyan-400">u32</span>) -&gt; Option&lt;User&gt; &#123;
+        Some(User &#123; id, name: <span class="text-green-400">"Alice"</span>.into() &#125;)
     &#125;
 &#125;
 
-<span class="text-slate-500">// Define a controller with routes</span>
+<span class="text-slate-500">// Controller with routes</span>
 <span class="text-purple-400">&#35;[controller("/api/users")]</span>
-<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserController</span> &#123;
-    service: Inject&lt;UserService&gt;,
-&#125;
+<span class="text-purple-400">&#35;[derive(Default, Clone)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserController</span>;
 
-<span class="text-purple-400">&#35;[controller]</span>
 <span class="text-blue-400">impl</span> UserController &#123;
+    <span class="text-purple-400">&#35;[get("")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">list</span>() -&gt; Result&lt;Json&lt;Vec&lt;User&gt;&gt;, Error&gt; &#123;
+        Ok(Json(<span class="text-blue-400">vec!</span>[User &#123; id: <span class="text-amber-400">1</span>, name: <span class="text-green-400">"Alice"</span>.into() &#125;]))
+    &#125;
+
     <span class="text-purple-400">&#35;[get("/:id")]</span>
-    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">get_user</span>(&amp;self, id: Path&lt;i32&gt;) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
-        <span class="text-blue-400">let</span> user = self.service.find_by_id(id.0).<span class="text-blue-400">await</span>?;
-        Ok(Json(user))
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">get_user</span>(req: HttpRequest) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
+        <span class="text-blue-400">let</span> id: <span class="text-cyan-400">u32</span> = req.param(<span class="text-green-400">"id"</span>).unwrap().parse().unwrap();
+        Ok(Json(User &#123; id, name: <span class="text-green-400">"Alice"</span>.into() &#125;))
     &#125;
 
-    <span class="text-purple-400">&#35;[post("/")]</span>
-    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">create_user</span>(&amp;self, body: Json&lt;CreateUser&gt;) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
-        <span class="text-blue-400">let</span> user = self.service.create(body.0).<span class="text-blue-400">await</span>?;
+    <span class="text-purple-400">&#35;[post("")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">create</span>(req: HttpRequest) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
+        <span class="text-blue-400">let</span> user: User = req.json()?;
         Ok(Json(user))
     &#125;
 &#125;
 
-<span class="text-slate-500">// Wire everything together in a module</span>
-<span class="text-purple-400">&#35;[module]</span>
-<span class="text-blue-400">struct</span> <span class="text-cyan-400">AppModule</span> &#123;
-    <span class="text-purple-400">&#35;[controller]</span> users: UserController,
-    <span class="text-purple-400">&#35;[provider]</span>   service: UserService,
-&#125;
+<span class="text-slate-500">// Module wires everything together</span>
+<span class="text-purple-400">&#35;[module(</span>
+    <span class="text-purple-400">providers: [UserService],</span>
+    <span class="text-purple-400">controllers: [UserController]</span>
+<span class="text-purple-400">)]</span>
+<span class="text-purple-400">&#35;[derive(Default)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">AppModule</span>;
 
 <span class="text-purple-400">&#35;[tokio::main]</span>
-<span class="text-blue-400">async fn</span> <span class="text-yellow-400">main</span>() -&gt; Result&lt;()&gt; &#123;
-    Application::create::&lt;AppModule&gt;().<span class="text-blue-400">await</span>.listen(<span class="text-amber-400">3000</span>).<span class="text-blue-400">await</span>
+<span class="text-blue-400">async fn</span> <span class="text-yellow-400">main</span>() &#123;
+    <span class="text-blue-400">let</span> app = Application::create::&lt;AppModule&gt;().<span class="text-blue-400">await</span>;
+    app.listen(<span class="text-amber-400">3000</span>).<span class="text-blue-400">await</span>.unwrap();
 &#125;</code></pre>
   </div>
 </section>
