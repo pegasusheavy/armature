@@ -16,6 +16,13 @@ import {
   faBuilding,
   faDownload,
   faBook,
+  faRecycle,
+  faFileAlt,
+  faTachometerAlt,
+  faDatabase,
+  faTerminal,
+  faCubes,
+  faMagic,
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
@@ -45,7 +52,14 @@ export class App {
       faCube,
       faBuilding,
       faDownload,
-      faBook
+      faBook,
+      faRecycle,
+      faFileAlt,
+      faTachometerAlt,
+      faDatabase,
+      faTerminal,
+      faCubes,
+      faMagic
     );
 
     // Add brand icons

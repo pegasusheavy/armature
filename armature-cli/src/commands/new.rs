@@ -91,7 +91,7 @@ pub async fn run(name: &str, template: &str, skip_git: bool, _skip_install: bool
 
 /// Generate project files from templates.
 async fn generate_project_files(
-    project_dir: &PathBuf,
+    project_dir: &std::path::Path,
     names: &NameCases,
     template: &str,
 ) -> CliResult<()> {
@@ -154,7 +154,7 @@ async fn generate_project_files(
 }
 
 /// Initialize git repository.
-fn init_git(project_dir: &PathBuf) -> CliResult<()> {
+fn init_git(project_dir: &std::path::Path) -> CliResult<()> {
     let status = Command::new("git")
         .args(["init"])
         .current_dir(project_dir)
@@ -179,7 +179,7 @@ fn init_git(project_dir: &PathBuf) -> CliResult<()> {
 }
 
 /// Create additional project structure based on template.
-fn create_project_structure(project_dir: &PathBuf, template: &str) -> CliResult<()> {
+fn create_project_structure(project_dir: &std::path::Path, template: &str) -> CliResult<()> {
     match template {
         "minimal" => {
             // Minimal template - already created

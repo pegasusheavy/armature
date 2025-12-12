@@ -10,6 +10,7 @@ pub struct NameCases {
     pub pascal: String,
     pub snake: String,
     pub kebab: String,
+    #[allow(dead_code)]
     pub original: String,
 }
 
@@ -17,7 +18,7 @@ impl NameCases {
     /// Create name cases from the original name.
     pub fn from(name: &str) -> Self {
         // Handle path-like names (e.g., "api/users")
-        let base_name = name.split('/').last().unwrap_or(name);
+        let base_name = name.split('/').next_back().unwrap_or(name);
 
         Self {
             pascal: base_name.to_pascal_case(),
@@ -94,36 +95,7 @@ pub fn update_mod_file(dir: &Path, module_name: &str) -> CliResult<()> {
     Ok(())
 }
 
-/// Parse a comma-separated list of names.
-pub fn parse_list(input: Option<&str>) -> Vec<String> {
-    input
-        .map(|s| {
-            s.split(',')
-                .map(|s| s.trim().to_string())
-                .filter(|s| !s.is_empty())
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
 /// Check if cargo-watch is installed.
 pub fn has_cargo_watch() -> bool {
     which::which("cargo-watch").is_ok()
-}
-
-/// Install cargo-watch if not present.
-pub fn install_cargo_watch() -> CliResult<()> {
-    use std::process::Command;
-
-    let status = Command::new("cargo")
-        .args(["install", "cargo-watch"])
-        .status()?;
-
-    if !status.success() {
-        return Err(CliError::Command(
-            "Failed to install cargo-watch".to_string(),
-        ));
-    }
-
-    Ok(())
 }

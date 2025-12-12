@@ -1,13 +1,9 @@
 //! File watcher utilities for development server.
 
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::Path;
-use std::sync::mpsc::Sender;
-use std::time::Duration;
-
-use crate::error::{CliError, CliResult};
 
 /// File watcher configuration.
+#[allow(dead_code)]
 pub struct WatchConfig {
     /// Directories to watch.
     pub paths: Vec<String>,
@@ -35,12 +31,14 @@ impl Default for WatchConfig {
 }
 
 /// Check if a path should be ignored based on patterns.
+#[allow(dead_code)]
 pub fn should_ignore(path: &Path, patterns: &[String]) -> bool {
     let path_str = path.to_string_lossy();
     patterns.iter().any(|p| path_str.contains(p))
 }
 
 /// Check if a file has a watched extension.
+#[allow(dead_code)]
 pub fn has_watched_extension(path: &Path, extensions: &[String]) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
