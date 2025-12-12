@@ -138,7 +138,7 @@ armature-queue = { path = "armature-queue" }
 armature-cron = { path = "armature-cron" }
 armature-cache = { path = "armature-cache", features = ["redis"] }
 armature-ratelimit = { path = "armature-ratelimit" }
-jsonwebtoken = "9.3"
+jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
 handlebars = "6.3"
 
 # Database ORMs for examples - using rustls instead of native-tls to avoid openssl
