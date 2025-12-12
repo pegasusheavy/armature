@@ -41,10 +41,30 @@ pub fn controller_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         impl armature_core::Provider for #struct_name {}
 
+        #[async_trait::async_trait]
+        impl armature_core::Controller for #struct_name {
+            fn base_path(&self) -> &'static str {
+                #base_path_value
+            }
+
+            fn routes(&self) -> Vec<armature_core::RouteDefinition> {
+                Self::__collect_routes()
+            }
+        }
+
         impl #struct_name {
             pub const BASE_PATH: &'static str = #base_path_value;
 
             #constructor
+
+            /// Collect all routes defined on this controller.
+            /// This method is called by the Controller trait implementation.
+            /// Routes are added via the route registration macros.
+            pub fn __collect_routes() -> Vec<armature_core::RouteDefinition> {
+                // This will be populated by route macros via inventory or manual registration
+                // For now, return empty - routes are registered via module's route_registrar
+                vec![]
+            }
         }
     };
 

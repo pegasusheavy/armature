@@ -1,2 +1,30 @@
-// Home page styles
+// Home component - minimal custom styles
+// Most styling handled by Tailwind CSS
 
+// Code block syntax highlighting
+pre code {
+  font-family: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+  
+  .keyword {
+    color: #c678dd;
+  }
+  
+  .function {
+    color: #61afef;
+  }
+  
+  .string {
+    color: #98c379;
+  }
+  
+  .comment {
+    color: #5c6370;
+  }
+}
+
+// Smooth animations
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}

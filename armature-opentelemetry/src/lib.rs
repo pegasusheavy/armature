@@ -135,12 +135,10 @@ pub use middleware::*;
 pub use tracing_setup::*;
 
 // Re-export commonly used OpenTelemetry types
-pub use opentelemetry::{
-    Context as OtelContext, KeyValue, StringValue, Value, global, trace::TraceError,
-};
+pub use opentelemetry::{Context as OtelContext, KeyValue, StringValue, Value, global};
 pub use opentelemetry_sdk::{
     Resource,
     metrics::{PeriodicReader, SdkMeterProvider},
     runtime,
-    trace::{RandomIdGenerator, Sampler, Tracer, TracerProvider},
+    trace::{RandomIdGenerator, Sampler, SdkTracerProvider, Tracer},
 };

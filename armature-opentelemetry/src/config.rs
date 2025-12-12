@@ -214,7 +214,7 @@ impl TelemetryConfig {
             attributes.push(KeyValue::new(key.clone(), value.clone()));
         }
 
-        Ok(Resource::new(attributes))
+        Ok(Resource::builder().with_attributes(attributes).build())
     }
 
     /// Validate configuration

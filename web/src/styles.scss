@@ -1,54 +1,12 @@
-/* Tailwind CSS 4+ imports */
-@use "tailwindcss" as tw;
+@import "tailwindcss";
 
-/* Custom theme configuration using CSS variables */
-@theme {
-  /* Custom colors */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
-  --color-primary-950: #082f49;
-
-  /* Font families */
-  --font-family-sans: Inter, system-ui, sans-serif;
-}
-
-/* Global styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Base styles */
 html, body {
   height: 100%;
-  font-family: var(--font-family-sans);
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-body {
-  @apply bg-gray-50 text-gray-900;
-}
-
-/* Custom utility classes */
-.gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-700) 100%);
-}
-
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Focus styles */
-:focus-visible {
-  @apply outline-2 outline-offset-2 outline-primary-500;
+/* Code styling */
+code, pre {
+  font-family: "Fira Code", "JetBrains Mono", ui-monospace, monospace;
 }

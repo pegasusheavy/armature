@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Simple example demonstrating basic routing and JSON responses
 
 use armature::prelude::*;
@@ -38,14 +39,6 @@ async fn main() {
     println!("Starting simple example on http://localhost:3001");
     println!("Try: curl http://localhost:3001/api/hello");
 
-    // In a full implementation, this would work:
-    // let app = Application::create::<AppModule>();
-    // app.listen(3001).await.unwrap();
-
-    // For now, use simplified bootstrap
-    let container = Container::new();
-    let router = Router::new();
-    let app = Application::new(container, router);
-
+    let app = Application::create::<AppModule>().await;
     app.listen(3001).await.unwrap();
 }

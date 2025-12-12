@@ -5,6 +5,7 @@
 use crate::Error;
 use rustls::{
     ServerConfig,
+    crypto::ring::default_provider,
     pki_types::{CertificateDer, PrivateKeyDer},
 };
 use rustls_pemfile::{certs, private_key};
@@ -63,7 +64,9 @@ impl TlsConfig {
         certs: Vec<CertificateDer<'static>>,
         key: PrivateKeyDer<'static>,
     ) -> Result<Self, Error> {
-        let mut config = ServerConfig::builder()
+        let mut config = ServerConfig::builder_with_provider(Arc::new(default_provider()))
+            .with_safe_default_protocol_versions()
+            .map_err(|e| Error::Internal(format!("Failed to configure TLS protocol: {}", e)))?
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .map_err(|e| Error::Internal(format!("Failed to create TLS config: {}", e)))?;
@@ -95,20 +98,25 @@ impl TlsConfig {
     pub fn self_signed(domains: &[&str]) -> Result<Self, Error> {
         use rcgen::{CertificateParams, KeyPair};
 
-        let mut params =
-            CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>());
-        params.distinguished_name = rcgen::DistinguishedName::new();
-
-        let key_pair = KeyPair::generate(&rcgen::PKCS_ECDSA_P256_SHA256)
+        // Generate key pair
+        let key_pair = KeyPair::generate()
             .map_err(|e| Error::Internal(format!("Failed to generate key pair: {}", e)))?;
 
-        let cert = rcgen::Certificate::from_params(params)
+        // Create certificate params with domains
+        let mut params =
+            CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>())
+                .map_err(|e| {
+                    Error::Internal(format!("Failed to create certificate params: {}", e))
+                })?;
+
+        params.distinguished_name = rcgen::DistinguishedName::new();
+
+        // Create self-signed certificate
+        let cert = params
+            .self_signed(&key_pair)
             .map_err(|e| Error::Internal(format!("Failed to create certificate: {}", e)))?;
 
-        let cert_pem = cert
-            .serialize_pem()
-            .map_err(|e| Error::Internal(format!("Failed to serialize certificate: {}", e)))?;
-
+        let cert_pem = cert.pem();
         let key_pem = key_pair.serialize_pem();
 
         Self::from_pem_bytes(cert_pem.as_bytes(), key_pem.as_bytes())

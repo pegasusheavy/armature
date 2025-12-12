@@ -9,10 +9,10 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 # Core dependencies
 async-trait = "0.1"
-thiserror = "1.0"
+thiserror = "2.0"
 tokio = { version = "1.35", features = ["full"] }
 chrono = "0.4"
-cron = "0.12"
+cron = "0.15"
 
 # DI integration
 armature-core = { path = "../armature-core" }

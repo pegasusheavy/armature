@@ -35,6 +35,43 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 
 ## Quick Start
 
+### Using the CLI (Recommended)
+
+Install the Armature CLI for the best development experience:
+
+```bash
+# Install the CLI
+cargo install armature-cli
+
+# Create a new project
+armature new my-api
+
+# Navigate to your project
+cd my-api
+
+# Start the development server with hot reloading
+armature dev
+```
+
+### Generate Code
+
+```bash
+# Generate a controller
+armature generate controller users
+
+# Generate a service
+armature generate service users
+
+# Generate a complete resource (controller + service + module)
+armature generate resource products --crud
+
+# Generate middleware, guards, and more
+armature generate middleware auth
+armature generate guard admin
+```
+
+### Manual Setup
+
 ```rust
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -413,6 +450,58 @@ armature/
 │   ├── simple.rs       # Basic routing
 │   └── rest_api.rs     # REST API demo
 └── Cargo.toml          # Workspace manifest
+```
+
+## Armature CLI
+
+The Armature CLI provides powerful code generation and development tools:
+
+### Installation
+
+```bash
+cargo install armature-cli
+```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `armature new <name>` | Create a new project from templates |
+| `armature generate controller <name>` | Generate a controller |
+| `armature generate service <name>` | Generate a service/provider |
+| `armature generate module <name>` | Generate a module |
+| `armature generate middleware <name>` | Generate middleware |
+| `armature generate guard <name>` | Generate a guard |
+| `armature generate resource <name>` | Generate controller + service + module |
+| `armature dev` | Start development server with file watching |
+| `armature build` | Build for production |
+| `armature info` | Display project information |
+
+### Project Templates
+
+```bash
+# Minimal API (default)
+armature new my-api
+
+# Full-featured API with auth, validation, Docker
+armature new my-api --template full
+
+# Microservice with queue worker
+armature new my-api --template microservice
+```
+
+### Development Server
+
+The `armature dev` command starts a development server with automatic rebuilding:
+
+```bash
+# Start with default settings (port 3000)
+armature dev
+
+# Custom port
+armature dev --port 8080
+
+# Uses cargo-watch if installed for better performance
 ```
 
 ## Design Principles

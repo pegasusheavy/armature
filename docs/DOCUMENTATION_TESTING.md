@@ -98,13 +98,16 @@ Use for examples that require external resources:
 /// # Examples
 ///
 /// ```no_run
-/// use armature::Application;
+/// use armature::prelude::*;
+///
+/// #[module()]
+/// #[derive(Default)]
+/// struct AppModule;
 ///
 /// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let app = Application::new();
-///     app.listen(3000).await?;
-///     Ok(())
+/// async fn main() {
+///     let app = Application::create::<AppModule>().await;
+///     app.listen(3000).await.unwrap();
 /// }
 /// ```
 pub async fn start_server() {}

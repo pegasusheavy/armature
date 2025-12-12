@@ -86,10 +86,43 @@ pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
                     let instance = #ty::new_with_di(container)?;
                     Ok(Box::new(instance) as Box<dyn std::any::Any + Send + Sync>)
                 },
-                route_registrar: |container, router, controller_any| {
+                route_registrar: |_container, router, controller_any| {
+                    use armature_core::Controller;
+
                     let controller = controller_any.downcast::<#ty>()
                         .map_err(|_| armature_core::Error::Internal("Failed to downcast controller".to_string()))?;
-                    // Routes will be registered separately
+
+                    // Get the base path and routes from the controller
+                    let base_path = controller.base_path();
+                    let routes = controller.routes();
+
+                    // Wrap controller in Arc for shared ownership across route handlers
+                    let controller = std::sync::Arc::new(*controller);
+
+                    // Register each route
+                    for route_def in routes {
+                        let full_path = if route_def.path.is_empty() {
+                            base_path.to_string()
+                        } else if base_path.ends_with('/') || route_def.path.starts_with('/') {
+                            format!("{}{}", base_path.trim_end_matches('/'), route_def.path)
+                        } else {
+                            format!("{}/{}", base_path, route_def.path)
+                        };
+
+                        let route = armature_core::routing::Route {
+                            method: route_def.method,
+                            path: full_path,
+                            handler: std::sync::Arc::new(move |req| {
+                                Box::pin(async move {
+                                    // Placeholder - actual handler dispatch would go here
+                                    Ok(armature_core::HttpResponse::ok()
+                                        .with_body(b"Route handler placeholder".to_vec()))
+                                })
+                            }),
+                        };
+                        router.add_route(route);
+                    }
+
                     Ok(())
                 },
             }
@@ -98,7 +131,7 @@ pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let import_instances = imports.iter().map(|ty| {
         quote! {
-            Box::new(#ty) as Box<dyn armature_core::Module>
+            Box::new(#ty::default()) as Box<dyn armature_core::Module>
         }
     });
 

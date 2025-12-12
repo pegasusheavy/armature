@@ -8,13 +8,13 @@ use crate::{
     tracing_setup::{init_tracing, shutdown_tracing},
 };
 use opentelemetry::metrics::MeterProvider;
-use opentelemetry_sdk::{metrics::SdkMeterProvider, trace::TracerProvider};
+use opentelemetry_sdk::{metrics::SdkMeterProvider, trace::SdkTracerProvider};
 use std::sync::Arc;
 
 /// Telemetry system manager
 pub struct Telemetry {
     config: TelemetryConfig,
-    tracer_provider: Option<TracerProvider>,
+    tracer_provider: Option<SdkTracerProvider>,
     meter_provider: Option<SdkMeterProvider>,
     http_metrics: Option<Arc<HttpMetrics>>,
 }
@@ -113,24 +113,10 @@ impl TelemetryBuilder {
         self
     }
 
-    /// Set Jaeger endpoint
-    #[cfg(feature = "jaeger")]
-    pub fn with_jaeger_endpoint(mut self, endpoint: impl Into<String>) -> Self {
-        self.config.tracing.jaeger_endpoint = Some(endpoint.into());
-        self
-    }
-
     /// Set Zipkin endpoint
     #[cfg(feature = "zipkin")]
     pub fn with_zipkin_endpoint(mut self, endpoint: impl Into<String>) -> Self {
         self.config.tracing.zipkin_endpoint = Some(endpoint.into());
-        self
-    }
-
-    /// Set Prometheus endpoint
-    #[cfg(feature = "prometheus")]
-    pub fn with_prometheus_endpoint(mut self, endpoint: impl Into<String>) -> Self {
-        self.config.metrics.prometheus_endpoint = Some(endpoint.into());
         self
     }
 
@@ -169,7 +155,10 @@ impl TelemetryBuilder {
         // Initialize metrics
         if self.config.enable_metrics {
             let provider = init_metrics(&self.config).await?;
-            let meter = provider.meter(self.config.service_name.clone());
+            // Use a static service name for the meter
+            let service_name: &'static str =
+                Box::leak(self.config.service_name.clone().into_boxed_str());
+            let meter = provider.meter(service_name);
 
             // Create HTTP metrics
             http_metrics =
@@ -280,17 +269,6 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "jaeger")]
-    #[test]
-    fn test_builder_with_jaeger_endpoint() {
-        let builder = TelemetryBuilder::new("test").with_jaeger_endpoint("http://localhost:14250");
-
-        assert_eq!(
-            builder.config.tracing.jaeger_endpoint,
-            Some("http://localhost:14250".to_string())
-        );
-    }
-
     #[cfg(feature = "zipkin")]
     #[test]
     fn test_builder_with_zipkin_endpoint() {
@@ -299,18 +277,6 @@ mod tests {
         assert_eq!(
             builder.config.tracing.zipkin_endpoint,
             Some("http://localhost:9411".to_string())
-        );
-    }
-
-    #[cfg(feature = "prometheus")]
-    #[test]
-    fn test_builder_with_prometheus_endpoint() {
-        let builder =
-            TelemetryBuilder::new("test").with_prometheus_endpoint("http://localhost:9090");
-
-        assert_eq!(
-            builder.config.metrics.prometheus_endpoint,
-            Some("http://localhost:9090".to_string())
         );
     }
 }

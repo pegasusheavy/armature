@@ -435,7 +435,6 @@ impl Worker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicU32, Ordering};
 
     #[test]
     fn test_worker_config() {

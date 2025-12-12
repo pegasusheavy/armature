@@ -1,141 +1,195 @@
-<div class="hero-section">
-  <div class="hero-content">
-    <h1 class="hero-title">🦾 Armature Framework</h1>
-    <p class="hero-subtitle">
-      A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS. Build
-      production-ready APIs with confidence.
+<!-- Hero -->
+<section class="bg-slate-900 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-24 text-center">
+    <p class="text-primary-400 font-medium mb-4">The Rust Web Framework</p>
+    <h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+      Armature
+    </h1>
+    <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      Build production-ready, Enterprise grade APIs with type-safe routing, dependency injection, and modular architecture inspired by Angular & NestJS.
     </p>
-    <div class="cta-buttons">
-      <a href="https://github.com/pegasusheavy/armature" target="_blank" class="btn btn-primary">
-        <fa-icon [icon]="['fab', 'github']" class="mr-2" />
+    <div class="flex gap-4 justify-center">
+      <a routerLink="/getting-started" class="bg-primary-500 hover:bg-primary-400 text-white font-medium px-6 py-3 rounded-lg transition-colors">
         Get Started
       </a>
-      <a routerLink="/docs" class="btn btn-secondary"> Documentation </a>
+      <a href="https://github.com/pegasusheavy/armature" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2">
+        <fa-icon [icon]="['fab', 'github']"></fa-icon>
+        GitHub
+      </a>
     </div>
   </div>
-</div>
+</section>
 
-<section id="features" class="features-section">
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'shield-alt']" size="2x" />
+<!-- Code Preview -->
+<section class="bg-slate-800 border-y border-slate-700">
+  <div class="max-w-5xl mx-auto">
+    <pre class="p-6 text-sm overflow-x-auto leading-relaxed"><code class="text-slate-300"><span class="text-blue-400">use</span> armature::prelude::*;
+<span class="text-blue-400">use</span> serde::&#123;Deserialize, Serialize&#125;;
+
+<span class="text-purple-400">&#35;[derive(Serialize, Deserialize)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">User</span> &#123; id: <span class="text-cyan-400">u32</span>, name: <span class="text-cyan-400">String</span> &#125;
+
+<span class="text-slate-500">// Injectable service with business logic</span>
+<span class="text-purple-400">&#35;[injectable]</span>
+<span class="text-purple-400">&#35;[derive(Default, Clone)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserService</span>;
+
+<span class="text-blue-400">impl</span> UserService &#123;
+    <span class="text-blue-400">fn</span> <span class="text-yellow-400">find_by_id</span>(&amp;self, id: <span class="text-cyan-400">u32</span>) -&gt; Option&lt;User&gt; &#123;
+        Some(User &#123; id, name: <span class="text-green-400">"Alice"</span>.into() &#125;)
+    &#125;
+&#125;
+
+<span class="text-slate-500">// Controller with routes</span>
+<span class="text-purple-400">&#35;[controller("/api/users")]</span>
+<span class="text-purple-400">&#35;[derive(Default, Clone)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">UserController</span>;
+
+<span class="text-blue-400">impl</span> UserController &#123;
+    <span class="text-purple-400">&#35;[get("")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">list</span>() -&gt; Result&lt;Json&lt;Vec&lt;User&gt;&gt;, Error&gt; &#123;
+        Ok(Json(<span class="text-blue-400">vec!</span>[User &#123; id: <span class="text-amber-400">1</span>, name: <span class="text-green-400">"Alice"</span>.into() &#125;]))
+    &#125;
+
+    <span class="text-purple-400">&#35;[get("/:id")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">get_user</span>(req: HttpRequest) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
+        <span class="text-blue-400">let</span> id: <span class="text-cyan-400">u32</span> = req.param(<span class="text-green-400">"id"</span>).unwrap().parse().unwrap();
+        Ok(Json(User &#123; id, name: <span class="text-green-400">"Alice"</span>.into() &#125;))
+    &#125;
+
+    <span class="text-purple-400">&#35;[post("")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">create</span>(req: HttpRequest) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
+        <span class="text-blue-400">let</span> user: User = req.json()?;
+        Ok(Json(user))
+    &#125;
+&#125;
+
+<span class="text-slate-500">// Module wires everything together</span>
+<span class="text-purple-400">&#35;[module(</span>
+    <span class="text-purple-400">providers: [UserService],</span>
+    <span class="text-purple-400">controllers: [UserController]</span>
+<span class="text-purple-400">)]</span>
+<span class="text-purple-400">&#35;[derive(Default)]</span>
+<span class="text-blue-400">struct</span> <span class="text-cyan-400">AppModule</span>;
+
+<span class="text-purple-400">&#35;[tokio::main]</span>
+<span class="text-blue-400">async fn</span> <span class="text-yellow-400">main</span>() &#123;
+    <span class="text-blue-400">let</span> app = Application::create::&lt;AppModule&gt;().<span class="text-blue-400">await</span>;
+    app.listen(<span class="text-amber-400">3000</span>).<span class="text-blue-400">await</span>.unwrap();
+&#125;</code></pre>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="bg-white py-20">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Why Armature?</h2>
+    <p class="text-slate-600 text-center max-w-2xl mx-auto mb-16">
+      Everything you need to build fast, reliable web APIs in Rust.
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div>
+        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'shield-alt']" class="text-blue-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Type-Safe</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Catch errors at compile time. Path parameters, query strings, and request bodies are fully typed.
+        </p>
       </div>
-      <h3 class="feature-title">Type-Safe</h3>
-      <p class="feature-description">
-        Full Rust type safety with compile-time guarantees. Catch errors before they reach
-        production.
-      </p>
+
+      <div>
+        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'syringe']" class="text-green-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Dependency Injection</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Services are automatically injected into controllers. No manual wiring required.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'cubes']" class="text-purple-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Modular Architecture</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Organize your app into modules with clear boundaries and dependencies.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'bolt']" class="text-amber-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">High Performance</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Built on Tokio for async I/O. Zero-cost abstractions mean no runtime overhead.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'user-shield']" class="text-rose-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Built-in Security</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          JWT, OAuth2, and SAML authentication. Security headers and middleware included.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'terminal']" class="text-cyan-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Powerful CLI</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Generate controllers, services, and modules. Dev server with hot reloading.
+        </p>
+      </div>
     </div>
+  </div>
+</section>
 
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'bolt']" size="2x" />
+<!-- Quick Start -->
+<section class="bg-slate-50 py-20 border-t border-slate-200">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Quick Start</h2>
+    <p class="text-slate-600 text-center mb-10">Get up and running in seconds.</p>
+
+    <div class="bg-slate-900 rounded-lg overflow-hidden shadow-lg">
+      <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500"></div>
       </div>
-      <h3 class="feature-title">High Performance</h3>
-      <p class="feature-description">
-        Built on Tokio for async runtime with zero-cost abstractions. Blazingly fast by default.
-      </p>
+      <pre class="p-5 text-sm"><code class="text-slate-300"><span class="text-slate-500"># Install the CLI</span>
+<span class="text-green-400">$</span> cargo install armature-cli
+
+<span class="text-slate-500"># Create a new project</span>
+<span class="text-green-400">$</span> armature new my-api
+<span class="text-green-400">$</span> cd my-api
+
+<span class="text-slate-500"># Start the dev server</span>
+<span class="text-green-400">$</span> armature dev
+<span class="text-cyan-400">→ Server running at http://localhost:3000</span></code></pre>
     </div>
+  </div>
+</section>
 
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'project-diagram']" size="2x" />
-      </div>
-      <h3 class="feature-title">Modular Architecture</h3>
-      <p class="feature-description">
-        Organize your code into modules with dependency injection, just like Angular and NestJS.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'user-shield']" size="2x" />
-      </div>
-      <h3 class="feature-title">Built-in Security</h3>
-      <p class="feature-description">
-        Comprehensive security middleware including JWT, OAuth2, SAML, and Helmet-like protections.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'server']" size="2x" />
-      </div>
-      <h3 class="feature-title">Observability</h3>
-      <p class="feature-description">
-        OpenTelemetry integration with tracing, metrics, and logging for production monitoring.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'check-circle']" size="2x" />
-      </div>
-      <h3 class="feature-title">Validation</h3>
-      <p class="feature-description">
-        Powerful validation framework with 18+ built-in validators and custom rule builders.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'rocket']" size="2x" />
-      </div>
-      <h3 class="feature-title">Background Jobs</h3>
-      <p class="feature-description">
-        Redis-backed queue system with retry logic, priorities, and scheduled jobs.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'recycle']" size="2x" />
-      </div>
-      <h3 class="feature-title">Lifecycle Hooks</h3>
-      <p class="feature-description">
-        NestJS-inspired lifecycle management with OnModuleInit, OnModuleDestroy, and more.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'file-alt']" size="2x" />
-      </div>
-      <h3 class="feature-title">Advanced Logging</h3>
-      <p class="feature-description">
-        Structured logging with tracing, multiple outputs, JSON format, and configurable levels.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'tachometer-alt']" size="2x" />
-      </div>
-      <h3 class="feature-title">Parallel Processing</h3>
-      <p class="feature-description">
-        Built-in parallelization for cache, validation, file uploads, and batch operations.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'database']" size="2x" />
-      </div>
-      <h3 class="feature-title">ORM Support</h3>
-      <p class="feature-description">
-        First-class support for SQLx, Diesel, and SeaORM with DI integration and examples.
-      </p>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-icon">
-        <fa-icon [icon]="['fas', 'code']" size="2x" />
-      </div>
-      <h3 class="feature-title">Comprehensive Docs</h3>
-      <p class="feature-description">
-        34 detailed guides, 30+ working examples, exceptional doc-test coverage, and CI/CD.
-      </p>
+<!-- CTA -->
+<section class="bg-slate-900 py-16">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-2xl font-bold text-white mb-4">Ready to build?</h2>
+    <p class="text-slate-400 mb-8">Check out the documentation to learn more.</p>
+    <div class="flex gap-4 justify-center">
+      <a routerLink="/getting-started" class="bg-primary-500 hover:bg-primary-400 text-white font-medium px-6 py-3 rounded-lg transition-colors">
+        Get Started
+      </a>
+      <a routerLink="/docs" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-lg transition-colors">
+        Read the Docs
+      </a>
     </div>
   </div>
 </section>

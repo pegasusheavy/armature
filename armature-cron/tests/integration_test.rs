@@ -95,7 +95,6 @@ async fn test_job_context() {
         CronExpression::parse("0 0 * * * *").unwrap(),
         |ctx| {
             Box::pin(async move {
-                assert!(ctx.execution_count >= 0);
                 assert!(!ctx.name.is_empty());
                 Ok(())
             })

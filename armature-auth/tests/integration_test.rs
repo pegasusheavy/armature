@@ -76,6 +76,7 @@ fn test_google_config_with_custom_scopes() {
     assert_eq!(config.scopes.len(), 2);
 }
 
+#[cfg(feature = "saml")]
 #[test]
 fn test_saml_config_creation() {
     let config = SamlConfig::new(
@@ -88,6 +89,7 @@ fn test_saml_config_creation() {
     assert_eq!(config.acs_url, "https://myapp.com/callback");
 }
 
+#[cfg(feature = "saml")]
 #[test]
 fn test_idp_metadata_variants() {
     let url_meta = IdpMetadata::Url("https://idp.example.com/metadata".to_string());

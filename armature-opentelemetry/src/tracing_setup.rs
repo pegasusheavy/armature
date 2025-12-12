@@ -5,13 +5,10 @@ use crate::{
     error::{TelemetryError, TelemetryResult},
 };
 use opentelemetry::global;
-use opentelemetry_sdk::{
-    runtime,
-    trace::{Config, RandomIdGenerator, Sampler, TracerProvider},
-};
+use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, SdkTracerProvider};
 
 /// Initialize tracing based on configuration
-pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerProvider> {
+pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<SdkTracerProvider> {
     if !config.enable_tracing {
         return Err(TelemetryError::Config("Tracing is not enabled".to_string()));
     }
@@ -29,85 +26,62 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
     let provider = match config.tracing.exporter {
         #[cfg(feature = "otlp")]
         TracingExporter::Otlp => {
+            use opentelemetry_otlp::{SpanExporter, WithExportConfig};
+
             let endpoint = config.tracing.otlp_endpoint.as_ref().ok_or_else(|| {
                 TelemetryError::Config("OTLP endpoint not configured".to_string())
             })?;
 
-            use opentelemetry_otlp::WithExportConfig;
-
-            let exporter = opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint(endpoint)
-                .build_span_exporter()
+            let exporter = SpanExporter::builder()
+                .with_tonic()
+                .with_endpoint(endpoint.clone())
+                .build()
                 .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
 
-            let trace_config = Config::default()
+            SdkTracerProvider::builder()
+                .with_batch_exporter(exporter)
                 .with_resource(resource)
-                .with_id_generator(RandomIdGenerator::default())
                 .with_sampler(sampler)
-                .with_max_attributes_per_span(config.tracing.max_attributes_per_span)
-                .with_max_events_per_span(config.tracing.max_events_per_span);
-
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
-                .with_config(trace_config)
+                .with_id_generator(RandomIdGenerator::default())
                 .build()
         }
 
-        #[cfg(feature = "jaeger")]
+        // Note: opentelemetry-jaeger is discontinued and not compatible with opentelemetry 0.31
+        // Use OTLP with a Jaeger collector backend instead
         TracingExporter::Jaeger => {
-            let endpoint = config.tracing.jaeger_endpoint.as_ref().ok_or_else(|| {
-                TelemetryError::Config("Jaeger endpoint not configured".to_string())
-            })?;
-
-            let exporter = opentelemetry_jaeger::new_agent_pipeline()
-                .with_endpoint(endpoint)
-                .with_service_name(&config.service_name)
-                .build_async_agent_exporter(runtime::Tokio)
-                .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
-
-            let trace_config = Config::default()
-                .with_resource(resource)
-                .with_id_generator(RandomIdGenerator::default())
-                .with_sampler(sampler);
-
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
-                .with_config(trace_config)
-                .build()
+            return Err(TelemetryError::Config(
+                "Jaeger exporter is discontinued. Use OTLP with a Jaeger collector instead. \
+                See: https://www.jaegertracing.io/docs/1.35/apis/#opentelemetry-protocol-stable"
+                    .to_string(),
+            ));
         }
 
         #[cfg(feature = "zipkin")]
         TracingExporter::Zipkin => {
+            use opentelemetry_zipkin::ZipkinExporter;
+
             let endpoint = config.tracing.zipkin_endpoint.as_ref().ok_or_else(|| {
                 TelemetryError::Config("Zipkin endpoint not configured".to_string())
             })?;
 
-            let exporter = opentelemetry_zipkin::new_pipeline()
-                .with_service_name(&config.service_name)
+            let exporter = ZipkinExporter::builder()
                 .with_collector_endpoint(endpoint)
-                .init_exporter()
-                .map_err(|e| TelemetryError::Exporter(e.to_string()))?;
+                .build()
+                .map_err(|e| TelemetryError::Exporter(format!("{:?}", e)))?;
 
-            let trace_config = Config::default()
+            SdkTracerProvider::builder()
+                .with_batch_exporter(exporter)
                 .with_resource(resource)
+                .with_sampler(sampler)
                 .with_id_generator(RandomIdGenerator::default())
-                .with_sampler(sampler);
-
-            TracerProvider::builder()
-                .with_batch_exporter(exporter, runtime::Tokio)
-                .with_config(trace_config)
                 .build()
         }
 
-        TracingExporter::None => {
-            let trace_config = Config::default()
-                .with_resource(resource)
-                .with_id_generator(RandomIdGenerator::default())
-                .with_sampler(sampler);
-
-            TracerProvider::builder().with_config(trace_config).build()
-        }
+        TracingExporter::None => SdkTracerProvider::builder()
+            .with_resource(resource)
+            .with_sampler(sampler)
+            .with_id_generator(RandomIdGenerator::default())
+            .build(),
 
         #[allow(unreachable_patterns)]
         _ => {
@@ -125,8 +99,10 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
 }
 
 /// Shutdown tracing gracefully
-pub async fn shutdown_tracing(provider: TracerProvider) -> TelemetryResult<()> {
-    provider.force_flush();
+pub async fn shutdown_tracing(provider: SdkTracerProvider) -> TelemetryResult<()> {
+    provider
+        .shutdown()
+        .map_err(|e| TelemetryError::Shutdown(e.to_string()))?;
     Ok(())
 }
 

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Handlebars Templating Example
 //!
 //! This example demonstrates how to use the Handlebars template engine

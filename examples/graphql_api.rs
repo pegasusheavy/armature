@@ -1,14 +1,15 @@
+#![allow(dead_code)]
 // GraphQL API example with Armature
 
 use armature::prelude::*;
 use armature_graphql::{
-    EmptySubscription, ID, Object, Result, Schema, SimpleObject, async_graphql,
+    EmptySubscription, ID, Object, Result as GqlResult, Schema, SimpleObject, async_graphql,
 };
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 // ========== Domain Models ==========
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 struct Book {
     id: ID,
@@ -17,6 +18,7 @@ struct Book {
     year: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 struct Author {
     id: ID,
@@ -26,6 +28,7 @@ struct Author {
 
 // ========== Services ==========
 
+#[allow(dead_code)]
 #[injectable]
 #[derive(Default, Clone)]
 struct BookService;
@@ -87,6 +90,7 @@ impl BookService {
 
 // ========== GraphQL Schema ==========
 
+#[allow(dead_code)]
 struct QueryRoot {
     book_service: BookService,
 }
@@ -99,7 +103,7 @@ impl QueryRoot {
     }
 
     /// Get a book by ID
-    async fn book(&self, id: ID) -> Result<Book> {
+    async fn book(&self, id: ID) -> GqlResult<Book> {
         self.book_service
             .get_book_by_id(id.as_str())
             .ok_or_else(|| "Book not found".into())
@@ -120,6 +124,7 @@ impl QueryRoot {
     }
 }
 
+#[allow(dead_code)]
 struct MutationRoot {
     book_service: BookService,
 }
@@ -132,11 +137,11 @@ impl MutationRoot {
     }
 
     /// Update a book (simplified)
-    async fn update_book(&self, id: ID, title: String) -> Result<Book> {
+    async fn update_book(&self, id: ID, title: String) -> GqlResult<Book> {
         let mut book = self
             .book_service
             .get_book_by_id(id.as_str())
-            .ok_or_else(|| "Book not found")?;
+            .ok_or("Book not found")?;
         book.title = title;
         Ok(book)
     }
@@ -147,14 +152,102 @@ impl MutationRoot {
     }
 }
 
+// ========== Controllers ==========
+
+#[controller("/graphql")]
+#[derive(Default)]
+struct GraphQLController;
+
+impl GraphQLController {
+    #[post("")]
+    async fn execute(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let book_service = BookService;
+
+        let query = QueryRoot {
+            book_service: book_service.clone(),
+        };
+        let mutation = MutationRoot {
+            book_service: book_service.clone(),
+        };
+
+        let schema = Schema::build(query, mutation, EmptySubscription).finish();
+
+        // Parse GraphQL request
+        #[derive(Deserialize)]
+        struct GraphQLRequest {
+            query: String,
+            #[serde(default)]
+            variables: Option<serde_json::Value>,
+            #[serde(default)]
+            operation_name: Option<String>,
+        }
+
+        let gql_req: GraphQLRequest = req.json()?;
+
+        // Build async-graphql request
+        let mut request = async_graphql::Request::new(gql_req.query);
+        if let Some(vars) = gql_req.variables {
+            request = request.variables(async_graphql::Variables::from_json(vars));
+        }
+        if let Some(op_name) = gql_req.operation_name {
+            request = request.operation_name(op_name);
+        }
+
+        // Execute query
+        let response = schema.execute(request).await;
+
+        // Convert to JSON response
+        let json =
+            serde_json::to_value(&response).map_err(|e| Error::Serialization(e.to_string()))?;
+
+        HttpResponse::ok().with_json(&json)
+    }
+
+    #[get("/schema")]
+    async fn get_schema() -> Result<HttpResponse, Error> {
+        let book_service = BookService;
+        let query = QueryRoot {
+            book_service: book_service.clone(),
+        };
+        let mutation = MutationRoot { book_service };
+        let schema = Schema::build(query, mutation, EmptySubscription).finish();
+        let sdl = schema.sdl();
+
+        Ok(HttpResponse::ok()
+            .with_header("Content-Type".to_string(), "text/plain".to_string())
+            .with_body(sdl.into_bytes()))
+    }
+}
+
+#[controller("/playground")]
+#[derive(Default)]
+struct PlaygroundController;
+
+impl PlaygroundController {
+    #[get("")]
+    async fn playground() -> Result<HttpResponse, Error> {
+        let html = armature_graphql::graphiql_html("/graphql");
+        Ok(HttpResponse::ok()
+            .with_header("Content-Type".to_string(), "text/html".to_string())
+            .with_body(html.into_bytes()))
+    }
+}
+
+// ========== Module ==========
+
+#[module(
+    providers: [BookService],
+    controllers: [GraphQLController, PlaygroundController]
+)]
+#[derive(Default)]
+struct AppModule;
+
 // ========== Application ==========
 
 #[tokio::main]
 async fn main() {
     println!("📚 Armature GraphQL API Example");
     println!("================================\n");
-
-    let app = create_graphql_app();
 
     println!("GraphQL endpoint: http://localhost:3007/graphql");
     println!("GraphQL playground: http://localhost:3007/playground");
@@ -179,99 +272,9 @@ async fn main() {
     println!("   query {{ authors {{ id name books {{ title }} }} }}");
     println!();
 
+    let app = Application::create::<AppModule>().await;
+
     if let Err(e) = app.listen(3007).await {
         eprintln!("Server error: {}", e);
     }
-}
-
-fn create_graphql_app() -> Application {
-    let container = Container::new();
-    let mut router = Router::new();
-
-    // Register services
-    let book_service = BookService::default();
-    container.register(book_service.clone());
-
-    // Create GraphQL schema
-    let query = QueryRoot {
-        book_service: book_service.clone(),
-    };
-    let mutation = MutationRoot {
-        book_service: book_service.clone(),
-    };
-
-    let schema = Schema::build(query, mutation, EmptySubscription).finish();
-
-    // GraphQL endpoint
-    let schema_clone = schema.clone();
-    router.add_route(Route {
-        method: HttpMethod::POST,
-        path: "/graphql".to_string(),
-        handler: Arc::new(move |req| {
-            let schema = schema_clone.clone();
-            Box::pin(async move {
-                // Parse GraphQL request
-                #[derive(Deserialize)]
-                struct GraphQLRequest {
-                    query: String,
-                    #[serde(default)]
-                    variables: Option<serde_json::Value>,
-                    #[serde(default)]
-                    operation_name: Option<String>,
-                }
-
-                let gql_req: GraphQLRequest = req.json()?;
-
-                // Build async-graphql request
-                let mut request = async_graphql::Request::new(gql_req.query);
-                if let Some(vars) = gql_req.variables {
-                    request = request.variables(async_graphql::Variables::from_json(vars));
-                }
-                if let Some(op_name) = gql_req.operation_name {
-                    request = request.operation_name(op_name);
-                }
-
-                // Execute query
-                let response = schema.execute(request).await;
-
-                // Convert to JSON response
-                let json = serde_json::to_value(&response)
-                    .map_err(|e| Error::Serialization(e.to_string()))?;
-
-                HttpResponse::ok().with_json(&json)
-            })
-        }),
-    });
-
-    // GraphQL Playground (GET request)
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/playground".to_string(),
-        handler: Arc::new(move |_req| {
-            Box::pin(async move {
-                let html = armature_graphql::graphiql_html("/graphql");
-                Ok(HttpResponse::ok()
-                    .with_header("Content-Type".to_string(), "text/html".to_string())
-                    .with_body(html.into_bytes()))
-            })
-        }),
-    });
-
-    // Schema introspection endpoint
-    let schema_clone = schema.clone();
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/graphql/schema".to_string(),
-        handler: Arc::new(move |_req| {
-            let schema = schema_clone.clone();
-            Box::pin(async move {
-                let sdl = schema.sdl();
-                Ok(HttpResponse::ok()
-                    .with_header("Content-Type".to_string(), "text/plain".to_string())
-                    .with_body(sdl.into_bytes()))
-            })
-        }),
-    });
-
-    Application::new(container, router)
 }

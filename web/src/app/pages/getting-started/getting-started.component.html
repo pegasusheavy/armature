@@ -4,38 +4,41 @@
     <div class="bg-gray-900 rounded-xl p-8 shadow-2xl overflow-x-auto">
       <pre class="text-sm text-gray-100"><code class="language-rust">use armature::prelude::*;
 
+// Injectable service
 #[injectable]
+#[derive(Default, Clone)]
 struct UserService;
 
 impl UserService &#123;
-    fn new() -> Self &#123; Self &#125;
     fn get_users(&self) -> Vec&lt;String&gt; &#123;
         vec!["Alice".to_string(), "Bob".to_string()]
     &#125;
 &#125;
 
+// Controller with routes
 #[controller("/api")]
-struct UserController &#123;
-    service: UserService,
-&#125;
+#[derive(Default, Clone)]
+struct UserController;
 
 impl UserController &#123;
-    fn new(service: UserService) -> Self &#123;
-        Self &#123; service &#125;
-    &#125;
-
     #[get("/users")]
-    fn list(&self, _req: HttpRequest) -> Result&lt;HttpResponse, Error&gt; &#123;
-        let users = self.service.get_users();
-        Ok(HttpResponse::ok().with_json(&users)?)
+    async fn list() -> Result&lt;Json&lt;Vec&lt;String&gt;&gt;, Error&gt; &#123;
+        Ok(Json(vec!["Alice".to_string(), "Bob".to_string()]))
     &#125;
 &#125;
 
+// Module wires everything together
+#[module(
+    providers: [UserService],
+    controllers: [UserController]
+)]
+#[derive(Default)]
+struct AppModule;
+
 #[tokio::main]
-async fn main() -> Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; &#123;
-    let mut app = Application::new();
-    app.listen("127.0.0.1:3000").await?;
-    Ok(())
+async fn main() &#123;
+    let app = Application::create::&lt;AppModule&gt;().await;
+    app.listen(3000).await.unwrap();
 &#125;</code></pre>
     </div>
   </div>
@@ -46,11 +49,65 @@ async fn main() -> Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; &#123;
     <h2 class="text-4xl font-bold text-center text-gray-900 mb-12">Installation</h2>
 
     <div class="space-y-8">
+      <!-- CLI Installation (Recommended) -->
+      <div class="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-xl border-2 border-primary-200">
+        <div class="flex items-center mb-4">
+          <span class="bg-primary-600 text-white text-xs font-bold px-2 py-1 rounded mr-3">RECOMMENDED</span>
+          <h3 class="text-2xl font-bold text-gray-900">
+            <fa-icon [icon]="['fas', 'terminal']" class="text-primary-600 mr-2" />
+            Using Armature CLI
+          </h3>
+        </div>
+        <p class="text-gray-600 mb-4">
+          The CLI provides code generation, project scaffolding, and a development server with hot reloading.
+        </p>
+        <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
+          <pre class="text-sm text-gray-100"><code><span class="text-gray-500"># Install the CLI</span>
+cargo install armature-cli
+
+<span class="text-gray-500"># Create a new project</span>
+armature new my-api
+
+<span class="text-gray-500"># Navigate and start development</span>
+cd my-api
+armature dev</code></pre>
+        </div>
+        <p class="mt-4 text-gray-600">
+          Your server is now running at
+          <code class="bg-gray-100 px-2 py-1 rounded">http://127.0.0.1:3000</code>
+          with automatic rebuilding on file changes.
+        </p>
+      </div>
+
+      <!-- Code Generation -->
       <div>
         <h3 class="text-2xl font-bold text-gray-900 mb-4">
-          <fa-icon [icon]="['fas', 'download']" class="text-primary-600 mr-2" />
-          Add to your Cargo.toml
+          <fa-icon [icon]="['fas', 'magic']" class="text-primary-600 mr-2" />
+          Generate Code
         </h3>
+        <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
+          <pre class="text-sm text-gray-100"><code><span class="text-gray-500"># Generate a controller</span>
+armature generate controller users
+
+<span class="text-gray-500"># Generate a service</span>
+armature generate service users
+
+<span class="text-gray-500"># Generate a complete resource (controller + service + module)</span>
+armature generate resource products --crud
+
+<span class="text-gray-500"># Generate middleware and guards</span>
+armature generate middleware auth
+armature generate guard admin</code></pre>
+        </div>
+      </div>
+
+      <!-- Manual Setup -->
+      <div class="border-t pt-8">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+          <fa-icon [icon]="['fas', 'download']" class="text-primary-600 mr-2" />
+          Manual Setup
+        </h3>
+        <p class="text-gray-600 mb-4">Or add Armature directly to an existing project:</p>
         <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
           <pre class="text-sm text-gray-100"><code>[dependencies]
 armature = "0.1"
@@ -64,7 +121,11 @@ tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
           Run your app
         </h3>
         <div class="bg-gray-900 rounded-lg p-6 overflow-x-auto">
-          <pre class="text-sm text-gray-100"><code>cargo run</code></pre>
+          <pre class="text-sm text-gray-100"><code><span class="text-gray-500"># With CLI (recommended)</span>
+armature dev
+
+<span class="text-gray-500"># Or with cargo</span>
+cargo run</code></pre>
         </div>
         <p class="mt-4 text-gray-600">
           Your server is now running at

@@ -2,15 +2,29 @@
 
 use crate::{AuthError, Result};
 use async_trait::async_trait;
-use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
+use oauth2::basic::{BasicClient, BasicTokenType};
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
-    RedirectUrl, Scope, StandardTokenResponse, TokenResponse, TokenUrl,
+    EndpointSet, RedirectUrl, Scope, StandardErrorResponse, StandardRevocableToken,
+    StandardTokenIntrospectionResponse, StandardTokenResponse, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use url::Url;
+
+/// Type alias for a fully configured OAuth2 client
+type ConfiguredClient = oauth2::Client<
+    StandardErrorResponse<oauth2::basic::BasicErrorResponseType>,
+    StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+    StandardTokenIntrospectionResponse<EmptyExtraTokenFields, BasicTokenType>,
+    StandardRevocableToken,
+    StandardErrorResponse<oauth2::RevocationErrorResponseType>,
+    EndpointSet,
+    oauth2::EndpointNotSet,
+    oauth2::EndpointNotSet,
+    oauth2::EndpointNotSet,
+    EndpointSet,
+>;
 
 /// OAuth2 provider trait
 #[async_trait]
@@ -123,26 +137,26 @@ impl OAuth2Config {
 /// Generic OAuth2 provider implementation
 pub struct GenericOAuth2Provider {
     name: String,
-    client: BasicClient,
+    client: ConfiguredClient,
     config: OAuth2Config,
 }
 
 impl GenericOAuth2Provider {
     pub fn new(name: String, config: OAuth2Config) -> Result<Self> {
-        let client = BasicClient::new(
-            ClientId::new(config.client_id.clone()),
-            Some(ClientSecret::new(config.client_secret.clone())),
-            AuthUrl::new(config.auth_url.clone())
-                .map_err(|e| AuthError::AuthenticationFailed(e.to_string()))?,
-            Some(
+        let client = BasicClient::new(ClientId::new(config.client_id.clone()))
+            .set_client_secret(ClientSecret::new(config.client_secret.clone()))
+            .set_auth_uri(
+                AuthUrl::new(config.auth_url.clone())
+                    .map_err(|e| AuthError::AuthenticationFailed(e.to_string()))?,
+            )
+            .set_token_uri(
                 TokenUrl::new(config.token_url.clone())
                     .map_err(|e| AuthError::AuthenticationFailed(e.to_string()))?,
-            ),
-        )
-        .set_redirect_uri(
-            RedirectUrl::new(config.redirect_url.clone())
-                .map_err(|e| AuthError::AuthenticationFailed(e.to_string()))?,
-        );
+            )
+            .set_redirect_uri(
+                RedirectUrl::new(config.redirect_url.clone())
+                    .map_err(|e| AuthError::AuthenticationFailed(e.to_string()))?,
+            );
 
         Ok(Self {
             name,
@@ -170,10 +184,11 @@ impl OAuth2Provider for GenericOAuth2Provider {
     }
 
     async fn exchange_code(&self, code: String) -> Result<OAuth2Token> {
+        let http_client = oauth2::reqwest::Client::new();
         let token = self
             .client
             .exchange_code(AuthorizationCode::new(code))
-            .request_async(async_http_client)
+            .request_async(&http_client)
             .await
             .map_err(|e| {
                 AuthError::AuthenticationFailed(format!("Token exchange failed: {}", e))
@@ -213,10 +228,11 @@ impl OAuth2Provider for GenericOAuth2Provider {
     }
 
     async fn refresh_token(&self, refresh_token: String) -> Result<OAuth2Token> {
+        let http_client = oauth2::reqwest::Client::new();
         let token = self
             .client
             .exchange_refresh_token(&oauth2::RefreshToken::new(refresh_token))
-            .request_async(async_http_client)
+            .request_async(&http_client)
             .await
             .map_err(|e| AuthError::AuthenticationFailed(format!("Token refresh failed: {}", e)))?;
 

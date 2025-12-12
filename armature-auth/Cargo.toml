@@ -9,22 +9,38 @@ armature-core = { path = "../armature-core" }
 armature-jwt = { path = "../armature-jwt" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 async-trait = "0.1"
-bcrypt = "0.15"
+bcrypt = "0.17"
 argon2 = { version = "0.5", features = ["std"] }
 rand = "0.9"
 base64 = "0.22"
-oauth2 = "4.4"
-reqwest = { version = "0.12", features = ["json"] }
+
+# OAuth2 support - using rustls for TLS (no openssl)
+oauth2 = "5.0"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 url = "2.5"
 tokio = { version = "1.35", features = ["full"] }
-samael = "0.0.19"
+
+# SAML support (optional - requires openssl/xmlsec for XML signature verification)
+# Enable with `saml` feature. Note: This requires system libraries (libxml2, xmlsec1)
+samael = { version = "0.0.19", optional = true }
+
+# Common utilities
 chrono = "0.4"
-flate2 = "1.0"
-quick-xml = { version = "0.38", features = ["serialize"] }
+flate2 = { version = "1.0.17", optional = true }  # Used by SAML
+quick-xml = { version = "0.38", features = ["serialize"], optional = true }  # Used by SAML
 uuid = { version = "1.7", features = ["v4"] }
+
+[features]
+default = []
+# SAML support - requires openssl and xmlsec1 system libraries
+# On Ubuntu/Debian: apt-get install libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+# On macOS: brew install libxmlsec1
+saml = ["dep:samael", "dep:flate2", "dep:quick-xml"]
 
 [dev-dependencies]
 tokio-test = "0.4"
+# Note: SAML tests require the `saml` feature to be enabled
+# Run with: cargo test --features saml
 

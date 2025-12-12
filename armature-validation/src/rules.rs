@@ -74,10 +74,10 @@ impl ValidationBuilder {
         let mut all_errors = Vec::new();
 
         for rule in &self.rules {
-            if let Some(value) = data.get(&rule.field) {
-                if let Err(mut errors) = rule.validate(value) {
-                    all_errors.append(&mut errors);
-                }
+            if let Some(value) = data.get(&rule.field)
+                && let Err(mut errors) = rule.validate(value)
+            {
+                all_errors.append(&mut errors);
             }
         }
 
@@ -185,8 +185,8 @@ mod tests {
     #[test]
     fn test_validation_rules() {
         let rules = ValidationRules::for_field("email")
-            .add(|value, field| NotEmpty::validate(value, field))
-            .add(|value, field| IsEmail::validate(value, field));
+            .add(NotEmpty::validate)
+            .add(IsEmail::validate);
 
         assert!(rules.validate("test@example.com").is_ok());
         assert!(rules.validate("invalid").is_err());
@@ -200,14 +200,8 @@ mod tests {
         data.insert("email".to_string(), "john@example.com".to_string());
 
         let builder = ValidationBuilder::new()
-            .field(
-                ValidationRules::for_field("name")
-                    .add(|value, field| NotEmpty::validate(value, field)),
-            )
-            .field(
-                ValidationRules::for_field("email")
-                    .add(|value, field| IsEmail::validate(value, field)),
-            );
+            .field(ValidationRules::for_field("name").add(NotEmpty::validate))
+            .field(ValidationRules::for_field("email").add(IsEmail::validate));
 
         assert!(builder.validate(&data).is_ok());
     }
