@@ -249,8 +249,5 @@ fn create_app_with_di() -> Application {
         }),
     });
 
-    Application {
-        container,
-        router: std::sync::Arc::new(router),
-    }
+    Application::new(container, router)
 }

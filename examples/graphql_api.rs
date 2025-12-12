@@ -273,8 +273,5 @@ fn create_graphql_app() -> Application {
         }),
     });
 
-    Application {
-        container,
-        router: Arc::new(router),
-    }
+    Application::new(container, router)
 }

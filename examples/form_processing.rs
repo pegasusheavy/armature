@@ -274,7 +274,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("     → Parses multipart/form-data");
     println!("     → Extracts file metadata and content\n");
 
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
     app.listen(3000).await?;
 
     Ok(())

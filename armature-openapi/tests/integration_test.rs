@@ -58,101 +58,69 @@ fn test_server_creation() {
     let server = Server {
         url: "https://api.example.com".to_string(),
         description: Some("Production".to_string()),
-        variables: None,
     };
 
     assert_eq!(server.url, "https://api.example.com");
 }
 
 #[test]
-fn test_path_item_creation() {
-    let path = PathItem {
-        get: Some(Operation::default()),
-        post: None,
-        put: None,
-        delete: None,
-        options: None,
-        head: None,
-        patch: None,
-        parameters: vec![],
-    };
-
-    assert!(path.get.is_some());
+fn test_path_item_default() {
+    let path = PathItem::default();
+    assert!(path.get.is_none());
     assert!(path.post.is_none());
 }
 
 #[test]
-fn test_operation_creation() {
-    let op = Operation {
-        tags: vec!["users".to_string()],
-        summary: Some("Get user".to_string()),
-        description: Some("Get user by ID".to_string()),
-        operation_id: Some("getUser".to_string()),
-        parameters: vec![],
-        request_body: None,
-        responses: std::collections::HashMap::new(),
-        security: vec![],
-    };
-
-    assert_eq!(op.tags.len(), 1);
-    assert_eq!(op.summary, Some("Get user".to_string()));
+fn test_operation_default() {
+    let op = Operation::default();
+    assert!(op.tags.is_empty());
+    assert!(op.summary.is_none());
 }
 
 #[test]
-fn test_schema_object_string() {
-    let schema = Schema::Object(SchemaObject {
+fn test_schema_creation() {
+    let schema = Schema {
         schema_type: Some("string".to_string()),
         format: None,
         description: Some("A string field".to_string()),
-        properties: std::collections::HashMap::new(),
+        properties: None,
         required: vec![],
         items: None,
-        enum_values: None,
-        example: None,
-    });
+        reference: None,
+    };
 
-    if let Schema::Object(obj) = schema {
-        assert_eq!(obj.schema_type, Some("string".to_string()));
-    }
+    assert_eq!(schema.schema_type, Some("string".to_string()));
 }
 
 #[test]
-fn test_schema_ref() {
-    let schema = Schema::Ref("#/components/schemas/User".to_string());
+fn test_swagger_config_creation() {
+    let spec = OpenApiBuilder::new("My API", "1.0.0").build();
+    let config = SwaggerConfig::new("/api-docs", spec);
 
-    if let Schema::Ref(ref_str) = schema {
-        assert_eq!(ref_str, "#/components/schemas/User");
-    }
-}
-
-#[test]
-fn test_swagger_config_default() {
-    let config = SwaggerConfig::default();
-
-    assert_eq!(config.url, "/api-docs");
-    assert_eq!(config.spec_url, "/api-docs/openapi.json");
+    assert_eq!(config.path, "/api-docs");
     assert_eq!(config.title, "API Documentation");
 }
 
 #[test]
-fn test_swagger_config_builder() {
-    let config = SwaggerConfig::new("/docs")
-        .spec_url("/docs/spec.json")
-        .title("My API Docs");
+fn test_swagger_config_with_title() {
+    let spec = OpenApiBuilder::new("My API", "1.0.0").build();
+    let config = SwaggerConfig::new("/docs", spec).with_title("My API Docs");
 
-    assert_eq!(config.url, "/docs");
-    assert_eq!(config.spec_url, "/docs/spec.json");
+    assert_eq!(config.path, "/docs");
     assert_eq!(config.title, "My API Docs");
 }
 
 #[test]
 fn test_swagger_ui_response() {
-    let config = SwaggerConfig::default();
-    let html = swagger_ui_response(&config);
+    let spec = OpenApiBuilder::new("My API", "1.0.0").build();
+    let config = SwaggerConfig::new("/api-docs", spec);
+    let result = swagger_ui_response(&config);
 
-    assert!(html.contains("<!DOCTYPE html>"));
-    assert!(html.contains("swagger-ui"));
-    assert!(html.contains(&config.spec_url));
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    let body = String::from_utf8_lossy(&response.body);
+    assert!(body.contains("<!DOCTYPE html>"));
+    assert!(body.contains("swagger-ui"));
 }
 
 #[test]

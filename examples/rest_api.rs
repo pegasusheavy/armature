@@ -105,10 +105,7 @@ async fn main() {
 
     let container = Container::new();
     let router = Router::new();
-    let app = Application {
-        container,
-        router: std::sync::Arc::new(router),
-    };
+    let app = Application::new(container, router);
 
     app.listen(3002).await.unwrap();
 }

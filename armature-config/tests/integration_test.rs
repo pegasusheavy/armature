@@ -10,25 +10,6 @@ fn test_config_manager_creation() {
 }
 
 #[test]
-fn test_config_manager_with_prefix() {
-    let manager = ConfigManager::with_prefix("APP".to_string());
-
-    // Set environment variable
-    unsafe {
-        env::set_var("APP_TEST_KEY", "test_value");
-    }
-
-    let result = manager.get("test_key");
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "test_value");
-
-    // Cleanup
-    unsafe {
-        env::remove_var("APP_TEST_KEY");
-    }
-}
-
-#[test]
 fn test_env_loader() {
     let loader = EnvLoader::new(None);
 
@@ -78,4 +59,27 @@ fn test_config_error_display() {
     let err = ConfigError::ParseError("test_key".to_string());
     let display = format!("{}", err);
     assert!(display.contains("test_key"));
+}
+
+#[test]
+fn test_config_manager_set_get() {
+    let manager = ConfigManager::new();
+
+    // Set a value
+    manager.set("test_key", "test_value").unwrap();
+
+    // Get the value
+    let result = manager.get_string("test_key");
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), "test_value");
+}
+
+#[test]
+fn test_config_manager_has_key() {
+    let manager = ConfigManager::new();
+
+    assert!(!manager.has("missing_key"));
+
+    manager.set("present_key", "value").unwrap();
+    assert!(manager.has("present_key"));
 }

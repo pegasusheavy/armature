@@ -126,8 +126,5 @@ fn setup_with_di() -> Application {
     });
     println!("  ✓ GET /books\n");
 
-    Application {
-        container,
-        router: std::sync::Arc::new(router),
-    }
+    Application::new(container, router)
 }

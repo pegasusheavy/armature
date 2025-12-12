@@ -250,8 +250,5 @@ fn create_simple_app() -> Application {
         }),
     });
 
-    Application {
-        container,
-        router: Arc::new(router),
-    }
+    Application::new(container, router)
 }

@@ -1,4 +1,4 @@
-use armature_core::{Error, HttpRequest, HttpResponse, Route, Router};
+use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Route, Router};
 use std::sync::Arc;
 
 #[tokio::test]

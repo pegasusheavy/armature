@@ -1,6 +1,7 @@
 //! Integration tests for armature-acme
 
 use armature_acme::*;
+use std::path::PathBuf;
 
 #[test]
 fn test_acme_config_lets_encrypt_production() {
@@ -14,7 +15,7 @@ fn test_acme_config_lets_encrypt_production() {
             .directory_url
             .contains("acme-v02.api.letsencrypt.org")
     );
-    assert_eq!(config.email_contacts.len(), 1);
+    assert_eq!(config.contact_email.len(), 1);
     assert_eq!(config.domains.len(), 1);
 }
 
@@ -39,11 +40,11 @@ fn test_acme_config_builder() {
         vec!["example.com".to_string()],
     )
     .with_challenge_type(ChallengeType::Dns01)
-    .with_cert_dir("/etc/certs")
+    .with_cert_dir(PathBuf::from("/etc/certs"))
     .with_renew_before_days(7);
 
     assert_eq!(config.challenge_type, ChallengeType::Dns01);
-    assert_eq!(config.cert_dir, "/etc/certs");
+    assert_eq!(config.cert_dir, PathBuf::from("/etc/certs"));
     assert_eq!(config.renew_before_days, 7);
 }
 
@@ -56,7 +57,7 @@ fn test_acme_challenge_types() {
 
 #[test]
 fn test_acme_error_display() {
-    let err = AcmeError::InvalidUrl("bad url".to_string());
+    let err = AcmeError::InvalidKey("bad url".to_string());
     let display = format!("{}", err);
     assert!(display.contains("bad url"));
 }
@@ -75,23 +76,22 @@ fn test_acme_config_zerossl() {
 }
 
 #[test]
-fn test_acme_config_buypass() {
-    let config = AcmeConfig::buypass(
+fn test_acme_config_with_eab() {
+    let config = AcmeConfig::lets_encrypt_production(
         vec!["admin@example.com".to_string()],
         vec!["example.com".to_string()],
-    );
+    )
+    .with_eab("kid123".to_string(), "hmac456".to_string());
 
-    assert!(config.directory_url.contains("buypass.com"));
+    assert_eq!(config.eab_kid, Some("kid123".to_string()));
+    assert_eq!(config.eab_hmac_key, Some("hmac456".to_string()));
 }
 
 #[test]
-fn test_acme_config_google_trust_services() {
-    let config = AcmeConfig::google_trust_services(
-        vec!["admin@example.com".to_string()],
-        vec!["example.com".to_string()],
-        "eab_kid".to_string(),
-        "eab_hmac_key".to_string(),
-    );
+fn test_acme_config_default() {
+    let config = AcmeConfig::default();
 
-    assert!(config.directory_url.contains("dv.acme-v02.api.pki.goog"));
+    // Default should use staging
+    assert!(config.directory_url.contains("staging"));
+    assert_eq!(config.challenge_type, ChallengeType::Http01);
 }

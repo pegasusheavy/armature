@@ -45,10 +45,7 @@ async fn main() {
     // For now, use simplified bootstrap
     let container = Container::new();
     let router = Router::new();
-    let app = Application {
-        container,
-        router: std::sync::Arc::new(router),
-    };
+    let app = Application::new(container, router);
 
     app.listen(3001).await.unwrap();
 }

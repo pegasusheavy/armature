@@ -13,6 +13,121 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 // =============================================================================
+// Template Constants
+// =============================================================================
+
+const LAYOUT_TEMPLATE: &str = r#"<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - Armature</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; background: #f4f4f4; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; }
+        header h1 { font-size: 1.5rem; }
+        nav { margin-top: 0.5rem; }
+        nav a { color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem; }
+        nav a:hover { text-decoration: underline; }
+        main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-user { background: #dbeafe; color: #2563eb; }
+        .badge-active { background: #d1fae5; color: #059669; }
+        .badge-inactive { background: #f3f4f6; color: #6b7280; }
+        a.btn { display: inline-block; padding: 0.5rem 1rem; background: #667eea; color: white; text-decoration: none; border-radius: 4px; }
+        a.btn:hover { background: #5a67d8; }
+        ul { margin: 1rem 0; padding-left: 1.5rem; }
+        li { margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🦾 Armature + Handlebars</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/users">Users</a>
+        </nav>
+    </header>
+    <main>
+        {{{body}}}
+    </main>
+</body>
+</html>"#;
+
+const HOME_TEMPLATE: &str = r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{title}}</h2>
+    <p>{{message}}</p>
+    <h3 style="margin-top: 1.5rem;">Key Points:</h3>
+    <ul>
+        {{#each features}}
+        <li>✅ {{this}}</li>
+        {{/each}}
+    </ul>
+    <p style="margin-top: 1.5rem;">
+        <a href="/users" class="btn">View Users →</a>
+    </p>
+</div>
+{{/inline}}
+{{/layout}}"#;
+
+const USERS_TEMPLATE: &str = r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{title}}</h2>
+    <p>Total: {{count}} users</p>
+</div>
+{{#each users}}
+<div class="card">
+    <h3>{{this.name}}</h3>
+    <p>📧 {{this.email}}</p>
+    <p>
+        <span class="badge badge-{{this.role}}">{{this.role}}</span>
+        {{#if this.active}}
+        <span class="badge badge-active">Active</span>
+        {{else}}
+        <span class="badge badge-inactive">Inactive</span>
+        {{/if}}
+    </p>
+    <p style="margin-top: 1rem;">
+        <a href="/users/{{this.id}}" class="btn">View Profile →</a>
+    </p>
+</div>
+{{/each}}
+{{/inline}}
+{{/layout}}"#;
+
+const USER_TEMPLATE: &str = r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{user.name}}</h2>
+    <table style="margin: 1rem 0; width: 100%;">
+        <tr><td><strong>ID:</strong></td><td>{{user.id}}</td></tr>
+        <tr><td><strong>Email:</strong></td><td>{{user.email}}</td></tr>
+        <tr><td><strong>Role:</strong></td><td><span class="badge badge-{{user.role}}">{{user.role}}</span></td></tr>
+        <tr>
+            <td><strong>Status:</strong></td>
+            <td>
+                {{#if user.active}}
+                <span class="badge badge-active">Active</span>
+                {{else}}
+                <span class="badge badge-inactive">Inactive</span>
+                {{/if}}
+            </td>
+        </tr>
+    </table>
+    <p style="margin-top: 1.5rem;">
+        <a href="/users">← Back to Users</a>
+    </p>
+</div>
+{{/inline}}
+{{/layout}}"#;
+
+// =============================================================================
 // Template Service - Injectable Handlebars wrapper
 // =============================================================================
 
@@ -29,14 +144,14 @@ impl TemplateService {
     fn new() -> Self {
         let mut hbs = Handlebars::new();
 
-        // Register templates (in production, you'd load these from files)
-        hbs.register_template_string("layout", include_str!("../templates/layout.hbs"))
+        // Register templates inline (in production, you'd load these from files)
+        hbs.register_template_string("layout", LAYOUT_TEMPLATE)
             .expect("Failed to register layout template");
-        hbs.register_template_string("home", include_str!("../templates/home.hbs"))
+        hbs.register_template_string("home", HOME_TEMPLATE)
             .expect("Failed to register home template");
-        hbs.register_template_string("users", include_str!("../templates/users.hbs"))
+        hbs.register_template_string("users", USERS_TEMPLATE)
             .expect("Failed to register users template");
-        hbs.register_template_string("user", include_str!("../templates/user.hbs"))
+        hbs.register_template_string("user", USER_TEMPLATE)
             .expect("Failed to register user template");
 
         Self { hbs: Arc::new(hbs) }
@@ -191,9 +306,6 @@ impl UserController {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create template directory and files
-    setup_templates().await?;
-
     println!("📝 Handlebars Templating Example");
     println!("================================\n");
 
@@ -248,10 +360,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     });
 
-    let app = Application {
-        router: Arc::new(router),
-        container,
-    };
+    let app = Application::new(container, router);
 
     println!("✅ Services injected:");
     println!("   • TemplateService (Handlebars wrapper)");
@@ -266,153 +375,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     app.listen(3000).await?;
-
-    Ok(())
-}
-
-/// Create template files for the example
-async fn setup_templates() -> std::io::Result<()> {
-    use tokio::fs;
-
-    fs::create_dir_all("templates").await?;
-
-    // Layout template
-    fs::write(
-        "templates/layout.hbs",
-        r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}} - Armature</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; background: #f4f4f4; }
-        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; }
-        header h1 { font-size: 1.5rem; }
-        nav { margin-top: 0.5rem; }
-        nav a { color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem; }
-        nav a:hover { text-decoration: underline; }
-        main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-        .badge-admin { background: #fee2e2; color: #dc2626; }
-        .badge-user { background: #dbeafe; color: #2563eb; }
-        .badge-active { background: #d1fae5; color: #059669; }
-        .badge-inactive { background: #f3f4f6; color: #6b7280; }
-        a.btn { display: inline-block; padding: 0.5rem 1rem; background: #667eea; color: white; text-decoration: none; border-radius: 4px; }
-        a.btn:hover { background: #5a67d8; }
-        ul { margin: 1rem 0; padding-left: 1.5rem; }
-        li { margin: 0.5rem 0; }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>🦾 Armature + Handlebars</h1>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/users">Users</a>
-        </nav>
-    </header>
-    <main>
-        {{{body}}}
-    </main>
-</body>
-</html>"#,
-    )
-    .await?;
-
-    // Home template
-    fs::write(
-        "templates/home.hbs",
-        r#"{{#> layout}}
-{{#*inline "body"}}
-<div class="card">
-    <h2>{{title}}</h2>
-    <p>{{message}}</p>
-
-    <h3 style="margin-top: 1.5rem;">Key Points:</h3>
-    <ul>
-        {{#each features}}
-        <li>✅ {{this}}</li>
-        {{/each}}
-    </ul>
-
-    <p style="margin-top: 1.5rem;">
-        <a href="/users" class="btn">View Users →</a>
-    </p>
-</div>
-{{/inline}}
-{{/layout}}"#,
-    )
-    .await?;
-
-    // Users list template
-    fs::write(
-        "templates/users.hbs",
-        r#"{{#> layout}}
-{{#*inline "body"}}
-<div class="card">
-    <h2>{{title}}</h2>
-    <p>Total: {{count}} users</p>
-</div>
-
-{{#each users}}
-<div class="card">
-    <h3>{{this.name}}</h3>
-    <p>📧 {{this.email}}</p>
-    <p>
-        <span class="badge badge-{{this.role}}">{{this.role}}</span>
-        {{#if this.active}}
-        <span class="badge badge-active">Active</span>
-        {{else}}
-        <span class="badge badge-inactive">Inactive</span>
-        {{/if}}
-    </p>
-    <p style="margin-top: 1rem;">
-        <a href="/users/{{this.id}}" class="btn">View Profile →</a>
-    </p>
-</div>
-{{/each}}
-{{/inline}}
-{{/layout}}"#,
-    )
-    .await?;
-
-    // User detail template
-    fs::write(
-        "templates/user.hbs",
-        r#"{{#> layout}}
-{{#*inline "body"}}
-<div class="card">
-    <h2>{{user.name}}</h2>
-
-    <table style="margin: 1rem 0; width: 100%;">
-        <tr><td><strong>ID:</strong></td><td>{{user.id}}</td></tr>
-        <tr><td><strong>Email:</strong></td><td>{{user.email}}</td></tr>
-        <tr><td><strong>Role:</strong></td><td><span class="badge badge-{{user.role}}">{{user.role}}</span></td></tr>
-        <tr>
-            <td><strong>Status:</strong></td>
-            <td>
-                {{#if user.active}}
-                <span class="badge badge-active">Active</span>
-                {{else}}
-                <span class="badge badge-inactive">Inactive</span>
-                {{/if}}
-            </td>
-        </tr>
-    </table>
-
-    <p style="margin-top: 1.5rem;">
-        <a href="/users">← Back to Users</a>
-    </p>
-</div>
-{{/inline}}
-{{/layout}}"#,
-    )
-    .await?;
-
-    println!("✅ Templates created in ./templates/");
 
     Ok(())
 }

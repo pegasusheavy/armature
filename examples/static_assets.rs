@@ -327,10 +327,7 @@ curl -H "Accept-Encoding: gzip" http://localhost:3000/static/script.js --output 
     println!("  • http://localhost:3000/custom/       → Custom caching");
     println!("  • http://localhost:3000/api/data      → API endpoint\n");
 
-    let app = Application {
-        router: Arc::new(router),
-        container,
-    };
+    let app = Application::new(container, router);
 
     app.listen(3000).await?;
 

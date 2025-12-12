@@ -106,9 +106,9 @@ impl ValidationBuilder {
     /// # use std::collections::HashMap;
     /// # async fn example() -> Result<(), Vec<ValidationError>> {
     /// let validator = ValidationBuilder::new()
-    ///     .field(ValidationRules::for_field("email").add(validators::email))
-    ///     .field(ValidationRules::for_field("username").add(validators::required))
-    ///     .field(ValidationRules::for_field("age").add(validators::required));
+    ///     .field(ValidationRules::for_field("email").add(IsEmail::validate))
+    ///     .field(ValidationRules::for_field("username").add(NotEmpty::validate))
+    ///     .field(ValidationRules::for_field("age").add(NotEmpty::validate));
     ///
     /// let mut data = HashMap::new();
     /// data.insert("email".to_string(), "user@example.com".to_string());

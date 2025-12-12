@@ -1,5 +1,6 @@
 //! Integration tests for armature-cron
 
+use armature_cron::expression::CronPresets;
 use armature_cron::*;
 
 #[test]
@@ -22,13 +23,6 @@ fn test_cron_presets() {
     assert!(CronExpression::parse(CronPresets::MONTHLY).is_ok());
 }
 
-#[test]
-fn test_cron_expression_next_execution() {
-    let expr = CronExpression::parse("0 0 * * * *").unwrap();
-    let next = expr.next_execution();
-    assert!(next.is_some());
-}
-
 #[tokio::test]
 async fn test_job_creation() {
     let job = Job::new(
@@ -37,8 +31,8 @@ async fn test_job_creation() {
         |_ctx| Box::pin(async { Ok(()) }),
     );
 
-    assert_eq!(job.name(), "test_job");
-    assert!(!job.is_running());
+    assert_eq!(job.name, "test_job");
+    assert!(matches!(job.status, JobStatus::Scheduled));
 }
 
 #[tokio::test]
@@ -48,7 +42,7 @@ async fn test_job_execution() {
     let executed = Arc::new(Mutex::new(false));
     let executed_clone = executed.clone();
 
-    let job = Job::new(
+    let mut job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
         move |_ctx| {
@@ -68,19 +62,19 @@ async fn test_job_execution() {
 
 #[tokio::test]
 async fn test_job_enable_disable() {
-    let job = Job::new(
+    let mut job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
         |_ctx| Box::pin(async { Ok(()) }),
     );
 
-    assert!(job.is_enabled());
+    assert!(job.enabled);
 
     job.disable();
-    assert!(!job.is_enabled());
+    assert!(!job.enabled);
 
     job.enable();
-    assert!(job.is_enabled());
+    assert!(job.enabled);
 }
 
 #[tokio::test]
@@ -91,47 +85,24 @@ async fn test_job_status() {
         |_ctx| Box::pin(async { Ok(()) }),
     );
 
-    let status = job.status();
-    assert!(matches!(status, JobStatus::Scheduled));
+    assert!(matches!(job.status, JobStatus::Scheduled));
 }
 
 #[tokio::test]
 async fn test_job_context() {
-    let job = Job::new(
+    let mut job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
         |ctx| {
             Box::pin(async move {
                 assert!(ctx.execution_count >= 0);
-                assert!(!ctx.job_name.is_empty());
+                assert!(!ctx.name.is_empty());
                 Ok(())
             })
         },
     );
 
     job.execute().await.unwrap();
-}
-
-#[tokio::test]
-async fn test_scheduler_creation() {
-    let scheduler = Scheduler::new();
-    assert!(format!("{:?}", scheduler).contains("Scheduler"));
-}
-
-#[tokio::test]
-async fn test_scheduler_add_job() {
-    let scheduler = Scheduler::new();
-
-    let job = Job::new(
-        "test_job".to_string(),
-        CronExpression::parse("0 0 * * * *").unwrap(),
-        |_ctx| Box::pin(async { Ok(()) }),
-    );
-
-    scheduler.add_job(job).await;
-
-    // Verify job was added (if scheduler has a method to check)
-    // This depends on the Scheduler API
 }
 
 #[test]

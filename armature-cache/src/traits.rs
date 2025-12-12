@@ -119,8 +119,9 @@ pub trait CacheStore: Send + Sync {
     /// # use armature_cache::*;
     /// # async fn example(cache: &impl CacheStore) -> CacheResult<()> {
     /// // Fetch 100 user profiles in parallel
-    /// let keys: Vec<&str> = (1..=100).map(|i| format!("user:{}", i)).collect();
-    /// let profiles = cache.get_many(&keys).await?;
+    /// let keys: Vec<String> = (1..=100).map(|i| format!("user:{}", i)).collect();
+    /// let key_refs: Vec<&str> = keys.iter().map(|s| s.as_str()).collect();
+    /// let profiles = cache.get_many(&key_refs).await?;
     ///
     /// // Sequential: ~1000ms (10ms * 100)
     /// // Parallel:   ~15ms (max of all parallel requests)

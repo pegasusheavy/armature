@@ -311,8 +311,5 @@ fn create_app_with_config(config_service: ConfigService) -> Application {
         }),
     });
 
-    Application {
-        container,
-        router: std::sync::Arc::new(router),
-    }
+    Application::new(container, router)
 }
