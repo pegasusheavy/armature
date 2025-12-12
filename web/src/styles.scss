@@ -1,10 +1,6 @@
 /* Tailwind CSS 4 */
 @use "tailwindcss" as tw;
 
-/* Content sources for JIT */
-@source "./app/**/*.html";
-@source "./app/**/*.ts";
-
 /* Custom theme configuration */
 @theme {
   /* Custom colors */
