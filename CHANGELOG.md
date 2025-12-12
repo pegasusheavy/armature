@@ -57,24 +57,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTPS/TLS support
 - Static asset serving with compression
 - Comprehensive debug logging throughout the framework
-- 30+ working examples
+- 30+ working examples refactored to use module/controller pattern
+- Angular 21 documentation website with:
+  - Tailwind CSS 4 styling
+  - SPA routing with 404.html fallback for GitHub Pages
+  - Vitest for unit testing
+  - API documentation integration at `/api/`
 
 #### Documentation
 - `docs/RATE_LIMITING_GUIDE.md` - Rate limiting usage and best practices
 - `docs/PROJECT_TEMPLATES.md` - Template usage and customization guide
 - `docs/DEBUG_LOGGING_GUIDE.md` - Debug logging configuration
 - `docs/LOGGING_GUIDE.md` - Logging system documentation
+- GitHub Pages deployment with Angular website at `https://pegasusheavy.github.io/armature/`
+- `examples/handlebars_templates.rs` - Demonstrates using Handlebars with DI container
 
 ### Changed
 - GitHub Actions CI/CD workflows
-- GitHub Pages deployment for documentation website
+- GitHub Pages deployment for documentation website with Angular SPA support
 - GitHub Security Advisories for vulnerability reporting
+- **All examples now use module/controller pattern** instead of manual route registration
+- All middleware implementations now implement `armature_core::Middleware` trait
+- `RateLimitMiddleware` now implements `armature_core::Middleware` for `MiddlewareChain` integration
+- `SecurityMiddleware` now implements `armature_core::Middleware` for `MiddlewareChain` integration
+- Updated `Application::create::<Module>()` as the standard app bootstrapping pattern
 
 ### Deprecated
 - N/A
 
 ### Removed
-- N/A
+- **SSR Modules** - Removed `armature-angular`, `armature-react`, `armature-vue`, `armature-svelte` crates
+- **Security Modules** - Removed `armature-csrf` and `armature-xss` crates (use `armature-security` instead)
+- **Handlebars Plugin** - Removed `armature-handlebars` crate (use `handlebars` crate directly with DI container - see `examples/handlebars_templates.rs`)
 
 ### Fixed
 - Fixed `CertificateParams::new` type mismatch in TLS module
