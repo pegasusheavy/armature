@@ -104,7 +104,6 @@ impl Default for GraphQLService {
 }
 
 impl GraphQLService {
-
     async fn execute_query(&self, query: &str) -> String {
         let request = async_graphql::Request::new(query);
         let response = self.schema.execute(request).await;
@@ -180,11 +179,7 @@ impl GraphQLController {
             return Err(Error::NotFound("Schema docs disabled".to_string()));
         }
 
-        let html = generate_schema_docs_html(
-            &service.schema,
-            &service.config.endpoint,
-            "Blog API",
-        );
+        let html = generate_schema_docs_html(&service.schema, &service.config.endpoint, "Blog API");
 
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/html".to_string())

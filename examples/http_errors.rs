@@ -57,15 +57,51 @@ impl ItemService {
 
     fn list_statuses(&self) -> Vec<StatusInfo> {
         vec![
-            StatusInfo { code: 200, name: "OK".to_string(), category: "Success".to_string() },
-            StatusInfo { code: 201, name: "Created".to_string(), category: "Success".to_string() },
-            StatusInfo { code: 400, name: "Bad Request".to_string(), category: "Client Error".to_string() },
-            StatusInfo { code: 401, name: "Unauthorized".to_string(), category: "Client Error".to_string() },
-            StatusInfo { code: 403, name: "Forbidden".to_string(), category: "Client Error".to_string() },
-            StatusInfo { code: 404, name: "Not Found".to_string(), category: "Client Error".to_string() },
-            StatusInfo { code: 429, name: "Too Many Requests".to_string(), category: "Client Error".to_string() },
-            StatusInfo { code: 500, name: "Internal Server Error".to_string(), category: "Server Error".to_string() },
-            StatusInfo { code: 503, name: "Service Unavailable".to_string(), category: "Server Error".to_string() },
+            StatusInfo {
+                code: 200,
+                name: "OK".to_string(),
+                category: "Success".to_string(),
+            },
+            StatusInfo {
+                code: 201,
+                name: "Created".to_string(),
+                category: "Success".to_string(),
+            },
+            StatusInfo {
+                code: 400,
+                name: "Bad Request".to_string(),
+                category: "Client Error".to_string(),
+            },
+            StatusInfo {
+                code: 401,
+                name: "Unauthorized".to_string(),
+                category: "Client Error".to_string(),
+            },
+            StatusInfo {
+                code: 403,
+                name: "Forbidden".to_string(),
+                category: "Client Error".to_string(),
+            },
+            StatusInfo {
+                code: 404,
+                name: "Not Found".to_string(),
+                category: "Client Error".to_string(),
+            },
+            StatusInfo {
+                code: 429,
+                name: "Too Many Requests".to_string(),
+                category: "Client Error".to_string(),
+            },
+            StatusInfo {
+                code: 500,
+                name: "Internal Server Error".to_string(),
+                category: "Server Error".to_string(),
+            },
+            StatusInfo {
+                code: 503,
+                name: "Service Unavailable".to_string(),
+                category: "Server Error".to_string(),
+            },
         ]
     }
 }

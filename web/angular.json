@@ -49,6 +49,22 @@
               ],
               "outputHashing": "all"
             },
+            "gh-pages": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "baseHref": "/armature/"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,

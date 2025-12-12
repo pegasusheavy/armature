@@ -191,8 +191,8 @@ impl GraphQLController {
         let response = schema.execute(request).await;
 
         // Convert to JSON response
-        let json = serde_json::to_value(&response)
-            .map_err(|e| Error::Serialization(e.to_string()))?;
+        let json =
+            serde_json::to_value(&response).map_err(|e| Error::Serialization(e.to_string()))?;
 
         HttpResponse::ok().with_json(&json)
     }
@@ -200,7 +200,9 @@ impl GraphQLController {
     #[get("/schema")]
     async fn get_schema() -> Result<HttpResponse, Error> {
         let book_service = BookService::default();
-        let query = QueryRoot { book_service: book_service.clone() };
+        let query = QueryRoot {
+            book_service: book_service.clone(),
+        };
         let mutation = MutationRoot { book_service };
         let schema = Schema::build(query, mutation, EmptySubscription).finish();
         let sdl = schema.sdl();

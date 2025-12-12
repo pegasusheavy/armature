@@ -340,14 +340,13 @@ impl armature_core::Middleware for SecurityMiddleware {
         next: Box<
             dyn FnOnce(
                     armature_core::HttpRequest,
-                )
-                    -> std::pin::Pin<
-                        Box<
-                            dyn std::future::Future<
-                                    Output = Result<armature_core::HttpResponse, armature_core::Error>,
-                                > + Send,
-                        >,
-                    > + Send,
+                ) -> std::pin::Pin<
+                    Box<
+                        dyn std::future::Future<
+                                Output = Result<armature_core::HttpResponse, armature_core::Error>,
+                            > + Send,
+                    >,
+                > + Send,
         >,
     ) -> Result<armature_core::HttpResponse, armature_core::Error> {
         // Call the next handler first

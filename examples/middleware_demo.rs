@@ -46,7 +46,9 @@ impl Middleware for ApiKeyMiddleware {
                 return next(req).await;
             }
         }
-        Err(Error::Unauthorized("Invalid or missing API key".to_string()))
+        Err(Error::Unauthorized(
+            "Invalid or missing API key".to_string(),
+        ))
     }
 }
 
@@ -57,7 +59,9 @@ struct RateLimitMiddleware {
 
 impl RateLimitMiddleware {
     fn new(limit: u32) -> Self {
-        Self { requests_per_minute: limit }
+        Self {
+            requests_per_minute: limit,
+        }
     }
 }
 
@@ -81,7 +85,10 @@ impl Middleware for RateLimitMiddleware {
             .map(|s| s.as_str())
             .unwrap_or("unknown");
 
-        println!("Rate limit check for IP: {} (limit: {}/min)", client_ip, self.requests_per_minute);
+        println!(
+            "Rate limit check for IP: {} (limit: {}/min)",
+            client_ip, self.requests_per_minute
+        );
         next(req).await
     }
 }

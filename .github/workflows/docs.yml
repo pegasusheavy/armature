@@ -4,6 +4,8 @@ name: Documentation
 
 on:
   push:
+    branches: [main, develop]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -55,7 +57,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -79,9 +81,13 @@ jobs:
         working-directory: web
         run: pnpm install
 
-      - name: Build Angular app
+      - name: Build Angular app for GitHub Pages
         working-directory: web
-        run: pnpm run build
+        run: pnpm run build:gh-pages
+
+      - name: Create 404.html for SPA routing
+        working-directory: web/dist/web/browser
+        run: cp index.html 404.html
 
       - name: Upload website artifact
         uses: actions/upload-artifact@v5
@@ -97,6 +103,8 @@ jobs:
     name: Deploy to GitHub Pages
     needs: [build-rust-docs, build-website]
     runs-on: ubuntu-latest
+    # Only deploy on push to main or develop, not on PRs
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -127,4 +135,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

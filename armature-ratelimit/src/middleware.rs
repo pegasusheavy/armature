@@ -330,35 +330,31 @@ impl armature_core::Middleware for RateLimitMiddleware {
         next: Box<
             dyn FnOnce(
                     armature_core::HttpRequest,
-                )
-                    -> std::pin::Pin<
-                        Box<
-                            dyn std::future::Future<
-                                    Output = Result<armature_core::HttpResponse, armature_core::Error>,
-                                > + Send,
-                        >,
-                    > + Send,
+                ) -> std::pin::Pin<
+                    Box<
+                        dyn std::future::Future<
+                                Output = Result<armature_core::HttpResponse, armature_core::Error>,
+                            > + Send,
+                    >,
+                > + Send,
         >,
     ) -> Result<armature_core::HttpResponse, armature_core::Error> {
         // Extract request info
-        let ip = req.headers.get("x-forwarded-for")
+        let ip = req
+            .headers
+            .get("x-forwarded-for")
             .or_else(|| req.headers.get("x-real-ip"))
             .and_then(|s| s.parse().ok());
 
         let user_id = req.headers.get("x-user-id").map(|s| s.as_str());
 
-        let headers: Vec<(String, String)> = req.headers
+        let headers: Vec<(String, String)> = req
+            .headers
             .iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
 
-        let info = Self::extract_request_info(
-            ip,
-            &req.path,
-            &req.method,
-            user_id,
-            &headers,
-        );
+        let info = Self::extract_request_info(ip, &req.path, &req.method, user_id, &headers);
 
         // Check rate limit
         match self.check(&info).await {
@@ -368,14 +364,24 @@ impl armature_core::Middleware for RateLimitMiddleware {
 
                 // Add rate limit headers if present
                 if let Some(h) = headers {
-                    response.headers.insert("X-RateLimit-Limit".to_string(), h.limit.to_string());
-                    response.headers.insert("X-RateLimit-Remaining".to_string(), h.remaining.to_string());
-                    response.headers.insert("X-RateLimit-Reset".to_string(), h.reset.to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Limit".to_string(), h.limit.to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Remaining".to_string(), h.remaining.to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Reset".to_string(), h.reset.to_string());
                 }
 
                 Ok(response)
             }
-            RateLimitCheckResponse::Limited { headers, message, retry_after } => {
+            RateLimitCheckResponse::Limited {
+                headers,
+                message,
+                retry_after,
+            } => {
                 // Request is rate limited
                 let mut response = armature_core::HttpResponse {
                     status: 429,
@@ -383,19 +389,31 @@ impl armature_core::Middleware for RateLimitMiddleware {
                     body: serde_json::json!({
                         "error": "Too Many Requests",
                         "message": message
-                    }).to_string().into_bytes(),
+                    })
+                    .to_string()
+                    .into_bytes(),
                 };
 
-                response.headers.insert("Content-Type".to_string(), "application/json".to_string());
+                response
+                    .headers
+                    .insert("Content-Type".to_string(), "application/json".to_string());
 
                 if let Some(retry) = retry_after {
-                    response.headers.insert("Retry-After".to_string(), retry.to_string());
+                    response
+                        .headers
+                        .insert("Retry-After".to_string(), retry.to_string());
                 }
 
                 if let Some(h) = headers {
-                    response.headers.insert("X-RateLimit-Limit".to_string(), h.limit.to_string());
-                    response.headers.insert("X-RateLimit-Remaining".to_string(), "0".to_string());
-                    response.headers.insert("X-RateLimit-Reset".to_string(), h.reset.to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Limit".to_string(), h.limit.to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Remaining".to_string(), "0".to_string());
+                    response
+                        .headers
+                        .insert("X-RateLimit-Reset".to_string(), h.reset.to_string());
                 }
 
                 Ok(response)
