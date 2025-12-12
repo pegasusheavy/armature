@@ -18,13 +18,15 @@ futures = "0.3"
 # Redis support (optional)
 redis = { version = "1.0", features = ["tokio-comp", "connection-manager"], optional = true }
 
-# Memcached support (optional)
-memcache = { version = "0.17", optional = true }
+# Memcached support (optional) - TLS disabled to avoid openssl dependency
+# For TLS support, users can enable "memcached-tls" feature
+memcache = { version = "0.17", optional = true, default-features = false }
 
 [features]
 default = ["redis", "memcached"]
 redis = ["dep:redis"]
 memcached = ["dep:memcache"]
+memcached-tls = ["memcache/tls"]  # Requires openssl
 
 [dev-dependencies]
 tokio = { version = "1.35", features = ["full", "test-util"] }

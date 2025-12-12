@@ -105,10 +105,17 @@ full = [
     "acme",
     "ratelimit",
 ]
+# Full feature set including SAML (requires openssl/xmlsec1)
+full-with-saml = ["full", "saml"]
+
 graphql = ["armature-graphql"]
 config = ["armature-config"]
 jwt = ["armature-jwt"]
 auth = ["armature-auth", "armature-jwt"]
+# SAML authentication - requires openssl and xmlsec1 system libraries
+# Ubuntu/Debian: apt-get install libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+# macOS: brew install libxmlsec1
+saml = ["armature-auth/saml"]
 testing = ["armature-testing"]
 validation = ["armature-validation"]
 openapi = ["armature-openapi"]
@@ -134,10 +141,10 @@ armature-ratelimit = { path = "armature-ratelimit" }
 jsonwebtoken = "9.2"
 handlebars = "5.1"
 
-# Database ORMs for examples
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
+# Database ORMs for examples - using rustls instead of native-tls to avoid openssl
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
 diesel = { version = "2.1", features = ["postgres", "r2d2", "chrono"] }
-sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 chrono = "0.4"
 uuid = { version = "1.6", features = ["v4"] }
 
@@ -203,7 +210,7 @@ required-features = ["auth"]
 [[example]]
 name = "saml_simple"
 path = "examples/saml_simple.rs"
-required-features = ["auth"]
+required-features = ["auth", "saml"]
 
 [[example]]
 name = "guards_interceptors"

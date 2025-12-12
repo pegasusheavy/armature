@@ -7,10 +7,22 @@
 //!
 //! - 🔐 **JWT Authentication** - Token-based auth with `armature-jwt`
 //! - 🌐 **OAuth2** - Google, Auth0, Microsoft, AWS Cognito, Okta
-//! - 🔑 **SAML** - Enterprise SAML 2.0 authentication
+//! - 🔑 **SAML** - Enterprise SAML 2.0 authentication (requires `saml` feature)
 //! - 🔒 **Password Hashing** - Secure bcrypt-based hashing
 //! - 🛡️ **Guards** - Route protection with auth and role guards
 //! - 👤 **User Context** - Request-scoped user information
+//!
+//! ## Cargo Features
+//!
+//! - `default` - Core authentication (JWT, OAuth2, password hashing)
+//! - `saml` - SAML 2.0 support (requires openssl/xmlsec1 system libraries)
+//!
+//! ### SAML System Requirements
+//!
+//! The `saml` feature requires system libraries for XML signature verification:
+//! - **Ubuntu/Debian**: `apt-get install libxml2-dev libxmlsec1-dev libxmlsec1-openssl`
+//! - **macOS**: `brew install libxmlsec1`
+//! - **Windows**: Not recommended (complex setup)
 //!
 //! ## Quick Start - Password Authentication
 //!
@@ -136,6 +148,7 @@ pub mod guard;
 pub mod oauth2;
 pub mod password;
 pub mod providers;
+#[cfg(feature = "saml")]
 pub mod saml;
 pub mod strategy;
 pub mod user;
@@ -144,6 +157,7 @@ pub use error::{AuthError, Result};
 pub use guard::{AuthGuard, Guard, RoleGuard};
 pub use oauth2::{OAuth2Provider, OAuth2Token, OAuth2UserInfo};
 pub use password::{PasswordHasher, PasswordVerifier};
+#[cfg(feature = "saml")]
 pub use saml::{
     ContactInfo, IdpMetadata, SamlAssertion, SamlAuthRequest, SamlConfig, SamlProvider,
     SamlServiceProvider,
