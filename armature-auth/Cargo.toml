@@ -13,7 +13,7 @@ thiserror = "1.0"
 async-trait = "0.1"
 bcrypt = "0.15"
 argon2 = { version = "0.5", features = ["std"] }
-rand = "0.8"
+rand = "0.9"
 base64 = "0.22"
 oauth2 = "4.4"
 reqwest = { version = "0.12", features = ["json"] }
@@ -22,7 +22,7 @@ tokio = { version = "1.35", features = ["full"] }
 samael = "0.0.15"
 chrono = "0.4"
 flate2 = "1.0"
-quick-xml = { version = "0.31", features = ["serialize"] }
+quick-xml = { version = "0.38", features = ["serialize"] }
 uuid = { version = "1.7", features = ["v4"] }
 
 [dev-dependencies]

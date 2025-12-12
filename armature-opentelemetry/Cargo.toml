@@ -8,8 +8,8 @@ armature-core = { path = "../armature-core" }
 
 # OpenTelemetry core
 opentelemetry = "0.22"
-opentelemetry_sdk = { version = "0.22", features = ["rt-tokio"] }
-opentelemetry-semantic-conventions = "0.14"
+opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"] }
+opentelemetry-semantic-conventions = "0.31"
 
 # Tracing
 opentelemetry-otlp = { version = "0.15", features = ["tonic", "metrics", "logs"], optional = true }
