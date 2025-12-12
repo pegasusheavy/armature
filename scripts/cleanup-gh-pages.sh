@@ -39,7 +39,7 @@ REMOVED_COUNT=0
 cleanup() {
     local pattern="$1"
     local description="$2"
-    
+
     while IFS= read -r -d '' file; do
         if [ -e "$file" ]; then
             rm -rf "$file"
@@ -53,7 +53,7 @@ cleanup() {
 cleanup_ext() {
     local ext="$1"
     local description="$2"
-    
+
     while IFS= read -r -d '' file; do
         if [ -e "$file" ]; then
             rm -rf "$file"
@@ -164,7 +164,7 @@ echo ""
 if [ "${VERBOSE:-}" = "1" ]; then
     echo -e "${BLUE}Remaining files:${NC}"
     find "$DEPLOY_DIR" -type f | head -50
-    
+
     TOTAL_FILES=$(find "$DEPLOY_DIR" -type f | wc -l)
     if [ "$TOTAL_FILES" -gt 50 ]; then
         echo "  ... and $((TOTAL_FILES - 50)) more files"

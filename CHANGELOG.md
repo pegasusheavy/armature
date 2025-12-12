@@ -30,6 +30,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rate limiting example (`examples/rate_limiting.rs`)
 - Comprehensive documentation (`docs/RATE_LIMITING_GUIDE.md`)
 
+#### Armature CLI (`armature-cli`)
+- New `armature-cli` crate for code generation and development tools
+- **Commands**:
+  - `armature new <name>` - Create new projects from templates (minimal, full, microservice)
+  - `armature generate controller <name>` - Generate controllers with optional CRUD
+  - `armature generate service <name>` - Generate injectable services
+  - `armature generate module <name>` - Generate modules with controllers and providers
+  - `armature generate middleware <name>` - Generate middleware
+  - `armature generate guard <name>` - Generate route guards
+  - `armature generate resource <name>` - Generate complete resource (controller + service + module)
+  - `armature dev` - Development server with file watching and hot reloading
+  - `armature build` - Production build with size reporting
+  - `armature info` - Display project information
+- **Features**:
+  - Template-based code generation using Handlebars
+  - Automatic `mod.rs` updates when generating code
+  - Test file generation (optional)
+  - Progress indicators and colored output
+  - Uses `cargo-watch` if installed for better performance
+
 #### Project Templates
 - New `templates/` directory with starter templates:
   - **api-minimal** - Single-file REST API for learning and prototyping

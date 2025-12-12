@@ -137,5 +137,68 @@
         34 detailed guides, 30+ working examples, exceptional doc-test coverage, and CI/CD.
       </p>
     </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <fa-icon [icon]="['fas', 'terminal']" size="2x" />
+      </div>
+      <h3 class="feature-title">Powerful CLI</h3>
+      <p class="feature-description">
+        Code generation for controllers, services, modules, and more. Development server with hot reloading.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <fa-icon [icon]="['fas', 'cubes']" size="2x" />
+      </div>
+      <h3 class="feature-title">Project Templates</h3>
+      <p class="feature-description">
+        Start with minimal, full-featured, or microservice templates. Ready for production in minutes.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CLI Highlight Section -->
+<section class="cli-section">
+  <div class="cli-content">
+    <h2 class="cli-title">
+      <fa-icon [icon]="['fas', 'terminal']" class="mr-3" />
+      Armature CLI
+    </h2>
+    <p class="cli-subtitle">
+      Supercharge your development with code generation and hot reloading
+    </p>
+    <div class="cli-demo">
+      <pre class="cli-code"><code><span class="text-green-400">$</span> cargo install armature-cli
+<span class="text-green-400">$</span> armature new my-api
+<span class="text-gray-500">  ✓ Creating project directory...</span>
+<span class="text-gray-500">  ✓ Generating project files...</span>
+<span class="text-gray-500">  ✓ Initializing git repository...</span>
+<span class="text-green-400">✓ Project created successfully!</span>
+
+<span class="text-green-400">$</span> cd my-api && armature dev
+<span class="text-cyan-400">🚀 Server running on http://127.0.0.1:3000</span>
+<span class="text-gray-500">  → Watching for changes in src/</span></code></pre>
+    </div>
+    <div class="cli-commands">
+      <div class="cli-command">
+        <code>armature new</code>
+        <span>Create projects</span>
+      </div>
+      <div class="cli-command">
+        <code>armature generate</code>
+        <span>Generate code</span>
+      </div>
+      <div class="cli-command">
+        <code>armature dev</code>
+        <span>Hot reloading</span>
+      </div>
+      <div class="cli-command">
+        <code>armature build</code>
+        <span>Production build</span>
+      </div>
+    </div>
   </div>
 </section>
