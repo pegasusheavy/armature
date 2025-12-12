@@ -73,7 +73,14 @@ jobs:
           sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install libxmlsec1 pkg-config
+        run: brew install libxmlsec1 pkg-config openssl@3
+      - name: Install system dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install openssl --no-progress
+          echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $env:GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=C:\Program Files\OpenSSL-Win64\lib\VC\x64\MT" >> $env:GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=C:\Program Files\OpenSSL-Win64\include" >> $env:GITHUB_ENV
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
