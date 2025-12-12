@@ -121,7 +121,7 @@ ratelimit = ["armature-ratelimit"]
 
 [dev-dependencies]
 tokio-test = "0.4"
-criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 regex = "1.10"
 cargo-husky = { version = "1.5", default-features = false, features = ["user-hooks"] }
 armature-validation = { path = "armature-validation" }
