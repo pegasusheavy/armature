@@ -22,7 +22,7 @@ tokio = { version = "1.35", features = ["full"] }
 samael = "0.0.15"
 chrono = "0.4"
 flate2 = "1.0"
-quick-xml = { version = "0.31", features = ["serialize"] }
+quick-xml = { version = "0.38", features = ["serialize"] }
 uuid = { version = "1.7", features = ["v4"] }
 
 [dev-dependencies]
