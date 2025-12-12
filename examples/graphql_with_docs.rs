@@ -1,3 +1,10 @@
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 /// Example demonstrating GraphQL with documentation and configurable playgrounds
 use armature::prelude::*;
 use armature_graphql::{

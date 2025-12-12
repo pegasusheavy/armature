@@ -1,3 +1,10 @@
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 //! Security middleware example - demonstrates Helmet-like security features
 //!
 //! This example shows how to use the comprehensive security middleware

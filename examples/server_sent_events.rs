@@ -1,3 +1,10 @@
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 // Server-Sent Events (SSE) example
 
 use armature::prelude::*;
