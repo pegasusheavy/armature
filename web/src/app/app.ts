@@ -23,6 +23,9 @@ import {
   faTerminal,
   faCubes,
   faMagic,
+  faSyringe,
+  faCheckDouble,
+  faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
@@ -59,7 +62,10 @@ export class App {
       faDatabase,
       faTerminal,
       faCubes,
-      faMagic
+      faMagic,
+      faSyringe,
+      faCheckDouble,
+      faLayerGroup
     );
 
     // Add brand icons

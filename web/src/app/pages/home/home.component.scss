@@ -1,101 +1,30 @@
-// Home page styles
+// Home component - minimal custom styles
+// Most styling handled by Tailwind CSS
 
-// CLI Section
-.cli-section {
-  padding: 5rem 1rem;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-
-  @media (min-width: 640px) {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+// Code block syntax highlighting
+pre code {
+  font-family: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
+  
+  .keyword {
+    color: #c678dd;
   }
-
-  @media (min-width: 1024px) {
-    padding-left: 2rem;
-    padding-right: 2rem;
+  
+  .function {
+    color: #61afef;
   }
-}
-
-.cli-content {
-  max-width: 56rem;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-
-.cli-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @media (min-width: 768px) {
-    font-size: 2.25rem;
+  
+  .string {
+    color: #98c379;
+  }
+  
+  .comment {
+    color: #5c6370;
   }
 }
 
-.cli-subtitle {
-  font-size: 1.125rem;
-  color: #9ca3af;
-  margin-bottom: 2rem;
-}
-
-.cli-demo {
-  background-color: #111827;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  text-align: left;
-  overflow-x: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.cli-code {
-  font-size: 0.875rem;
-  color: #f3f4f6;
-  font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
-  line-height: 1.8;
-  white-space: pre;
-}
-
-.cli-commands {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.cli-command {
-  background-color: rgba(31, 41, 55, 0.5);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #1f2937;
-    border-color: rgba(59, 130, 246, 0.5);
-    transform: translateY(-2px);
-  }
-
-  code {
-    display: block;
-    color: #22d3ee;
-    font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-  }
-
-  span {
-    color: #9ca3af;
-    font-size: 0.75rem;
-  }
+// Smooth animations
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }
