@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // Configuration management example
 
 use armature::prelude::*;
@@ -109,14 +108,14 @@ struct ConfigController {
 impl ConfigController {
     #[get("/info")]
     async fn get_info() -> Result<Json<serde_json::Value>, Error> {
-        let service = AppService;
+        let service = AppService::default();
         let info = service.get_app_info();
         Ok(Json(info))
     }
 
     #[get("/database")]
     async fn get_database_info() -> Result<Json<serde_json::Value>, Error> {
-        let service = AppService;
+        let service = AppService::default();
         let db_config = service.get_database_config();
         Ok(Json(db_config))
     }

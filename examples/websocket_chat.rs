@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // WebSocket chat room example
 
 use armature::prelude::*;
@@ -45,7 +44,7 @@ impl ChatController {
         let message: ChatMessage = req.json()?;
 
         let service = ChatService::default();
-        service.broadcast_to_room(room_name, message).await?;
+        service.broadcast_to_room(&room_name, message).await?;
 
         Ok(Json(serde_json::json!({
             "status": "sent"
@@ -59,7 +58,7 @@ impl ChatController {
             .ok_or_else(|| Error::Validation("Missing room parameter".to_string()))?;
 
         let service = ChatService::default();
-        let room = service.get_room(room_name).await;
+        let room = service.get_room(&room_name).await;
         let count = room.connection_count().await;
 
         Ok(Json(serde_json::json!({

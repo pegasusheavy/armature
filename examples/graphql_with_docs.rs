@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 /// Example demonstrating GraphQL with documentation and configurable playgrounds
 use armature::prelude::*;
 use armature_graphql::{
@@ -83,7 +82,6 @@ impl Query {
 }
 
 // Injectable GraphQL service
-#[allow(dead_code)]
 #[injectable]
 #[derive(Clone)]
 struct GraphQLService {
@@ -106,7 +104,6 @@ impl Default for GraphQLService {
 }
 
 impl GraphQLService {
-    #[allow(dead_code)]
     async fn execute_query(&self, query: &str) -> String {
         let request = async_graphql::Request::new(query);
         let response = self.schema.execute(request).await;

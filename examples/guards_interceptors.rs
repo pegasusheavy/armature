@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // Guards and Interceptors example
 
 use armature::prelude::*;
@@ -46,7 +45,7 @@ struct DataController;
 impl DataController {
     #[get("/public")]
     async fn public_endpoint() -> Result<Json<Message>, Error> {
-        let service = DataService;
+        let service = DataService::default();
         Ok(Json(service.get_public_data()))
     }
 
@@ -55,7 +54,7 @@ impl DataController {
         // Check for Bearer token (simple guard simulation)
         if let Some(auth) = req.headers.get("authorization") {
             if auth.starts_with("Bearer ") {
-                let service = DataService;
+                let service = DataService::default();
                 return Ok(Json(service.get_protected_data()));
             }
         }
@@ -67,7 +66,7 @@ impl DataController {
         // Check for admin token (simple roles guard simulation)
         if let Some(auth) = req.headers.get("authorization") {
             if auth == "Bearer admin-token" {
-                let service = DataService;
+                let service = DataService::default();
                 return Ok(Json(service.get_admin_data()));
             }
         }

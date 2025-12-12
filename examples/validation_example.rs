@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // Validation Example - Demonstrates validation framework
 
 use armature::armature_validation::*;
@@ -136,7 +135,7 @@ impl UserController {
     #[post("")]
     async fn create(req: HttpRequest) -> Result<Json<User>, Error> {
         let dto: CreateUserDto = ValidationPipe::parse(&req)?;
-        let service = UserService;
+        let service = UserService::default();
         let user = service.create(dto)?;
         Ok(Json(user))
     }
@@ -150,7 +149,7 @@ impl UserController {
             .unwrap_or(0);
 
         let dto: UpdateUserDto = ValidationPipe::parse(&req)?;
-        let service = UserService;
+        let service = UserService::default();
         let user = service.update(id, dto)?;
         Ok(Json(user))
     }

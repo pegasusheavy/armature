@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 // GraphQL API example with Armature
 
 use armature::prelude::*;
@@ -9,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 // ========== Domain Models ==========
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 struct Book {
     id: ID,
@@ -18,7 +16,6 @@ struct Book {
     year: i32,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 struct Author {
     id: ID,
@@ -28,7 +25,6 @@ struct Author {
 
 // ========== Services ==========
 
-#[allow(dead_code)]
 #[injectable]
 #[derive(Default, Clone)]
 struct BookService;
@@ -90,7 +86,6 @@ impl BookService {
 
 // ========== GraphQL Schema ==========
 
-#[allow(dead_code)]
 struct QueryRoot {
     book_service: BookService,
 }
@@ -124,7 +119,6 @@ impl QueryRoot {
     }
 }
 
-#[allow(dead_code)]
 struct MutationRoot {
     book_service: BookService,
 }
@@ -141,7 +135,7 @@ impl MutationRoot {
         let mut book = self
             .book_service
             .get_book_by_id(id.as_str())
-            .ok_or("Book not found")?;
+            .ok_or_else(|| "Book not found")?;
         book.title = title;
         Ok(book)
     }
@@ -161,7 +155,7 @@ struct GraphQLController;
 impl GraphQLController {
     #[post("")]
     async fn execute(req: HttpRequest) -> Result<HttpResponse, Error> {
-        let book_service = BookService;
+        let book_service = BookService::default();
 
         let query = QueryRoot {
             book_service: book_service.clone(),
@@ -205,7 +199,7 @@ impl GraphQLController {
 
     #[get("/schema")]
     async fn get_schema() -> Result<HttpResponse, Error> {
-        let book_service = BookService;
+        let book_service = BookService::default();
         let query = QueryRoot {
             book_service: book_service.clone(),
         };
