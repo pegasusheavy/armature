@@ -1,243 +1,147 @@
-<!-- Hero Section -->
-<section class="bg-gradient-to-b from-slate-900 to-slate-800 py-20 md:py-28">
-  <div class="max-w-4xl mx-auto px-6 text-center">
-    <div class="mb-6">
-      <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/30 text-primary-400 text-sm">
-        <span class="w-1.5 h-1.5 bg-primary-400 rounded-full mr-2"></span>
-        v0.1.0 · Early Access
-      </span>
-    </div>
-
-    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-      Build APIs in Rust with
-      <span class="bg-gradient-to-r from-primary-400 to-cyan-400 text-transparent bg-clip-text">Confidence</span>
+<!-- Hero -->
+<section class="bg-slate-900 text-white">
+  <div class="max-w-5xl mx-auto px-6 py-24 text-center">
+    <p class="text-primary-400 font-medium mb-4">The Rust Web Framework</p>
+    <h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+      Armature
     </h1>
-
-    <p class="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-      A modern, type-safe HTTP framework inspired by Angular and NestJS.
-      Modular architecture, dependency injection, and powerful tooling.
+    <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      Build production-ready APIs with type-safe routing, dependency injection, and modular architecture inspired by NestJS.
     </p>
-
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a
-        routerLink="/getting-started"
-        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors"
-      >
+    <div class="flex gap-4 justify-center">
+      <a routerLink="/getting-started" class="bg-primary-500 hover:bg-primary-400 text-white font-medium px-6 py-3 rounded-lg transition-colors">
         Get Started
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-        </svg>
       </a>
-      <a
-        href="https://github.com/pegasusheavy/armature"
-        target="_blank"
-        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
-      >
-        <fa-icon [icon]="['fab', 'github']" />
-        View on GitHub
+      <a href="https://github.com/pegasusheavy/armature" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center gap-2">
+        <fa-icon [icon]="['fab', 'github']"></fa-icon>
+        GitHub
       </a>
     </div>
   </div>
 </section>
 
-<!-- Code Example Section -->
-<section class="py-20 bg-white">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-        Clean, Expressive Syntax
-      </h2>
-      <p class="text-lg text-slate-600 max-w-xl mx-auto">
-        Familiar patterns for developers coming from Angular or NestJS
-      </p>
-    </div>
-
-    <div class="grid lg:grid-cols-5 gap-10 items-start">
-      <!-- Code Block -->
-      <div class="lg:col-span-3">
-        <div class="bg-slate-900 overflow-hidden shadow-xl">
-          <div class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 border-b border-slate-700">
-            <div class="flex gap-1.5">
-              <div class="w-3 h-3 rounded-full bg-red-500"></div>
-              <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div class="w-3 h-3 rounded-full bg-green-500"></div>
-            </div>
-            <span class="text-slate-500 text-xs font-mono ml-2">main.rs</span>
-          </div>
-          <pre class="p-5 overflow-x-auto text-sm leading-relaxed"><code class="text-slate-300"><span class="text-purple-400">use</span> armature::prelude::*;
-
-<span class="text-slate-500">#[controller("/api")]</span>
-<span class="text-purple-400">struct</span> <span class="text-cyan-400">ApiController</span>;
-
-<span class="text-slate-500">#[get("/hello/:name")]</span>
-<span class="text-purple-400">async fn</span> <span class="text-blue-400">hello</span>(&amp;self, name: Path&lt;String&gt;) -&gt; Json&lt;Message&gt; &#123;
-    Json(Message &#123; text: format!(<span class="text-green-400">"Hello, &#123;&#125;!"</span>, name.0) &#125;)
-&#125;
-
-<span class="text-slate-500">#[module]</span>
-<span class="text-purple-400">struct</span> <span class="text-cyan-400">AppModule</span> &#123;
-    <span class="text-slate-500">#[controller]</span>
-    api: ApiController,
-&#125;
-
-<span class="text-slate-500">#[tokio::main]</span>
-<span class="text-purple-400">async fn</span> <span class="text-blue-400">main</span>() -&gt; Result&lt;()&gt; &#123;
-    Application::create::&lt;AppModule&gt;()
-        .await
-        .listen(<span class="text-amber-400">3000</span>)
-        .await
+<!-- Code Preview -->
+<section class="bg-slate-800 border-y border-slate-700">
+  <div class="max-w-4xl mx-auto">
+    <pre class="p-6 text-sm overflow-x-auto"><code class="text-slate-300"><span class="text-slate-500">// Define a controller with routes</span>
+<span class="text-purple-400">&#35;[controller("/api/users")]</span>
+<span class="text-blue-400">impl</span> UserController &#123;
+    <span class="text-purple-400">&#35;[get("/:id")]</span>
+    <span class="text-blue-400">async fn</span> <span class="text-yellow-400">get_user</span>(&amp;self, id: Path&lt;i32&gt;, db: Inject&lt;Database&gt;) -&gt; Json&lt;User&gt; &#123;
+        Json(db.users.find(id.0).<span class="text-blue-400">await</span>)
+    &#125;
 &#125;</code></pre>
-        </div>
-      </div>
-
-      <!-- Features List -->
-      <div class="lg:col-span-2 space-y-6">
-        <div class="flex gap-4">
-          <div class="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'magic']" class="text-primary-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-slate-900 mb-1">Decorator-Style Macros</h3>
-            <p class="text-slate-600 text-sm">Use <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">&#64;controller</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">&#64;module</code> to define your API.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'syringe']" class="text-green-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-slate-900 mb-1">Dependency Injection</h3>
-            <p class="text-slate-600 text-sm">Services are automatically injected. No manual wiring.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'check-double']" class="text-amber-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-slate-900 mb-1">Type-Safe Extractors</h3>
-            <p class="text-slate-600 text-sm">Path params, query strings, and bodies are validated at compile time.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'layer-group']" class="text-purple-600" />
-          </div>
-          <div>
-            <h3 class="font-semibold text-slate-900 mb-1">Module Organization</h3>
-            <p class="text-slate-600 text-sm">Group controllers and services into clean, scalable modules.</p>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
-<!-- Features Grid Section -->
-<section class="py-20 bg-slate-50">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-        Everything You Need
-      </h2>
-      <p class="text-lg text-slate-600 max-w-xl mx-auto">
-        A complete toolkit for building production-ready APIs
-      </p>
-    </div>
-
-    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-      @for (feature of features; track feature.title) {
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all">
-          <div class="w-12 h-12 rounded-lg bg-gradient-to-br {{ feature.gradient }} flex items-center justify-center mb-4">
-            <fa-icon [icon]="['fas', feature.icon]" class="text-white text-lg" />
-          </div>
-          <h3 class="font-semibold text-slate-900 mb-2">{{ feature.title }}</h3>
-          <p class="text-slate-600 text-sm leading-relaxed">{{ feature.description }}</p>
-        </div>
-      }
-    </div>
-  </div>
-</section>
-
-<!-- CLI Section -->
-<section class="py-20 bg-slate-900">
-  <div class="max-w-4xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-        <fa-icon [icon]="['fas', 'terminal']" class="mr-3 text-primary-400" />
-        Armature CLI
-      </h2>
-      <p class="text-lg text-slate-400">
-        Code generation and hot reloading for fast development
-      </p>
-    </div>
-
-    <!-- Terminal -->
-    <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-700 mb-10">
-      <div class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 border-b border-slate-700">
-        <div class="flex gap-1.5">
-          <div class="w-3 h-3 rounded-full bg-red-500"></div>
-          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div class="w-3 h-3 rounded-full bg-green-500"></div>
-        </div>
-        <span class="text-slate-500 text-xs font-mono ml-2">Terminal</span>
-      </div>
-      <pre class="p-5 text-sm leading-loose font-mono"><code><span class="text-green-400">$</span> <span class="text-white">cargo install armature-cli</span>
-<span class="text-green-400">$</span> <span class="text-white">armature new my-api --template api-full</span>
-<span class="text-slate-500">✓ Project created successfully!</span>
-
-<span class="text-green-400">$</span> <span class="text-white">cd my-api && armature dev</span>
-<span class="text-cyan-400">🚀 Server running on http://127.0.0.1:3000</span></code></pre>
-    </div>
-
-    <!-- Commands Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
-        <code class="text-primary-400 font-mono text-sm">new</code>
-        <p class="text-slate-500 text-xs mt-1">Create projects</p>
-      </div>
-      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
-        <code class="text-primary-400 font-mono text-sm">generate</code>
-        <p class="text-slate-500 text-xs mt-1">Generate code</p>
-      </div>
-      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
-        <code class="text-primary-400 font-mono text-sm">dev</code>
-        <p class="text-slate-500 text-xs mt-1">Hot reloading</p>
-      </div>
-      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
-        <code class="text-primary-400 font-mono text-sm">build</code>
-        <p class="text-slate-500 text-xs mt-1">Production build</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA Section -->
-<section class="py-20 bg-primary-600">
-  <div class="max-w-3xl mx-auto px-6 text-center">
-    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-      Ready to Get Started?
-    </h2>
-    <p class="text-lg text-primary-100 mb-8">
-      Build fast, reliable APIs with Armature. Get started in minutes.
+<!-- Features -->
+<section class="bg-white py-20">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Why Armature?</h2>
+    <p class="text-slate-600 text-center max-w-2xl mx-auto mb-16">
+      Everything you need to build fast, reliable web APIs in Rust.
     </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a
-        routerLink="/getting-started"
-        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary-700 font-medium rounded-lg hover:bg-primary-50 transition-colors"
-      >
-        Start Building
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-        </svg>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div>
+        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'shield-alt']" class="text-blue-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Type-Safe</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Catch errors at compile time. Path parameters, query strings, and request bodies are fully typed.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'syringe']" class="text-green-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Dependency Injection</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Services are automatically injected into controllers. No manual wiring required.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'cubes']" class="text-purple-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Modular Architecture</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Organize your app into modules with clear boundaries and dependencies.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'bolt']" class="text-amber-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">High Performance</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Built on Tokio for async I/O. Zero-cost abstractions mean no runtime overhead.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'user-shield']" class="text-rose-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Built-in Security</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          JWT, OAuth2, and SAML authentication. Security headers and middleware included.
+        </p>
+      </div>
+
+      <div>
+        <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
+          <fa-icon [icon]="['fas', 'terminal']" class="text-cyan-600"></fa-icon>
+        </div>
+        <h3 class="font-semibold text-slate-900 mb-2">Powerful CLI</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Generate controllers, services, and modules. Dev server with hot reloading.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section class="bg-slate-50 py-20 border-t border-slate-200">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Quick Start</h2>
+    <p class="text-slate-600 text-center mb-10">Get up and running in seconds.</p>
+
+    <div class="bg-slate-900 rounded-lg overflow-hidden shadow-lg">
+      <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+      </div>
+      <pre class="p-5 text-sm"><code class="text-slate-300"><span class="text-slate-500"># Install the CLI</span>
+<span class="text-green-400">$</span> cargo install armature-cli
+
+<span class="text-slate-500"># Create a new project</span>
+<span class="text-green-400">$</span> armature new my-api
+<span class="text-green-400">$</span> cd my-api
+
+<span class="text-slate-500"># Start the dev server</span>
+<span class="text-green-400">$</span> armature dev
+<span class="text-cyan-400">→ Server running at http://localhost:3000</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-slate-900 py-16">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-2xl font-bold text-white mb-4">Ready to build?</h2>
+    <p class="text-slate-400 mb-8">Check out the documentation to learn more.</p>
+    <div class="flex gap-4 justify-center">
+      <a routerLink="/getting-started" class="bg-primary-500 hover:bg-primary-400 text-white font-medium px-6 py-3 rounded-lg transition-colors">
+        Get Started
       </a>
-      <a
-        routerLink="/docs"
-        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-lg border border-primary-400 hover:bg-primary-400 transition-colors"
-      >
+      <a routerLink="/docs" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-lg transition-colors">
         Read the Docs
       </a>
     </div>
