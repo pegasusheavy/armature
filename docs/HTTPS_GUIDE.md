@@ -34,9 +34,13 @@ For local development, you can use automatically generated self-signed certifica
 ```rust
 use armature::prelude::*;
 
+#[module()]
+#[derive(Default)]
+struct AppModule;
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     // Generate self-signed certificate (development only!)
     let tls_config = TlsConfig::self_signed(&["localhost", "127.0.0.1"])?;
@@ -69,9 +73,13 @@ For production, use certificates from a trusted Certificate Authority:
 ```rust
 use armature::prelude::*;
 
+#[module()]
+#[derive(Default)]
+struct AppModule;
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     // Load real certificates
     let tls_config = TlsConfig::from_pem_files(
@@ -194,7 +202,7 @@ use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     let tls_config = TlsConfig::from_pem_files(
         "/etc/letsencrypt/live/yourdomain.com/fullchain.pem",
@@ -242,7 +250,7 @@ use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     let tls_config = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
 
@@ -461,7 +469,7 @@ pub struct AppModule {}
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     #[cfg(feature = "self-signed-certs")]
     let tls_config = TlsConfig::self_signed(&["localhost"])?;
@@ -483,7 +491,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     // Load config from environment
     let cert_path = env::var("TLS_CERT_PATH")?;
@@ -512,7 +520,7 @@ async fn main() -> Result<()> {
     // Load environment variables
     dotenv::dotenv().ok();
 
-    let app = Application::create::<AppModule>();
+    let app = Application::create::<AppModule>().await;
 
     let domain = env::var("DOMAIN")?;
     let cert_dir = env::var("CERT_DIR").unwrap_or_else(|_| "/etc/letsencrypt/live".to_string());

@@ -4,38 +4,41 @@
     <div class="bg-gray-900 rounded-xl p-8 shadow-2xl overflow-x-auto">
       <pre class="text-sm text-gray-100"><code class="language-rust">use armature::prelude::*;
 
+// Injectable service
 #[injectable]
+#[derive(Default, Clone)]
 struct UserService;
 
 impl UserService &#123;
-    fn new() -> Self &#123; Self &#125;
     fn get_users(&self) -> Vec&lt;String&gt; &#123;
         vec!["Alice".to_string(), "Bob".to_string()]
     &#125;
 &#125;
 
+// Controller with routes
 #[controller("/api")]
-struct UserController &#123;
-    service: UserService,
-&#125;
+#[derive(Default, Clone)]
+struct UserController;
 
 impl UserController &#123;
-    fn new(service: UserService) -> Self &#123;
-        Self &#123; service &#125;
-    &#125;
-
     #[get("/users")]
-    fn list(&self, _req: HttpRequest) -> Result&lt;HttpResponse, Error&gt; &#123;
-        let users = self.service.get_users();
-        Ok(HttpResponse::ok().with_json(&users)?)
+    async fn list() -> Result&lt;Json&lt;Vec&lt;String&gt;&gt;, Error&gt; &#123;
+        Ok(Json(vec!["Alice".to_string(), "Bob".to_string()]))
     &#125;
 &#125;
 
+// Module wires everything together
+#[module(
+    providers: [UserService],
+    controllers: [UserController]
+)]
+#[derive(Default)]
+struct AppModule;
+
 #[tokio::main]
-async fn main() -> Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; &#123;
-    let mut app = Application::new();
-    app.listen("127.0.0.1:3000").await?;
-    Ok(())
+async fn main() &#123;
+    let app = Application::create::&lt;AppModule&gt;().await;
+    app.listen(3000).await.unwrap();
 &#125;</code></pre>
     </div>
   </div>
