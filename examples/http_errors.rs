@@ -1,4 +1,10 @@
-#![allow(dead_code)]
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 // HTTP Status and Error Handling Example
 
 use armature::Error;
@@ -116,7 +122,7 @@ struct ErrorController;
 impl ErrorController {
     #[get("/statuses")]
     async fn list_statuses() -> Result<Json<Vec<StatusInfo>>, Error> {
-        let service = ItemService;
+        let service = ItemService::default();
         Ok(Json(service.list_statuses()))
     }
 
@@ -129,7 +135,7 @@ impl ErrorController {
             .parse()
             .map_err(|_| Error::BadRequest("Invalid ID format".to_string()))?;
 
-        let service = ItemService;
+        let service = ItemService::default();
         service.get_item(id).map(Json)
     }
 }
