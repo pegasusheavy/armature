@@ -98,25 +98,26 @@ impl TlsConfig {
     pub fn self_signed(domains: &[&str]) -> Result<Self, Error> {
         use rcgen::{CertificateParams, KeyPair};
 
-        let mut params =
-            CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>());
-        params.distinguished_name = rcgen::DistinguishedName::new();
-
-        // Generate key pair with ECDSA P-256
-        let key_pair = KeyPair::generate(&rcgen::PKCS_ECDSA_P256_SHA256)
+        // Generate key pair
+        let key_pair = KeyPair::generate()
             .map_err(|e| Error::Internal(format!("Failed to generate key pair: {}", e)))?;
 
-        // Set the key pair in params
-        params.key_pair = Some(key_pair);
+        // Create certificate params with domains
+        let mut params =
+            CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>())
+                .map_err(|e| {
+                    Error::Internal(format!("Failed to create certificate params: {}", e))
+                })?;
+
+        params.distinguished_name = rcgen::DistinguishedName::new();
 
         // Create self-signed certificate
-        let cert = rcgen::Certificate::from_params(params)
+        let cert = params
+            .self_signed(&key_pair)
             .map_err(|e| Error::Internal(format!("Failed to create certificate: {}", e)))?;
 
-        let cert_pem = cert
-            .serialize_pem()
-            .map_err(|e| Error::Internal(format!("Failed to serialize certificate: {}", e)))?;
-        let key_pem = cert.serialize_private_key_pem();
+        let cert_pem = cert.pem();
+        let key_pem = key_pair.serialize_pem();
 
         Self::from_pem_bytes(cert_pem.as_bytes(), key_pem.as_bytes())
     }

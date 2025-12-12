@@ -138,15 +138,15 @@ armature-queue = { path = "armature-queue" }
 armature-cron = { path = "armature-cron" }
 armature-cache = { path = "armature-cache", features = ["redis"] }
 armature-ratelimit = { path = "armature-ratelimit" }
-jsonwebtoken = "9.2"
-handlebars = "5.1"
+jsonwebtoken = "9.3"
+handlebars = "6.3"
 
 # Database ORMs for examples - using rustls instead of native-tls to avoid openssl
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
-diesel = { version = "2.1", features = ["postgres", "r2d2", "chrono"] }
-sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
+diesel = { version = "2.2", features = ["postgres", "r2d2", "chrono"] }
+sea-orm = { version = "1.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 chrono = "0.4"
-uuid = { version = "1.6", features = ["v4"] }
+uuid = { version = "1.11", features = ["v4"] }
 
 # Examples require runtime dependencies
 [[example]]

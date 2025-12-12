@@ -9,15 +9,15 @@ armature-core = { path = "../armature-core" }
 armature-jwt = { path = "../armature-jwt" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 async-trait = "0.1"
-bcrypt = "0.15"
+bcrypt = "0.17"
 argon2 = { version = "0.5", features = ["std"] }
 rand = "0.9"
 base64 = "0.22"
 
 # OAuth2 support - using rustls for TLS (no openssl)
-oauth2 = "4.4"
+oauth2 = "5.0"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 url = "2.5"
 tokio = { version = "1.35", features = ["full"] }

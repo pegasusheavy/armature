@@ -23,14 +23,14 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 notify = "8.0"
-notify-debouncer-mini = "0.6"
+notify-debouncer-mini = "0.7"
 walkdir = "2.5"
 thiserror = "2.0"
 heck = "0.5"
 include_dir = "0.7"
 handlebars = "6.3"
 ctrlc = "3.4"
-which = "7.0"
+which = "8.0"
 chrono = "0.4"
 dirs = "6.0"
 
