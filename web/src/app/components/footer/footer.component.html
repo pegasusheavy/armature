@@ -1,30 +1,107 @@
-<footer class="py-12 px-4 bg-gradient-to-br from-primary-50 to-primary-100">
-  <div class="max-w-6xl mx-auto text-center">
-    <p class="text-gray-600">Built with ❤️ using Rust, Angular 21, and Tailwind CSS 4</p>
-    <p class="text-sm text-gray-500 mt-2">
-      © 2024-{{ currentYear }} Pegasus Heavy Industries LLC. Licensed under Apache 2.0.
-    </p>
-    <div class="mt-4 flex justify-center items-center gap-4">
-      <a
-        href="https://github.com/pegasusheavy/armature"
-        target="_blank"
-        class="text-gray-600 hover:text-primary-600 transition-colors"
-      >
-        <fa-icon [icon]="['fab', 'github']" size="lg" />
-      </a>
-      <a
-        routerLink="/docs"
-        class="text-gray-600 hover:text-primary-600 transition-colors text-sm font-medium"
-      >
-        Documentation
-      </a>
-      <a
-        href="https://github.com/pegasusheavy/armature/tree/develop/examples"
-        target="_blank"
-        class="text-gray-600 hover:text-primary-600 transition-colors text-sm font-medium"
-      >
-        Examples
-      </a>
+<footer class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+  <div class="max-w-7xl mx-auto px-6 py-16 lg:px-8">
+    <!-- Top Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 pb-12 border-b border-slate-700">
+      <!-- Brand -->
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-3xl">🦾</span>
+          <span class="text-2xl font-bold bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent">Armature</span>
+        </div>
+        <p class="text-slate-400 max-w-md leading-relaxed">
+          A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS. 
+          Build production-ready APIs with confidence.
+        </p>
+        <div class="flex items-center gap-4 mt-6">
+          <a
+            href="https://github.com/pegasusheavy/armature"
+            target="_blank"
+            class="text-slate-400 hover:text-white transition-colors duration-200"
+          >
+            <fa-icon [icon]="['fab', 'github']" size="xl" />
+          </a>
+        </div>
+      </div>
+
+      <!-- Resources -->
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-4">Resources</h3>
+        <ul class="space-y-3">
+          <li>
+            <a routerLink="/docs" class="text-slate-400 hover:text-primary-400 transition-colors duration-200">
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a routerLink="/getting-started" class="text-slate-400 hover:text-primary-400 transition-colors duration-200">
+              Getting Started
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/pegasusheavy/armature/tree/develop/examples"
+              target="_blank"
+              class="text-slate-400 hover:text-primary-400 transition-colors duration-200"
+            >
+              Examples
+            </a>
+          </li>
+          <li>
+            <a routerLink="/faq" class="text-slate-400 hover:text-primary-400 transition-colors duration-200">
+              FAQ
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Community -->
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-4">Community</h3>
+        <ul class="space-y-3">
+          <li>
+            <a
+              href="https://github.com/pegasusheavy/armature"
+              target="_blank"
+              class="text-slate-400 hover:text-primary-400 transition-colors duration-200"
+            >
+              GitHub
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/pegasusheavy/armature/issues"
+              target="_blank"
+              class="text-slate-400 hover:text-primary-400 transition-colors duration-200"
+            >
+              Issues
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/pegasusheavy/armature/discussions"
+              target="_blank"
+              class="text-slate-400 hover:text-primary-400 transition-colors duration-200"
+            >
+              Discussions
+            </a>
+          </li>
+          <li>
+            <a routerLink="/comparisons" class="text-slate-400 hover:text-primary-400 transition-colors duration-200">
+              Comparisons
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-slate-400 text-sm">
+        Built with <span class="text-red-400">❤️</span> using Rust, Angular 21, and Tailwind CSS 4
+      </p>
+      <p class="text-slate-500 text-sm">
+        © 2024-{{ currentYear }} Pegasus Heavy Industries LLC. Licensed under Apache 2.0.
+      </p>
     </div>
   </div>
 </footer>
