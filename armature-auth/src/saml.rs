@@ -186,7 +186,7 @@ impl SamlServiceProvider {
     /// Generate relay state
     fn generate_relay_state(&self) -> String {
         use rand::RngCore;
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut bytes = [0u8; 32];
         rng.fill_bytes(&mut bytes);
         general_purpose::URL_SAFE_NO_PAD.encode(bytes)

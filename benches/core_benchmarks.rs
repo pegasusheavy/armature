@@ -1,6 +1,7 @@
 use armature_core::*;
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::collections::HashMap;
+use std::hint::black_box;
 
 fn bench_http_request_creation(c: &mut Criterion) {
     c.bench_function("http_request_new", |b| {
