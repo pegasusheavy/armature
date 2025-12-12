@@ -1,4 +1,10 @@
-#![allow(dead_code)]
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 //! Security middleware example - demonstrates Helmet-like security features
 //!
 //! This example shows how to use the comprehensive security middleware
@@ -118,7 +124,7 @@ struct ApiController;
 impl ApiController {
     #[get("/data")]
     async fn get_data() -> Result<Json<serde_json::Value>, Error> {
-        let service = SecurityService;
+        let service = SecurityService::default();
         Ok(Json(service.get_security_info()))
     }
 

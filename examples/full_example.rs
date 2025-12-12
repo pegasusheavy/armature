@@ -1,4 +1,10 @@
-#![allow(dead_code)]
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 // Example application demonstrating the Armature framework
 
 use armature::prelude::*;
@@ -60,7 +66,7 @@ struct UserController;
 impl UserController {
     #[get("")]
     async fn get_users() -> Result<Json<Vec<User>>, Error> {
-        let service = UserService;
+        let service = UserService::default();
         let users = service.get_all_users();
         Ok(Json(users))
     }
@@ -74,7 +80,7 @@ impl UserController {
             .parse()
             .map_err(|_| Error::Validation("Invalid id format".to_string()))?;
 
-        let service = UserService;
+        let service = UserService::default();
         let user = service
             .get_user_by_id(id)
             .ok_or_else(|| Error::RouteNotFound(format!("User {} not found", id)))?;
@@ -85,7 +91,7 @@ impl UserController {
     #[post("")]
     async fn create_user(req: HttpRequest) -> Result<Json<User>, Error> {
         let dto: CreateUserDto = req.json()?;
-        let service = UserService;
+        let service = UserService::default();
         let user = service.create_user(dto.name, dto.email);
         Ok(Json(user))
     }

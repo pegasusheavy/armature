@@ -1,4 +1,10 @@
-#![allow(dead_code)]
+#![allow(
+    dead_code,
+    unused_imports,
+    clippy::default_constructed_unit_structs,
+    clippy::needless_borrow,
+    clippy::unnecessary_lazy_evaluations
+)]
 // Comprehensive Middleware System Example
 //
 // Note: This example demonstrates custom middleware implementations.
@@ -160,7 +166,7 @@ impl ApiController {
 
     #[get("/protected")]
     async fn get_protected_data() -> Result<Json<ApiResponse>, Error> {
-        let service = DataService;
+        let service = DataService::default();
         Ok(Json(service.get_data()))
     }
 
