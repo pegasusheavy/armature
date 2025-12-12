@@ -12,10 +12,10 @@
   top: 0;
   height: 100vh;
   overflow-y: auto;
-  
+
   .sidebar-content {
     padding: 2rem 1.5rem;
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 700;
@@ -23,10 +23,10 @@
       margin-bottom: 2rem;
     }
   }
-  
+
   .doc-category {
     margin-bottom: 2rem;
-    
+
     h3 {
       font-size: 0.75rem;
       font-weight: 600;
@@ -36,15 +36,15 @@
       margin-bottom: 0.75rem;
       padding-left: 0.75rem;
     }
-    
+
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
-      
+
       li {
         margin-bottom: 0.25rem;
-        
+
         a {
           display: block;
           padding: 0.5rem 0.75rem;
@@ -54,13 +54,13 @@
           transition: all 0.15s ease;
           font-size: 0.875rem;
           border-left: 2px solid transparent;
-          
+
           &:hover {
             background: #f1f5f9;
             color: #0f172a;
             border-left-color: #cbd5e1;
           }
-          
+
           &.active {
             background: #e0f2fe;
             color: #0369a1;
@@ -78,14 +78,14 @@
   padding: 3rem;
   max-width: 900px;
   margin: 0 auto;
-  
+
   .loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    
+
     .spinner {
       width: 48px;
       height: 48px;
@@ -94,27 +94,27 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    
+
     p {
       margin-top: 1rem;
       color: #64748b;
     }
   }
-  
+
   .error {
     text-align: center;
     padding: 3rem;
-    
+
     h2 {
       color: #dc2626;
       margin-bottom: 1rem;
     }
-    
+
     p {
       color: #64748b;
       margin-bottom: 2rem;
     }
-    
+
     .btn-primary {
       display: inline-block;
       padding: 0.75rem 1.5rem;
@@ -124,7 +124,7 @@
       border-radius: 0.5rem;
       font-weight: 600;
       transition: background 0.2s;
-      
+
       &:hover {
         background: #0284c7;
       }
@@ -138,7 +138,7 @@
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
-  
+
   // Typography
   ::ng-deep h1 {
     font-size: 2.25rem;
@@ -150,7 +150,7 @@
     line-height: 1.2;
     letter-spacing: -0.025em;
   }
-  
+
   ::ng-deep h2 {
     font-size: 1.75rem;
     font-weight: 700;
@@ -161,7 +161,7 @@
     border-bottom: 1px solid #f1f5f9;
     line-height: 1.3;
   }
-  
+
   ::ng-deep h3 {
     font-size: 1.375rem;
     font-weight: 600;
@@ -170,7 +170,7 @@
     margin-bottom: 0.75rem;
     line-height: 1.4;
   }
-  
+
   ::ng-deep h4 {
     font-size: 1.125rem;
     font-weight: 600;
@@ -186,21 +186,21 @@
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
   }
-  
+
   ::ng-deep p {
     color: #334155;
     line-height: 1.8;
     margin-bottom: 1.25rem;
     font-size: 1rem;
   }
-  
+
   ::ng-deep a {
     color: #0ea5e9;
     text-decoration: none;
     font-weight: 500;
     border-bottom: 1px solid transparent;
     transition: all 0.15s ease;
-    
+
     &:hover {
       color: #0284c7;
       border-bottom-color: #0284c7;
@@ -216,20 +216,20 @@
     font-style: italic;
     color: #475569;
   }
-  
+
   // Lists
   ::ng-deep ul {
     margin-bottom: 1.5rem;
     padding-left: 1.5rem;
     list-style: none;
-    
+
     li {
       color: #334155;
       line-height: 1.8;
       margin-bottom: 0.5rem;
       position: relative;
       padding-left: 1rem;
-      
+
       &::before {
         content: "•";
         color: #0ea5e9;
@@ -245,7 +245,7 @@
     padding-left: 1.5rem;
     counter-reset: list-counter;
     list-style: none;
-    
+
     li {
       color: #334155;
       line-height: 1.8;
@@ -253,7 +253,7 @@
       position: relative;
       padding-left: 1.5rem;
       counter-increment: list-counter;
-      
+
       &::before {
         content: counter(list-counter) ".";
         color: #0ea5e9;
@@ -272,7 +272,7 @@
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
   }
-  
+
   // Inline Code
   ::ng-deep code {
     background: #f1f5f9;
@@ -284,7 +284,7 @@
     font-weight: 500;
     border: 1px solid #e2e8f0;
   }
-  
+
   // Code Blocks
   ::ng-deep pre {
     background: #0f172a;
@@ -295,7 +295,7 @@
     margin: 1.5rem 0;
     border: 1px solid #1e293b;
     position: relative;
-    
+
     code {
       background: transparent;
       color: inherit;
@@ -341,7 +341,7 @@
     // Lifetimes
     .token.lifetime { color: #fbbf24; }
   }
-  
+
   // Blockquotes
   ::ng-deep blockquote {
     border-left: 4px solid #0ea5e9;
@@ -349,12 +349,12 @@
     margin: 1.5rem 0;
     background: #f0f9ff;
     border-radius: 0 0.5rem 0.5rem 0;
-    
+
     p {
       color: #0c4a6e;
       margin-bottom: 0;
       font-style: italic;
-      
+
       &:last-child {
         margin-bottom: 0;
       }
@@ -370,7 +370,7 @@
     margin: 1.5rem 0;
     border-radius: 0.5rem;
     border-left: 4px solid;
-    
+
     p:last-child {
       margin-bottom: 0;
     }
@@ -379,31 +379,31 @@
   ::ng-deep .note {
     background: #eff6ff;
     border-left-color: #3b82f6;
-    
+
     p { color: #1e40af; }
   }
 
   ::ng-deep .tip {
     background: #f0fdf4;
     border-left-color: #22c55e;
-    
+
     p { color: #166534; }
   }
 
   ::ng-deep .warning {
     background: #fffbeb;
     border-left-color: #f59e0b;
-    
+
     p { color: #92400e; }
   }
 
   ::ng-deep .danger {
     background: #fef2f2;
     border-left-color: #ef4444;
-    
+
     p { color: #991b1b; }
   }
-  
+
   // Tables
   ::ng-deep table {
     width: 100%;
@@ -413,10 +413,10 @@
     border-radius: 0.5rem;
     overflow: hidden;
     border: 1px solid #e2e8f0;
-    
+
     thead {
       background: #f8fafc;
-      
+
       th {
         padding: 0.875rem 1rem;
         text-align: left;
@@ -426,20 +426,20 @@
         white-space: nowrap;
       }
     }
-    
+
     tbody {
       tr {
         border-bottom: 1px solid #f1f5f9;
         transition: background 0.15s ease;
-        
+
         &:last-child {
           border-bottom: none;
         }
-        
+
         &:hover {
           background: #f8fafc;
         }
-        
+
         td {
           padding: 0.875rem 1rem;
           color: #334155;
@@ -452,7 +452,7 @@
       }
     }
   }
-  
+
   // Horizontal rule
   ::ng-deep hr {
     border: none;
@@ -460,7 +460,7 @@
     background: linear-gradient(to right, transparent, #e2e8f0, transparent);
     margin: 3rem 0;
   }
-  
+
   // Images
   ::ng-deep img {
     max-width: 100%;
@@ -480,17 +480,17 @@
   // Definition lists
   ::ng-deep dl {
     margin: 1.5rem 0;
-    
+
     dt {
       font-weight: 600;
       color: #0f172a;
       margin-top: 1rem;
-      
+
       &:first-child {
         margin-top: 0;
       }
     }
-    
+
     dd {
       margin-left: 1.5rem;
       color: #475569;
@@ -537,18 +537,18 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
-    
+
     summary {
       cursor: pointer;
       font-weight: 600;
       color: #0f172a;
       padding: 0.25rem;
-      
+
       &:hover {
         color: #0ea5e9;
       }
     }
-    
+
     &[open] summary {
       margin-bottom: 1rem;
       padding-bottom: 0.5rem;
@@ -566,26 +566,26 @@
   .docs-container {
     flex-direction: column;
   }
-  
+
   .docs-sidebar {
     width: 100%;
     height: auto;
     position: static;
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
-    
+
     .sidebar-content {
       padding: 1.5rem;
     }
-    
+
     .doc-category ul {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      
+
       li {
         margin-bottom: 0;
-        
+
         a {
           padding: 0.375rem 0.75rem;
           font-size: 0.8125rem;
@@ -593,23 +593,23 @@
       }
     }
   }
-  
+
   .docs-content {
     padding: 1.5rem;
   }
-  
+
   .markdown-content {
     padding: 1.5rem;
-    
+
     ::ng-deep h1 {
       font-size: 1.75rem;
     }
-    
+
     ::ng-deep h2 {
       font-size: 1.5rem;
       margin-top: 2rem;
     }
-    
+
     ::ng-deep h3 {
       font-size: 1.25rem;
       margin-top: 1.5rem;
@@ -622,7 +622,7 @@
 
     ::ng-deep table {
       font-size: 0.875rem;
-      
+
       th, td {
         padding: 0.625rem 0.75rem;
       }
@@ -634,11 +634,11 @@
   .markdown-content {
     padding: 1rem;
     border-radius: 0.5rem;
-    
+
     ::ng-deep h1 {
       font-size: 1.5rem;
     }
-    
+
     ::ng-deep h2 {
       font-size: 1.25rem;
     }
