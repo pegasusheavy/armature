@@ -12,10 +12,7 @@ pub async fn run(release: bool, cargo_args: &[String]) -> CliResult<()> {
     let project_root = find_project_root()?;
 
     println!();
-    println!(
-        "  {} Building project...",
-        "→".cyan().bold()
-    );
+    println!("  {} Building project...", "→".cyan().bold());
     println!();
 
     let start = Instant::now();
@@ -30,11 +27,7 @@ pub async fn run(release: bool, cargo_args: &[String]) -> CliResult<()> {
             "release".green().bold()
         );
     } else {
-        println!(
-            "  {} Building in {} mode",
-            "→".yellow(),
-            "debug".yellow()
-        );
+        println!("  {} Building in {} mode", "→".yellow(), "debug".yellow());
     }
 
     args.extend(cargo_args.iter().cloned());
@@ -67,16 +60,8 @@ pub async fn run(release: bool, cargo_args: &[String]) -> CliResult<()> {
                 let size_mb = metadata.len() as f64 / (1024.0 * 1024.0);
 
                 println!();
-                println!(
-                    "  {} Binary: {}",
-                    "→".dimmed(),
-                    binary_path.display()
-                );
-                println!(
-                    "  {} Size: {:.2} MB",
-                    "→".dimmed(),
-                    size_mb
-                );
+                println!("  {} Binary: {}", "→".dimmed(), binary_path.display());
+                println!("  {} Size: {:.2} MB", "→".dimmed(), size_mb);
             }
         }
 
@@ -105,4 +90,3 @@ fn parse_package_name(content: &str) -> Option<String> {
     }
     None
 }
-

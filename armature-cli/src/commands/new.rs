@@ -25,7 +25,11 @@ pub async fn run(name: &str, template: &str, skip_git: bool, _skip_install: bool
         "→".cyan().bold(),
         name.cyan()
     );
-    println!("  {} Using template: {}", "→".cyan().bold(), template.cyan());
+    println!(
+        "  {} Using template: {}",
+        "→".cyan().bold(),
+        template.cyan()
+    );
     println!();
 
     // Create progress bar
@@ -78,14 +82,8 @@ pub async fn run(name: &str, template: &str, skip_git: bool, _skip_install: bool
     println!("  {} armature dev", "→".cyan());
     println!();
     println!("  Generate code:");
-    println!(
-        "  {} armature generate controller <name>",
-        "→".cyan()
-    );
-    println!(
-        "  {} armature generate service <name>",
-        "→".cyan()
-    );
+    println!("  {} armature generate controller <name>", "→".cyan());
+    println!("  {} armature generate service <name>", "→".cyan());
     println!();
 
     Ok(())
@@ -166,10 +164,7 @@ fn init_git(project_dir: &PathBuf) -> CliResult<()> {
         Ok(output) if output.status.success() => Ok(()),
         Ok(_) => {
             // Git init failed but we continue anyway
-            eprintln!(
-                "  {} Could not initialize git repository",
-                "⚠".yellow()
-            );
+            eprintln!("  {} Could not initialize git repository", "⚠".yellow());
             Ok(())
         }
         Err(_) => {
@@ -402,4 +397,3 @@ services:
 # volumes:
 #   postgres_data:
 "#;
-

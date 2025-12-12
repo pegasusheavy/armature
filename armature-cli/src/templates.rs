@@ -49,9 +49,7 @@ impl TemplateRegistry {
 
     /// Render a template with the given data.
     pub fn render<T: Serialize>(&self, template: &str, data: &T) -> Result<String, String> {
-        self.hbs
-            .render(template, data)
-            .map_err(|e| e.to_string())
+        self.hbs.render(template, data).map_err(|e| e.to_string())
     }
 }
 
@@ -685,4 +683,3 @@ pub struct ProjectData {
     pub name_kebab: String,
     pub description: String,
 }
-

@@ -115,6 +115,11 @@ jobs:
       - name: Add .nojekyll
         run: touch public/.nojekyll
 
+      - name: Cleanup unnecessary files
+        run: |
+          chmod +x ./scripts/cleanup-gh-pages.sh
+          ./scripts/cleanup-gh-pages.sh ./public
+
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:

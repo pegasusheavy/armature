@@ -47,4 +47,3 @@ pub fn has_watched_extension(path: &Path, extensions: &[String]) -> bool {
         .map(|ext| extensions.iter().any(|e| e == ext))
         .unwrap_or(false)
 }
-

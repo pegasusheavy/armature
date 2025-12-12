@@ -12,10 +12,7 @@ pub async fn run() -> CliResult<()> {
         Ok(root) => root,
         Err(_) => {
             println!();
-            println!(
-                "  {} Not in an Armature project directory",
-                "⚠".yellow()
-            );
+            println!("  {} Not in an Armature project directory", "⚠".yellow());
             println!();
             print_cli_info();
             return Ok(());
@@ -25,18 +22,15 @@ pub async fn run() -> CliResult<()> {
     println!();
     println!(
         "{}",
-        "  ╔═══════════════════════════════════════════════════════════╗"
-            .bright_cyan()
+        "  ╔═══════════════════════════════════════════════════════════╗".bright_cyan()
     );
     println!(
         "{}",
-        "  ║                   Project Information                     ║"
-            .bright_cyan()
+        "  ║                   Project Information                     ║".bright_cyan()
     );
     println!(
         "{}",
-        "  ╚═══════════════════════════════════════════════════════════╝"
-            .bright_cyan()
+        "  ╚═══════════════════════════════════════════════════════════╝".bright_cyan()
     );
     println!();
 
@@ -106,10 +100,7 @@ pub async fn run() -> CliResult<()> {
     if project_root.join(".env").exists() {
         println!("    {} .env configured", "✓".green());
     } else if project_root.join(".env.example").exists() {
-        println!(
-            "    {} .env.example present (copy to .env)",
-            "○".yellow()
-        );
+        println!("    {} .env.example present (copy to .env)", "○".yellow());
     }
 
     println!();
@@ -159,12 +150,7 @@ fn count_rs_files(dir: &std::path::Path) -> usize {
     walkdir::WalkDir::new(dir)
         .into_iter()
         .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .map(|ext| ext == "rs")
-                .unwrap_or(false)
-        })
+        .filter(|e| e.path().extension().map(|ext| ext == "rs").unwrap_or(false))
         .count()
 }
 
@@ -192,4 +178,3 @@ fn count_source_files(dir: &std::path::Path) -> (usize, usize) {
 
     (files, lines)
 }
-

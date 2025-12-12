@@ -19,33 +19,24 @@ pub async fn run(port: u16, host: &str, cargo_args: &[String]) -> CliResult<()> 
     println!();
     println!(
         "{}",
-        "  ╔═══════════════════════════════════════════════════════════╗"
-            .bright_cyan()
+        "  ╔═══════════════════════════════════════════════════════════╗".bright_cyan()
     );
     println!(
         "{}",
-        "  ║           🚀 Armature Development Server                  ║"
-            .bright_cyan()
+        "  ║           🚀 Armature Development Server                  ║".bright_cyan()
     );
     println!(
         "{}",
-        "  ╚═══════════════════════════════════════════════════════════╝"
-            .bright_cyan()
+        "  ╚═══════════════════════════════════════════════════════════╝".bright_cyan()
     );
     println!();
 
     // Check if cargo-watch is available, use it if so (more efficient)
     if has_cargo_watch() {
-        println!(
-            "  {} Using cargo-watch for file watching",
-            "→".green()
-        );
+        println!("  {} Using cargo-watch for file watching", "→".green());
         run_with_cargo_watch(port, host, cargo_args, &project_root).await
     } else {
-        println!(
-            "  {} Using built-in file watcher",
-            "→".yellow()
-        );
+        println!("  {} Using built-in file watcher", "→".yellow());
         println!(
             "  {} Install cargo-watch for better performance: {}",
             "💡".yellow(),
@@ -84,15 +75,8 @@ async fn run_with_cargo_watch(
         host,
         port
     );
-    println!(
-        "  {} Watching for changes in src/",
-        "→".green()
-    );
-    println!(
-        "  {} Press {} to stop",
-        "→".dimmed(),
-        "Ctrl+C".yellow()
-    );
+    println!("  {} Watching for changes in src/", "→".green());
+    println!("  {} Press {} to stop", "→".dimmed(), "Ctrl+C".yellow());
     println!();
 
     // Set environment variables
@@ -110,7 +94,9 @@ async fn run_with_cargo_watch(
         .status()?;
 
     if !status.success() {
-        return Err(CliError::Command("cargo-watch exited with error".to_string()));
+        return Err(CliError::Command(
+            "cargo-watch exited with error".to_string(),
+        ));
     }
 
     Ok(())
@@ -138,15 +124,8 @@ async fn run_with_builtin_watcher(
         host,
         port
     );
-    println!(
-        "  {} Watching for changes in src/",
-        "→".green()
-    );
-    println!(
-        "  {} Press {} to stop",
-        "→".dimmed(),
-        "Ctrl+C".yellow()
-    );
+    println!("  {} Watching for changes in src/", "→".green());
+    println!("  {} Press {} to stop", "→".dimmed(), "Ctrl+C".yellow());
     println!();
 
     // Initial build and run
@@ -162,10 +141,7 @@ async fn run_with_builtin_watcher(
         .watcher()
         .watch(&project_root.join("src"), RecursiveMode::Recursive)?;
 
-    println!(
-        "  {} Waiting for changes...",
-        "→".dimmed()
-    );
+    println!("  {} Waiting for changes...", "→".dimmed());
     println!();
 
     // Watch loop
@@ -175,20 +151,12 @@ async fn run_with_builtin_watcher(
                 // Filter for Rust file changes
                 let rust_changes: Vec<_> = events
                     .iter()
-                    .filter(|e| {
-                        e.path
-                            .extension()
-                            .map(|ext| ext == "rs")
-                            .unwrap_or(false)
-                    })
+                    .filter(|e| e.path.extension().map(|ext| ext == "rs").unwrap_or(false))
                     .collect();
 
                 if !rust_changes.is_empty() {
                     println!();
-                    println!(
-                        "  {} File changed, rebuilding...",
-                        "↻".yellow().bold()
-                    );
+                    println!("  {} File changed, rebuilding...", "↻".yellow().bold());
 
                     // Kill the current server
                     let _ = child.kill();
@@ -200,18 +168,11 @@ async fn run_with_builtin_watcher(
                     // Restart server
                     child = start_server(project_root, port, host, cargo_args)?;
 
-                    println!(
-                        "  {} Waiting for changes...",
-                        "→".dimmed()
-                    );
+                    println!("  {} Waiting for changes...", "→".dimmed());
                 }
             }
             Ok(Err(e)) => {
-                eprintln!(
-                    "  {} Watch error: {}",
-                    "⚠".yellow(),
-                    e
-                );
+                eprintln!("  {} Watch error: {}", "⚠".yellow(), e);
             }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                 // Check if child process is still running
@@ -228,11 +189,7 @@ async fn run_with_builtin_watcher(
                         // Still running
                     }
                     Err(e) => {
-                        eprintln!(
-                            "  {} Error checking server status: {}",
-                            "⚠".yellow(),
-                            e
-                        );
+                        eprintln!("  {} Error checking server status: {}", "⚠".yellow(), e);
                     }
                 }
             }
@@ -244,10 +201,7 @@ async fn run_with_builtin_watcher(
 
     // Cleanup
     println!();
-    println!(
-        "  {} Shutting down...",
-        "→".yellow()
-    );
+    println!("  {} Shutting down...", "→".yellow());
     let _ = child.kill();
     let _ = child.wait();
 
@@ -275,4 +229,3 @@ fn start_server(
 
     Ok(child)
 }
-

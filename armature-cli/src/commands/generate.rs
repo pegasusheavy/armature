@@ -30,7 +30,11 @@ pub async fn controller(name: &str, crud: bool, skip_tests: bool) -> CliResult<(
     };
 
     // Generate controller file
-    let template_name = if crud { "controller_crud" } else { "controller" };
+    let template_name = if crud {
+        "controller_crud"
+    } else {
+        "controller"
+    };
     let controller_content = templates
         .render(template_name, &data)
         .map_err(CliError::Template)?;
@@ -109,10 +113,7 @@ pub async fn module(
     let data = ModuleData {
         name_pascal: names.pascal.clone(),
         name_snake: names.snake.clone(),
-        controllers: controller_list
-            .iter()
-            .map(|c| c.to_string())
-            .collect(),
+        controllers: controller_list.iter().map(|c| c.to_string()).collect(),
         providers: provider_list.iter().map(|p| p.to_string()).collect(),
         controller_list: controller_list
             .iter()
@@ -147,11 +148,7 @@ pub async fn module(
         src_dir.join("mod.rs").display()
     );
 
-    println!(
-        "\n{} Generated {}Module",
-        "✓".green().bold(),
-        names.pascal
-    );
+    println!("\n{} Generated {}Module", "✓".green().bold(), names.pascal);
 
     Ok(())
 }
@@ -208,11 +205,7 @@ pub async fn resource(name: &str, crud: bool) -> CliResult<()> {
 }
 
 /// Generic component generator for middleware, guards, and services.
-async fn generate_component(
-    component_type: &str,
-    name: &str,
-    skip_tests: bool,
-) -> CliResult<()> {
+async fn generate_component(component_type: &str, name: &str, skip_tests: bool) -> CliResult<()> {
     let names = NameCases::from(name);
     let src_dir = get_src_dir()?;
 
@@ -220,7 +213,12 @@ async fn generate_component(
         "middleware" => "middleware",
         "guard" => "guards",
         "service" => "services",
-        _ => return Err(CliError::InvalidArgument(format!("Unknown component type: {}", component_type))),
+        _ => {
+            return Err(CliError::InvalidArgument(format!(
+                "Unknown component type: {}",
+                component_type
+            )))
+        }
     };
 
     let component_dir = src_dir.join(dir_name);
@@ -284,4 +282,3 @@ async fn generate_component(
 
     Ok(())
 }
-

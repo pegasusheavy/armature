@@ -80,4 +80,3 @@ impl From<notify::Error> for CliError {
         CliError::Watch(e.to_string())
     }
 }
-

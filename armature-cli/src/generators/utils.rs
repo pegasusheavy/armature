@@ -127,4 +127,3 @@ pub fn install_cargo_watch() -> CliResult<()> {
 
     Ok(())
 }
-
