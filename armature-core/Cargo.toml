@@ -15,7 +15,7 @@ serde_urlencoded = "0.7"
 httpdate = "1.0"
 async-trait = "0.1"
 flate2 = "1.0"
-brotli = "6.0"
+brotli = "8.0"
 uuid = { version = "1.11", features = ["v4"] }
 thiserror = "1.0"
 tokio-tungstenite = "0.21"
