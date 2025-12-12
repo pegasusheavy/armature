@@ -1,0 +1,36 @@
+[package]
+name = "armature-compression"
+version = "0.1.0"
+edition = "2024"
+authors = ["Armature Contributors"]
+description = "HTTP response compression middleware for Armature framework"
+license = "MIT OR Apache-2.0"
+keywords = ["compression", "gzip", "brotli", "zstd", "middleware"]
+categories = ["compression", "web-programming"]
+
+[dependencies]
+# Core dependencies
+armature-core = { path = "../armature-core" }
+async-trait = "0.1"
+thiserror = "2.0"
+tracing = "0.1"
+
+# Gzip compression (optional)
+flate2 = { version = "1.0", optional = true }
+
+# Brotli compression (optional)
+brotli = { version = "8.0", optional = true }
+
+# Zstd compression (optional)
+zstd = { version = "0.13", optional = true }
+
+[features]
+default = ["gzip", "brotli"]
+gzip = ["dep:flate2"]
+brotli = ["dep:brotli"]
+zstd = ["dep:zstd"]
+full = ["gzip", "brotli", "zstd"]
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+

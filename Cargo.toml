@@ -16,6 +16,7 @@ members = [
     "armature-security",
     "armature-acme",
     "armature-ratelimit",
+    "armature-compression",
     "armature-cli",
 ]
 resolver = "2"
@@ -79,6 +80,7 @@ armature-opentelemetry = { path = "armature-opentelemetry", optional = true }
 armature-security = { path = "armature-security", optional = true }
 armature-acme = { path = "armature-acme", optional = true }
 armature-ratelimit = { path = "armature-ratelimit", optional = true }
+armature-compression = { path = "armature-compression", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.35", features = ["full"] }
@@ -104,6 +106,7 @@ full = [
     "security",
     "acme",
     "ratelimit",
+    "compression",
 ]
 # Full feature set including SAML (requires openssl/xmlsec1)
 full-with-saml = ["full", "saml"]
@@ -126,6 +129,7 @@ opentelemetry = ["armature-opentelemetry"]
 security = ["armature-security"]
 acme = ["armature-acme"]
 ratelimit = ["armature-ratelimit"]
+compression = ["armature-compression"]
 
 [dev-dependencies]
 tokio-test = "0.4"
@@ -259,6 +263,11 @@ path = "examples/handlebars_templates.rs"
 name = "rate_limiting"
 path = "examples/rate_limiting.rs"
 required-features = ["ratelimit"]
+
+[[example]]
+name = "compression_example"
+path = "examples/compression_example.rs"
+required-features = ["compression"]
 
 # Benchmarks
 [[bench]]
