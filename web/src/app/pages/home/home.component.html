@@ -1,46 +1,37 @@
 <!-- Hero Section -->
-<section class="relative py-24 md:py-32 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-  <!-- Background Pattern -->
-  <div class="absolute inset-0 opacity-10">
-    <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%239C92AC&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-  </div>
-
-  <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+<section class="bg-gradient-to-b from-slate-900 to-slate-800 py-20 md:py-28">
+  <div class="max-w-4xl mx-auto px-6 text-center">
     <div class="mb-6">
-      <span class="inline-flex items-center px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-sm font-medium">
-        <span class="w-2 h-2 bg-primary-400 rounded-full mr-2 animate-pulse"></span>
-        v0.1.0 · Now in Early Access
+      <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/30 text-primary-400 text-sm">
+        <span class="w-1.5 h-1.5 bg-primary-400 rounded-full mr-2"></span>
+        v0.1.0 · Early Access
       </span>
     </div>
 
-    <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
-      <span class="text-5xl md:text-7xl">🦾</span>
-      <span class="ml-4 bg-gradient-to-r from-primary-400 via-cyan-400 to-blue-400 text-transparent bg-clip-text">
-        Armature
-      </span>
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+      Build APIs in Rust with
+      <span class="bg-gradient-to-r from-primary-400 to-cyan-400 text-transparent bg-clip-text">Confidence</span>
     </h1>
 
-    <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-      A modern, type-safe HTTP framework for Rust inspired by
-      <span class="text-primary-400 font-medium">Angular</span> and
-      <span class="text-primary-400 font-medium">NestJS</span>.
-      Build production-ready APIs with confidence.
+    <p class="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+      A modern, type-safe HTTP framework inspired by Angular and NestJS.
+      Modular architecture, dependency injection, and powerful tooling.
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-5 justify-center">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
       <a
         routerLink="/getting-started"
-        class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-lg shadow-lg shadow-primary-600/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5"
+        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors"
       >
         Get Started
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
       </a>
       <a
         href="https://github.com/pegasusheavy/armature"
         target="_blank"
-        class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg border border-white/10 hover:border-white/20 transition-all"
+        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
       >
         <fa-icon [icon]="['fab', 'github']" />
         View on GitHub
@@ -50,110 +41,94 @@
 </section>
 
 <!-- Code Example Section -->
-<section class="py-32 px-6 bg-white">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-20">
-      <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+<section class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
         Clean, Expressive Syntax
       </h2>
-      <p class="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-        Write APIs that are easy to read, maintain, and scale. Familiar patterns for developers coming from Angular or NestJS.
+      <p class="text-lg text-slate-600 max-w-xl mx-auto">
+        Familiar patterns for developers coming from Angular or NestJS
       </p>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-16 items-start">
+    <div class="grid lg:grid-cols-5 gap-10 items-start">
       <!-- Code Block -->
-      <div class="relative">
-        <div class="absolute -inset-4 bg-gradient-to-r from-primary-500/20 to-cyan-500/20 rounded-2xl blur-xl"></div>
-        <div class="relative bg-slate-900 rounded-xl overflow-hidden shadow-2xl">
-          <div class="flex items-center gap-2 px-4 py-3 bg-slate-800 border-b border-slate-700">
+      <div class="lg:col-span-3">
+        <div class="bg-slate-900 rounded-xl overflow-hidden shadow-xl">
+          <div class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 border-b border-slate-700">
             <div class="flex gap-1.5">
               <div class="w-3 h-3 rounded-full bg-red-500"></div>
               <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
               <div class="w-3 h-3 rounded-full bg-green-500"></div>
             </div>
-            <span class="text-slate-400 text-sm font-mono ml-2">main.rs</span>
+            <span class="text-slate-500 text-xs font-mono ml-2">main.rs</span>
           </div>
-          <pre class="p-6 overflow-x-auto text-sm leading-relaxed"><code class="language-rust text-slate-300">use armature::prelude::*;
+          <pre class="p-5 overflow-x-auto text-sm leading-relaxed"><code class="text-slate-300"><span class="text-purple-400">use</span> armature::prelude::*;
 
-#[controller("/api")]
-struct ApiController;
+<span class="text-slate-500">#[controller("/api")]</span>
+<span class="text-purple-400">struct</span> <span class="text-cyan-400">ApiController</span>;
 
-#[controller]
-impl ApiController &#123;
-    #[get("/hello/:name")]
-    async fn hello(&amp;self, name: Path&lt;String&gt;) -&gt; Json&lt;Message&gt; &#123;
-        Json(Message &#123;
-            text: format!("Hello, &#123;&#125;!", name.0),
-        &#125;)
-    &#125;
-
-    #[post("/users")]
-    async fn create_user(
-        &amp;self,
-        body: Json&lt;CreateUser&gt;,
-        db: Inject&lt;Database&gt;,
-    ) -&gt; Result&lt;Json&lt;User&gt;, Error&gt; &#123;
-        let user = db.users().create(&amp;body.0).await?;
-        Ok(Json(user))
-    &#125;
+<span class="text-slate-500">#[get("/hello/:name")]</span>
+<span class="text-purple-400">async fn</span> <span class="text-blue-400">hello</span>(&amp;self, name: Path&lt;String&gt;) -&gt; Json&lt;Message&gt; &#123;
+    Json(Message &#123; text: format!(<span class="text-green-400">"Hello, &#123;&#125;!"</span>, name.0) &#125;)
 &#125;
 
-#[module]
-struct AppModule &#123;
-    #[controller]
+<span class="text-slate-500">#[module]</span>
+<span class="text-purple-400">struct</span> <span class="text-cyan-400">AppModule</span> &#123;
+    <span class="text-slate-500">#[controller]</span>
     api: ApiController,
 &#125;
 
-#[tokio::main]
-async fn main() -&gt; Result&lt;()&gt; &#123;
+<span class="text-slate-500">#[tokio::main]</span>
+<span class="text-purple-400">async fn</span> <span class="text-blue-400">main</span>() -&gt; Result&lt;()&gt; &#123;
     Application::create::&lt;AppModule&gt;()
         .await
-        .listen(3000)
+        .listen(<span class="text-amber-400">3000</span>)
         .await
 &#125;</code></pre>
         </div>
       </div>
 
       <!-- Features List -->
-      <div class="space-y-10">
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'magic']" class="text-primary-600 text-xl" />
+      <div class="lg:col-span-2 space-y-6">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+            <fa-icon [icon]="['fas', 'magic']" class="text-primary-600" />
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-slate-900 mb-2">Decorator-Style Macros</h3>
-            <p class="text-slate-600 leading-relaxed">Use familiar decorators like <code class="bg-slate-100 px-2 py-1 rounded text-sm">&#64;controller</code>, <code class="bg-slate-100 px-2 py-1 rounded text-sm">&#64;get</code>, and <code class="bg-slate-100 px-2 py-1 rounded text-sm">&#64;module</code> to define your API structure.</p>
+            <h3 class="font-semibold text-slate-900 mb-1">Decorator-Style Macros</h3>
+            <p class="text-slate-600 text-sm">Use <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">&#64;controller</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">&#64;module</code> to define your API.</p>
           </div>
         </div>
 
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'syringe']" class="text-green-600 text-xl" />
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <fa-icon [icon]="['fas', 'syringe']" class="text-green-600" />
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-slate-900 mb-2">Automatic Dependency Injection</h3>
-            <p class="text-slate-600 leading-relaxed">Services are automatically injected into controllers. No manual wiring required.</p>
+            <h3 class="font-semibold text-slate-900 mb-1">Dependency Injection</h3>
+            <p class="text-slate-600 text-sm">Services are automatically injected. No manual wiring.</p>
           </div>
         </div>
 
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'check-double']" class="text-amber-600 text-xl" />
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+            <fa-icon [icon]="['fas', 'check-double']" class="text-amber-600" />
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-slate-900 mb-2">Type-Safe Extractors</h3>
-            <p class="text-slate-600 leading-relaxed">Path parameters, query strings, and request bodies are fully typed and validated at compile time.</p>
+            <h3 class="font-semibold text-slate-900 mb-1">Type-Safe Extractors</h3>
+            <p class="text-slate-600 text-sm">Path params, query strings, and bodies are validated at compile time.</p>
           </div>
         </div>
 
-        <div class="flex gap-5">
-          <div class="flex-shrink-0 w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
-            <fa-icon [icon]="['fas', 'layer-group']" class="text-purple-600 text-xl" />
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <fa-icon [icon]="['fas', 'layer-group']" class="text-purple-600" />
           </div>
           <div>
-            <h3 class="text-xl font-semibold text-slate-900 mb-2">Module Organization</h3>
-            <p class="text-slate-600 leading-relaxed">Group related controllers and services into modules for clean, scalable architecture.</p>
+            <h3 class="font-semibold text-slate-900 mb-1">Module Organization</h3>
+            <p class="text-slate-600 text-sm">Group controllers and services into clean, scalable modules.</p>
           </div>
         </div>
       </div>
@@ -161,175 +136,107 @@ async fn main() -&gt; Result&lt;()&gt; &#123;
   </div>
 </section>
 
-<!-- Features Carousel Section -->
-<section class="py-32 px-6 bg-slate-50">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-20">
-      <h2 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+<!-- Features Grid Section -->
+<section class="py-20 bg-slate-50">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
         Everything You Need
       </h2>
-      <p class="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-        A complete toolkit for building modern web APIs in Rust
+      <p class="text-lg text-slate-600 max-w-xl mx-auto">
+        A complete toolkit for building production-ready APIs
       </p>
     </div>
 
-    <!-- Carousel Container -->
-    <div class="relative">
-      <!-- Navigation Buttons -->
-      <button
-        (click)="prevSlide()"
-        [disabled]="currentSlide === 0"
-        class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button
-        (click)="nextSlide()"
-        [disabled]="currentSlide >= totalSlides - 1"
-        class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-10 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      <!-- Cards -->
-      <div class="overflow-hidden px-12">
-        <div
-          class="flex transition-transform duration-500 ease-out gap-8"
-          [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'"
-        >
-          @for (feature of features; track feature.title) {
-            <div class="flex-shrink-0 w-full md:w-[calc(33.333%-1.5rem)]">
-              <div class="group relative h-full bg-white rounded-2xl p-10 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-transparent overflow-hidden">
-                <!-- Gradient overlay on hover -->
-                <div class="absolute inset-0 bg-gradient-to-br {{ feature.gradient }} opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-
-                <!-- Icon -->
-                <div class="relative w-16 h-16 rounded-xl bg-gradient-to-br {{ feature.gradient }} flex items-center justify-center mb-8 shadow-lg">
-                  <fa-icon [icon]="['fas', feature.icon]" class="text-white text-2xl" />
-                </div>
-
-                <!-- Content -->
-                <h3 class="relative text-2xl font-bold text-slate-900 mb-4">
-                  {{ feature.title }}
-                </h3>
-                <p class="relative text-slate-600 leading-relaxed text-lg">
-                  {{ feature.description }}
-                </p>
-
-                <!-- Arrow -->
-                <div class="relative mt-8 flex items-center text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  Learn more
-                  <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          }
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (feature of features; track feature.title) {
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all">
+          <div class="w-12 h-12 rounded-lg bg-gradient-to-br {{ feature.gradient }} flex items-center justify-center mb-4">
+            <fa-icon [icon]="['fas', feature.icon]" class="text-white text-lg" />
+          </div>
+          <h3 class="font-semibold text-slate-900 mb-2">{{ feature.title }}</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ feature.description }}</p>
         </div>
-      </div>
-
-      <!-- Dots -->
-      <div class="flex justify-center gap-3 mt-12">
-        @for (dot of [].constructor(totalSlides); track $index) {
-          <button
-            (click)="goToSlide($index)"
-            class="h-3 rounded-full transition-all"
-            [class]="currentSlide === $index ? 'bg-primary-600 w-10' : 'bg-slate-300 hover:bg-slate-400 w-3'"
-          ></button>
-        }
-      </div>
+      }
     </div>
   </div>
 </section>
 
 <!-- CLI Section -->
-<section class="py-32 px-6 bg-slate-900">
-  <div class="max-w-5xl mx-auto">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
-        <fa-icon [icon]="['fas', 'terminal']" class="mr-4 text-primary-400" />
+<section class="py-20 bg-slate-900">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        <fa-icon [icon]="['fas', 'terminal']" class="mr-3 text-primary-400" />
         Armature CLI
       </h2>
-      <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        Supercharge your development with code generation and hot reloading
+      <p class="text-lg text-slate-400">
+        Code generation and hot reloading for fast development
       </p>
     </div>
 
     <!-- Terminal -->
-    <div class="relative mb-16">
-      <div class="absolute -inset-4 bg-gradient-to-r from-primary-500/10 to-cyan-500/10 rounded-2xl blur-xl"></div>
-      <div class="relative bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-700">
-        <div class="flex items-center gap-2 px-4 py-3 bg-slate-800 border-b border-slate-700">
-          <div class="flex gap-1.5">
-            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-          </div>
-          <span class="text-slate-400 text-sm font-mono ml-2">Terminal</span>
+    <div class="bg-black rounded-xl overflow-hidden shadow-2xl border border-slate-700 mb-10">
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 border-b border-slate-700">
+        <div class="flex gap-1.5">
+          <div class="w-3 h-3 rounded-full bg-red-500"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500"></div>
         </div>
-        <pre class="p-8 text-base leading-loose font-mono"><code><span class="text-green-400">$</span> <span class="text-white">cargo install armature-cli</span>
-<span class="text-green-400">$</span> <span class="text-white">armature new my-api</span>
-<span class="text-slate-500">  ✓ Creating project directory...</span>
-<span class="text-slate-500">  ✓ Generating project files...</span>
-<span class="text-slate-500">  ✓ Initializing git repository...</span>
-<span class="text-green-400">✓ Project created successfully!</span>
+        <span class="text-slate-500 text-xs font-mono ml-2">Terminal</span>
+      </div>
+      <pre class="p-5 text-sm leading-loose font-mono"><code><span class="text-green-400">$</span> <span class="text-white">cargo install armature-cli</span>
+<span class="text-green-400">$</span> <span class="text-white">armature new my-api --template api-full</span>
+<span class="text-slate-500">✓ Project created successfully!</span>
 
 <span class="text-green-400">$</span> <span class="text-white">cd my-api && armature dev</span>
-<span class="text-cyan-400">🚀 Server running on http://127.0.0.1:3000</span>
-<span class="text-slate-500">  → Watching for changes in src/</span></code></pre>
-      </div>
+<span class="text-cyan-400">🚀 Server running on http://127.0.0.1:3000</span></code></pre>
     </div>
 
     <!-- Commands Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-      <div class="bg-slate-800 rounded-xl p-6 text-center border border-slate-700 hover:border-primary-500/50 transition-colors">
-        <code class="text-primary-400 font-mono font-medium text-lg">new</code>
-        <p class="text-slate-400 mt-3">Create projects</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
+        <code class="text-primary-400 font-mono text-sm">new</code>
+        <p class="text-slate-500 text-xs mt-1">Create projects</p>
       </div>
-      <div class="bg-slate-800 rounded-xl p-6 text-center border border-slate-700 hover:border-primary-500/50 transition-colors">
-        <code class="text-primary-400 font-mono font-medium text-lg">generate</code>
-        <p class="text-slate-400 mt-3">Generate code</p>
+      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
+        <code class="text-primary-400 font-mono text-sm">generate</code>
+        <p class="text-slate-500 text-xs mt-1">Generate code</p>
       </div>
-      <div class="bg-slate-800 rounded-xl p-6 text-center border border-slate-700 hover:border-primary-500/50 transition-colors">
-        <code class="text-primary-400 font-mono font-medium text-lg">dev</code>
-        <p class="text-slate-400 mt-3">Hot reloading</p>
+      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
+        <code class="text-primary-400 font-mono text-sm">dev</code>
+        <p class="text-slate-500 text-xs mt-1">Hot reloading</p>
       </div>
-      <div class="bg-slate-800 rounded-xl p-6 text-center border border-slate-700 hover:border-primary-500/50 transition-colors">
-        <code class="text-primary-400 font-mono font-medium text-lg">build</code>
-        <p class="text-slate-400 mt-3">Production build</p>
+      <div class="bg-slate-800 rounded-lg p-4 text-center border border-slate-700">
+        <code class="text-primary-400 font-mono text-sm">build</code>
+        <p class="text-slate-500 text-xs mt-1">Production build</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CTA Section -->
-<section class="py-32 px-6 bg-gradient-to-br from-primary-600 to-primary-800">
-  <div class="max-w-4xl mx-auto text-center">
-    <h2 class="text-4xl md:text-5xl font-bold text-white mb-8">
-      Ready to Build Something Amazing?
+<section class="py-20 bg-primary-600">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+      Ready to Get Started?
     </h2>
-    <p class="text-xl text-primary-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-      Join developers who are building fast, reliable APIs with Armature. Get started in minutes.
+    <p class="text-lg text-primary-100 mb-8">
+      Build fast, reliable APIs with Armature. Get started in minutes.
     </p>
-    <div class="flex flex-col sm:flex-row gap-5 justify-center">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
       <a
         routerLink="/getting-started"
-        class="inline-flex items-center justify-center gap-2 px-10 py-5 bg-white text-primary-700 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-lg"
+        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary-700 font-medium rounded-lg hover:bg-primary-50 transition-colors"
       >
         Start Building
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
       </a>
       <a
         routerLink="/docs"
-        class="inline-flex items-center justify-center gap-2 px-10 py-5 bg-primary-500/20 text-white font-semibold rounded-lg border border-white/20 hover:bg-primary-500/30 transition-all text-lg"
+        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-lg border border-primary-400 hover:bg-primary-400 transition-colors"
       >
         Read the Docs
       </a>

@@ -10,55 +10,52 @@
       </div>
 
       <!-- Desktop Navigation - pushed to right -->
-      <div class="hidden md:flex items-center gap-1 ml-auto">
+      <div class="hidden md:flex items-center ml-auto">
         <a
           routerLink="/"
-          routerLinkActive="text-primary-600 bg-primary-50"
+          routerLinkActive="text-primary-600"
           [routerLinkActiveOptions]="{ exact: true }"
-          class="text-slate-600 hover:text-primary-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          class="text-slate-600 hover:text-slate-900 px-4 py-2 text-sm font-medium transition-colors"
         >
           Home
         </a>
         <a
           routerLink="/docs"
-          routerLinkActive="text-primary-600 bg-primary-50"
-          class="text-slate-600 hover:text-primary-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          routerLinkActive="text-primary-600"
+          class="text-slate-600 hover:text-slate-900 px-4 py-2 text-sm font-medium transition-colors"
         >
-          Documentation
+          Docs
         </a>
         <a
           routerLink="/comparisons"
-          routerLinkActive="text-primary-600 bg-primary-50"
-          class="text-slate-600 hover:text-primary-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          routerLinkActive="text-primary-600"
+          class="text-slate-600 hover:text-slate-900 px-4 py-2 text-sm font-medium transition-colors"
         >
           Comparisons
         </a>
         <a
           routerLink="/getting-started"
-          routerLinkActive="text-primary-600 bg-primary-50"
-          class="text-slate-600 hover:text-primary-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          routerLinkActive="text-primary-600"
+          class="text-slate-600 hover:text-slate-900 px-4 py-2 text-sm font-medium transition-colors"
         >
           Getting Started
         </a>
         <a
           routerLink="/faq"
-          routerLinkActive="text-primary-600 bg-primary-50"
-          class="text-slate-600 hover:text-primary-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          routerLinkActive="text-primary-600"
+          class="text-slate-600 hover:text-slate-900 px-4 py-2 text-sm font-medium transition-colors"
         >
           FAQ
         </a>
 
-        <!-- GitHub Button - Styled -->
+        <!-- GitHub Button -->
         <a
           href="https://github.com/pegasusheavy/armature"
           target="_blank"
-          class="ml-4 inline-flex items-center gap-2 bg-slate-900 text-white pl-4 pr-5 py-2 rounded-full hover:bg-slate-800 transition-all shadow-sm hover:shadow-md group"
+          class="ml-6 inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium"
         >
-          <fa-icon [icon]="['fab', 'github']" class="text-lg" />
-          <span class="font-medium">Star on GitHub</span>
-          <svg class="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
+          <fa-icon [icon]="['fab', 'github']" />
+          GitHub
         </a>
       </div>
 
