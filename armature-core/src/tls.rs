@@ -5,6 +5,7 @@
 use crate::Error;
 use rustls::{
     ServerConfig,
+    crypto::ring::default_provider,
     pki_types::{CertificateDer, PrivateKeyDer},
 };
 use rustls_pemfile::{certs, private_key};
@@ -63,7 +64,9 @@ impl TlsConfig {
         certs: Vec<CertificateDer<'static>>,
         key: PrivateKeyDer<'static>,
     ) -> Result<Self, Error> {
-        let mut config = ServerConfig::builder()
+        let mut config = ServerConfig::builder_with_provider(Arc::new(default_provider()))
+            .with_safe_default_protocol_versions()
+            .map_err(|e| Error::Internal(format!("Failed to configure TLS protocol: {}", e)))?
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .map_err(|e| Error::Internal(format!("Failed to create TLS config: {}", e)))?;
@@ -99,17 +102,21 @@ impl TlsConfig {
             CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>());
         params.distinguished_name = rcgen::DistinguishedName::new();
 
+        // Generate key pair with ECDSA P-256
         let key_pair = KeyPair::generate(&rcgen::PKCS_ECDSA_P256_SHA256)
             .map_err(|e| Error::Internal(format!("Failed to generate key pair: {}", e)))?;
 
+        // Set the key pair in params
+        params.key_pair = Some(key_pair);
+
+        // Create self-signed certificate
         let cert = rcgen::Certificate::from_params(params)
             .map_err(|e| Error::Internal(format!("Failed to create certificate: {}", e)))?;
 
         let cert_pem = cert
             .serialize_pem()
             .map_err(|e| Error::Internal(format!("Failed to serialize certificate: {}", e)))?;
-
-        let key_pem = key_pair.serialize_pem();
+        let key_pem = cert.serialize_private_key_pem();
 
         Self::from_pem_bytes(cert_pem.as_bytes(), key_pem.as_bytes())
     }
