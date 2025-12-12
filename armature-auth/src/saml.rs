@@ -278,13 +278,13 @@ impl SamlProvider for SamlServiceProvider {
 /// Extract NameID from SAML response (simplified)
 fn extract_name_id(xml: &str) -> Result<String> {
     // Simple extraction - in production use proper XML parser
-    if let Some(start) = xml.find("<saml:NameID") {
-        if let Some(content_start) = xml[start..].find('>') {
-            let content_start = start + content_start + 1;
-            if let Some(content_end) = xml[content_start..].find("</saml:NameID>") {
-                let name_id = xml[content_start..content_start + content_end].trim();
-                return Ok(name_id.to_string());
-            }
+    if let Some(start) = xml.find("<saml:NameID")
+        && let Some(content_start) = xml[start..].find('>')
+    {
+        let content_start = start + content_start + 1;
+        if let Some(content_end) = xml[content_start..].find("</saml:NameID>") {
+            let name_id = xml[content_start..content_start + content_end].trim();
+            return Ok(name_id.to_string());
         }
     }
     Err(AuthError::InvalidToken(

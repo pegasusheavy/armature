@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Comprehensive Middleware System Example
 //
 // Note: This example demonstrates custom middleware implementations.
@@ -159,7 +160,7 @@ impl ApiController {
 
     #[get("/protected")]
     async fn get_protected_data() -> Result<Json<ApiResponse>, Error> {
-        let service = DataService::default();
+        let service = DataService;
         Ok(Json(service.get_data()))
     }
 

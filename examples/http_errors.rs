@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // HTTP Status and Error Handling Example
 
 use armature::Error;
@@ -115,7 +116,7 @@ struct ErrorController;
 impl ErrorController {
     #[get("/statuses")]
     async fn list_statuses() -> Result<Json<Vec<StatusInfo>>, Error> {
-        let service = ItemService::default();
+        let service = ItemService;
         Ok(Json(service.list_statuses()))
     }
 
@@ -128,7 +129,7 @@ impl ErrorController {
             .parse()
             .map_err(|_| Error::BadRequest("Invalid ID format".to_string()))?;
 
-        let service = ItemService::default();
+        let service = ItemService;
         service.get_item(id).map(Json)
     }
 }

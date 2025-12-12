@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Example showing automatic DI using Application::create()
 
 use armature::prelude::*;

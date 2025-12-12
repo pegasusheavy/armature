@@ -1,9 +1,8 @@
+#![allow(dead_code)]
 // Server-Sent Events (SSE) example
 
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use std::time::Duration;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct StockPrice {
@@ -56,8 +55,8 @@ struct EventsController;
 impl EventsController {
     #[get("/stats")]
     async fn get_stats() -> Result<Json<serde_json::Value>, Error> {
-        let stock_service = StockTickerService::default();
-        let news_service = NewsService::default();
+        let stock_service = StockTickerService;
+        let news_service = NewsService;
 
         Ok(Json(serde_json::json!({
             "stock_ticker": stock_service.get_stats(),

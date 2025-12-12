@@ -12,22 +12,17 @@ pub type JobId = Uuid;
 pub type JobData = serde_json::Value;
 
 /// Job priority levels.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Default)]
 pub enum JobPriority {
     /// Lowest priority
     Low = 0,
     /// Normal priority (default)
+    #[default]
     Normal = 1,
     /// High priority
     High = 2,
     /// Critical priority
     Critical = 3,
-}
-
-impl Default for JobPriority {
-    fn default() -> Self {
-        Self::Normal
-    }
 }
 
 /// Job state.

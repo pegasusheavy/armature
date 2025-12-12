@@ -55,6 +55,7 @@ pub async fn init_tracing(config: &TelemetryConfig) -> TelemetryResult<TracerPro
         }
 
         #[cfg(feature = "jaeger")]
+        #[allow(deprecated)]
         TracingExporter::Jaeger => {
             let endpoint = config.tracing.jaeger_endpoint.as_ref().ok_or_else(|| {
                 TelemetryError::Config("Jaeger endpoint not configured".to_string())

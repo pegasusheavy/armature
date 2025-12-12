@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Simple JWT example demonstrating token operations
 
 use armature_jwt::{Claims, JwtConfig, JwtManager, StandardClaims};
@@ -122,7 +123,7 @@ fn main() {
         .with_issuer("my-app".to_string())
         .with_expiration(7200);
 
-    let standard_token = jwt_manager.sign(&standard).expect("Failed to sign");
+    let _standard_token = jwt_manager.sign(&standard).expect("Failed to sign");
     println!("   ✓ Standard claims token created");
     println!("   Subject: {}", standard.sub.unwrap());
     println!();

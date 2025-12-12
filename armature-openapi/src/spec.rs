@@ -280,8 +280,10 @@ mod tests {
 
     #[test]
     fn test_path_item_creation() {
-        let mut path = PathItem::default();
-        path.get = Some(Operation::default());
+        let path = PathItem {
+            get: Some(Operation::default()),
+            ..Default::default()
+        };
 
         assert!(path.get.is_some());
         assert!(path.post.is_none());
@@ -410,8 +412,10 @@ mod tests {
 
     #[test]
     fn test_operation_with_tags() {
-        let mut operation = Operation::default();
-        operation.tags = vec!["users".to_string(), "admin".to_string()];
+        let operation = Operation {
+            tags: vec!["users".to_string(), "admin".to_string()],
+            ..Default::default()
+        };
 
         assert_eq!(operation.tags.len(), 2);
         assert!(operation.tags.contains(&"users".to_string()));

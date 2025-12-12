@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Rate Limiting Example
 //!
 //! This example demonstrates how to use the armature-ratelimit crate

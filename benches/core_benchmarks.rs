@@ -32,6 +32,7 @@ fn bench_http_response_creation(c: &mut Criterion) {
 }
 
 fn bench_json_parsing(c: &mut Criterion) {
+    #[allow(dead_code)]
     #[derive(serde::Deserialize)]
     struct TestData {
         id: u64,

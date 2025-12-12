@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Example demonstrating full dependency injection in Armature
 
 use armature::prelude::*;

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // OAuth2 Providers example - demonstrating all supported providers
 
 use armature_auth::OAuth2Provider;

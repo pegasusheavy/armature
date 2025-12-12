@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // RESTful API example with CRUD operations
 
 use armature::prelude::*;
@@ -38,7 +39,7 @@ struct TaskController;
 impl TaskController {
     #[get("")]
     async fn list() -> Result<Json<Vec<Task>>, Error> {
-        let service = TaskService::default();
+        let service = TaskService;
         Ok(Json(service.get_all()))
     }
 
@@ -51,7 +52,7 @@ impl TaskController {
             .parse()
             .map_err(|_| Error::Validation("Invalid id".to_string()))?;
 
-        let service = TaskService::default();
+        let service = TaskService;
         let task = service
             .get_all()
             .into_iter()

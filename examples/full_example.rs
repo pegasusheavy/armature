@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Example application demonstrating the Armature framework
 
 use armature::prelude::*;
@@ -59,7 +60,7 @@ struct UserController;
 impl UserController {
     #[get("")]
     async fn get_users() -> Result<Json<Vec<User>>, Error> {
-        let service = UserService::default();
+        let service = UserService;
         let users = service.get_all_users();
         Ok(Json(users))
     }
@@ -73,7 +74,7 @@ impl UserController {
             .parse()
             .map_err(|_| Error::Validation("Invalid id format".to_string()))?;
 
-        let service = UserService::default();
+        let service = UserService;
         let user = service
             .get_user_by_id(id)
             .ok_or_else(|| Error::RouteNotFound(format!("User {} not found", id)))?;
@@ -84,7 +85,7 @@ impl UserController {
     #[post("")]
     async fn create_user(req: HttpRequest) -> Result<Json<User>, Error> {
         let dto: CreateUserDto = req.json()?;
-        let service = UserService::default();
+        let service = UserService;
         let user = service.create_user(dto.name, dto.email);
         Ok(Json(user))
     }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 //! Security middleware example - demonstrates Helmet-like security features
 //!
 //! This example shows how to use the comprehensive security middleware
@@ -117,7 +118,7 @@ struct ApiController;
 impl ApiController {
     #[get("/data")]
     async fn get_data() -> Result<Json<serde_json::Value>, Error> {
-        let service = SecurityService::default();
+        let service = SecurityService;
         Ok(Json(service.get_security_info()))
     }
 

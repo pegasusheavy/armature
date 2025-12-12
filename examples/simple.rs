@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Simple example demonstrating basic routing and JSON responses
 
 use armature::prelude::*;
