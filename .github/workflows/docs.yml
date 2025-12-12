@@ -37,7 +37,7 @@ jobs:
           echo '<meta http-equiv="refresh" content="0; url=armature">' > target/doc/index.html
 
       - name: Upload Rust docs artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: rust-docs
           path: target/doc/
@@ -84,7 +84,7 @@ jobs:
         run: pnpm run build
 
       - name: Upload website artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: website
           path: web/dist/web/browser/
