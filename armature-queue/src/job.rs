@@ -360,14 +360,14 @@ mod tests {
 
     #[test]
     fn test_job_priority_levels() {
-        let low = Job::new("default", "task", serde_json::json!({}))
-            .with_priority(JobPriority::Low);
-        let normal = Job::new("default", "task", serde_json::json!({}))
-            .with_priority(JobPriority::Normal);
-        let high = Job::new("default", "task", serde_json::json!({}))
-            .with_priority(JobPriority::High);
-        let critical = Job::new("default", "task", serde_json::json!({}))
-            .with_priority(JobPriority::Critical);
+        let low =
+            Job::new("default", "task", serde_json::json!({})).with_priority(JobPriority::Low);
+        let normal =
+            Job::new("default", "task", serde_json::json!({})).with_priority(JobPriority::Normal);
+        let high =
+            Job::new("default", "task", serde_json::json!({})).with_priority(JobPriority::High);
+        let critical =
+            Job::new("default", "task", serde_json::json!({})).with_priority(JobPriority::Critical);
 
         assert_eq!(low.priority, JobPriority::Low);
         assert_eq!(normal.priority, JobPriority::Normal);
@@ -389,8 +389,7 @@ mod tests {
     #[test]
     fn test_job_schedule_at() {
         let future = Utc::now() + chrono::Duration::hours(2);
-        let job = Job::new("default", "task", serde_json::json!({}))
-            .schedule_at(future);
+        let job = Job::new("default", "task", serde_json::json!({})).schedule_at(future);
 
         assert!(!job.is_ready());
         assert!(job.scheduled_at.is_some());
@@ -399,8 +398,7 @@ mod tests {
     #[test]
     fn test_job_scheduled_at_in_future() {
         let future = Utc::now() + chrono::Duration::minutes(30);
-        let job = Job::new("default", "task", serde_json::json!({}))
-            .schedule_at(future);
+        let job = Job::new("default", "task", serde_json::json!({})).schedule_at(future);
 
         assert!(!job.is_ready());
         assert!(job.scheduled_at.is_some());
@@ -433,8 +431,7 @@ mod tests {
 
     #[test]
     fn test_job_max_attempts() {
-        let job = Job::new("default", "task", serde_json::json!({}))
-            .with_max_attempts(10);
+        let job = Job::new("default", "task", serde_json::json!({})).with_max_attempts(10);
 
         assert_eq!(job.max_attempts, 10);
     }
@@ -447,8 +444,7 @@ mod tests {
 
     #[test]
     fn test_job_can_retry_with_zero_max_attempts() {
-        let mut job = Job::new("default", "task", serde_json::json!({}))
-            .with_max_attempts(0);
+        let mut job = Job::new("default", "task", serde_json::json!({})).with_max_attempts(0);
 
         job.start_processing();
         job.fail("Error".to_string());
@@ -487,8 +483,7 @@ mod tests {
     #[test]
     fn test_job_ready_with_past_schedule() {
         let past = Utc::now() - chrono::Duration::hours(1);
-        let job = Job::new("default", "task", serde_json::json!({}))
-            .schedule_at(past);
+        let job = Job::new("default", "task", serde_json::json!({})).schedule_at(past);
 
         assert!(job.is_ready());
     }
@@ -532,8 +527,7 @@ mod tests {
 
     #[test]
     fn test_job_state_dead_after_max_retries() {
-        let mut job = Job::new("default", "task", serde_json::json!({}))
-            .with_max_attempts(2);
+        let mut job = Job::new("default", "task", serde_json::json!({})).with_max_attempts(2);
 
         job.start_processing();
         job.fail("Error 1".to_string());

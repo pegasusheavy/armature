@@ -132,7 +132,7 @@ impl MockQueueWorker {
     }
 
     /// Simulate CPU-intensive job processing
-    async fn process_job(&self, job: &Job) -> Result<()> {
+    async fn process_job(&self, _job: &Job) -> Result<()> {
         // Simulate processing time (e.g., image resize, video encode)
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
 
@@ -201,7 +201,10 @@ async fn main() -> Result<()> {
     println!("\nResults:");
     println!("  • Jobs processed: {}", sequential.len());
     println!("  • Total time: {:?}", seq_duration);
-    println!("  • Average: {:?} per job", seq_duration / sequential.len() as u32);
+    println!(
+        "  • Average: {:?} per job",
+        seq_duration / sequential.len() as u32
+    );
     println!(
         "  • Throughput: {:.1} jobs/sec\n",
         sequential.len() as f64 / seq_duration.as_secs_f64()
@@ -239,7 +242,10 @@ async fn main() -> Result<()> {
     println!("\nResults:");
     println!("  • Jobs processed: {}", parallel.len());
     println!("  • Total time: {:?}", par_duration);
-    println!("  • Average: {:?} per job", par_duration / parallel.len() as u32);
+    println!(
+        "  • Average: {:?} per job",
+        par_duration / parallel.len() as u32
+    );
     println!(
         "  • Throughput: {:.1} jobs/sec\n",
         parallel.len() as f64 / par_duration.as_secs_f64()
@@ -259,14 +265,18 @@ async fn main() -> Result<()> {
 
     println!("Sequential:");
     println!("  ⏱️  Time: {:?}", seq_duration);
-    println!("  📊 Throughput: {:.1} jobs/sec",
-        sequential.len() as f64 / seq_duration.as_secs_f64());
+    println!(
+        "  📊 Throughput: {:.1} jobs/sec",
+        sequential.len() as f64 / seq_duration.as_secs_f64()
+    );
     println!();
 
     println!("Parallel Batch:");
     println!("  ⏱️  Time: {:?}", par_duration);
-    println!("  📊 Throughput: {:.1} jobs/sec",
-        parallel.len() as f64 / par_duration.as_secs_f64());
+    println!(
+        "  📊 Throughput: {:.1} jobs/sec",
+        parallel.len() as f64 / par_duration.as_secs_f64()
+    );
     println!();
 
     println!("Performance Gain:");
@@ -287,13 +297,19 @@ async fn main() -> Result<()> {
     // Enqueue different job types
     println!("📦 Enqueuing mixed job types...");
     for i in 0..10 {
-        worker.enqueue("process_image".to_string(), json!({"id": i})).await?;
+        worker
+            .enqueue("process_image".to_string(), json!({"id": i}))
+            .await?;
     }
     for i in 0..10 {
-        worker.enqueue("send_email".to_string(), json!({"id": i})).await?;
+        worker
+            .enqueue("send_email".to_string(), json!({"id": i}))
+            .await?;
     }
     for i in 0..10 {
-        worker.enqueue("generate_report".to_string(), json!({"id": i})).await?;
+        worker
+            .enqueue("generate_report".to_string(), json!({"id": i}))
+            .await?;
     }
 
     println!("  • process_image: 10 jobs");
@@ -314,9 +330,7 @@ async fn main() -> Result<()> {
 
     println!(
         "\n✅ Processed {} jobs in {} batches ({:?})",
-        total_processed,
-        3,
-        batch_duration
+        total_processed, 3, batch_duration
     );
     println!(
         "   Throughput: {:.1} jobs/sec\n",
@@ -363,4 +377,3 @@ async fn main() -> Result<()> {
 
     Ok(())
 }
-

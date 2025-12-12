@@ -1,6 +1,6 @@
 // Test Application Builder
 
-use armature_core::{Application, Container, HttpRequest, HttpResponse, Error, Module, Provider, Router};
+use armature_core::{Application, Container, Module, Provider, Router};
 use std::sync::Arc;
 
 /// Test application for integration testing
@@ -129,7 +129,9 @@ impl TestAppBuilder {
     pub fn with_route<F, Fut>(mut self, path: &str, handler: F) -> Self
     where
         F: Fn(armature_core::HttpRequest) -> Fut + Send + Sync + 'static,
-        Fut: std::future::Future<Output = Result<armature_core::HttpResponse, armature_core::Error>> + Send + 'static,
+        Fut: std::future::Future<Output = Result<armature_core::HttpResponse, armature_core::Error>>
+            + Send
+            + 'static,
     {
         use armature_core::{HttpMethod, Route};
         self.router.add_route(Route {

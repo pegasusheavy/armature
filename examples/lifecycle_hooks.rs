@@ -4,11 +4,10 @@
 //! This example shows OnModuleInit, OnModuleDestroy, OnApplicationBootstrap,
 //! and OnApplicationShutdown hooks.
 
-use armature_core::lifecycle::{
-    LifecycleManager, OnApplicationBootstrap, OnApplicationShutdown, OnModuleDestroy,
-    OnModuleInit,
-};
 use armature_core::Provider;
+use armature_core::lifecycle::{
+    LifecycleManager, OnApplicationBootstrap, OnApplicationShutdown, OnModuleDestroy, OnModuleInit,
+};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -22,9 +21,7 @@ impl Provider for DatabaseService {}
 
 #[async_trait]
 impl OnModuleInit for DatabaseService {
-    async fn on_module_init(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_init(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  📊 DatabaseService: Connecting to database...");
         println!("     Connection string: {}", self.connection_string);
 
@@ -38,9 +35,7 @@ impl OnModuleInit for DatabaseService {
 
 #[async_trait]
 impl OnModuleDestroy for DatabaseService {
-    async fn on_module_destroy(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_destroy(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  📊 DatabaseService: Closing database connection...");
 
         // Simulate database disconnection
@@ -61,9 +56,7 @@ impl Provider for CacheService {}
 
 #[async_trait]
 impl OnModuleInit for CacheService {
-    async fn on_module_init(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_init(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  💾 CacheService: Initializing Redis cache...");
         println!("     Redis URL: {}", self.redis_url);
 
@@ -77,9 +70,7 @@ impl OnModuleInit for CacheService {
 
 #[async_trait]
 impl OnModuleDestroy for CacheService {
-    async fn on_module_destroy(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_destroy(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("  💾 CacheService: Flushing and closing cache...");
 
         // Simulate cache cleanup
@@ -229,4 +220,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

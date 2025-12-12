@@ -205,9 +205,12 @@ mod tests {
 
     #[test]
     fn test_with_audience() {
-        let claims = StandardClaims::new()
-            .with_audience(vec!["api1".to_string(), "api2".to_string()]);
-        assert_eq!(claims.aud, Some(vec!["api1".to_string(), "api2".to_string()]));
+        let claims =
+            StandardClaims::new().with_audience(vec!["api1".to_string(), "api2".to_string()]);
+        assert_eq!(
+            claims.aud,
+            Some(vec!["api1".to_string(), "api2".to_string()])
+        );
     }
 
     #[test]
@@ -219,8 +222,7 @@ mod tests {
 
     #[test]
     fn test_with_jti() {
-        let claims = StandardClaims::new()
-            .with_jti("unique-id-123".to_string());
+        let claims = StandardClaims::new().with_jti("unique-id-123".to_string());
         assert_eq!(claims.jti, Some("unique-id-123".to_string()));
     }
 
@@ -309,11 +311,7 @@ mod tests {
 
     #[test]
     fn test_multiple_audiences() {
-        let audiences = vec![
-            "api1".to_string(),
-            "api2".to_string(),
-            "api3".to_string(),
-        ];
+        let audiences = vec!["api1".to_string(), "api2".to_string(), "api3".to_string()];
         let claims = StandardClaims::new().with_audience(audiences.clone());
         assert_eq!(claims.aud, Some(audiences));
     }

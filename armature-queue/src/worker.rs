@@ -382,11 +382,8 @@ impl Worker {
     /// });
     /// # }
     /// ```
-    pub fn register_cpu_intensive_handler<F>(
-        &mut self,
-        job_type: impl Into<String>,
-        handler: F,
-    ) where
+    pub fn register_cpu_intensive_handler<F>(&mut self, job_type: impl Into<String>, handler: F)
+    where
         F: Fn(Job) -> QueueResult<()> + Send + Sync + 'static,
     {
         let handler = Arc::new(handler);
@@ -401,8 +398,7 @@ impl Worker {
             }) as Pin<Box<dyn Future<Output = QueueResult<()>> + Send>>
         });
 
-        let mut handlers = tokio::runtime::Handle::current()
-            .block_on(self.handlers.write());
+        let mut handlers = tokio::runtime::Handle::current().block_on(self.handlers.write());
         handlers.insert(job_type.into(), wrapped);
     }
 

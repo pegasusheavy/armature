@@ -1,7 +1,7 @@
 // Dependency injection container
 
-use crate::{Error, Provider};
 use crate::logging::{debug, trace};
+use crate::{Error, Provider};
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -25,7 +25,10 @@ impl Container {
         let type_id = TypeId::of::<T>();
         let type_name = std::any::type_name::<T>();
 
-        trace!(provider = type_name, "Acquiring write lock for registration");
+        trace!(
+            provider = type_name,
+            "Acquiring write lock for registration"
+        );
         let mut providers = self.providers.write().unwrap();
         providers.insert(type_id, Arc::new(instance));
 
@@ -77,12 +80,7 @@ impl Container {
         let result = providers
             .get(&type_id)
             .and_then(|any| any.clone().downcast::<T>().ok())
-            .ok_or_else(|| {
-                Error::ProviderNotFound(format!(
-                    "Provider not found: {}",
-                    type_name
-                ))
-            });
+            .ok_or_else(|| Error::ProviderNotFound(format!("Provider not found: {}", type_name)));
 
         match &result {
             Ok(_) => debug!(provider = type_name, "Provider resolved successfully"),
@@ -100,7 +98,11 @@ impl Container {
         let providers = self.providers.read().unwrap();
         let exists = providers.contains_key(&type_id);
 
-        trace!(provider = type_name, exists = exists, "Checked provider existence");
+        trace!(
+            provider = type_name,
+            exists = exists,
+            "Checked provider existence"
+        );
         exists
     }
 
@@ -110,7 +112,10 @@ impl Container {
         let count = providers.len();
         providers.clear();
 
-        debug!(provider_count = count, "Cleared all providers from container");
+        debug!(
+            provider_count = count,
+            "Cleared all providers from container"
+        );
     }
 }
 

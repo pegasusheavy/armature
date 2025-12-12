@@ -89,9 +89,10 @@ mod tests {
         let directory: Directory = serde_json::from_str(json).unwrap();
         assert!(directory.meta.is_some());
         let meta = directory.meta.unwrap();
-        assert_eq!(meta.terms_of_service, Some("https://example.com/tos".to_string()));
+        assert_eq!(
+            meta.terms_of_service,
+            Some("https://example.com/tos".to_string())
+        );
         assert_eq!(meta.external_account_required, Some(true));
     }
 }
-
-

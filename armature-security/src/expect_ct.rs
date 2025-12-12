@@ -71,9 +71,11 @@ mod tests {
 
     #[test]
     fn test_expect_ct_report_uri() {
-        let config = ExpectCtConfig::new(86400)
-            .report_uri("https://example.com/report".to_string());
-        assert_eq!(config.to_header_value(), "max-age=86400, report-uri=\"https://example.com/report\"");
+        let config =
+            ExpectCtConfig::new(86400).report_uri("https://example.com/report".to_string());
+        assert_eq!(
+            config.to_header_value(),
+            "max-age=86400, report-uri=\"https://example.com/report\""
+        );
     }
 }
-

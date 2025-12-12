@@ -34,9 +34,7 @@ async fn test_job_creation() {
     let job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
-        |_ctx| Box::pin(async {
-            Ok(())
-        }),
+        |_ctx| Box::pin(async { Ok(()) }),
     );
 
     assert_eq!(job.name(), "test_job");
@@ -102,11 +100,13 @@ async fn test_job_context() {
     let job = Job::new(
         "test_job".to_string(),
         CronExpression::parse("0 0 * * * *").unwrap(),
-        |ctx| Box::pin(async move {
-            assert!(ctx.execution_count >= 0);
-            assert!(!ctx.job_name.is_empty());
-            Ok(())
-        }),
+        |ctx| {
+            Box::pin(async move {
+                assert!(ctx.execution_count >= 0);
+                assert!(!ctx.job_name.is_empty());
+                Ok(())
+            })
+        },
     );
 
     job.execute().await.unwrap();
@@ -140,5 +140,3 @@ fn test_cron_error_display() {
     let display = format!("{}", err);
     assert!(display.contains("bad cron"));
 }
-
-

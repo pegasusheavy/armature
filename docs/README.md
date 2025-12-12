@@ -40,12 +40,6 @@ Start with the main [README](../README.md) in the project root for a quick intro
   - DI integration
   - Best practices
 
-- **[ANGULAR_SSR_GUIDE.md](ANGULAR_SSR_GUIDE.md)** - Angular Universal SSR
-  - Server-side rendering setup
-  - Static file serving
-  - API integration
-  - Performance optimization
-
 - **[WEBSOCKET_SSE_GUIDE.md](WEBSOCKET_SSE_GUIDE.md)** - Real-time communication guide
   - WebSocket rooms and broadcasting
   - Server-Sent Events streaming

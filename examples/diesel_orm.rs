@@ -5,8 +5,8 @@
 //!
 //! Diesel is the most popular Rust ORM with excellent compile-time guarantees.
 
-use armature_core::lifecycle::{LifecycleManager, OnApplicationShutdown, OnModuleInit};
 use armature_core::Provider;
+use armature_core::lifecycle::{LifecycleManager, OnApplicationShutdown, OnModuleInit};
 use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
@@ -100,8 +100,7 @@ impl DieselDatabaseService {
             .as_ref()
             .ok_or_else(|| diesel::result::Error::NotFound)?;
 
-        pool.get()
-            .map_err(|_| diesel::result::Error::NotFound)
+        pool.get().map_err(|_| diesel::result::Error::NotFound)
     }
 
     /// Check if database is connected
@@ -116,11 +115,12 @@ impl Provider for DieselDatabaseService {}
 // Lifecycle hook: Initialize database connection on module init
 #[async_trait]
 impl OnModuleInit for DieselDatabaseService {
-    async fn on_module_init(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_init(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("📊 DieselDatabaseService: Connecting to PostgreSQL...");
-        println!("   Connection: {}", mask_connection_string(&self.connection_string));
+        println!(
+            "   Connection: {}",
+            mask_connection_string(&self.connection_string)
+        );
 
         // Create connection pool with R2D2
         let manager = ConnectionManager::<PgConnection>::new(&self.connection_string);
@@ -159,7 +159,10 @@ impl OnApplicationShutdown for DieselDatabaseService {
         signal: Option<String>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         if let Some(sig) = signal {
-            println!("📊 DieselDatabaseService: Closing connections (signal: {})...", sig);
+            println!(
+                "📊 DieselDatabaseService: Closing connections (signal: {})...",
+                sig
+            );
         } else {
             println!("📊 DieselDatabaseService: Closing connections...");
         }
@@ -204,7 +207,10 @@ impl DieselDatabaseService {
     }
 
     /// Get user by ID
-    pub async fn get_user_by_id(&self, user_id: i32) -> Result<Option<User>, diesel::result::Error> {
+    pub async fn get_user_by_id(
+        &self,
+        user_id: i32,
+    ) -> Result<Option<User>, diesel::result::Error> {
         let mut conn = self.get_connection().await?;
 
         users::table
@@ -277,8 +283,7 @@ impl DieselDatabaseService {
     pub async fn delete_user(&self, user_id: i32) -> Result<bool, diesel::result::Error> {
         let mut conn = self.get_connection().await?;
 
-        let count = diesel::delete(users::table.find(user_id))
-            .execute(&mut conn)?;
+        let count = diesel::delete(users::table.find(user_id)).execute(&mut conn)?;
 
         Ok(count > 0)
     }
@@ -287,9 +292,7 @@ impl DieselDatabaseService {
     pub async fn count_users(&self) -> Result<i64, diesel::result::Error> {
         let mut conn = self.get_connection().await?;
 
-        users::table
-            .count()
-            .get_result(&mut conn)
+        users::table.count().get_result(&mut conn)
     }
 }
 
@@ -337,7 +340,11 @@ impl UserService {
             .map_err(|e| format!("Failed to create user: {}", e))
     }
 
-    pub async fn update_user(&self, id: i32, req: UpdateUserRequest) -> Result<Option<User>, String> {
+    pub async fn update_user(
+        &self,
+        id: i32,
+        req: UpdateUserRequest,
+    ) -> Result<Option<User>, String> {
         self.db
             .update_user(id, req.username, req.email)
             .await
@@ -352,7 +359,8 @@ impl UserService {
     }
 
     pub async fn stats(&self) -> Result<serde_json::Value, String> {
-        let count = self.db
+        let count = self
+            .db
             .count_users()
             .await
             .map_err(|e| format!("Failed to get stats: {}", e))?;
@@ -379,11 +387,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 
     // Get database URL from environment
-    let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| {
-            println!("⚠️  DATABASE_URL not set, using default (demo mode)");
-            "postgres://postgres:password@localhost/armature_diesel".to_string()
-        });
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        println!("⚠️  DATABASE_URL not set, using default (demo mode)");
+        "postgres://postgres:password@localhost/armature_diesel".to_string()
+    });
 
     println!("📋 Configuration:");
     println!("   Database: {}\n", mask_connection_string(&database_url));
@@ -520,4 +527,3 @@ fn mask_connection_string(conn_str: &str) -> String {
     }
     conn_str.to_string()
 }
-

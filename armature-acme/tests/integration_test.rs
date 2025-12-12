@@ -9,7 +9,11 @@ fn test_acme_config_lets_encrypt_production() {
         vec!["example.com".to_string()],
     );
 
-    assert!(config.directory_url.contains("acme-v02.api.letsencrypt.org"));
+    assert!(
+        config
+            .directory_url
+            .contains("acme-v02.api.letsencrypt.org")
+    );
     assert_eq!(config.email_contacts.len(), 1);
     assert_eq!(config.domains.len(), 1);
 }
@@ -21,7 +25,11 @@ fn test_acme_config_lets_encrypt_staging() {
         vec!["example.com".to_string()],
     );
 
-    assert!(config.directory_url.contains("acme-staging-v02.api.letsencrypt.org"));
+    assert!(
+        config
+            .directory_url
+            .contains("acme-staging-v02.api.letsencrypt.org")
+    );
 }
 
 #[test]
@@ -87,5 +95,3 @@ fn test_acme_config_google_trust_services() {
 
     assert!(config.directory_url.contains("dv.acme-v02.api.pki.goog"));
 }
-
-

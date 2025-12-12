@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use armature_core::*;
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use std::collections::HashMap;
 
 fn bench_http_request_creation(c: &mut Criterion) {
@@ -16,9 +16,7 @@ fn bench_http_request_creation(c: &mut Criterion) {
 fn bench_http_response_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("http_response");
 
-    group.bench_function("ok", |b| {
-        b.iter(|| HttpResponse::ok())
-    });
+    group.bench_function("ok", |b| b.iter(HttpResponse::ok));
 
     group.bench_function("with_json", |b| {
         let data = serde_json::json!({"message": "Hello, World!"});
@@ -68,13 +66,9 @@ fn bench_form_parsing(c: &mut Criterion) {
 fn bench_middleware_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("middleware");
 
-    group.bench_function("logger_creation", |b| {
-        b.iter(|| LoggerMiddleware::new())
-    });
+    group.bench_function("logger_creation", |b| b.iter(LoggerMiddleware::new));
 
-    group.bench_function("cors_creation", |b| {
-        b.iter(|| CorsMiddleware::new())
-    });
+    group.bench_function("cors_creation", |b| b.iter(CorsMiddleware::new));
 
     group.bench_function("request_id_generation", |b| {
         b.iter(|| {
@@ -93,9 +87,7 @@ fn bench_routing(c: &mut Criterion) {
     group.bench_function("route_creation", |b| {
         use std::sync::Arc;
         b.iter(|| {
-            let handler: HandlerFn = Arc::new(|_req| {
-                Box::pin(async { Ok(HttpResponse::ok()) })
-            });
+            let handler: HandlerFn = Arc::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) }));
 
             let route = Route {
                 method: HttpMethod::GET,
@@ -184,4 +176,3 @@ criterion_group!(
 );
 
 criterion_main!(core_benches);
-

@@ -67,5 +67,3 @@ fn test_graphiql_html() {
     assert!(html.contains("GraphiQL"));
     assert!(html.contains("/graphql"));
 }
-
-

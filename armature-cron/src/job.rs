@@ -204,8 +204,8 @@ impl Job {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::CronError;
     use crate::CronExpression;
+    use crate::error::CronError;
 
     #[tokio::test]
     async fn test_job_creation() {
@@ -321,9 +321,9 @@ mod tests {
     #[test]
     fn test_job_creation_with_different_schedules() {
         let schedules = vec![
-            "0 * * * * *",       // every minute
-            "0 0 * * * *",       // every hour
-            "0 0 0 * * *",       // every day
+            "0 * * * * *", // every minute
+            "0 0 * * * *", // every hour
+            "0 0 0 * * *", // every day
         ];
 
         for schedule in schedules {

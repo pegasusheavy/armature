@@ -60,7 +60,10 @@ mod tests {
     #[test]
     fn test_hsts_basic() {
         let config = HstsConfig::new(31536000);
-        assert_eq!(config.to_header_value(), "max-age=31536000; includeSubDomains");
+        assert_eq!(
+            config.to_header_value(),
+            "max-age=31536000; includeSubDomains"
+        );
     }
 
     #[test]
@@ -72,7 +75,9 @@ mod tests {
     #[test]
     fn test_hsts_preload() {
         let config = HstsConfig::new(31536000).preload(true);
-        assert_eq!(config.to_header_value(), "max-age=31536000; includeSubDomains; preload");
+        assert_eq!(
+            config.to_header_value(),
+            "max-age=31536000; includeSubDomains; preload"
+        );
     }
 }
-

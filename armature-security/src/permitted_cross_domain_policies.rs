@@ -34,8 +34,10 @@ mod tests {
     #[test]
     fn test_permitted_cross_domain_policies() {
         assert_eq!(PermittedCrossDomainPolicies::None.to_header_value(), "none");
-        assert_eq!(PermittedCrossDomainPolicies::MasterOnly.to_header_value(), "master-only");
+        assert_eq!(
+            PermittedCrossDomainPolicies::MasterOnly.to_header_value(),
+            "master-only"
+        );
         assert_eq!(PermittedCrossDomainPolicies::All.to_header_value(), "all");
     }
 }
-

@@ -1,8 +1,8 @@
 /// Example demonstrating GraphQL with documentation and configurable playgrounds
 use armature::prelude::*;
 use armature_graphql::{
-    async_graphql, generate_schema_docs_html, graphiql_html, graphql_playground_html,
-    EmptyMutation, EmptySubscription, GraphQLConfig, Object, Schema, SimpleObject,
+    EmptyMutation, EmptySubscription, GraphQLConfig, Object, Schema, SimpleObject, async_graphql,
+    generate_schema_docs_html, graphiql_html, graphql_playground_html,
 };
 
 // Define your GraphQL types
@@ -226,5 +226,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-

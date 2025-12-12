@@ -6,9 +6,9 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/pegasusheavy/armature.git"
+    "url": "https://github.com/pegasusheavy/armature.git"
   },
-  "homepage": "https://pegasusheavy.gitlab.io/armature",
+  "homepage": "https://pegasusheavy.github.io/armature",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

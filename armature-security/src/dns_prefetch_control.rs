@@ -30,4 +30,3 @@ mod tests {
         assert_eq!(DnsPrefetchControl::On.to_header_value(), "on");
     }
 }
-

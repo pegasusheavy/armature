@@ -48,7 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 5. Get challenges
     println!("🔍 Fetching challenges...");
     let challenges = client.get_challenges(&order_url).await?;
-    println!("   ✓ Challenges retrieved: {} challenge(s)", challenges.len());
+    println!(
+        "   ✓ Challenges retrieved: {} challenge(s)",
+        challenges.len()
+    );
     println!();
 
     // 6. Display challenge setup instructions
@@ -145,5 +148,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-

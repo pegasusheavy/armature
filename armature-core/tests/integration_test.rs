@@ -110,9 +110,10 @@ fn test_https_config() {
 #[test]
 fn test_https_config_with_redirect() {
     let tls = TlsConfig::self_signed().unwrap();
-    let https_config = HttpsConfig::new("0.0.0.0:443", tls)
-        .with_http_redirect("0.0.0.0:80");
+    let https_config = HttpsConfig::new("0.0.0.0:443", tls).with_http_redirect("0.0.0.0:80");
 
-    assert_eq!(https_config.http_redirect_addr, Some("0.0.0.0:80".to_string()));
+    assert_eq!(
+        https_config.http_redirect_addr,
+        Some("0.0.0.0:80".to_string())
+    );
 }
-

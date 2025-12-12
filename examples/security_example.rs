@@ -5,11 +5,8 @@
 
 use armature::prelude::*;
 use armature_security::{
-    SecurityMiddleware,
-    content_security_policy::CspConfig,
-    hsts::HstsConfig,
-    referrer_policy::ReferrerPolicy,
-    frame_guard::FrameGuard,
+    SecurityMiddleware, content_security_policy::CspConfig, frame_guard::FrameGuard,
+    hsts::HstsConfig, referrer_policy::ReferrerPolicy,
 };
 
 #[injectable]
@@ -183,14 +180,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_csp(
             CspConfig::new()
                 .default_src(vec!["'self'".to_string()])
-                .script_src(vec!["'self'".to_string(), "https://cdn.example.com".to_string()])
+                .script_src(vec![
+                    "'self'".to_string(),
+                    "https://cdn.example.com".to_string(),
+                ])
                 .style_src(vec!["'self'".to_string(), "'unsafe-inline'".to_string()])
-                .img_src(vec!["'self'".to_string(), "data:".to_string(), "https:".to_string()])
+                .img_src(vec![
+                    "'self'".to_string(),
+                    "data:".to_string(),
+                    "https:".to_string(),
+                ]),
         )
         .with_hsts(
             HstsConfig::new(31536000) // 1 year
                 .include_subdomains(true)
-                .preload(true)
+                .preload(true),
         )
         .with_frame_guard(FrameGuard::SameOrigin)
         .with_referrer_policy(ReferrerPolicy::StrictOriginWhenCrossOrigin)
@@ -209,4 +213,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

@@ -100,7 +100,8 @@ async fn test_queue_enqueue_and_process() {
     let queue = Queue::new(config).await.unwrap();
 
     // Enqueue a job
-    let job_id = queue.enqueue("send_email", json!({"to": "test@example.com"}))
+    let job_id = queue
+        .enqueue("send_email", json!({"to": "test@example.com"}))
         .await
         .unwrap();
 
@@ -121,11 +122,13 @@ async fn test_queue_with_priority() {
     let queue = Queue::new(config).await.unwrap();
 
     // Enqueue jobs with different priorities
-    queue.enqueue_with_priority("low", json!({}), JobPriority::Low)
+    queue
+        .enqueue_with_priority("low", json!({}), JobPriority::Low)
         .await
         .unwrap();
 
-    queue.enqueue_with_priority("high", json!({}), JobPriority::High)
+    queue
+        .enqueue_with_priority("high", json!({}), JobPriority::High)
         .await
         .unwrap();
 
@@ -143,5 +146,3 @@ async fn test_worker_creation() {
     let worker = Worker::new(queue);
     assert!(format!("{:?}", worker).contains("Worker"));
 }
-
-

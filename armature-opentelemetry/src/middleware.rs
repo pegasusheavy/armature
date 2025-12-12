@@ -126,7 +126,7 @@ impl Middleware for TelemetryMiddleware {
 
             if let Ok(ref res) = result {
                 metrics.record_request(
-                    &result.as_ref().ok().map(|_| "method").unwrap_or("UNKNOWN"),
+                    result.as_ref().ok().map(|_| "method").unwrap_or("UNKNOWN"),
                     "path",
                     res.status,
                     duration,

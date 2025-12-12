@@ -1,0 +1,198 @@
+# GitHub Actions Release Pipeline for Armature Framework
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ============================================================================
+  # BUILD RELEASE ARTIFACTS
+  # ============================================================================
+
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install musl tools (Linux musl)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }} --all-features
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: armature-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/
+
+  # ============================================================================
+  # CREATE GITHUB RELEASE
+  # ============================================================================
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            # Armature ${{ github.ref_name }}
+
+            See [CHANGELOG.md](https://github.com/pegasusheavy/armature/blob/main/CHANGELOG.md) for details.
+
+            ## Installation
+
+            ```toml
+            [dependencies]
+            armature = "${{ github.ref_name }}"
+            ```
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # PUBLISH TO CRATES.IO
+  # ============================================================================
+
+  publish:
+    name: Publish to crates.io
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # Publish crates in dependency order
+      - name: Publish armature-core
+        run: cargo publish -p armature-core --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Wait for crates.io
+        run: sleep 30
+
+      - name: Publish armature-macro
+        run: cargo publish -p armature-macro --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-config
+        run: cargo publish -p armature-config --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-jwt
+        run: cargo publish -p armature-jwt --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-auth
+        run: cargo publish -p armature-auth --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-graphql
+        run: cargo publish -p armature-graphql --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-angular
+        run: cargo publish -p armature-angular --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-react
+        run: cargo publish -p armature-react --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-vue
+        run: cargo publish -p armature-vue --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-svelte
+        run: cargo publish -p armature-svelte --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-validation
+        run: cargo publish -p armature-validation --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-testing
+        run: cargo publish -p armature-testing --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-openapi
+        run: cargo publish -p armature-openapi --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-cache
+        run: cargo publish -p armature-cache --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-cron
+        run: cargo publish -p armature-cron --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-queue
+        run: cargo publish -p armature-queue --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-opentelemetry
+        run: cargo publish -p armature-opentelemetry --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-security
+        run: cargo publish -p armature-security --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-handlebars
+        run: cargo publish -p armature-handlebars --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Publish armature-ratelimit
+        run: cargo publish -p armature-ratelimit --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+
+      - name: Wait for dependencies
+        run: sleep 60
+
+      - name: Publish armature (main crate)
+        run: cargo publish -p armature --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || true
+        continue-on-error: true
+

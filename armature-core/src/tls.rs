@@ -95,7 +95,8 @@ impl TlsConfig {
     pub fn self_signed(domains: &[&str]) -> Result<Self, Error> {
         use rcgen::{CertificateParams, KeyPair};
 
-        let mut params = CertificateParams::new(domains.to_vec());
+        let mut params =
+            CertificateParams::new(domains.iter().map(|s| s.to_string()).collect::<Vec<_>>());
         params.distinguished_name = rcgen::DistinguishedName::new();
 
         let key_pair = KeyPair::generate(&rcgen::PKCS_ECDSA_P256_SHA256)

@@ -9,7 +9,7 @@
 //! - WebSocket-based change notification
 //! - Automatic browser refresh
 //! - Module replacement without full page reload
-//! - Support for multiple SSR frameworks (Angular, React, Vue, Svelte)
+//! - Support for static assets and templates
 
 use crate::{Error, HttpRequest, HttpResponse};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::{broadcast, RwLock};
+use tokio::sync::{RwLock, broadcast};
 
 /// HMR file change event
 #[derive(Debug, Clone)]
@@ -273,13 +273,12 @@ impl HmrManager {
         let now = std::time::SystemTime::now();
         let mut last_events_map = last_events.write().await;
 
-        if let Some(last_time) = last_events_map.get(&path) {
-            if let Ok(duration) = now.duration_since(*last_time) {
-                if duration.as_millis() < config.debounce_ms as u128 {
-                    // Too recent, skip
-                    return None;
-                }
-            }
+        if let Some(last_time) = last_events_map.get(&path)
+            && let Ok(duration) = now.duration_since(*last_time)
+            && duration.as_millis() < config.debounce_ms as u128
+        {
+            // Too recent, skip
+            return None;
         }
 
         // Update last event time
@@ -507,4 +506,3 @@ mod tests {
         assert!(result.ends_with("</script>"));
     }
 }
-

@@ -99,7 +99,11 @@ impl Default for CspConfig {
             .default_src(vec!["'self'".to_string()])
             .script_src(vec!["'self'".to_string()])
             .style_src(vec!["'self'".to_string(), "'unsafe-inline'".to_string()])
-            .img_src(vec!["'self'".to_string(), "data:".to_string(), "https:".to_string()])
+            .img_src(vec![
+                "'self'".to_string(),
+                "data:".to_string(),
+                "https:".to_string(),
+            ])
             .font_src(vec!["'self'".to_string()])
             .connect_src(vec!["'self'".to_string()])
             .object_src(vec!["'none'".to_string()])
@@ -124,7 +128,10 @@ mod tests {
     fn test_csp_custom() {
         let csp = CspConfig::new()
             .default_src(vec!["'self'".to_string()])
-            .script_src(vec!["'self'".to_string(), "https://cdn.example.com".to_string()]);
+            .script_src(vec![
+                "'self'".to_string(),
+                "https://cdn.example.com".to_string(),
+            ]);
 
         let header = csp.to_header_value();
         assert!(header.contains("script-src 'self' https://cdn.example.com"));
@@ -136,4 +143,3 @@ mod tests {
         assert!(csp.report_only);
     }
 }
-

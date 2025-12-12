@@ -90,7 +90,11 @@ fn test_ends_with_validator() {
 #[test]
 fn test_matches_validator() {
     let regex = regex::Regex::new(r"^\d{3}-\d{3}-\d{4}$").unwrap();
-    assert!(Matches(regex.clone()).validate("123-456-7890", "phone").is_ok());
+    assert!(
+        Matches(regex.clone())
+            .validate("123-456-7890", "phone")
+            .is_ok()
+    );
     assert!(Matches(regex).validate("invalid", "phone").is_err());
 }
 
@@ -116,4 +120,3 @@ fn test_validation_error_creation() {
     assert_eq!(error.field, "email");
     assert_eq!(error.message, "invalid email format");
 }
-

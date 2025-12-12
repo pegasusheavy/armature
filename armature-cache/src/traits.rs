@@ -161,11 +161,7 @@ pub trait CacheStore: Send + Sync {
     /// # Ok(())
     /// # }
     /// ```
-    async fn set_many(
-        &self,
-        items: &[(&str, String)],
-        ttl: Option<Duration>,
-    ) -> CacheResult<()> {
+    async fn set_many(&self, items: &[(&str, String)], ttl: Option<Duration>) -> CacheResult<()> {
         use futures::future::try_join_all;
 
         let futures = items

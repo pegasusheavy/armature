@@ -3,7 +3,7 @@
 use crate::error::{CacheError, CacheResult};
 use crate::traits::CacheStore;
 use futures::future::{join_all, try_join_all};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -264,10 +264,7 @@ impl ParallelCacheOps {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn exists_many<S: CacheStore>(
-        store: &S,
-        keys: &[&str],
-    ) -> CacheResult<Vec<bool>> {
+    pub async fn exists_many<S: CacheStore>(store: &S, keys: &[&str]) -> CacheResult<Vec<bool>> {
         let futures = keys.iter().map(|key| store.exists(key));
         let results: Vec<CacheResult<bool>> = join_all(futures).await;
 
@@ -318,28 +315,28 @@ impl ParallelCacheOps {
     /// # Examples
     ///
     /// ```ignore
-/// use armature_cache::*;
-/// use armature_cache::parallel::ParallelCacheOps;
-/// use std::time::Duration;
-///
-/// # async fn example() -> CacheResult<()> {
-/// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
-///
-/// let keys = vec!["user:1", "user:2", "user:3"];
-///
-/// ParallelCacheOps::warm_cache(
-///     &cache,
-///     &keys,
-///     Some(Duration::from_secs(3600)),
-///     |key: &str| async move {
-///         // Fetch from database
-///         let data = format!("Data for {}", key);
-///         Ok::<String, CacheError>(data)
-///     },
-/// ).await?;
-/// # Ok(())
-/// # }
-/// ```
+    /// use armature_cache::*;
+    /// use armature_cache::parallel::ParallelCacheOps;
+    /// use std::time::Duration;
+    ///
+    /// # async fn example() -> CacheResult<()> {
+    /// let cache = RedisCache::new(CacheConfig::redis("redis://localhost:6379")?).await?;
+    ///
+    /// let keys = vec!["user:1", "user:2", "user:3"];
+    ///
+    /// ParallelCacheOps::warm_cache(
+    ///     &cache,
+    ///     &keys,
+    ///     Some(Duration::from_secs(3600)),
+    ///     |key: &str| async move {
+    ///         // Fetch from database
+    ///         let data = format!("Data for {}", key);
+    ///         Ok::<String, CacheError>(data)
+    ///     },
+    /// ).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn warm_cache<S, T, F, Fut>(
         store: &S,
         keys: &[&str],
@@ -373,7 +370,6 @@ impl ParallelCacheOps {
 /// Helper functions for parallel cache operations.
 ///
 /// These functions provide a more convenient API than `ParallelCacheOps` methods.
-
 /// Get multiple JSON values in parallel.
 pub async fn get_many_json<S: CacheStore>(
     store: &S,
@@ -431,12 +427,8 @@ pub async fn get_many_as_map<S: CacheStore, T: DeserializeOwned>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_parallel_ops_exist() {
-        // Ensure the module compiles
-        assert!(true);
+        // Ensure the module compiles - this test validates the module is correctly defined
     }
 }
-

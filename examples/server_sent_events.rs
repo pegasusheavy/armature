@@ -214,7 +214,7 @@ mod rand {
     use std::cell::Cell;
 
     thread_local! {
-        static SEED: Cell<u64> = Cell::new(0x123456789abcdef0);
+        static SEED: Cell<u64> = const { Cell::new(0x123456789abcdef0) };
     }
 
     pub fn random<T: From<f64>>() -> T {

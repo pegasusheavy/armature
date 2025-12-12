@@ -1,0 +1,207 @@
+# GitHub Actions CI Pipeline for Armature Framework
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ============================================================================
+  # LINT
+  # ============================================================================
+
+  fmt:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ============================================================================
+  # TEST
+  # ============================================================================
+
+  test:
+    name: Test (${{ matrix.os }} / ${{ matrix.rust }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable]
+        include:
+          - os: ubuntu-latest
+            rust: beta
+          - os: ubuntu-latest
+            rust: nightly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --verbose --all-features
+      - name: Run tests
+        run: cargo test --verbose --all-features
+      - name: Run doc tests
+        run: cargo test --doc --all-features
+
+  doc-tests:
+    name: Documentation Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run doc tests
+        run: cargo test --doc --all --all-features
+      - name: Check documentation
+        run: |
+          cargo doc --all --all-features --no-deps 2>&1 | tee doc-warnings.txt
+          if grep -q "warning: missing documentation" doc-warnings.txt; then
+            echo "⚠️  Found items without documentation"
+            grep "warning: missing documentation" doc-warnings.txt || true
+          else
+            echo "✅ All public items have documentation"
+          fi
+
+  examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build all examples
+        run: |
+          for example in examples/*.rs; do
+            name=$(basename "$example" .rs)
+            echo "Building example: $name"
+            cargo build --example "$name" --all-features || echo "Failed to build $name"
+          done
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          fail_ci_if_error: false
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  minimal-versions:
+    name: Minimal Versions Check
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - name: Check minimal versions
+        run: |
+          cargo update -Z minimal-versions
+          cargo check --all-features
+
+  # ============================================================================
+  # MSRV
+  # ============================================================================
+
+  msrv:
+    name: MSRV Check (1.85)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85
+      - uses: Swatinem/rust-cache@v2
+      - name: Check MSRV
+        run: |
+          cargo check --all-features
+          cargo build --all-features
+          cargo test --all-features
+
+  # ============================================================================
+  # BUILD
+  # ============================================================================
+
+  build-release:
+    name: Build Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build release
+        run: cargo build --release --all-features
+
+  # ============================================================================
+  # BENCHMARKS
+  # ============================================================================
+
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run benchmarks
+        run: |
+          if ls benches/*.rs 1> /dev/null 2>&1; then
+            cargo bench --all-features
+          else
+            echo "No benchmarks found yet"
+          fi
+

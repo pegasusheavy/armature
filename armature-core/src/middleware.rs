@@ -485,7 +485,8 @@ impl Middleware for LoggingMiddleware {
         // Log request
         if self.log_request_body && !req.body.is_empty() {
             let body_preview = if req.body.len() > self.max_body_size {
-                format!("{}... ({} bytes)",
+                format!(
+                    "{}... ({} bytes)",
                     String::from_utf8_lossy(&req.body[..self.max_body_size]),
                     req.body.len()
                 )
@@ -516,7 +517,8 @@ impl Middleware for LoggingMiddleware {
             Ok(response) => {
                 if self.log_response_body && !response.body.is_empty() {
                     let body_preview = if response.body.len() > self.max_body_size {
-                        format!("{}... ({} bytes)",
+                        format!(
+                            "{}... ({} bytes)",
                             String::from_utf8_lossy(&response.body[..self.max_body_size]),
                             response.body.len()
                         )
@@ -811,7 +813,11 @@ mod tests {
         assert!(result.is_ok());
         let response = result.unwrap();
         assert!(response.headers.contains_key("Access-Control-Allow-Origin"));
-        assert!(response.headers.contains_key("Access-Control-Allow-Methods"));
+        assert!(
+            response
+                .headers
+                .contains_key("Access-Control-Allow-Methods")
+        );
     }
 
     #[tokio::test]

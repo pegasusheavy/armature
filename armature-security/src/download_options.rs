@@ -26,4 +26,3 @@ mod tests {
         assert_eq!(DownloadOptions::NoOpen.to_header_value(), "noopen");
     }
 }
-

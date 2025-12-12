@@ -76,10 +76,10 @@ use std::io;
 use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
+    EnvFilter,
     fmt::{self, format::FmtSpan},
     layer::SubscriberExt,
     util::SubscriberInitExt,
-    EnvFilter,
 };
 
 // Re-export tracing and tracing_appender for convenience
@@ -170,7 +170,7 @@ pub enum Rotation {
 
 impl Rotation {
     /// Convert to tracing_appender Rotation
-    fn to_tracing_rotation(&self) -> tracing_appender::rolling::Rotation {
+    fn as_tracing_rotation(self) -> tracing_appender::rolling::Rotation {
         match self {
             Rotation::Minutely => tracing_appender::rolling::Rotation::MINUTELY,
             Rotation::Hourly => tracing_appender::rolling::Rotation::HOURLY,
@@ -339,7 +339,11 @@ impl LogConfig {
         // Create environment filter
         let env_filter = if let Some(filter_str) = &self.env_filter {
             EnvFilter::try_new(filter_str).unwrap_or_else(|_| {
-                EnvFilter::new(format!("{}={}", env!("CARGO_PKG_NAME"), self.level.as_str()))
+                EnvFilter::new(format!(
+                    "{}={}",
+                    env!("CARGO_PKG_NAME"),
+                    self.level.as_str()
+                ))
             })
         } else {
             // Try to read from RUST_LOG env var, otherwise use config level
@@ -375,7 +379,7 @@ impl LogConfig {
                 rotation,
             } => {
                 let file_appender = tracing_appender::rolling::RollingFileAppender::new(
-                    rotation.to_tracing_rotation(),
+                    rotation.as_tracing_rotation(),
                     directory,
                     prefix,
                 );
@@ -530,4 +534,3 @@ mod tests {
         assert!(!config.targets);
     }
 }
-

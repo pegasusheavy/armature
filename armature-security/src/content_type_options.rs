@@ -26,4 +26,3 @@ mod tests {
         assert_eq!(ContentTypeOptions::NoSniff.to_header_value(), "nosniff");
     }
 }
-

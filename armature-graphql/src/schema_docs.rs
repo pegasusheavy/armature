@@ -513,5 +513,3 @@ mod tests {
         assert_eq!(escape_html("\"quoted\""), "&quot;quoted&quot;");
     }
 }
-
-

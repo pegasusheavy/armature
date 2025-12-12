@@ -21,11 +21,7 @@ Armature brings the elegant decorator syntax and powerful dependency injection f
 - **JWT Authentication**: Optional JWT token management with HS256/RS256/ES256 support
 - **Configuration Management**: Optional NestJS-style config system with env, .env, JSON, and TOML support
 - **GraphQL Support**: Optional type-safe GraphQL API with queries, mutations, and subscriptions
-- **Angular SSR**: Optional Angular Universal integration for server-side rendering
-- **React SSR**: Optional React server-side rendering support
-- **Vue.js SSR**: Optional Vue 3 server-side rendering support
-- **Svelte SSR**: Optional Svelte/SvelteKit server-side rendering support
-- **Hot Module Reload (HMR)**: File watching and automatic reload for rapid development with all SSR frameworks
+- **Rate Limiting**: Token bucket, sliding window, and fixed window algorithms with Redis support
 - **Comprehensive Logging**: Highly configurable structured logging with JSON/Pretty/Plain formats, multiple outputs, and HTTP middleware
 - **Testing Utilities**: Comprehensive testing framework with mocks, spies, and assertions
 - **Validation Framework**: Powerful validation with built-in validators and custom rules
@@ -470,9 +466,9 @@ MIT
 
 ## Documentation
 
-🌐 **Live Documentation Website**: [https://pegasusheavy.gitlab.io/armature/](https://pegasusheavy.gitlab.io/armature/)
+🌐 **Live Documentation Website**: [https://pegasusheavy.github.io/armature/](https://pegasusheavy.github.io/armature/)
 
-Comprehensive documentation (34 guides) is available in the [`docs/`](docs/) directory:
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 **Getting Started:**
 - **[Dependency Injection Guide](docs/DI_GUIDE.md)** - Complete DI system documentation
@@ -482,11 +478,7 @@ Comprehensive documentation (34 guides) is available in the [`docs/`](docs/) dir
 - **[Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md)** - Service lifecycle management with hooks
 - **[Authentication Guide](docs/AUTH_GUIDE.md)** - JWT, OAuth2, and SAML authentication
 - **[Guards & Interceptors](docs/GUARDS_INTERCEPTORS.md)** - Request processing and authorization
-
-**SSR Frameworks:**
-- **[Angular SSR Guide](docs/ANGULAR_SSR_GUIDE.md)** - Angular Universal server-side rendering
-- **[Vue SSR Guide](docs/VUE_SSR_GUIDE.md)** - Vue 3 server-side rendering
-- **[Hot Module Reload Guide](docs/HMR_GUIDE.md)** - Live reload for development
+- **[Rate Limiting Guide](docs/RATE_LIMITING_GUIDE.md)** - API rate limiting with multiple algorithms
 
 **Advanced:**
 - **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
@@ -494,7 +486,7 @@ Comprehensive documentation (34 guides) is available in the [`docs/`](docs/) dir
 - **[Logging Guide](docs/LOGGING_GUIDE.md)** - Structured logging with tracing
 - **[Parallel Processing Guide](docs/PARALLEL_PROCESSING_GUIDE.md)** - Multithreading and optimization
 
-**And 20+ more guides covering testing, security, deployment, and more!**
+**And more guides covering testing, security, and deployment!**
 
 ## Website Development
 
@@ -519,9 +511,9 @@ pnpm run build
 
 The built website will be in `web/dist/web/browser/`.
 
-**GitLab Pages Deployment:**
+**GitHub Pages Deployment:**
 
-The website automatically deploys to GitLab Pages when changes are merged to the `main` branch.
+The website automatically deploys to GitHub Pages when changes are merged to the `main` branch.
 
 ## Contributing
 

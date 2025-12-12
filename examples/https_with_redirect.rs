@@ -43,36 +43,36 @@ impl SecureController {
 
     #[get("/")]
     pub async fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "message": "Welcome to the secure API",
             "endpoints": [
                 "/api/secure",
                 "/api/status"
             ]
-        }))?)
+        }))
     }
 
     #[get("/secure")]
     pub async fn secure(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
         let result = self.secure_service.process_secure_request(&req.path);
 
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "result": result,
             "timestamp": std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
                 .as_secs(),
             "secure": true
-        }))?)
+        }))
     }
 
     #[get("/status")]
     pub async fn status(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        HttpResponse::ok().with_json(&serde_json::json!({
             "status": "operational",
             "tls": "enabled",
             "redirect": "active"
-        }))?)
+        }))
     }
 }
 

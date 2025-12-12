@@ -29,7 +29,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let num_files = 20;
     let file_size = 1024 * 1024; // 1MB each
 
-    println!("📝 Creating {} test files ({:.1} MB each)...", num_files, file_size as f64 / 1024.0 / 1024.0);
+    println!(
+        "📝 Creating {} test files ({:.1} MB each)...",
+        num_files,
+        file_size as f64 / 1024.0 / 1024.0
+    );
 
     let test_files: Vec<FormFile> = (1..=num_files)
         .map(|i| {
@@ -43,7 +47,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
 
-    println!("   ✅ {} test files created (total: {:.1} MB)",
+    println!(
+        "   ✅ {} test files created (total: {:.1} MB)",
         test_files.len(),
         (test_files.len() * file_size) as f64 / 1024.0 / 1024.0
     );
@@ -66,8 +71,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let sequential_time = start.elapsed();
     println!("   Time taken: {:?}", sequential_time);
-    println!("   Rate: {:.1} files/sec", num_files as f64 / sequential_time.as_secs_f64());
-    println!("   Throughput: {:.1} MB/sec",
+    println!(
+        "   Rate: {:.1} files/sec",
+        num_files as f64 / sequential_time.as_secs_f64()
+    );
+    println!(
+        "   Throughput: {:.1} MB/sec",
         (num_files * file_size) as f64 / 1024.0 / 1024.0 / sequential_time.as_secs_f64()
     );
 
@@ -85,9 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let file_paths: Vec<(&FormFile, String)> = test_files
         .iter()
         .enumerate()
-        .map(|(i, file)| {
-            (file, format!("test_uploads/parallel_{}.dat", i + 1))
-        })
+        .map(|(i, file)| (file, format!("test_uploads/parallel_{}.dat", i + 1)))
         .collect();
 
     let start = Instant::now();
@@ -96,8 +103,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("   Time taken: {:?}", parallel_time);
     println!("   Files saved: {}", saved_paths.len());
-    println!("   Rate: {:.1} files/sec", num_files as f64 / parallel_time.as_secs_f64());
-    println!("   Throughput: {:.1} MB/sec",
+    println!(
+        "   Rate: {:.1} files/sec",
+        num_files as f64 / parallel_time.as_secs_f64()
+    );
+    println!(
+        "   Throughput: {:.1} MB/sec",
         (num_files * file_size) as f64 / 1024.0 / 1024.0 / parallel_time.as_secs_f64()
     );
 
@@ -115,7 +126,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let large_batch_size = 50;
     let large_file_size = 512 * 1024; // 512KB each
 
-    println!("📝 Creating {} files ({:.1} KB each)...", large_batch_size, large_file_size as f64 / 1024.0);
+    println!(
+        "📝 Creating {} files ({:.1} KB each)...",
+        large_batch_size,
+        large_file_size as f64 / 1024.0
+    );
 
     let large_files: Vec<FormFile> = (1..=large_batch_size)
         .map(|i| {
@@ -143,9 +158,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let large_paths: Vec<(&FormFile, String)> = large_files
         .iter()
         .enumerate()
-        .map(|(i, file)| {
-            (file, format!("test_uploads/large_par_{}.dat", i + 1))
-        })
+        .map(|(i, file)| (file, format!("test_uploads/large_par_{}.dat", i + 1)))
         .collect();
 
     let start = Instant::now();
@@ -153,7 +166,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let large_par_time = start.elapsed();
     println!("   Time: {:?}", large_par_time);
 
-    let large_speedup = large_seq_time.as_millis() as f64 / large_par_time.as_millis().max(1) as f64;
+    let large_speedup =
+        large_seq_time.as_millis() as f64 / large_par_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.1}x faster!", large_speedup);
 
     // ========================================================================
@@ -181,9 +195,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let image_paths: Vec<(&FormFile, String)> = images
         .iter()
         .enumerate()
-        .map(|(i, file)| {
-            (file, format!("test_uploads/photo_{:03}.jpg", i + 1))
-        })
+        .map(|(i, file)| (file, format!("test_uploads/photo_{:03}.jpg", i + 1)))
         .collect();
 
     println!("⚡ Uploading images in parallel...");
@@ -191,9 +203,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let uploaded = save_files_parallel(image_paths).await?;
     let upload_time = start.elapsed();
 
-    println!("   ✅ Uploaded {} images in {:?}", uploaded.len(), upload_time);
-    println!("   Throughput: {:.1} MB/sec",
-        50.0 / upload_time.as_secs_f64()  // 10 images * 5MB = 50MB
+    println!(
+        "   ✅ Uploaded {} images in {:?}",
+        uploaded.len(),
+        upload_time
+    );
+    println!(
+        "   Throughput: {:.1} MB/sec",
+        50.0 / upload_time.as_secs_f64() // 10 images * 5MB = 50MB
     );
 
     // ========================================================================
@@ -207,12 +224,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("┌──────────────────────────┬─────────────┬─────────────┬──────────┐");
     println!("│ Test                     │ Sequential  │ Parallel    │ Speedup  │");
     println!("├──────────────────────────┼─────────────┼─────────────┼──────────┤");
-    println!("│ 20 files (1MB each)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
+    println!(
+        "│ 20 files (1MB each)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
         sequential_time.as_millis(),
         parallel_time.as_millis(),
         speedup
     );
-    println!("│ 50 files (512KB each)    │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
+    println!(
+        "│ 50 files (512KB each)    │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
         large_seq_time.as_millis(),
         large_par_time.as_millis(),
         large_speedup
@@ -236,4 +255,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

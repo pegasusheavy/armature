@@ -131,5 +131,3 @@ mod tests {
         assert_eq!(json, "\"valid\"");
     }
 }
-
-

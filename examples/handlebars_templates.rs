@@ -1,12 +1,66 @@
+//! Handlebars Templating Example
+//!
+//! This example demonstrates how to use the Handlebars template engine
+//! directly with Armature's dependency injection container.
+//!
+//! No special Armature plugin is needed - just use the handlebars crate
+//! and inject it as a service!
+
 use armature_core::*;
-use armature_handlebars::{HandlebarsConfig, HandlebarsService};
 use armature_macro::*;
+use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-// --- Data Models ---
+// =============================================================================
+// Template Service - Injectable Handlebars wrapper
+// =============================================================================
 
-#[derive(Debug, Serialize, Deserialize)]
+/// A simple injectable template service using Handlebars.
+/// This shows how any external library can be wrapped and used with DI.
+#[derive(Clone)]
+struct TemplateService {
+    hbs: Arc<Handlebars<'static>>,
+}
+
+impl Provider for TemplateService {}
+
+impl TemplateService {
+    fn new() -> Self {
+        let mut hbs = Handlebars::new();
+
+        // Register templates (in production, you'd load these from files)
+        hbs.register_template_string("layout", include_str!("../templates/layout.hbs"))
+            .expect("Failed to register layout template");
+        hbs.register_template_string("home", include_str!("../templates/home.hbs"))
+            .expect("Failed to register home template");
+        hbs.register_template_string("users", include_str!("../templates/users.hbs"))
+            .expect("Failed to register users template");
+        hbs.register_template_string("user", include_str!("../templates/user.hbs"))
+            .expect("Failed to register user template");
+
+        Self { hbs: Arc::new(hbs) }
+    }
+
+    /// Render a template to an HTML response
+    fn render<T: Serialize>(&self, template: &str, data: &T) -> Result<HttpResponse, Error> {
+        let html = self
+            .hbs
+            .render(template, data)
+            .map_err(|e| Error::Internal(format!("Template error: {}", e)))?;
+
+        Ok(HttpResponse::ok().with_body(html.into_bytes()).with_header(
+            "Content-Type".to_string(),
+            "text/html; charset=utf-8".to_string(),
+        ))
+    }
+}
+
+// =============================================================================
+// Data Models
+// =============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct User {
     id: u64,
     name: String,
@@ -15,16 +69,9 @@ struct User {
     active: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Post {
-    id: u64,
-    title: String,
-    content: String,
-    author: String,
-    views: u64,
-}
-
-// --- Services ---
+// =============================================================================
+// User Service - Business logic
+// =============================================================================
 
 #[derive(Clone)]
 struct UserService;
@@ -36,7 +83,7 @@ impl UserService {
         Self
     }
 
-    fn get_users(&self) -> Vec<User> {
+    fn get_all(&self) -> Vec<User> {
         vec![
             User {
                 id: 1,
@@ -62,187 +109,107 @@ impl UserService {
         ]
     }
 
-    fn get_user(&self, id: u64) -> Option<User> {
-        self.get_users().into_iter().find(|u| u.id == id)
+    fn get_by_id(&self, id: u64) -> Option<User> {
+        self.get_all().into_iter().find(|u| u.id == id)
     }
 }
 
-#[derive(Clone)]
-struct PostService;
+// =============================================================================
+// Controllers - Using injected services
+// =============================================================================
 
-impl Provider for PostService {}
-
-impl PostService {
-    fn new() -> Self {
-        Self
-    }
-
-    fn get_posts(&self) -> Vec<Post> {
-        vec![
-            Post {
-                id: 1,
-                title: "Getting Started with Armature".to_string(),
-                content: "Armature is a modern Rust web framework...".to_string(),
-                author: "Alice Smith".to_string(),
-                views: 1250,
-            },
-            Post {
-                id: 2,
-                title: "Handlebars Templates".to_string(),
-                content: "Learn how to use Handlebars for server-side rendering...".to_string(),
-                author: "Bob Johnson".to_string(),
-                views: 850,
-            },
-        ]
-    }
-
-    fn get_post(&self, id: u64) -> Option<Post> {
-        self.get_posts().into_iter().find(|p| p.id == id)
-    }
-}
-
-// --- Controllers ---
-
+/// Home controller with injected template service
 #[controller("/")]
 #[derive(Clone)]
 struct HomeController {
-    handlebars: HandlebarsService,
+    templates: TemplateService,
 }
 
 impl HomeController {
     async fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let data = serde_json::json!({
-            "title": "Armature Handlebars Example",
-            "description": "Server-side rendering with Handlebars templates",
+            "title": "Armature + Handlebars",
+            "message": "Server-side templating with dependency injection!",
+            "features": [
+                "No plugin required - use handlebars directly",
+                "Injectable template service",
+                "Type-safe template rendering",
+                "Works with any template engine"
+            ]
         });
 
-        self.handlebars
-            .render_response("index", &data)
-            .await
-            .map_err(|e| Error::Internal(e.to_string()))
+        self.templates.render("home", &data)
     }
 }
 
+/// User controller with multiple injected services
 #[controller("/users")]
 #[derive(Clone)]
 struct UserController {
-    handlebars: HandlebarsService,
-    user_service: UserService,
+    templates: TemplateService,
+    users: UserService,
 }
 
 impl UserController {
-    async fn list_users(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        let users = self.user_service.get_users();
+    async fn list(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
+        let users = self.users.get_all();
 
         let data = serde_json::json!({
             "title": "Users",
             "users": users,
+            "count": users.len()
         });
 
-        self.handlebars
-            .render_response("users/list", &data)
-            .await
-            .map_err(|e| Error::Internal(e.to_string()))
+        self.templates.render("users", &data)
     }
 
-    async fn get_user(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
-        let id_str = req.path_params.get("id").ok_or_else(|| {
-            Error::BadRequest("Missing user id".to_string())
-        })?;
+    async fn show(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
+        let id: u64 = req
+            .path_params
+            .get("id")
+            .ok_or_else(|| Error::BadRequest("Missing id".to_string()))?
+            .parse()
+            .map_err(|_| Error::BadRequest("Invalid id".to_string()))?;
 
-        let id: u64 = id_str.parse().map_err(|_| {
-            Error::BadRequest("Invalid user id".to_string())
-        })?;
-
-        let user = self.user_service.get_user(id).ok_or_else(|| {
-            Error::NotFound("User not found".to_string())
-        })?;
+        let user = self
+            .users
+            .get_by_id(id)
+            .ok_or_else(|| Error::NotFound("User not found".to_string()))?;
 
         let data = serde_json::json!({
             "title": format!("User: {}", user.name),
-            "user": user,
+            "user": user
         });
 
-        self.handlebars
-            .render_response("users/detail", &data)
-            .await
-            .map_err(|e| Error::Internal(e.to_string()))
+        self.templates.render("user", &data)
     }
 }
 
-#[controller("/posts")]
-#[derive(Clone)]
-struct PostController {
-    handlebars: HandlebarsService,
-    post_service: PostService,
-}
-
-impl PostController {
-    async fn list_posts(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        let posts = self.post_service.get_posts();
-
-        let data = serde_json::json!({
-            "title": "Blog Posts",
-            "posts": posts,
-        });
-
-        self.handlebars
-            .render_response("posts/list", &data)
-            .await
-            .map_err(|e| Error::Internal(e.to_string()))
-    }
-
-    async fn get_post(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
-        let id_str = req.path_params.get("id").ok_or_else(|| {
-            Error::BadRequest("Missing post id".to_string())
-        })?;
-
-        let id: u64 = id_str.parse().map_err(|_| {
-            Error::BadRequest("Invalid post id".to_string())
-        })?;
-
-        let post = self.post_service.get_post(id).ok_or_else(|| {
-            Error::NotFound("Post not found".to_string())
-        })?;
-
-        let data = serde_json::json!({
-            "title": post.title.clone(),
-            "post": post,
-        });
-
-        self.handlebars
-            .render_response("posts/detail", &data)
-            .await
-            .map_err(|e| Error::Internal(e.to_string()))
-    }
-}
+// =============================================================================
+// Main
+// =============================================================================
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("📝 Armature Handlebars Templates Example");
-    println!("==========================================\n");
+    // Create template directory and files
+    setup_templates().await?;
 
-    // Setup demo templates
-    setup_demo_templates().await?;
-
-    // Configure Handlebars
-    let handlebars_config = HandlebarsConfig::new("demo/templates")
-        .with_extension(".hbs")
-        .with_dev_mode(true); // Enable hot-reload in development
-
-    let handlebars_service = HandlebarsService::new(handlebars_config)?;
+    println!("📝 Handlebars Templating Example");
+    println!("================================\n");
 
     // Create services
+    let template_service = TemplateService::new();
     let user_service = UserService::new();
-    let post_service = PostService::new();
 
-    // Create router
+    // Create DI container and register services
     let container = Container::new();
+
+    // Create router with routes
     let mut router = Router::new();
 
     // Home route
     let home_ctrl = HomeController {
-        handlebars: handlebars_service.clone(),
+        templates: template_service.clone(),
     };
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -253,57 +220,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     });
 
-    // User routes
-    let users_list_ctrl = UserController {
-        handlebars: handlebars_service.clone(),
-        user_service: user_service.clone(),
+    // Users list route
+    let users_ctrl = UserController {
+        templates: template_service.clone(),
+        users: user_service.clone(),
     };
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users".to_string(),
         handler: Arc::new(move |req| {
-            let ctrl = users_list_ctrl.clone();
-            Box::pin(async move { ctrl.list_users(req).await })
+            let ctrl = users_ctrl.clone();
+            Box::pin(async move { ctrl.list(req).await })
         }),
     });
 
-    let users_detail_ctrl = UserController {
-        handlebars: handlebars_service.clone(),
-        user_service: user_service.clone(),
+    // User detail route
+    let user_ctrl = UserController {
+        templates: template_service.clone(),
+        users: user_service.clone(),
     };
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
         handler: Arc::new(move |req| {
-            let ctrl = users_detail_ctrl.clone();
-            Box::pin(async move { ctrl.get_user(req).await })
-        }),
-    });
-
-    // Post routes
-    let posts_list_ctrl = PostController {
-        handlebars: handlebars_service.clone(),
-        post_service: post_service.clone(),
-    };
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/posts".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = posts_list_ctrl.clone();
-            Box::pin(async move { ctrl.list_posts(req).await })
-        }),
-    });
-
-    let posts_detail_ctrl = PostController {
-        handlebars: handlebars_service.clone(),
-        post_service: post_service.clone(),
-    };
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/posts/:id".to_string(),
-        handler: Arc::new(move |req| {
-            let ctrl = posts_detail_ctrl.clone();
-            Box::pin(async move { ctrl.get_post(req).await })
+            let ctrl = user_ctrl.clone();
+            Box::pin(async move { ctrl.show(req).await })
         }),
     });
 
@@ -312,198 +253,166 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         container,
     };
 
+    println!("✅ Services injected:");
+    println!("   • TemplateService (Handlebars wrapper)");
+    println!("   • UserService (business logic)");
+    println!();
     println!("🚀 Server starting on http://localhost:3000");
-    println!("\nRoutes:");
-    println!("  • http://localhost:3000/           → Home page");
-    println!("  • http://localhost:3000/users      → User list");
-    println!("  • http://localhost:3000/users/1    → User detail");
-    println!("  • http://localhost:3000/posts      → Post list");
-    println!("  • http://localhost:3000/posts/1    → Post detail\n");
+    println!();
+    println!("Routes:");
+    println!("  • GET /          → Home page");
+    println!("  • GET /users     → User list");
+    println!("  • GET /users/:id → User detail");
+    println!();
 
     app.listen(3000).await?;
 
     Ok(())
 }
 
-async fn setup_demo_templates() -> std::io::Result<()> {
+/// Create template files for the example
+async fn setup_templates() -> std::io::Result<()> {
     use tokio::fs;
 
-    // Create directories
-    fs::create_dir_all("demo/templates").await?;
-    fs::create_dir_all("demo/templates/users").await?;
-    fs::create_dir_all("demo/templates/posts").await?;
-    fs::create_dir_all("demo/templates/partials").await?;
+    fs::create_dir_all("templates").await?;
 
-    // Layout partial
+    // Layout template
     fs::write(
-        "demo/templates/partials/layout.hbs",
+        "templates/layout.hbs",
         r#"<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}} - Armature</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        header { background: #333; color: white; padding: 1rem; }
-        nav a { color: white; margin: 0 1rem; text-decoration: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; background: #f4f4f4; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; }
+        header h1 { font-size: 1.5rem; }
+        nav { margin-top: 0.5rem; }
+        nav a { color: rgba(255,255,255,0.9); text-decoration: none; margin-right: 1rem; }
         nav a:hover { text-decoration: underline; }
-        main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        .card { background: white; padding: 1.5rem; margin-bottom: 1rem; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem; }
-        .badge-admin { background: #f44336; color: white; }
-        .badge-user { background: #2196F3; color: white; }
-        .badge-active { background: #4CAF50; color: white; }
-        .badge-inactive { background: #9E9E9E; color: white; }
+        main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-admin { background: #fee2e2; color: #dc2626; }
+        .badge-user { background: #dbeafe; color: #2563eb; }
+        .badge-active { background: #d1fae5; color: #059669; }
+        .badge-inactive { background: #f3f4f6; color: #6b7280; }
+        a.btn { display: inline-block; padding: 0.5rem 1rem; background: #667eea; color: white; text-decoration: none; border-radius: 4px; }
+        a.btn:hover { background: #5a67d8; }
+        ul { margin: 1rem 0; padding-left: 1.5rem; }
+        li { margin: 0.5rem 0; }
     </style>
 </head>
 <body>
     <header>
-        <h1>📝 Armature Handlebars</h1>
+        <h1>🦾 Armature + Handlebars</h1>
         <nav>
             <a href="/">Home</a>
             <a href="/users">Users</a>
-            <a href="/posts">Posts</a>
         </nav>
     </header>
     <main>
         {{{body}}}
     </main>
 </body>
-</html>"#
+</html>"#,
     )
     .await?;
 
-    // Index template
+    // Home template
     fs::write(
-        "demo/templates/index.hbs",
-        r#"<div class="card">
-    <h1>{{title}}</h1>
-    <p>{{description}}</p>
+        "templates/home.hbs",
+        r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{title}}</h2>
+    <p>{{message}}</p>
 
-    <h2>Features Demonstrated:</h2>
+    <h3 style="margin-top: 1.5rem;">Key Points:</h3>
     <ul>
-        <li>✅ Handlebars template rendering</li>
-        <li>✅ Layout partials</li>
-        <li>✅ Built-in helpers (eq, upper, len, etc.)</li>
-        <li>✅ Conditional rendering</li>
-        <li>✅ Iteration with {{{{raw}}}}{{#each}}{{{{/raw}}}}</li>
-        <li>✅ Hot-reload in dev mode</li>
+        {{#each features}}
+        <li>✅ {{this}}</li>
+        {{/each}}
     </ul>
 
-    <h3>Examples:</h3>
-    <ul>
-        <li><a href="/users">View Users</a> - List all users with filtering</li>
-        <li><a href="/posts">View Posts</a> - Blog post listing</li>
-    </ul>
-</div>"#
+    <p style="margin-top: 1.5rem;">
+        <a href="/users" class="btn">View Users →</a>
+    </p>
+</div>
+{{/inline}}
+{{/layout}}"#,
     )
     .await?;
 
     // Users list template
     fs::write(
-        "demo/templates/users/list.hbs",
-        r#"<div class="card">
-    <h1>{{upper title}}</h1>
-    <p>Total users: {{len users}}</p>
+        "templates/users.hbs",
+        r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{title}}</h2>
+    <p>Total: {{count}} users</p>
+</div>
 
-    {{#each users}}
-    <div class="card">
-        <h3>{{this.name}}</h3>
-        <p>Email: {{this.email}}</p>
-        <p>
-            Role: <span class="badge badge-{{this.role}}">{{upper this.role}}</span>
-            Status:
-            {{#if this.active}}
-                <span class="badge badge-active">ACTIVE</span>
-            {{else}}
-                <span class="badge badge-inactive">INACTIVE</span>
-            {{/if}}
-        </p>
-        <a href="/users/{{this.id}}">View Details →</a>
-    </div>
-    {{/each}}
-</div>"#
+{{#each users}}
+<div class="card">
+    <h3>{{this.name}}</h3>
+    <p>📧 {{this.email}}</p>
+    <p>
+        <span class="badge badge-{{this.role}}">{{this.role}}</span>
+        {{#if this.active}}
+        <span class="badge badge-active">Active</span>
+        {{else}}
+        <span class="badge badge-inactive">Inactive</span>
+        {{/if}}
+    </p>
+    <p style="margin-top: 1rem;">
+        <a href="/users/{{this.id}}" class="btn">View Profile →</a>
+    </p>
+</div>
+{{/each}}
+{{/inline}}
+{{/layout}}"#,
     )
     .await?;
 
     // User detail template
     fs::write(
-        "demo/templates/users/detail.hbs",
-        r#"<div class="card">
-    <h1>{{title}}</h1>
+        "templates/user.hbs",
+        r#"{{#> layout}}
+{{#*inline "body"}}
+<div class="card">
+    <h2>{{user.name}}</h2>
 
-    <p><strong>ID:</strong> {{user.id}}</p>
-    <p><strong>Name:</strong> {{user.name}}</p>
-    <p><strong>Email:</strong> {{user.email}}</p>
-    <p><strong>Role:</strong> <span class="badge badge-{{user.role}}">{{upper user.role}}</span></p>
-    <p><strong>Status:</strong>
-        {{#if user.active}}
-            <span class="badge badge-active">ACTIVE</span>
-        {{else}}
-            <span class="badge badge-inactive">INACTIVE</span>
-        {{/if}}
-    </p>
+    <table style="margin: 1rem 0; width: 100%;">
+        <tr><td><strong>ID:</strong></td><td>{{user.id}}</td></tr>
+        <tr><td><strong>Email:</strong></td><td>{{user.email}}</td></tr>
+        <tr><td><strong>Role:</strong></td><td><span class="badge badge-{{user.role}}">{{user.role}}</span></td></tr>
+        <tr>
+            <td><strong>Status:</strong></td>
+            <td>
+                {{#if user.active}}
+                <span class="badge badge-active">Active</span>
+                {{else}}
+                <span class="badge badge-inactive">Inactive</span>
+                {{/if}}
+            </td>
+        </tr>
+    </table>
 
-    {{#if (eq user.role "admin")}}
-        <div style="background: #fff3cd; padding: 1rem; border-radius: 5px; margin-top: 1rem;">
-            ⚠️ This user has administrator privileges.
-        </div>
-    {{/if}}
-
-    <p style="margin-top: 2rem;">
+    <p style="margin-top: 1.5rem;">
         <a href="/users">← Back to Users</a>
     </p>
-</div>"#
+</div>
+{{/inline}}
+{{/layout}}"#,
     )
     .await?;
 
-    // Posts list template
-    fs::write(
-        "demo/templates/posts/list.hbs",
-        r#"<div class="card">
-    <h1>{{title}}</h1>
-    <p>{{len posts}} posts available</p>
-
-    {{#each posts}}
-    <div class="card">
-        <h2>{{this.title}}</h2>
-        <p>{{this.content}}</p>
-        <p>
-            <small>By {{this.author}} | Views: {{this.views}}</small>
-        </p>
-        {{#if (gt this.views 1000)}}
-            <span class="badge badge-active">🔥 Popular</span>
-        {{/if}}
-        <p><a href="/posts/{{this.id}}">Read More →</a></p>
-    </div>
-    {{/each}}
-</div>"#
-    )
-    .await?;
-
-    // Post detail template
-    fs::write(
-        "demo/templates/posts/detail.hbs",
-        r#"<div class="card">
-    <h1>{{post.title}}</h1>
-    <p><small>By {{post.author}} | Views: {{post.views}}</small></p>
-
-    {{#if (gt post.views 1000)}}
-        <span class="badge badge-active">🔥 Popular Post</span>
-    {{/if}}
-
-    <div style="margin: 2rem 0;">
-        {{post.content}}
-    </div>
-
-    <p style="margin-top: 2rem;">
-        <a href="/posts">← Back to Posts</a>
-    </p>
-</div>"#
-    )
-    .await?;
-
-    println!("✅ Demo templates created");
+    println!("✅ Templates created in ./templates/");
 
     Ok(())
 }
-

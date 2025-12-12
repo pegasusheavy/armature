@@ -126,6 +126,7 @@ pub trait BeforeApplicationShutdown: Send + Sync {
 /// manager.call_module_init_hooks().await.unwrap();
 /// # });
 /// ```
+#[allow(clippy::type_complexity)]
 pub struct LifecycleManager {
     init_hooks: Arc<RwLock<Vec<(String, Arc<dyn OnModuleInit>)>>>,
     destroy_hooks: Arc<RwLock<Vec<(String, Arc<dyn OnModuleDestroy>)>>>,
@@ -207,7 +208,9 @@ impl LifecycleManager {
     }
 
     /// Execute all OnModuleInit hooks
-    pub async fn call_module_init_hooks(&self) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
+    pub async fn call_module_init_hooks(
+        &self,
+    ) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
         println!("🔄 Calling module initialization hooks...");
         let hooks = self.init_hooks.read().await;
         let mut errors = Vec::new();
@@ -232,7 +235,9 @@ impl LifecycleManager {
     }
 
     /// Execute all OnModuleDestroy hooks
-    pub async fn call_module_destroy_hooks(&self) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
+    pub async fn call_module_destroy_hooks(
+        &self,
+    ) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
         println!("🔄 Calling module destruction hooks...");
         let hooks = self.destroy_hooks.read().await;
         let mut errors = Vec::new();
@@ -258,7 +263,9 @@ impl LifecycleManager {
     }
 
     /// Execute all OnApplicationBootstrap hooks
-    pub async fn call_bootstrap_hooks(&self) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
+    pub async fn call_bootstrap_hooks(
+        &self,
+    ) -> Result<(), Vec<(String, Box<dyn std::error::Error + Send + Sync>)>> {
         println!("🚀 Calling application bootstrap hooks...");
         let hooks = self.bootstrap_hooks.read().await;
         let mut errors = Vec::new();
@@ -407,6 +414,7 @@ pub struct LifecycleHookCounts {
 mod tests {
     use super::*;
 
+    #[allow(dead_code)]
     struct TestService {
         name: String,
         init_called: Arc<RwLock<bool>>,
@@ -515,4 +523,3 @@ mod tests {
         assert_eq!(execution_order, vec![1, 2, 3]);
     }
 }
-

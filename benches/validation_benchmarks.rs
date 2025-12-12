@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use armature_validation::*;
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 fn bench_email_validation(c: &mut Criterion) {
     let mut group = c.benchmark_group("email_validation");
@@ -10,11 +10,7 @@ fn bench_email_validation(c: &mut Criterion) {
         "admin@subdomain.example.com",
     ];
 
-    let invalid_emails = vec![
-        "invalid-email",
-        "@example.com",
-        "user@",
-    ];
+    let invalid_emails = vec!["invalid-email", "@example.com", "user@"];
 
     group.bench_function("valid_emails", |b| {
         b.iter(|| {
@@ -110,7 +106,10 @@ fn bench_numeric_validators(c: &mut Criterion) {
     });
 
     group.bench_function("in_range_i32", |b| {
-        let validator = InRange { min: 1i32, max: 100i32 };
+        let validator = InRange {
+            min: 1i32,
+            max: 100i32,
+        };
         b.iter(|| validator.validate(black_box(50i32), "value"))
     });
 
@@ -183,4 +182,3 @@ criterion_group!(
 );
 
 criterion_main!(validation_benches);
-

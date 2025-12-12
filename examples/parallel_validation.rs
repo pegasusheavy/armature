@@ -25,37 +25,54 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create validator for registration form
     let validator = ValidationBuilder::new()
-        .field(ValidationRules::for_field("username")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(3).validate(v, f))
-            .add(|v, f| MaxLength(50).validate(v, f))
-            .add(|v, f| IsAlphanumeric::validate(v, f)))
-        .field(ValidationRules::for_field("email")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| IsEmail::validate(v, f)))
-        .field(ValidationRules::for_field("password")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(8).validate(v, f)))
-        .field(ValidationRules::for_field("confirm_password")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(8).validate(v, f)))
-        .field(ValidationRules::for_field("first_name")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(2).validate(v, f)))
-        .field(ValidationRules::for_field("last_name")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(2).validate(v, f)))
-        .field(ValidationRules::for_field("age")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| IsNumeric::validate(v, f)))
-        .field(ValidationRules::for_field("phone")
-            .add(|v, f| NotEmpty::validate(v, f)))
-        .field(ValidationRules::for_field("address")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(5).validate(v, f)))
-        .field(ValidationRules::for_field("city")
-            .add(|v, f| NotEmpty::validate(v, f))
-            .add(|v, f| MinLength(2).validate(v, f)));
+        .field(
+            ValidationRules::for_field("username")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(3).validate(v, f))
+                .add(|v, f| MaxLength(50).validate(v, f))
+                .add(IsAlphanumeric::validate),
+        )
+        .field(
+            ValidationRules::for_field("email")
+                .add(NotEmpty::validate)
+                .add(IsEmail::validate),
+        )
+        .field(
+            ValidationRules::for_field("password")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(8).validate(v, f)),
+        )
+        .field(
+            ValidationRules::for_field("confirm_password")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(8).validate(v, f)),
+        )
+        .field(
+            ValidationRules::for_field("first_name")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(2).validate(v, f)),
+        )
+        .field(
+            ValidationRules::for_field("last_name")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(2).validate(v, f)),
+        )
+        .field(
+            ValidationRules::for_field("age")
+                .add(NotEmpty::validate)
+                .add(IsNumeric::validate),
+        )
+        .field(ValidationRules::for_field("phone").add(NotEmpty::validate))
+        .field(
+            ValidationRules::for_field("address")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(5).validate(v, f)),
+        )
+        .field(
+            ValidationRules::for_field("city")
+                .add(NotEmpty::validate)
+                .add(|v, f| MinLength(2).validate(v, f)),
+        );
 
     // Create test data
     let mut data = HashMap::new();
@@ -81,7 +98,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let sequential_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, sequential_time);
-    println!("   Avg per validation: {:.2}ms",
+    println!(
+        "   Avg per validation: {:.2}ms",
         sequential_time.as_millis() as f64 / iterations as f64
     );
 
@@ -95,7 +113,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let parallel_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, parallel_time);
-    println!("   Avg per validation: {:.2}ms",
+    println!(
+        "   Avg per validation: {:.2}ms",
         parallel_time.as_millis() as f64 / iterations as f64
     );
 
@@ -119,9 +138,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         large_validator = large_validator.field(
             ValidationRules::for_field(&field_name)
-                .add(|v, f| NotEmpty::validate(v, f))
+                .add(NotEmpty::validate)
                 .add(|v, f| MinLength(3).validate(v, f))
-                .add(|v, f| MaxLength(100).validate(v, f))
+                .add(|v, f| MaxLength(100).validate(v, f)),
         );
 
         large_data.insert(field_name, format!("value_for_field_{}", i));
@@ -138,7 +157,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let large_seq_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, large_seq_time);
-    println!("   Avg per validation: {:.2}ms",
+    println!(
+        "   Avg per validation: {:.2}ms",
         large_seq_time.as_millis() as f64 / iterations as f64
     );
 
@@ -152,11 +172,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let large_par_time = start.elapsed();
     println!("   {} iterations: {:?}", iterations, large_par_time);
-    println!("   Avg per validation: {:.2}ms",
+    println!(
+        "   Avg per validation: {:.2}ms",
         large_par_time.as_millis() as f64 / iterations as f64
     );
 
-    let large_speedup = large_seq_time.as_millis() as f64 / large_par_time.as_millis().max(1) as f64;
+    let large_speedup =
+        large_seq_time.as_millis() as f64 / large_par_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.2}x faster!", large_speedup);
 
     // ========================================================================
@@ -169,16 +191,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create invalid data
     let mut invalid_data = HashMap::new();
-    invalid_data.insert("username".to_string(), "ab".to_string());  // Too short
-    invalid_data.insert("email".to_string(), "invalid-email".to_string());  // Invalid format
-    invalid_data.insert("password".to_string(), "short".to_string());  // Too short
+    invalid_data.insert("username".to_string(), "ab".to_string()); // Too short
+    invalid_data.insert("email".to_string(), "invalid-email".to_string()); // Invalid format
+    invalid_data.insert("password".to_string(), "short".to_string()); // Too short
     invalid_data.insert("confirm_password".to_string(), "short".to_string());
-    invalid_data.insert("first_name".to_string(), "J".to_string());  // Too short
-    invalid_data.insert("last_name".to_string(), "D".to_string());  // Too short
-    invalid_data.insert("age".to_string(), "not-a-number".to_string());  // Not numeric
+    invalid_data.insert("first_name".to_string(), "J".to_string()); // Too short
+    invalid_data.insert("last_name".to_string(), "D".to_string()); // Too short
+    invalid_data.insert("age".to_string(), "not-a-number".to_string()); // Not numeric
     invalid_data.insert("phone".to_string(), "555".to_string());
-    invalid_data.insert("address".to_string(), "123".to_string());  // Too short
-    invalid_data.insert("city".to_string(), "N".to_string());  // Too short
+    invalid_data.insert("address".to_string(), "123".to_string()); // Too short
+    invalid_data.insert("city".to_string(), "N".to_string()); // Too short
 
     println!("📋 Testing validation error collection...");
 
@@ -234,11 +256,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let api_seq_time = start.elapsed();
-    println!("   Processed {} requests in {:?}", api_requests, api_seq_time);
-    println!("   Throughput: {:.0} requests/sec",
+    println!(
+        "   Processed {} requests in {:?}",
+        api_requests, api_seq_time
+    );
+    println!(
+        "   Throughput: {:.0} requests/sec",
         api_requests as f64 / api_seq_time.as_secs_f64()
     );
-    println!("   Valid: {}, Invalid: {}", valid_count, api_requests - valid_count);
+    println!(
+        "   Valid: {}, Invalid: {}",
+        valid_count,
+        api_requests - valid_count
+    );
 
     // Parallel
     println!("\n⚡ Parallel processing...");
@@ -248,19 +278,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for i in 0..api_requests {
         if i % 10 == 0 {
             let _ = validator.validate_parallel(&invalid_data).await;
-        } else {
-            if validator.validate_parallel(&data).await.is_ok() {
-                valid_count += 1;
-            }
+        } else if validator.validate_parallel(&data).await.is_ok() {
+            valid_count += 1;
         }
     }
 
     let api_par_time = start.elapsed();
-    println!("   Processed {} requests in {:?}", api_requests, api_par_time);
-    println!("   Throughput: {:.0} requests/sec",
+    println!(
+        "   Processed {} requests in {:?}",
+        api_requests, api_par_time
+    );
+    println!(
+        "   Throughput: {:.0} requests/sec",
         api_requests as f64 / api_par_time.as_secs_f64()
     );
-    println!("   Valid: {}, Invalid: {}", valid_count, api_requests - valid_count);
+    println!(
+        "   Valid: {}, Invalid: {}",
+        valid_count,
+        api_requests - valid_count
+    );
 
     let api_speedup = api_seq_time.as_millis() as f64 / api_par_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.2}x faster!", api_speedup);
@@ -276,17 +312,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("┌──────────────────────────┬─────────────┬─────────────┬──────────┐");
     println!("│ Test                     │ Sequential  │ Parallel    │ Speedup  │");
     println!("├──────────────────────────┼─────────────┼─────────────┼──────────┤");
-    println!("│ Small Form (10 fields)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
+    println!(
+        "│ Small Form (10 fields)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
         sequential_time.as_millis(),
         parallel_time.as_millis(),
         speedup
     );
-    println!("│ Large Form (30 fields)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
+    println!(
+        "│ Large Form (30 fields)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
         large_seq_time.as_millis(),
         large_par_time.as_millis(),
         large_speedup
     );
-    println!("│ API Validation (1000 req)│ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
+    println!(
+        "│ API Validation (1000 req)│ {:>9.0}ms │ {:>9.0}ms │ {:>6.2}x │",
         api_seq_time.as_millis(),
         api_par_time.as_millis(),
         api_speedup
@@ -306,4 +345,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

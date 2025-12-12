@@ -15,11 +15,17 @@ pub struct Account {
     pub orders: Option<String>,
 
     /// Terms of service agreement
-    #[serde(rename = "termsOfServiceAgreed", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "termsOfServiceAgreed",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub terms_of_service_agreed: Option<bool>,
 
     /// External account binding
-    #[serde(rename = "externalAccountBinding", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "externalAccountBinding",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub external_account_binding: Option<serde_json::Value>,
 }
 
@@ -46,7 +52,10 @@ pub struct AccountCreate {
     pub terms_of_service_agreed: bool,
 
     /// External account binding (for providers that require it)
-    #[serde(rename = "externalAccountBinding", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "externalAccountBinding",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub external_account_binding: Option<serde_json::Value>,
 }
 
@@ -73,10 +82,7 @@ mod tests {
 
     #[test]
     fn test_account_create() {
-        let account_create = AccountCreate::new(
-            vec!["mailto:admin@example.com".to_string()],
-            true,
-        );
+        let account_create = AccountCreate::new(vec!["mailto:admin@example.com".to_string()], true);
 
         assert_eq!(account_create.contact.len(), 1);
         assert!(account_create.terms_of_service_agreed);
@@ -90,5 +96,3 @@ mod tests {
         assert_eq!(json, "\"valid\"");
     }
 }
-
-

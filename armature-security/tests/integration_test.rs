@@ -1,7 +1,7 @@
 //! Integration tests for armature-security
 
-use armature_security::*;
 use armature_core::HttpResponse;
+use armature_security::*;
 
 #[test]
 fn test_security_middleware_default() {
@@ -111,7 +111,10 @@ fn test_download_options() {
 #[test]
 fn test_permitted_cross_domain_policies() {
     assert_eq!(PermittedCrossDomainPolicies::None.to_header(), "none");
-    assert_eq!(PermittedCrossDomainPolicies::MasterOnly.to_header(), "master-only");
+    assert_eq!(
+        PermittedCrossDomainPolicies::MasterOnly.to_header(),
+        "master-only"
+    );
 }
 
 #[test]
@@ -134,4 +137,3 @@ fn test_security_middleware_all_headers() {
     assert!(secured.headers.contains_key("Referrer-Policy"));
     assert!(secured.headers.contains_key("X-DNS-Prefetch-Control"));
 }
-

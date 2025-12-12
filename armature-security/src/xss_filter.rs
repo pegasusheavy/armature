@@ -35,4 +35,3 @@ mod tests {
         assert_eq!(XssFilter::EnabledBlock.to_header_value(), "1; mode=block");
     }
 }
-

@@ -46,8 +46,10 @@ mod tests {
     #[test]
     fn test_referrer_policy() {
         assert_eq!(ReferrerPolicy::NoReferrer.to_header_value(), "no-referrer");
-        assert_eq!(ReferrerPolicy::StrictOriginWhenCrossOrigin.to_header_value(), "strict-origin-when-cross-origin");
+        assert_eq!(
+            ReferrerPolicy::StrictOriginWhenCrossOrigin.to_header_value(),
+            "strict-origin-when-cross-origin"
+        );
         assert_eq!(ReferrerPolicy::SameOrigin.to_header_value(), "same-origin");
     }
 }
-

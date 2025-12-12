@@ -68,7 +68,10 @@ fn test_saml_config_builder() {
 
     assert_eq!(config.cert_path, Some("/path/to/cert.pem".to_string()));
     assert_eq!(config.key_path, Some("/path/to/key.pem".to_string()));
-    assert_eq!(config.acs_url, Some("https://sp.example.com/acs".to_string()));
+    assert_eq!(
+        config.acs_url,
+        Some("https://sp.example.com/acs".to_string())
+    );
 }
 
 #[test]
@@ -87,7 +90,11 @@ fn test_oauth2_provider_config_microsoft() {
     );
 
     assert_eq!(config.name, "microsoft");
-    assert!(config.authorization_url.contains("login.microsoftonline.com"));
+    assert!(
+        config
+            .authorization_url
+            .contains("login.microsoftonline.com")
+    );
 }
 
 #[test]
@@ -102,7 +109,10 @@ fn test_oauth2_provider_config_custom() {
     );
 
     assert_eq!(config.name, "custom_provider");
-    assert_eq!(config.authorization_url, "https://custom.com/oauth/authorize");
+    assert_eq!(
+        config.authorization_url,
+        "https://custom.com/oauth/authorize"
+    );
     assert_eq!(config.token_url, "https://custom.com/oauth/token");
 }
 
@@ -117,5 +127,3 @@ fn test_oauth2_scopes() {
 
     assert_eq!(config.scopes.len(), 2);
 }
-
-

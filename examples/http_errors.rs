@@ -190,7 +190,7 @@ fn create_app() -> Application {
     let mut router = Router::new();
 
     // Register service
-    let item_service = ItemService::default();
+    let item_service = ItemService;
     container.register(item_service.clone());
 
     let controller = ErrorController { item_service };

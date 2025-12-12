@@ -228,7 +228,7 @@ fn create_app_with_middleware() -> Application {
     let mut router = Router::new();
 
     // Register services
-    let data_service = DataService::default();
+    let data_service = DataService;
     container.register(data_service.clone());
 
     let controller = ApiController { data_service };

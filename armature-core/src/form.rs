@@ -123,9 +123,7 @@ impl FormFile {
 /// # Ok(())
 /// # }
 /// ```
-pub async fn save_files_parallel(
-    files: Vec<(&FormFile, String)>,
-) -> Result<Vec<String>, Error> {
+pub async fn save_files_parallel(files: Vec<(&FormFile, String)>) -> Result<Vec<String>, Error> {
     use tokio::task::JoinSet;
 
     let mut set = JoinSet::new();
@@ -165,7 +163,11 @@ impl MultipartParser {
             .find_map(|part| {
                 let part = part.trim();
                 if part.starts_with("boundary=") {
-                    Some(part.trim_start_matches("boundary=").trim_matches('"').to_string())
+                    Some(
+                        part.trim_start_matches("boundary=")
+                            .trim_matches('"')
+                            .to_string(),
+                    )
                 } else {
                     None
                 }
@@ -223,9 +225,17 @@ impl MultipartParser {
                 for attr in line.split(';') {
                     let attr = attr.trim();
                     if attr.starts_with("name=") {
-                        name = Some(attr.trim_start_matches("name=").trim_matches('"').to_string());
+                        name = Some(
+                            attr.trim_start_matches("name=")
+                                .trim_matches('"')
+                                .to_string(),
+                        );
                     } else if attr.starts_with("filename=") {
-                        filename = Some(attr.trim_start_matches("filename=").trim_matches('"').to_string());
+                        filename = Some(
+                            attr.trim_start_matches("filename=")
+                                .trim_matches('"')
+                                .to_string(),
+                        );
                     }
                 }
             } else if line.starts_with("Content-Type:") {
@@ -266,9 +276,7 @@ impl MultipartParser {
     pub fn to_map(fields: Vec<FormField>) -> HashMap<String, String> {
         fields
             .into_iter()
-            .filter_map(|field| {
-                field.value.map(|value| (field.name, value))
-            })
+            .filter_map(|field| field.value.map(|value| (field.name, value)))
             .collect()
     }
 
@@ -276,9 +284,7 @@ impl MultipartParser {
     pub fn get_files(fields: &[FormField]) -> Vec<(String, &FormFile)> {
         fields
             .iter()
-            .filter_map(|field| {
-                field.file.as_ref().map(|file| (field.name.clone(), file))
-            })
+            .filter_map(|field| field.file.as_ref().map(|file| (field.name.clone(), file)))
             .collect()
     }
 }
@@ -310,18 +316,10 @@ mod tests {
 
     #[test]
     fn test_form_file_is_image() {
-        let image = FormFile::new(
-            "photo.jpg".to_string(),
-            "image/jpeg".to_string(),
-            vec![],
-        );
+        let image = FormFile::new("photo.jpg".to_string(), "image/jpeg".to_string(), vec![]);
         assert!(image.is_image());
 
-        let doc = FormFile::new(
-            "doc.pdf".to_string(),
-            "application/pdf".to_string(),
-            vec![],
-        );
+        let doc = FormFile::new("doc.pdf".to_string(), "application/pdf".to_string(), vec![]);
         assert!(!doc.is_image());
     }
 
@@ -334,7 +332,7 @@ mod tests {
         );
 
         assert!(!file.exceeds_size(2048)); // 2KB limit
-        assert!(file.exceeds_size(512));   // 512B limit
+        assert!(file.exceeds_size(512)); // 512B limit
     }
 
     #[test]
@@ -353,5 +351,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-
-

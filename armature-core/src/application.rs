@@ -1,10 +1,10 @@
 // Application bootstrapper and HTTP server
 
+use crate::logging::{debug, error, info, trace, warn};
 use crate::{
     Container, Error, HttpRequest, HttpResponse, HttpsConfig, LifecycleManager, Module, Router,
     TlsConfig,
 };
-use crate::logging::{debug, error, info, trace, warn};
 use http_body_util::{BodyExt, Full};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -35,7 +35,10 @@ impl Application {
     /// Create a new application from a root module with lifecycle support
     pub async fn create<M: Module + Default>() -> Self {
         info!("Bootstrapping Armature application");
-        debug!(module_type = std::any::type_name::<M>(), "Creating application from root module");
+        debug!(
+            module_type = std::any::type_name::<M>(),
+            "Creating application from root module"
+        );
 
         let container = Container::new();
         debug!("DI container initialized");
@@ -94,13 +97,23 @@ impl Application {
     }
 
     /// Gracefully shutdown the application
-    pub async fn shutdown(&self, signal: Option<String>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn shutdown(
+        &self,
+        signal: Option<String>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         info!(signal = ?signal, "Gracefully shutting down application");
 
         // Call before shutdown hooks
         debug!("Calling BeforeApplicationShutdown hooks");
-        if let Err(errors) = self.lifecycle.call_before_shutdown_hooks(signal.clone()).await {
-            warn!(error_count = errors.len(), "Some before shutdown hooks failed");
+        if let Err(errors) = self
+            .lifecycle
+            .call_before_shutdown_hooks(signal.clone())
+            .await
+        {
+            warn!(
+                error_count = errors.len(),
+                "Some before shutdown hooks failed"
+            );
             for (name, error) in errors {
                 error!(hook_name = %name, error = %error, "Before shutdown hook failed");
             }
@@ -122,7 +135,10 @@ impl Application {
         // Call module destroy hooks
         debug!("Calling OnModuleDestroy hooks");
         if let Err(errors) = self.lifecycle.call_module_destroy_hooks().await {
-            warn!(error_count = errors.len(), "Some module destroy hooks failed");
+            warn!(
+                error_count = errors.len(),
+                "Some module destroy hooks failed"
+            );
             for (name, error) in errors {
                 error!(hook_name = %name, error = %error, "Module destroy hook failed");
             }
@@ -185,7 +201,11 @@ impl Application {
         // First, recursively register imported modules
         let imports = module.imports();
         if !imports.is_empty() {
-            debug!(module_type = module_type, import_count = imports.len(), "Registering imported modules");
+            debug!(
+                module_type = module_type,
+                import_count = imports.len(),
+                "Registering imported modules"
+            );
             for imported_module in imports {
                 Self::register_module(container, router, imported_module.as_ref());
             }
@@ -193,16 +213,28 @@ impl Application {
 
         // Register all providers
         let providers = module.providers();
-        debug!(module_type = module_type, provider_count = providers.len(), "Registering providers");
+        debug!(
+            module_type = module_type,
+            provider_count = providers.len(),
+            "Registering providers"
+        );
         for provider_reg in providers {
             // Call the registration function which will register the provider in the container
             (provider_reg.register_fn)(container);
-            debug!(module_type = module_type, provider = provider_reg.type_name, "Provider registered");
+            debug!(
+                module_type = module_type,
+                provider = provider_reg.type_name,
+                "Provider registered"
+            );
         }
 
         // Register all controllers
         let controllers = module.controllers();
-        debug!(module_type = module_type, controller_count = controllers.len(), "Registering controllers");
+        debug!(
+            module_type = module_type,
+            controller_count = controllers.len(),
+            "Registering controllers"
+        );
         for controller_reg in controllers {
             // Instantiate controller with DI
             match (controller_reg.factory)(container) {
@@ -361,7 +393,7 @@ impl Application {
             let https_port = config
                 .https_addr
                 .split(':')
-                .last()
+                .next_back()
                 .and_then(|p| p.parse::<u16>().ok())
                 .unwrap_or(443);
 
@@ -518,7 +550,7 @@ async fn handle_request(
         Ok(resp) => {
             debug!(method = %method, path = %path, status = resp.status, "Request handled successfully");
             resp
-        },
+        }
         Err(err) => {
             warn!(method = %method, path = %path, error = %err, "Request handling failed");
             // Convert error to response

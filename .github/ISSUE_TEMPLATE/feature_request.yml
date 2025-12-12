@@ -1,0 +1,89 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please fill out the form below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like.
+      placeholder: Describe the feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? Is it related to a frustration?
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you think this should work?
+      placeholder: |
+        I think this should work like...
+
+        ```rust
+        // Example API usage
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: I've tried...
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What area of the framework does this relate to?
+      options:
+        - Core / DI
+        - Routing
+        - Authentication
+        - GraphQL
+        - SSR (Angular/React/Vue/Svelte)
+        - WebSocket / SSE
+        - Configuration
+        - Validation
+        - Testing
+        - Documentation
+        - CLI / Tooling
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Nice to have
+        - Would be useful
+        - Important for my use case
+        - Blocking my adoption
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to help implement this feature?
+      options:
+        - label: I would be willing to submit a PR for this feature
+

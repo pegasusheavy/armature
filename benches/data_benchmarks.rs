@@ -1,6 +1,6 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use armature_queue::{Job as QueueJob, JobPriority, QueueConfig};
 use armature_cron::{CronExpression, expression::CronPresets};
+use armature_queue::{Job as QueueJob, JobPriority, QueueConfig};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use serde_json::json;
 
 fn bench_queue_job_creation(c: &mut Criterion) {
@@ -37,12 +37,7 @@ fn bench_queue_job_creation(c: &mut Criterion) {
 
 fn bench_queue_config(c: &mut Criterion) {
     c.bench_function("queue_config_new", |b| {
-        b.iter(|| {
-            QueueConfig::new(
-                black_box("redis://localhost:6379"),
-                black_box("default"),
-            )
-        })
+        b.iter(|| QueueConfig::new(black_box("redis://localhost:6379"), black_box("default")))
     });
 }
 
@@ -50,10 +45,10 @@ fn bench_cron_expression_parsing(c: &mut Criterion) {
     let mut group = c.benchmark_group("cron_expression");
 
     let expressions = vec![
-        "0 0 * * * *",           // Every hour
-        "*/5 * * * * *",         // Every 5 seconds
-        "0 0 12 * * MON-FRI",    // Weekdays at noon
-        "0 0 0 1 * *",           // First of month
+        "0 0 * * * *",        // Every hour
+        "*/5 * * * * *",      // Every 5 seconds
+        "0 0 12 * * MON-FRI", // Weekdays at noon
+        "0 0 0 1 * *",        // First of month
     ];
 
     for expr in expressions {
@@ -100,4 +95,3 @@ criterion_group!(
 );
 
 criterion_main!(data_benches);
-

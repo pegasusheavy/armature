@@ -5,7 +5,6 @@
 
 use armature_cache::*;
 use std::time::{Duration, Instant};
-use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), CacheError> {
@@ -40,7 +39,9 @@ async fn main() -> Result<(), CacheError> {
             "name": format!("User {}", i),
             "email": format!("user{}@example.com", i)
         });
-        cache.set_json(&key, value.to_string(), Some(Duration::from_secs(60))).await?;
+        cache
+            .set_json(&key, value.to_string(), Some(Duration::from_secs(60)))
+            .await?;
     }
     println!("   ✅ Test data ready\n");
 
@@ -70,7 +71,10 @@ async fn main() -> Result<(), CacheError> {
     let parallel_time = start.elapsed();
 
     println!("   Time taken: {:?}", parallel_time);
-    println!("   Results: {} values fetched", parallel_results.iter().filter(|r| r.is_some()).count());
+    println!(
+        "   Results: {} values fetched",
+        parallel_results.iter().filter(|r| r.is_some()).count()
+    );
 
     let speedup = sequential_time.as_millis() as f64 / parallel_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.1}x faster!", speedup);
@@ -96,7 +100,9 @@ async fn main() -> Result<(), CacheError> {
             "name": format!("Product {}", i),
             "price": i * 10
         });
-        cache.set_json(&key, value.to_string(), Some(Duration::from_secs(60))).await?;
+        cache
+            .set_json(&key, value.to_string(), Some(Duration::from_secs(60)))
+            .await?;
     }
 
     let sequential_set_time = start.elapsed();
@@ -112,22 +118,25 @@ async fn main() -> Result<(), CacheError> {
                 "id": i,
                 "order_number": format!("ORD-{:05}", i),
                 "total": i * 25
-            }).to_string();
+            })
+            .to_string();
             (key, value)
         })
         .collect();
 
-    let item_refs: Vec<(&str, String)> = items.iter()
-        .map(|(k, v)| (k.as_str(), v.clone()))
-        .collect();
+    let item_refs: Vec<(&str, String)> =
+        items.iter().map(|(k, v)| (k.as_str(), v.clone())).collect();
 
     let start = Instant::now();
-    cache.set_many(&item_refs, Some(Duration::from_secs(60))).await?;
+    cache
+        .set_many(&item_refs, Some(Duration::from_secs(60)))
+        .await?;
     let parallel_set_time = start.elapsed();
 
     println!("   Time taken: {:?}", parallel_set_time);
 
-    let speedup = sequential_set_time.as_millis() as f64 / parallel_set_time.as_millis().max(1) as f64;
+    let speedup =
+        sequential_set_time.as_millis() as f64 / parallel_set_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.1}x faster!", speedup);
 
     // ========================================================================
@@ -166,7 +175,8 @@ async fn main() -> Result<(), CacheError> {
 
     println!("   Time taken: {:?}", parallel_del_time);
 
-    let speedup = sequential_del_time.as_millis() as f64 / parallel_del_time.as_millis().max(1) as f64;
+    let speedup =
+        sequential_del_time.as_millis() as f64 / parallel_del_time.as_millis().max(1) as f64;
     println!("\n   🚀 Speedup: {:.1}x faster!", speedup);
 
     // ========================================================================
@@ -177,12 +187,13 @@ async fn main() -> Result<(), CacheError> {
     println!("          TEST 4: Parallel EXISTS Check                        ");
     println!("═══════════════════════════════════════════════════════════════\n");
 
-    let check_keys: Vec<String> = (1..=30)
-        .map(|i| format!("test:order:{}", i))
-        .collect();
+    let check_keys: Vec<String> = (1..=30).map(|i| format!("test:order:{}", i)).collect();
     let check_key_refs: Vec<&str> = check_keys.iter().map(|s| s.as_str()).collect();
 
-    println!("🔍 Checking existence of {} keys in parallel...", check_keys.len());
+    println!(
+        "🔍 Checking existence of {} keys in parallel...",
+        check_keys.len()
+    );
     let start = Instant::now();
 
     let exists_results = cache.exists_many(&check_key_refs).await?;
@@ -191,7 +202,11 @@ async fn main() -> Result<(), CacheError> {
     let existing_count = exists_results.iter().filter(|&&e| e).count();
 
     println!("   Time taken: {:?}", exists_time);
-    println!("   Found: {}/{} keys exist", existing_count, check_keys.len());
+    println!(
+        "   Found: {}/{} keys exist",
+        existing_count,
+        check_keys.len()
+    );
 
     // ========================================================================
     // 5. REAL-WORLD USE CASE: CACHE WARMING
@@ -216,19 +231,23 @@ async fn main() -> Result<(), CacheError> {
                     "theme": "dark",
                     "notifications": true
                 }
-            }).to_string();
+            })
+            .to_string();
             (key, value)
         })
         .collect();
 
-    let user_refs: Vec<(&str, String)> = user_data.iter()
+    let user_refs: Vec<(&str, String)> = user_data
+        .iter()
         .map(|(k, v)| (k.as_str(), v.clone()))
         .collect();
 
     println!("⚡ Warming cache with set_many...");
     let start = Instant::now();
 
-    cache.set_many(&user_refs, Some(Duration::from_secs(3600))).await?;
+    cache
+        .set_many(&user_refs, Some(Duration::from_secs(3600)))
+        .await?;
 
     let warm_time = start.elapsed();
     println!("   ✅ Cached 100 profiles in {:?}", warm_time);
@@ -245,23 +264,28 @@ async fn main() -> Result<(), CacheError> {
     println!("┌──────────────────────┬─────────────┬─────────────┬──────────┐");
     println!("│ Operation            │ Sequential  │ Parallel    │ Speedup  │");
     println!("├──────────────────────┼─────────────┼─────────────┼──────────┤");
-    println!("│ GET ({} keys)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
+    println!(
+        "│ GET ({} keys)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
         num_keys,
         sequential_time.as_millis(),
         parallel_time.as_millis(),
         speedup
     );
 
-    let set_speedup = sequential_set_time.as_millis() as f64 / parallel_set_time.as_millis().max(1) as f64;
-    println!("│ SET ({} keys)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
+    let set_speedup =
+        sequential_set_time.as_millis() as f64 / parallel_set_time.as_millis().max(1) as f64;
+    println!(
+        "│ SET ({} keys)      │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
         num_writes,
         sequential_set_time.as_millis(),
         parallel_set_time.as_millis(),
         set_speedup
     );
 
-    let del_speedup = sequential_del_time.as_millis() as f64 / parallel_del_time.as_millis().max(1) as f64;
-    println!("│ DELETE ({} keys)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
+    let del_speedup =
+        sequential_del_time.as_millis() as f64 / parallel_del_time.as_millis().max(1) as f64;
+    println!(
+        "│ DELETE ({} keys)   │ {:>9.0}ms │ {:>9.0}ms │ {:>6.1}x │",
         num_deletes,
         sequential_del_time.as_millis(),
         parallel_del_time.as_millis(),
@@ -286,4 +310,3 @@ async fn main() -> Result<(), CacheError> {
 
     Ok(())
 }
-

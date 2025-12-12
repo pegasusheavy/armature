@@ -247,5 +247,3 @@ mod tests {
         assert_eq!(config.schema_docs_endpoint, "/api/docs");
     }
 }
-
-

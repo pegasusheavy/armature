@@ -4,4 +4,3 @@
 //! This module exists for organizational completeness.
 
 // No code needed - functionality is in lib.rs
-

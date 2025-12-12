@@ -1,0 +1,58 @@
+# Dependabot configuration for Armature Framework
+
+version: 2
+updates:
+  # Rust dependencies
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(rust)"
+    labels:
+      - "dependencies"
+      - "rust"
+    groups:
+      rust-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(actions)"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # npm dependencies for web app
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(web)"
+    labels:
+      - "dependencies"
+      - "web"
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+      dev-dependencies:
+        dependency-type: "development"
+        patterns:
+          - "*"
+

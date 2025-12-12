@@ -62,12 +62,6 @@ export class DocsComponent implements OnInit {
       category: 'Core Features',
     },
     {
-      id: 'csrf-protection',
-      title: 'CSRF Protection',
-      filename: 'CSRF_PROTECTION.md',
-      category: 'Core Features',
-    },
-    {
       id: 'lifecycle-hooks',
       title: 'Lifecycle Hooks',
       filename: 'LIFECYCLE_HOOKS.md',
@@ -98,27 +92,6 @@ export class DocsComponent implements OnInit {
       title: 'WebSocket & SSE',
       filename: 'WEBSOCKET_SSE_GUIDE.md',
       category: 'HTTP & Networking',
-    },
-
-    // SSR Frameworks
-    {
-      id: 'angular-ssr',
-      title: 'Angular SSR',
-      filename: 'ANGULAR_SSR_GUIDE.md',
-      category: 'SSR Frameworks',
-    },
-    { id: 'vue-ssr', title: 'Vue SSR', filename: 'VUE_SSR_GUIDE.md', category: 'SSR Frameworks' },
-    {
-      id: 'hmr-guide',
-      title: 'Hot Module Reload',
-      filename: 'HMR_GUIDE.md',
-      category: 'SSR Frameworks',
-    },
-    {
-      id: 'hmr-quick-start',
-      title: 'HMR Quick Start',
-      filename: 'HMR_QUICK_START.md',
-      category: 'SSR Frameworks',
     },
 
     // GraphQL
@@ -190,17 +163,13 @@ export class DocsComponent implements OnInit {
       filename: 'SERVER_INTEGRATION.md',
       category: 'Architecture',
     },
+
+    // Rate Limiting
     {
-      id: 'parallel-processing',
-      title: 'Parallel Processing',
-      filename: 'PARALLEL_PROCESSING_GUIDE.md',
-      category: 'Architecture',
-    },
-    {
-      id: 'multithreading-opportunities',
-      title: 'Multithreading',
-      filename: 'MULTITHREADING_OPPORTUNITIES.md',
-      category: 'Architecture',
+      id: 'rate-limiting',
+      title: 'Rate Limiting',
+      filename: 'RATE_LIMITING_GUIDE.md',
+      category: 'Rate Limiting',
     },
 
     // Testing & Quality
@@ -217,21 +186,9 @@ export class DocsComponent implements OnInit {
       category: 'Testing & Quality',
     },
     {
-      id: 'doc-test-coverage',
-      title: 'Doc Test Coverage',
-      filename: 'DOC_TEST_COVERAGE_STATUS.md',
-      category: 'Testing & Quality',
-    },
-    {
       id: 'documentation-testing',
       title: 'Documentation Testing',
       filename: 'DOCUMENTATION_TESTING.md',
-      category: 'Testing & Quality',
-    },
-    {
-      id: 'documentation-testing-report',
-      title: 'Testing Final Report',
-      filename: 'DOCUMENTATION_TESTING_FINAL_REPORT.md',
       category: 'Testing & Quality',
     },
 

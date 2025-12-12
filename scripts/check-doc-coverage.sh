@@ -20,10 +20,6 @@ MEMBERS=(
     "armature-macro"
     "armature-config"
     "armature-graphql"
-    "armature-angular"
-    "armature-react"
-    "armature-vue"
-    "armature-svelte"
     "armature-jwt"
     "armature-auth"
     "armature-testing"
@@ -35,9 +31,7 @@ MEMBERS=(
     "armature-opentelemetry"
     "armature-security"
     "armature-acme"
-    "armature-csrf"
-    "armature-xss"
-    "armature-handlebars"
+    "armature-ratelimit"
 )
 
 TOTAL_TESTS=0

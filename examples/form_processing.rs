@@ -111,15 +111,17 @@ impl FormController {
 
         println!("📧 Login attempt:");
         println!("  Email: {}", form.email);
-        println!("  Remember me: {:?}", form.remember_me.as_deref().unwrap_or("false"));
+        println!(
+            "  Remember me: {:?}",
+            form.remember_me.as_deref().unwrap_or("false")
+        );
 
-        Ok(HttpResponse::ok()
-            .with_json(&serde_json::json!({
-                "status": "success",
-                "message": "Login successful",
-                "email": form.email,
-                "remember_me": form.remember_me.is_some()
-            }))?)
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "status": "success",
+            "message": "Login successful",
+            "email": form.email,
+            "remember_me": form.remember_me.is_some()
+        }))?)
     }
 
     #[post("/contact")]
@@ -133,15 +135,14 @@ impl FormController {
         println!("  Subject: {}", form.subject);
         println!("  Message: {}", form.message);
 
-        Ok(HttpResponse::ok()
-            .with_json(&serde_json::json!({
-                "status": "success",
-                "message": "Thank you for your message!",
-                "data": {
-                    "name": form.name,
-                    "subject": form.subject
-                }
-            }))?)
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "status": "success",
+            "message": "Thank you for your message!",
+            "data": {
+                "name": form.name,
+                "subject": form.subject
+            }
+        }))?)
     }
 
     #[post("/upload")]
@@ -178,14 +179,13 @@ impl FormController {
             }
         }
 
-        Ok(HttpResponse::ok()
-            .with_json(&serde_json::json!({
-                "status": "success",
-                "message": "File uploaded successfully",
-                "title": title,
-                "description": description,
-                "file": file_info
-            }))?)
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "status": "success",
+            "message": "File uploaded successfully",
+            "title": title,
+            "description": description,
+            "file": file_info
+        }))?)
     }
 
     #[post("/upload-multiple")]
@@ -201,7 +201,12 @@ impl FormController {
                 "album_name" => album_name = field.value.unwrap_or_default(),
                 "files" => {
                     if let Some(file) = field.file {
-                        println!("📁 File {}: {} ({} bytes)", files_info.len() + 1, file.filename, file.size);
+                        println!(
+                            "📁 File {}: {} ({} bytes)",
+                            files_info.len() + 1,
+                            file.filename,
+                            file.size
+                        );
 
                         files_info.push(serde_json::json!({
                             "filename": file.filename,
@@ -214,16 +219,19 @@ impl FormController {
             }
         }
 
-        println!("📦 Album '{}' uploaded with {} files", album_name, files_info.len());
+        println!(
+            "📦 Album '{}' uploaded with {} files",
+            album_name,
+            files_info.len()
+        );
 
-        Ok(HttpResponse::ok()
-            .with_json(&serde_json::json!({
-                "status": "success",
-                "message": format!("Uploaded {} files to album '{}'", files_info.len(), album_name),
-                "album_name": album_name,
-                "files_count": files_info.len(),
-                "files": files_info
-            }))?)
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "status": "success",
+            "message": format!("Uploaded {} files to album '{}'", files_info.len(), album_name),
+            "album_name": album_name,
+            "files_count": files_info.len(),
+            "files": files_info
+        }))?)
     }
 
     #[post("/form-map")]
@@ -236,11 +244,10 @@ impl FormController {
             println!("  {}: {}", key, value);
         }
 
-        Ok(HttpResponse::ok()
-            .with_json(&serde_json::json!({
-                "status": "success",
-                "fields": form_data
-            }))?)
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "status": "success",
+            "fields": form_data
+        }))?)
     }
 }
 
@@ -272,4 +279,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

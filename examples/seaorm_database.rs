@@ -5,8 +5,8 @@
 //!
 //! SeaORM is a modern, async-first ORM for Rust with excellent ergonomics.
 
-use armature_core::lifecycle::{LifecycleManager, OnApplicationShutdown, OnModuleInit};
 use armature_core::Provider;
+use armature_core::lifecycle::{LifecycleManager, OnApplicationShutdown, OnModuleInit};
 use async_trait::async_trait;
 use sea_orm::*;
 use serde::Deserialize;
@@ -101,16 +101,16 @@ impl Provider for SeaOrmDatabaseService {}
 // Lifecycle hook: Initialize database connection on module init
 #[async_trait]
 impl OnModuleInit for SeaOrmDatabaseService {
-    async fn on_module_init(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_init(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("📊 SeaOrmDatabaseService: Connecting to PostgreSQL...");
-        println!("   Connection: {}", mask_connection_string(&self.connection_string));
+        println!(
+            "   Connection: {}",
+            mask_connection_string(&self.connection_string)
+        );
 
         // Create SeaORM database connection with connection options
         let mut opt = ConnectOptions::new(&self.connection_string);
-        opt
-            .max_connections(5)
+        opt.max_connections(5)
             .min_connections(1)
             .connect_timeout(std::time::Duration::from_secs(5))
             .idle_timeout(std::time::Duration::from_secs(600))
@@ -149,7 +149,10 @@ impl OnApplicationShutdown for SeaOrmDatabaseService {
         signal: Option<String>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         if let Some(sig) = signal {
-            println!("📊 SeaOrmDatabaseService: Closing connections (signal: {})...", sig);
+            println!(
+                "📊 SeaOrmDatabaseService: Closing connections (signal: {})...",
+                sig
+            );
         } else {
             println!("📊 SeaOrmDatabaseService: Closing connections...");
         }
@@ -177,8 +180,11 @@ impl SeaOrmDatabaseService {
             )
         "#;
 
-        db.execute(Statement::from_string(DatabaseBackend::Postgres, sql.to_string()))
-            .await?;
+        db.execute(Statement::from_string(
+            DatabaseBackend::Postgres,
+            sql.to_string(),
+        ))
+        .await?;
 
         Ok(())
     }
@@ -187,27 +193,18 @@ impl SeaOrmDatabaseService {
     pub async fn get_all_users(&self) -> Result<Vec<User>, DbErr> {
         let db = self.connection().await?;
 
-        UserEntity::find()
-            .order_by_asc(Column::Id)
-            .all(&db)
-            .await
+        UserEntity::find().order_by_asc(Column::Id).all(&db).await
     }
 
     /// Get user by ID
     pub async fn get_user_by_id(&self, user_id: i32) -> Result<Option<User>, DbErr> {
         let db = self.connection().await?;
 
-        UserEntity::find_by_id(user_id)
-            .one(&db)
-            .await
+        UserEntity::find_by_id(user_id).one(&db).await
     }
 
     /// Create a new user
-    pub async fn create_user(
-        &self,
-        username: String,
-        email: String,
-    ) -> Result<User, DbErr> {
+    pub async fn create_user(&self, username: String, email: String) -> Result<User, DbErr> {
         let db = self.connection().await?;
 
         let user = ActiveModel {
@@ -230,9 +227,7 @@ impl SeaOrmDatabaseService {
         let db = self.connection().await?;
 
         // Find existing user
-        let user = UserEntity::find_by_id(user_id)
-            .one(&db)
-            .await?;
+        let user = UserEntity::find_by_id(user_id).one(&db).await?;
 
         if let Some(user) = user {
             let mut active_user: ActiveModel = user.into();
@@ -256,9 +251,7 @@ impl SeaOrmDatabaseService {
     pub async fn delete_user(&self, user_id: i32) -> Result<bool, DbErr> {
         let db = self.connection().await?;
 
-        let result = UserEntity::delete_by_id(user_id)
-            .exec(&db)
-            .await?;
+        let result = UserEntity::delete_by_id(user_id).exec(&db).await?;
 
         Ok(result.rows_affected > 0)
     }
@@ -267,9 +260,7 @@ impl SeaOrmDatabaseService {
     pub async fn count_users(&self) -> Result<u64, DbErr> {
         let db = self.connection().await?;
 
-        UserEntity::find()
-            .count(&db)
-            .await
+        UserEntity::find().count(&db).await
     }
 
     /// Search users by username (demonstrates SeaORM query features)
@@ -328,7 +319,11 @@ impl UserService {
             .map_err(|e| format!("Failed to create user: {}", e))
     }
 
-    pub async fn update_user(&self, id: i32, req: UpdateUserRequest) -> Result<Option<User>, String> {
+    pub async fn update_user(
+        &self,
+        id: i32,
+        req: UpdateUserRequest,
+    ) -> Result<Option<User>, String> {
         self.db
             .update_user(id, req.username, req.email)
             .await
@@ -350,7 +345,8 @@ impl UserService {
     }
 
     pub async fn stats(&self) -> Result<serde_json::Value, String> {
-        let count = self.db
+        let count = self
+            .db
             .count_users()
             .await
             .map_err(|e| format!("Failed to get stats: {}", e))?;
@@ -378,11 +374,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 
     // Get database URL from environment
-    let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| {
-            println!("⚠️  DATABASE_URL not set, using default (demo mode)");
-            "postgres://postgres:password@localhost/armature_seaorm".to_string()
-        });
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        println!("⚠️  DATABASE_URL not set, using default (demo mode)");
+        "postgres://postgres:password@localhost/armature_seaorm".to_string()
+    });
 
     println!("📋 Configuration:");
     println!("   Database: {}\n", mask_connection_string(&database_url));
@@ -533,4 +528,3 @@ fn mask_connection_string(conn_str: &str) -> String {
     }
     conn_str.to_string()
 }
-

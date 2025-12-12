@@ -79,4 +79,3 @@ fn test_config_error_display() {
     let display = format!("{}", err);
     assert!(display.contains("test_key"));
 }
-

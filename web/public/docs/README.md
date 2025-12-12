@@ -40,30 +40,25 @@ Start with the main [README](../README.md) in the project root for a quick intro
   - DI integration
   - Best practices
 
-- **[ANGULAR_SSR_GUIDE.md](ANGULAR_SSR_GUIDE.md)** - Angular Universal SSR
-  - Server-side rendering setup
-  - Static file serving
-  - API integration
-  - Performance optimization
-
 - **[WEBSOCKET_SSE_GUIDE.md](WEBSOCKET_SSE_GUIDE.md)** - Real-time communication guide
   - WebSocket rooms and broadcasting
   - Server-Sent Events streaming
   - Usage examples
   - Performance tips
 
-- **[NESTJS_ECOSYSTEM_ANALYSIS.md](NESTJS_ECOSYSTEM_ANALYSIS.md)** - Ecosystem analysis
-  - Feature comparisons with NestJS
-  - Implementation roadmap
-  - Priority recommendations
+- **[RATE_LIMITING_GUIDE.md](RATE_LIMITING_GUIDE.md)** - API rate limiting
+  - Token bucket, sliding window, fixed window algorithms
+  - Redis-backed distributed rate limiting
+  - Key extraction strategies
+  - Best practices
+
+- **[GUARDS_INTERCEPTORS.md](GUARDS_INTERCEPTORS.md)** - Request processing
+  - Authentication guards
+  - Role-based access control
+  - Request/response interceptors
+  - Custom implementations
 
 ### Reference Documentation
-
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Framework implementation details
-  - Architecture overview
-  - Technical implementation
-  - Statistics and metrics
-  - Development roadmap
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
   - Development setup
@@ -80,6 +75,7 @@ See the [examples directory](../examples/) for working code samples:
 - `dependency_injection.rs` - DI patterns
 - `websocket_chat.rs` - WebSocket chat room
 - `server_sent_events.rs` - SSE streaming
+- `rate_limiting.rs` - Rate limiting example
 
 ### Key Concepts
 
@@ -139,7 +135,7 @@ docs/
 ├── README.md                    # This file
 ├── DI_GUIDE.md                 # Dependency Injection guide
 ├── WEBSOCKET_SSE_GUIDE.md      # WebSocket & SSE guide
-├── IMPLEMENTATION_SUMMARY.md    # Implementation details
+├── RATE_LIMITING_GUIDE.md      # Rate limiting guide
 └── CONTRIBUTING.md              # Contributing guidelines
 ```
 
@@ -150,4 +146,3 @@ This documentation is for Armature version 0.1.0.
 ---
 
 For the latest updates and more information, visit the main [README](../README.md).
-

@@ -9,7 +9,6 @@ This is the official documentation website for the Armature Framework, built wit
 - 🔄 **Node.js developers** migrating to Rust (NestJS, Express, Koa, Fastify users)
 - 🦀 **Rust developers** seeking higher-level abstractions (Actix-web, Rocket, Axum alternatives)
 - 🏢 **Enterprise teams** needing built-in auth, validation, caching, and observability
-- 🎨 **Full-stack developers** requiring SSR for Angular, React, Vue, or Svelte
 
 ### Framework Comparisons
 
@@ -21,7 +20,7 @@ This is the official documentation website for the Armature Framework, built wit
 | Type Safety | Compile-time | Runtime | None | Compile-time | Compile-time |
 | Built-in Auth | ✅ | ✅ | ❌ | ❌ | ❌ |
 | OpenAPI | ✅ | ✅ | ❌ | ❌ (utoipa) | ❌ (okapi) |
-| SSR Support | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Rate Limiting | ✅ | ✅ | ❌ | ❌ | ❌ |
 
 ### Key Features
 
@@ -30,7 +29,7 @@ This is the official documentation website for the Armature Framework, built wit
 - 🛡️ **Type Safety**: Compile-time guarantees, not runtime checks
 - 🔐 **Built-in Auth**: JWT, OAuth2, SAML support out of the box
 - 📚 **OpenAPI/Swagger**: Automatic API documentation generation
-- 🎨 **SSR Support**: Server-side rendering for Angular, React, Vue, Svelte
+- ⚡ **Rate Limiting**: Multiple algorithms with Redis support
 - 💼 **Enterprise Ready**: Caching, queues, validation, observability
 
 ## Technology Stack
@@ -149,24 +148,22 @@ pnpm run build
 
 Output will be in `dist/web/`.
 
-### Deploy to GitLab Pages
+### Deploy to GitHub Pages
 
-The gh-pages branch is configured for automatic deployment via GitLab CI/CD:
+The site is configured for automatic deployment via GitHub Actions:
 
 ```bash
-# Commit changes to gh-pages branch
+# Commit changes to main branch
 git add .
 git commit -m "Update web documentation"
 
-# Push to gh-pages
-git push origin gh-pages
+# Push to main
+git push origin main
 ```
 
-GitLab Pages will automatically build and deploy the site when changes are pushed to either:
-- `gh-pages` branch (website content)
-- `develop` branch (triggers rebuild)
+GitHub Pages will automatically build and deploy the site when changes are pushed to the `main` branch.
 
-Live site: https://pegasusheavy.gitlab.io/armature/
+Live site: https://pegasusheavy.github.io/armature/
 
 ## Browser Support
 

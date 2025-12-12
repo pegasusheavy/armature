@@ -69,10 +69,7 @@ impl AcmeClient {
 
     /// Fetch the ACME directory
     async fn fetch_directory(client: &reqwest::Client, url: &str) -> Result<Directory> {
-        let response = client
-            .get(url)
-            .send()
-            .await?;
+        let response = client.get(url).send().await?;
 
         if !response.status().is_success() {
             return Err(AcmeError::InvalidDirectory(format!(
@@ -144,7 +141,10 @@ impl AcmeClient {
             ));
         }
 
-        tracing::info!("Creating certificate order for domains: {:?}", self.config.domains);
+        tracing::info!(
+            "Creating certificate order for domains: {:?}",
+            self.config.domains
+        );
 
         // Placeholder - real implementation would:
         // 1. Create OrderCreate request

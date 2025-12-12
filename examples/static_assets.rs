@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_compression(
             CompressionConfig::new()
                 .with_level(CompressionLevel::Default)
-                .prefer_brotli(false) // Prefer gzip for compatibility
+                .prefer_brotli(false), // Prefer gzip for compatibility
         );
 
     let basic_server = StaticAssetServer::new(basic_config)?;
@@ -68,7 +68,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let server = basic_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/static");
-                server.serve(&HttpRequest::new("GET".to_string(), path.to_string())).await
+                server
+                    .serve(&HttpRequest::new("GET".to_string(), path.to_string()))
+                    .await
             })
         }),
     });
@@ -77,8 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📦 Example 2: SPA Mode with Fallback");
     println!("   URL: http://localhost:3000/app/");
 
-    let spa_config = StaticAssetsConfig::new("demo/spa")
-        .spa_mode();  // Automatically configures for SPAs
+    let spa_config = StaticAssetsConfig::new("demo/spa").spa_mode(); // Automatically configures for SPAs
 
     let spa_server = StaticAssetServer::new(spa_config)?;
 
@@ -102,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   URL: http://localhost:3000/cdn/");
 
     let cdn_config = StaticAssetsConfig::new("demo/cdn")
-        .max_performance()  // Aggressive caching + best compression
+        .max_performance() // Aggressive caching + best compression
         .with_cors_origin("*");
 
     let cdn_server = StaticAssetServer::new(cdn_config)?;
@@ -125,8 +126,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📦 Example 4: Development Mode (No Caching)");
     println!("   URL: http://localhost:3000/dev/");
 
-    let dev_config = StaticAssetsConfig::new("demo/dev")
-        .development();  // No caching for development
+    let dev_config = StaticAssetsConfig::new("demo/dev").development(); // No caching for development
 
     let dev_server = StaticAssetServer::new(dev_config)?;
 
@@ -137,7 +137,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let server = dev_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/dev");
-                server.serve(&HttpRequest::new("GET".to_string(), path.to_string())).await
+                server
+                    .serve(&HttpRequest::new("GET".to_string(), path.to_string()))
+                    .await
             })
         }),
     });
@@ -149,7 +151,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let custom_config = StaticAssetsConfig::new("demo/custom")
         .with_type_strategy(FileType::JavaScript, CacheStrategy::Immutable)
         .with_type_strategy(FileType::Stylesheet, CacheStrategy::Immutable)
-        .with_type_strategy(FileType::Image, CacheStrategy::Public(Duration::from_secs(86400)))
+        .with_type_strategy(
+            FileType::Image,
+            CacheStrategy::Public(Duration::from_secs(86400)),
+        )
         .with_type_strategy(FileType::Html, CacheStrategy::NoCache)
         .with_etag(true)
         .with_last_modified(true);
@@ -384,15 +389,26 @@ async fn setup_demo_directory() -> std::io::Result<()> {
     fs::write("demo/cdn/styles.abc123.css", cdn_css).await?;
 
     // Dev files
-    fs::write("demo/dev/test.js", "// Development file\nconsole.log('dev');").await?;
-    fs::write("demo/dev/test.css", "/* Development styles */\nbody { color: red; }").await?;
+    fs::write(
+        "demo/dev/test.js",
+        "// Development file\nconsole.log('dev');",
+    )
+    .await?;
+    fs::write(
+        "demo/dev/test.css",
+        "/* Development styles */\nbody { color: red; }",
+    )
+    .await?;
 
     // Custom files
-    fs::write("demo/custom/index.html", "<html><body><h1>Custom</h1></body></html>").await?;
+    fs::write(
+        "demo/custom/index.html",
+        "<html><body><h1>Custom</h1></body></html>",
+    )
+    .await?;
     fs::write("demo/custom/app.js", "// Custom JS\nconsole.log('custom');").await?;
 
     println!("✅ Demo files created");
 
     Ok(())
 }
-

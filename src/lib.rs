@@ -12,18 +12,6 @@ pub use armature_macro::{
 };
 
 // Re-export optional crates
-#[cfg(feature = "angular")]
-pub use armature_angular;
-
-#[cfg(feature = "react")]
-pub use armature_react;
-
-#[cfg(feature = "vue")]
-pub use armature_vue;
-
-#[cfg(feature = "svelte")]
-pub use armature_svelte;
-
 #[cfg(feature = "graphql")]
 pub use armature_graphql;
 
@@ -63,14 +51,8 @@ pub use armature_security;
 #[cfg(feature = "acme")]
 pub use armature_acme;
 
-#[cfg(feature = "csrf")]
-pub use armature_csrf;
-
-#[cfg(feature = "xss")]
-pub use armature_xss;
-
-#[cfg(feature = "handlebars")]
-pub use armature_handlebars;
+#[cfg(feature = "ratelimit")]
+pub use armature_ratelimit;
 
 // Prelude for common imports
 pub mod prelude {

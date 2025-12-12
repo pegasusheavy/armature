@@ -10,9 +10,9 @@ We release patches for security vulnerabilities. Currently supported versions:
 
 ### Reporting a Vulnerability
 
-**Please do not report security vulnerabilities through public GitLab issues.**
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via [GitLab Confidential Issues](https://gitlab.com/pegasusheavy/armature/-/issues/new?issue[confidential]=true).
+Instead, please use [GitHub Security Advisories](https://github.com/pegasusheavy/armature/security/advisories/new) to privately report a vulnerability.
 
 #### What to Include
 
@@ -155,15 +155,15 @@ Armature has not yet undergone a professional security audit. We welcome:
 We actively monitor our dependencies for security vulnerabilities using:
 
 - `cargo-audit` in CI/CD pipeline
-- GitLab Security Dashboard
+- GitHub Dependabot
 - Dependency scanning in CI/CD
 
 ### Contact
 
 For security-related questions or concerns, contact:
 
-- **Security Reports**: Via [GitLab Confidential Issues](https://gitlab.com/pegasusheavy/armature/-/issues/new?issue[confidential]=true)
-- **General Questions**: Open a [GitLab Issue](https://gitlab.com/pegasusheavy/armature/-/issues)
+- **Security Reports**: Via [GitHub Security Advisories](https://github.com/pegasusheavy/armature/security/advisories/new)
+- **General Questions**: Open a [GitHub Issue](https://github.com/pegasusheavy/armature/issues)
 - **Organization**: Pegasus Heavy Industries LLC
 
 ### Attribution

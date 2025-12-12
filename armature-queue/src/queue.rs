@@ -340,8 +340,7 @@ mod tests {
 
     #[test]
     fn test_queue_config_with_custom_prefix() {
-        let config = QueueConfig::new("redis://localhost:6379", "myqueue")
-            .with_key_prefix("app");
+        let config = QueueConfig::new("redis://localhost:6379", "myqueue").with_key_prefix("app");
         assert!(config.key_prefix.contains("app"));
     }
 
@@ -354,8 +353,8 @@ mod tests {
     #[test]
     fn test_queue_config_custom_retention() {
         let retention = Duration::from_secs(3600);
-        let config = QueueConfig::new("redis://localhost:6379", "test")
-            .with_retention_time(retention);
+        let config =
+            QueueConfig::new("redis://localhost:6379", "test").with_retention_time(retention);
         assert_eq!(config.retention_time, retention);
     }
 
@@ -367,8 +366,7 @@ mod tests {
 
     #[test]
     fn test_queue_config_custom_max_size() {
-        let config = QueueConfig::new("redis://localhost:6379", "test")
-            .with_max_size(1000);
+        let config = QueueConfig::new("redis://localhost:6379", "test").with_max_size(1000);
         assert_eq!(config.max_size, 1000);
     }
 
@@ -447,10 +445,10 @@ mod tests {
 
     #[test]
     fn test_queue_config_multiple_prefixes() {
-        let config1 = QueueConfig::new("redis://localhost:6379", "app1")
-            .with_key_prefix("production");
-        let config2 = QueueConfig::new("redis://localhost:6379", "app2")
-            .with_key_prefix("development");
+        let config1 =
+            QueueConfig::new("redis://localhost:6379", "app1").with_key_prefix("production");
+        let config2 =
+            QueueConfig::new("redis://localhost:6379", "app2").with_key_prefix("development");
 
         let key1 = config1.key("jobs");
         let key2 = config2.key("jobs");
@@ -460,16 +458,14 @@ mod tests {
 
     #[test]
     fn test_queue_config_unlimited_max_size() {
-        let config = QueueConfig::new("redis://localhost:6379", "test")
-            .with_max_size(0);
+        let config = QueueConfig::new("redis://localhost:6379", "test").with_max_size(0);
         assert_eq!(config.max_size, 0);
     }
 
     #[test]
     fn test_queue_config_large_retention() {
         let week = Duration::from_secs(7 * 24 * 3600);
-        let config = QueueConfig::new("redis://localhost:6379", "test")
-            .with_retention_time(week);
+        let config = QueueConfig::new("redis://localhost:6379", "test").with_retention_time(week);
         assert_eq!(config.retention_time, week);
     }
 }

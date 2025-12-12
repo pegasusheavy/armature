@@ -41,15 +41,16 @@ pub fn add(a: i32, b: i32) -> i32 {
 /// # Examples
 ///
 /// ```
-/// use armature_handlebars::{HandlebarsConfig, HandlebarsService};
+/// use handlebars::Handlebars;
 /// use serde_json::json;
 ///
 /// # tokio_test::block_on(async {
-/// let config = HandlebarsConfig::new("templates");
-/// let service = HandlebarsService::new(config)?;
+/// let mut hbs = Handlebars::new();
+/// hbs.register_template_string("index", "Hello {{name}}!")?;
 ///
 /// let data = json!({"name": "World"});
-/// let html = service.render("index", &data).await?;
+/// let html = hbs.render("index", &data)?;
+/// assert_eq!(html, "Hello World!");
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// # });
 /// ```

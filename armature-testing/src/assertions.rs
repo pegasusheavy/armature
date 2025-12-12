@@ -167,7 +167,9 @@ mod tests {
     #[test]
     fn test_assert_json_content_type() {
         let mut response = HttpResponse::ok();
-        response.headers.insert("Content-Type".to_string(), "application/json".to_string());
+        response
+            .headers
+            .insert("Content-Type".to_string(), "application/json".to_string());
         let test_response = TestResponse::Success(response);
         assert_json_content_type(&test_response);
     }
@@ -175,7 +177,9 @@ mod tests {
     #[test]
     fn test_assert_html_content_type() {
         let mut response = HttpResponse::ok();
-        response.headers.insert("Content-Type".to_string(), "text/html".to_string());
+        response
+            .headers
+            .insert("Content-Type".to_string(), "text/html".to_string());
         let test_response = TestResponse::Success(response);
         assert_html_content_type(&test_response);
     }
@@ -183,7 +187,9 @@ mod tests {
     #[test]
     fn test_assert_header() {
         let mut response = HttpResponse::ok();
-        response.headers.insert("X-Custom".to_string(), "value".to_string());
+        response
+            .headers
+            .insert("X-Custom".to_string(), "value".to_string());
         let test_response = TestResponse::Success(response);
         assert_header(&test_response, "X-Custom", "value");
     }

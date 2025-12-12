@@ -14,8 +14,7 @@ fn test_openapi_builder_creation() {
 
 #[test]
 fn test_openapi_builder_with_description() {
-    let builder = OpenApiBuilder::new("My API", "1.0.0")
-        .description("API Description");
+    let builder = OpenApiBuilder::new("My API", "1.0.0").description("API Description");
     let spec = builder.build();
 
     assert_eq!(spec.info.description, Some("API Description".to_string()));
@@ -33,8 +32,7 @@ fn test_openapi_builder_with_server() {
 
 #[test]
 fn test_openapi_builder_with_path() {
-    let builder = OpenApiBuilder::new("My API", "1.0.0")
-        .path("/users", PathItem::default());
+    let builder = OpenApiBuilder::new("My API", "1.0.0").path("/users", PathItem::default());
     let spec = builder.build();
 
     assert!(spec.paths.contains_key("/users"));
@@ -169,5 +167,3 @@ fn test_openapi_spec_serialization() {
     assert!(json_str.contains("My API"));
     assert!(json_str.contains("1.0.0"));
 }
-
-

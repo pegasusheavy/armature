@@ -43,7 +43,8 @@ impl HttpRequest {
 
     /// Parse multipart form data
     pub fn multipart(&self) -> Result<Vec<crate::form::FormField>, crate::Error> {
-        let content_type = self.headers
+        let content_type = self
+            .headers
             .get("Content-Type")
             .or_else(|| self.headers.get("content-type"))
             .ok_or_else(|| crate::Error::BadRequest("Missing Content-Type header".to_string()))?;
@@ -176,8 +177,7 @@ mod tests {
     #[test]
     fn test_http_request_param() {
         let mut req = HttpRequest::new("GET".to_string(), "/users/123".to_string());
-        req.path_params
-            .insert("id".to_string(), "123".to_string());
+        req.path_params.insert("id".to_string(), "123".to_string());
 
         assert_eq!(req.param("id"), Some(&"123".to_string()));
         assert_eq!(req.param("name"), None);
@@ -266,8 +266,7 @@ mod tests {
 
     #[test]
     fn test_http_response_with_header() {
-        let res = HttpResponse::ok()
-            .with_header("X-Custom".to_string(), "value".to_string());
+        let res = HttpResponse::ok().with_header("X-Custom".to_string(), "value".to_string());
 
         assert_eq!(res.headers.get("X-Custom"), Some(&"value".to_string()));
     }
@@ -309,6 +308,7 @@ mod tests {
     #[test]
     fn test_http_request_json_invalid() {
         #[derive(Deserialize)]
+        #[allow(dead_code)]
         struct TestData {
             name: String,
         }
@@ -336,9 +336,7 @@ mod tests {
         let mut map = HashMap::new();
         map.insert("key".to_string(), 123);
 
-        let data = ComplexData {
-            nested: vec![map],
-        };
+        let data = ComplexData { nested: vec![map] };
 
         let res = HttpResponse::ok().with_json(&data);
         assert!(res.is_ok());

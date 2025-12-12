@@ -7,8 +7,7 @@ pub mod directories {
     pub const LETS_ENCRYPT_PRODUCTION: &str = "https://acme-v02.api.letsencrypt.org/directory";
 
     /// Let's Encrypt staging directory (for testing)
-    pub const LETS_ENCRYPT_STAGING: &str =
-        "https://acme-staging-v02.api.letsencrypt.org/directory";
+    pub const LETS_ENCRYPT_STAGING: &str = "https://acme-staging-v02.api.letsencrypt.org/directory";
 
     /// ZeroSSL production directory
     pub const ZEROSSL: &str = "https://acme.zerossl.com/v2/DV90";

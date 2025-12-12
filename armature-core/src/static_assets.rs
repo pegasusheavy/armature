@@ -45,9 +45,7 @@ impl CacheStrategy {
             CacheStrategy::Private(duration) => {
                 format!("private, max-age={}", duration.as_secs())
             }
-            CacheStrategy::Immutable => {
-                "public, max-age=31536000, immutable".to_string()
-            }
+            CacheStrategy::Immutable => "public, max-age=31536000, immutable".to_string(),
             CacheStrategy::MustRevalidate => "no-cache".to_string(),
         }
     }
@@ -104,9 +102,7 @@ impl CompressionLevel {
             CompressionLevel::Fast => flate2::Compression::fast(),
             CompressionLevel::Default => flate2::Compression::default(),
             CompressionLevel::Best => flate2::Compression::best(),
-            CompressionLevel::Custom(level) => {
-                flate2::Compression::new((*level).min(9))
-            }
+            CompressionLevel::Custom(level) => flate2::Compression::new((*level).min(9)),
         }
     }
 
@@ -154,8 +150,8 @@ impl CompressionConfig {
             level: CompressionLevel::Default,
             prefer_brotli: true,
             serve_precompressed: true,
-            min_size: 1024,      // 1 KB
-            max_size: 10485760,  // 10 MB
+            min_size: 1024,       // 1 KB
+            max_size: 10485760,   // 10 MB
             compress_types: None, // Compress all compressible types
         }
     }
@@ -216,8 +212,7 @@ impl CompressionConfig {
 
         // Check if file type is compressible
         let is_compressible = match file_type {
-            FileType::JavaScript | FileType::Stylesheet | FileType::Html
-            | FileType::Json => true,
+            FileType::JavaScript | FileType::Stylesheet | FileType::Html | FileType::Json => true,
             FileType::Image => false, // Images are usually already compressed
             FileType::Font => false,  // Fonts are usually already compressed
             FileType::Video | FileType::Audio => false, // Media is already compressed
@@ -280,9 +275,11 @@ impl FileType {
         match path.extension().and_then(|ext| ext.to_str()) {
             Some("js") | Some("mjs") => FileType::JavaScript,
             Some("css") => FileType::Stylesheet,
-            Some("png") | Some("jpg") | Some("jpeg") | Some("gif")
-            | Some("svg") | Some("webp") | Some("avif") | Some("ico") => FileType::Image,
-            Some("woff") | Some("woff2") | Some("ttf") | Some("otf") | Some("eot") => FileType::Font,
+            Some("png") | Some("jpg") | Some("jpeg") | Some("gif") | Some("svg") | Some("webp")
+            | Some("avif") | Some("ico") => FileType::Image,
+            Some("woff") | Some("woff2") | Some("ttf") | Some("otf") | Some("eot") => {
+                FileType::Font
+            }
             Some("html") | Some("htm") => FileType::Html,
             Some("json") => FileType::Json,
             Some("mp4") | Some("webm") | Some("ogv") => FileType::Video,
@@ -296,28 +293,26 @@ impl FileType {
         match self {
             FileType::JavaScript => "application/javascript".to_string(),
             FileType::Stylesheet => "text/css".to_string(),
-            FileType::Image => {
-                match path.extension().and_then(|ext| ext.to_str()) {
-                    Some("png") => "image/png",
-                    Some("jpg") | Some("jpeg") => "image/jpeg",
-                    Some("gif") => "image/gif",
-                    Some("svg") => "image/svg+xml",
-                    Some("webp") => "image/webp",
-                    Some("avif") => "image/avif",
-                    Some("ico") => "image/x-icon",
-                    _ => "image/*",
-                }.to_string()
+            FileType::Image => match path.extension().and_then(|ext| ext.to_str()) {
+                Some("png") => "image/png",
+                Some("jpg") | Some("jpeg") => "image/jpeg",
+                Some("gif") => "image/gif",
+                Some("svg") => "image/svg+xml",
+                Some("webp") => "image/webp",
+                Some("avif") => "image/avif",
+                Some("ico") => "image/x-icon",
+                _ => "image/*",
             }
-            FileType::Font => {
-                match path.extension().and_then(|ext| ext.to_str()) {
-                    Some("woff") => "font/woff",
-                    Some("woff2") => "font/woff2",
-                    Some("ttf") => "font/ttf",
-                    Some("otf") => "font/otf",
-                    Some("eot") => "application/vnd.ms-fontobject",
-                    _ => "font/*",
-                }.to_string()
+            .to_string(),
+            FileType::Font => match path.extension().and_then(|ext| ext.to_str()) {
+                Some("woff") => "font/woff",
+                Some("woff2") => "font/woff2",
+                Some("ttf") => "font/ttf",
+                Some("otf") => "font/otf",
+                Some("eot") => "application/vnd.ms-fontobject",
+                _ => "font/*",
             }
+            .to_string(),
             FileType::Html => "text/html".to_string(),
             FileType::Json => "application/json".to_string(),
             FileType::Video => "video/mp4".to_string(),
@@ -367,14 +362,29 @@ impl StaticAssetsConfig {
         let mut type_strategies = HashMap::new();
 
         // Default strategies per file type
-        type_strategies.insert(FileType::JavaScript, CacheStrategy::Public(Duration::from_secs(3600)));
-        type_strategies.insert(FileType::Stylesheet, CacheStrategy::Public(Duration::from_secs(3600)));
-        type_strategies.insert(FileType::Image, CacheStrategy::Public(Duration::from_secs(86400)));
+        type_strategies.insert(
+            FileType::JavaScript,
+            CacheStrategy::Public(Duration::from_secs(3600)),
+        );
+        type_strategies.insert(
+            FileType::Stylesheet,
+            CacheStrategy::Public(Duration::from_secs(3600)),
+        );
+        type_strategies.insert(
+            FileType::Image,
+            CacheStrategy::Public(Duration::from_secs(86400)),
+        );
         type_strategies.insert(FileType::Font, CacheStrategy::Immutable);
         type_strategies.insert(FileType::Html, CacheStrategy::NoCache);
         type_strategies.insert(FileType::Json, CacheStrategy::NoCache);
-        type_strategies.insert(FileType::Video, CacheStrategy::Public(Duration::from_secs(86400)));
-        type_strategies.insert(FileType::Audio, CacheStrategy::Public(Duration::from_secs(86400)));
+        type_strategies.insert(
+            FileType::Video,
+            CacheStrategy::Public(Duration::from_secs(86400)),
+        );
+        type_strategies.insert(
+            FileType::Audio,
+            CacheStrategy::Public(Duration::from_secs(86400)),
+        );
 
         Self {
             root_dir: root_dir.into(),
@@ -475,7 +485,7 @@ impl StaticAssetsConfig {
                 CompressionConfig::new()
                     .with_level(CompressionLevel::Best)
                     .prefer_brotli(true)
-                    .serve_precompressed(true)
+                    .serve_precompressed(true),
             )
     }
 
@@ -565,24 +575,20 @@ impl StaticAssetServer {
         };
 
         // Check conditional headers
-        if let Some(ref etag_value) = etag {
-            if let Some(if_none_match) = req.headers.get("If-None-Match") {
-                if if_none_match == etag_value {
-                    return Ok(self.not_modified_response(etag_value));
-                }
-            }
+        if let Some(ref etag_value) = etag
+            && let Some(if_none_match) = req.headers.get("If-None-Match")
+            && if_none_match == etag_value
+        {
+            return Ok(self.not_modified_response(etag_value));
         }
 
-        if self.config.enable_last_modified {
-            if let Some(modified_time) = modified {
-                if let Some(if_modified_since) = req.headers.get("If-Modified-Since") {
-                    if let Ok(since_time) = httpdate::parse_http_date(if_modified_since) {
-                        if modified_time <= since_time {
-                            return Ok(self.not_modified_response(etag.as_deref().unwrap_or("")));
-                        }
-                    }
-                }
-            }
+        if self.config.enable_last_modified
+            && let Some(modified_time) = modified
+            && let Some(if_modified_since) = req.headers.get("If-Modified-Since")
+            && let Ok(since_time) = httpdate::parse_http_date(if_modified_since)
+            && modified_time <= since_time
+        {
+            return Ok(self.not_modified_response(etag.as_deref().unwrap_or("")));
         }
 
         // Try to serve pre-compressed file first
@@ -621,16 +627,25 @@ impl StaticAssetServer {
 
         // Content-Type
         let content_type = file_type.mime_type(path);
-        response.headers.insert("Content-Type".to_string(), content_type);
+        response
+            .headers
+            .insert("Content-Type".to_string(), content_type);
 
         // Content-Encoding
         if let Some(algo) = used_compression {
-            response.headers.insert("Content-Encoding".to_string(), algo.to_header_value().to_string());
-            response.headers.insert("Vary".to_string(), "Accept-Encoding".to_string());
+            response.headers.insert(
+                "Content-Encoding".to_string(),
+                algo.to_header_value().to_string(),
+            );
+            response
+                .headers
+                .insert("Vary".to_string(), "Accept-Encoding".to_string());
         }
 
         // Cache-Control
-        let cache_strategy = self.config.type_strategies
+        let cache_strategy = self
+            .config
+            .type_strategies
             .get(&file_type)
             .copied()
             .unwrap_or(self.config.default_strategy);
@@ -645,18 +660,26 @@ impl StaticAssetServer {
         }
 
         // Last-Modified
-        if self.config.enable_last_modified {
-            if let Some(modified_time) = modified {
-                let formatted = httpdate::fmt_http_date(modified_time);
-                response.headers.insert("Last-Modified".to_string(), formatted);
-            }
+        if self.config.enable_last_modified
+            && let Some(modified_time) = modified
+        {
+            let formatted = httpdate::fmt_http_date(modified_time);
+            response
+                .headers
+                .insert("Last-Modified".to_string(), formatted);
         }
 
         // CORS
         if self.config.enable_cors {
             let origin = self.config.cors_origin.as_deref().unwrap_or("*");
-            response.headers.insert("Access-Control-Allow-Origin".to_string(), origin.to_string());
-            response.headers.insert("Access-Control-Allow-Methods".to_string(), "GET, HEAD, OPTIONS".to_string());
+            response.headers.insert(
+                "Access-Control-Allow-Origin".to_string(),
+                origin.to_string(),
+            );
+            response.headers.insert(
+                "Access-Control-Allow-Methods".to_string(),
+                "GET, HEAD, OPTIONS".to_string(),
+            );
         }
 
         Ok(response)
@@ -669,12 +692,18 @@ impl StaticAssetServer {
         file_type: FileType,
         file_size: usize,
     ) -> Option<CompressionAlgorithm> {
-        if !self.config.compression.should_compress(file_type, file_size) {
+        if !self
+            .config
+            .compression
+            .should_compress(file_type, file_size)
+        {
             return None;
         }
 
         // Parse Accept-Encoding header
-        let accept_encoding = req.headers.get("Accept-Encoding")
+        let accept_encoding = req
+            .headers
+            .get("Accept-Encoding")
             .or_else(|| req.headers.get("accept-encoding"))?;
 
         let encodings: Vec<&str> = accept_encoding
@@ -683,8 +712,8 @@ impl StaticAssetServer {
             .collect();
 
         // Check if client supports our compression algorithms
-        let supports_brotli = encodings.iter().any(|&e| e == "br");
-        let supports_gzip = encodings.iter().any(|&e| e == "gzip");
+        let supports_brotli = encodings.contains(&"br");
+        let supports_gzip = encodings.contains(&"gzip");
 
         // Select based on preference and support
         if self.config.compression.prefer_brotli && supports_brotli {
@@ -704,18 +733,16 @@ impl StaticAssetServer {
         path: &Path,
         algo: CompressionAlgorithm,
     ) -> Result<Option<Vec<u8>>, Error> {
-        let compressed_path = path.with_extension(
-            format!(
-                "{}{}",
-                path.extension().and_then(|e| e.to_str()).unwrap_or(""),
-                algo.file_extension()
-            )
-        );
+        let compressed_path = path.with_extension(format!(
+            "{}{}",
+            path.extension().and_then(|e| e.to_str()).unwrap_or(""),
+            algo.file_extension()
+        ));
 
         if compressed_path.exists() {
-            let content = tokio::fs::read(&compressed_path)
-                .await
-                .map_err(|e| Error::Internal(format!("Failed to read pre-compressed file: {}", e)))?;
+            let content = tokio::fs::read(&compressed_path).await.map_err(|e| {
+                Error::Internal(format!("Failed to read pre-compressed file: {}", e))
+            })?;
             Ok(Some(content))
         } else {
             Ok(None)
@@ -732,25 +759,24 @@ impl StaticAssetServer {
             CompressionAlgorithm::Gzip => {
                 use flate2::write::GzEncoder;
 
-                let mut encoder = GzEncoder::new(
-                    Vec::new(),
-                    self.config.compression.level.gzip_level()
-                );
-                encoder.write_all(content)
+                let mut encoder =
+                    GzEncoder::new(Vec::new(), self.config.compression.level.gzip_level());
+                encoder
+                    .write_all(content)
                     .map_err(|e| Error::Internal(format!("Gzip compression failed: {}", e)))?;
-                encoder.finish()
+                encoder
+                    .finish()
                     .map_err(|e| Error::Internal(format!("Gzip compression failed: {}", e)))
             }
             CompressionAlgorithm::Brotli => {
                 let mut output = Vec::new();
-                let mut params = brotli::enc::BrotliEncoderParams::default();
-                params.quality = self.config.compression.level.brotli_level() as i32;
+                let params = brotli::enc::BrotliEncoderParams {
+                    quality: self.config.compression.level.brotli_level() as i32,
+                    ..Default::default()
+                };
 
-                brotli::BrotliCompress(
-                    &mut std::io::Cursor::new(content),
-                    &mut output,
-                    &params
-                ).map_err(|e| Error::Internal(format!("Brotli compression failed: {}", e)))?;
+                brotli::BrotliCompress(&mut std::io::Cursor::new(content), &mut output, &params)
+                    .map_err(|e| Error::Internal(format!("Brotli compression failed: {}", e)))?;
 
                 Ok(output)
             }
@@ -770,9 +796,10 @@ impl StaticAssetServer {
         let full_path = self.config.root_dir.join(clean_path);
 
         // Security: prevent directory traversal
-        let canonical_root = self.config.root_dir
-            .canonicalize()
-            .map_err(|_| Error::Internal("Failed to canonicalize root directory".to_string()))?;
+        let canonical_root =
+            self.config.root_dir.canonicalize().map_err(|_| {
+                Error::Internal("Failed to canonicalize root directory".to_string())
+            })?;
 
         let canonical_path = match full_path.canonicalize() {
             Ok(p) => p,
@@ -783,7 +810,9 @@ impl StaticAssetServer {
         };
 
         if !canonical_path.starts_with(&canonical_root) {
-            return Err(Error::Forbidden("Access denied: path traversal attempt".to_string()));
+            return Err(Error::Forbidden(
+                "Access denied: path traversal attempt".to_string(),
+            ));
         }
 
         Ok(canonical_path)
@@ -808,10 +837,10 @@ impl StaticAssetServer {
         metadata.len().hash(&mut hasher);
 
         // Hash modification time
-        if let Ok(modified) = metadata.modified() {
-            if let Ok(duration) = modified.duration_since(SystemTime::UNIX_EPOCH) {
-                duration.as_secs().hash(&mut hasher);
-            }
+        if let Ok(modified) = metadata.modified()
+            && let Ok(duration) = modified.duration_since(SystemTime::UNIX_EPOCH)
+        {
+            duration.as_secs().hash(&mut hasher);
         }
 
         // Hash compression algorithm
@@ -827,12 +856,17 @@ impl StaticAssetServer {
         let mut response = HttpResponse::new(304);
 
         if !etag.is_empty() {
-            response.headers.insert("ETag".to_string(), etag.to_string());
+            response
+                .headers
+                .insert("ETag".to_string(), etag.to_string());
         }
 
         if self.config.enable_cors {
             let origin = self.config.cors_origin.as_deref().unwrap_or("*");
-            response.headers.insert("Access-Control-Allow-Origin".to_string(), origin.to_string());
+            response.headers.insert(
+                "Access-Control-Allow-Origin".to_string(),
+                origin.to_string(),
+            );
         }
 
         response
@@ -873,15 +907,9 @@ mod tests {
             FileType::Stylesheet
         );
 
-        assert_eq!(
-            FileType::from_path(Path::new("image.png")),
-            FileType::Image
-        );
+        assert_eq!(FileType::from_path(Path::new("image.png")), FileType::Image);
 
-        assert_eq!(
-            FileType::from_path(Path::new("font.woff2")),
-            FileType::Font
-        );
+        assert_eq!(FileType::from_path(Path::new("font.woff2")), FileType::Font);
     }
 
     #[test]
@@ -977,4 +1005,3 @@ mod tests {
         assert!(config.compression.prefer_brotli);
     }
 }
-

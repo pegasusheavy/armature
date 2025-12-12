@@ -117,7 +117,7 @@ fn create_guarded_app() -> Application {
     let mut router = Router::new();
 
     // Register service
-    let data_service = DataService::default();
+    let data_service = DataService;
     container.register(data_service.clone());
 
     let controller = DataController { data_service };

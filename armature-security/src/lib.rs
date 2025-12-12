@@ -106,16 +106,16 @@
 //! ```
 
 pub mod content_security_policy;
+pub mod content_type_options;
 pub mod dns_prefetch_control;
+pub mod download_options;
 pub mod expect_ct;
 pub mod frame_guard;
 pub mod hsts;
+pub mod permitted_cross_domain_policies;
 pub mod powered_by;
 pub mod referrer_policy;
 pub mod xss_filter;
-pub mod content_type_options;
-pub mod download_options;
-pub mod permitted_cross_domain_policies;
 
 use armature_core::HttpResponse;
 use std::collections::HashMap;
@@ -154,7 +154,8 @@ pub struct SecurityMiddleware {
     pub download_options: download_options::DownloadOptions,
 
     /// X-Permitted-Cross-Domain-Policies
-    pub permitted_cross_domain_policies: permitted_cross_domain_policies::PermittedCrossDomainPolicies,
+    pub permitted_cross_domain_policies:
+        permitted_cross_domain_policies::PermittedCrossDomainPolicies,
 }
 
 impl SecurityMiddleware {
@@ -171,7 +172,8 @@ impl SecurityMiddleware {
             xss_filter: xss_filter::XssFilter::Enabled,
             content_type_options: content_type_options::ContentTypeOptions::NoSniff,
             download_options: download_options::DownloadOptions::NoOpen,
-            permitted_cross_domain_policies: permitted_cross_domain_policies::PermittedCrossDomainPolicies::None,
+            permitted_cross_domain_policies:
+                permitted_cross_domain_policies::PermittedCrossDomainPolicies::None,
         }
     }
 
@@ -182,7 +184,10 @@ impl SecurityMiddleware {
     }
 
     /// Enable DNS Prefetch Control
-    pub fn with_dns_prefetch_control(mut self, control: dns_prefetch_control::DnsPrefetchControl) -> Self {
+    pub fn with_dns_prefetch_control(
+        mut self,
+        control: dns_prefetch_control::DnsPrefetchControl,
+    ) -> Self {
         self.dns_prefetch_control = control;
         self
     }
@@ -233,7 +238,10 @@ impl SecurityMiddleware {
         }
 
         // DNS Prefetch Control
-        headers.insert("X-DNS-Prefetch-Control".to_string(), self.dns_prefetch_control.to_header_value());
+        headers.insert(
+            "X-DNS-Prefetch-Control".to_string(),
+            self.dns_prefetch_control.to_header_value(),
+        );
 
         // Expect-CT
         if let Some(ref expect_ct) = self.expect_ct {
@@ -241,27 +249,48 @@ impl SecurityMiddleware {
         }
 
         // Frame Guard
-        headers.insert("X-Frame-Options".to_string(), self.frame_guard.to_header_value());
+        headers.insert(
+            "X-Frame-Options".to_string(),
+            self.frame_guard.to_header_value(),
+        );
 
         // HSTS
         if let Some(ref hsts) = self.hsts {
-            headers.insert("Strict-Transport-Security".to_string(), hsts.to_header_value());
+            headers.insert(
+                "Strict-Transport-Security".to_string(),
+                hsts.to_header_value(),
+            );
         }
 
         // Referrer Policy
-        headers.insert("Referrer-Policy".to_string(), self.referrer_policy.to_header_value());
+        headers.insert(
+            "Referrer-Policy".to_string(),
+            self.referrer_policy.to_header_value(),
+        );
 
         // XSS Filter
-        headers.insert("X-XSS-Protection".to_string(), self.xss_filter.to_header_value());
+        headers.insert(
+            "X-XSS-Protection".to_string(),
+            self.xss_filter.to_header_value(),
+        );
 
         // Content Type Options
-        headers.insert("X-Content-Type-Options".to_string(), self.content_type_options.to_header_value());
+        headers.insert(
+            "X-Content-Type-Options".to_string(),
+            self.content_type_options.to_header_value(),
+        );
 
         // Download Options
-        headers.insert("X-Download-Options".to_string(), self.download_options.to_header_value());
+        headers.insert(
+            "X-Download-Options".to_string(),
+            self.download_options.to_header_value(),
+        );
 
         // Permitted Cross Domain Policies
-        headers.insert("X-Permitted-Cross-Domain-Policies".to_string(), self.permitted_cross_domain_policies.to_header_value());
+        headers.insert(
+            "X-Permitted-Cross-Domain-Policies".to_string(),
+            self.permitted_cross_domain_policies.to_header_value(),
+        );
 
         // Apply all headers
         for (key, value) in headers {
@@ -289,7 +318,8 @@ impl SecurityMiddleware {
             xss_filter: xss_filter::XssFilter::Enabled,
             content_type_options: content_type_options::ContentTypeOptions::NoSniff,
             download_options: download_options::DownloadOptions::NoOpen,
-            permitted_cross_domain_policies: permitted_cross_domain_policies::PermittedCrossDomainPolicies::None,
+            permitted_cross_domain_policies:
+                permitted_cross_domain_policies::PermittedCrossDomainPolicies::None,
         }
     }
 }
@@ -336,7 +366,9 @@ mod tests {
     fn test_hide_powered_by() {
         let middleware = SecurityMiddleware::new().hide_powered_by(true);
         let mut response = HttpResponse::ok();
-        response.headers.insert("X-Powered-By".to_string(), "Armature".to_string());
+        response
+            .headers
+            .insert("X-Powered-By".to_string(), "Armature".to_string());
 
         let secured = middleware.apply(response);
         assert!(!secured.headers.contains_key("X-Powered-By"));
@@ -352,8 +384,13 @@ mod tests {
         let response = HttpResponse::ok();
         let secured = middleware.apply(response);
 
-        assert_eq!(secured.headers.get("X-Frame-Options"), Some(&"SAMEORIGIN".to_string()));
-        assert_eq!(secured.headers.get("Referrer-Policy"), Some(&"strict-origin-when-cross-origin".to_string()));
+        assert_eq!(
+            secured.headers.get("X-Frame-Options"),
+            Some(&"SAMEORIGIN".to_string())
+        );
+        assert_eq!(
+            secured.headers.get("Referrer-Policy"),
+            Some(&"strict-origin-when-cross-origin".to_string())
+        );
     }
 }
-

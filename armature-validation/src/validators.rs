@@ -360,12 +360,14 @@ mod tests {
 
     #[test]
     fn test_in_range() {
-        let validator = InRange { min: 10i32, max: 20i32 };
+        let validator = InRange {
+            min: 10i32,
+            max: 20i32,
+        };
         assert!(validator.validate(15i32, "value").is_ok());
         assert!(validator.validate(5i32, "value").is_err());
         assert!(validator.validate(25i32, "value").is_err());
     }
-
 
     #[test]
     fn test_is_url() {
@@ -395,14 +397,12 @@ mod tests {
         assert!(IsNumeric::validate("abc", "field").is_err());
     }
 
-
     #[test]
     fn test_is_uuid() {
         assert!(IsUuid::validate("550e8400-e29b-41d4-a716-446655440000", "id").is_ok());
         assert!(IsUuid::validate("not-a-uuid", "id").is_err());
         assert!(IsUuid::validate("", "id").is_err());
     }
-
 
     #[test]
     fn test_not_empty_with_whitespace_only() {
@@ -425,7 +425,10 @@ mod tests {
 
     #[test]
     fn test_in_range_boundaries() {
-        let validator = InRange { min: 0i32, max: 10i32 };
+        let validator = InRange {
+            min: 0i32,
+            max: 10i32,
+        };
         assert!(validator.validate(0i32, "value").is_ok());
         assert!(validator.validate(10i32, "value").is_ok());
         assert!(validator.validate(-1i32, "value").is_err());
@@ -454,7 +457,6 @@ mod tests {
         // Without hyphens should fail
         assert!(IsUuid::validate("123e4567e89b12d3a456426614174000", "id").is_err());
     }
-
 
     #[test]
     fn test_empty_string_validators() {

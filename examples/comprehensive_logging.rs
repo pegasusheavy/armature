@@ -161,11 +161,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .init();
 
         info!("Armature HTTP server starting");
-        info!(
-            port = 3000,
-            routes = 4,
-            "Server configuration loaded"
-        );
+        info!(port = 3000, routes = 4, "Server configuration loaded");
 
         println!("\nSimulating HTTP requests:\n");
 
@@ -302,4 +298,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

@@ -76,9 +76,7 @@ impl DatabaseService {
     /// Returns an error if the pool hasn't been initialized yet
     pub async fn pool(&self) -> Result<PgPool, sqlx::Error> {
         let pool_guard = self.pool.read().await;
-        pool_guard
-            .clone()
-            .ok_or_else(|| sqlx::Error::PoolClosed)
+        pool_guard.clone().ok_or_else(|| sqlx::Error::PoolClosed)
     }
 
     /// Check if database is connected
@@ -93,11 +91,12 @@ impl Provider for DatabaseService {}
 // Lifecycle hook: Initialize database connection on module init
 #[async_trait]
 impl OnModuleInit for DatabaseService {
-    async fn on_module_init(
-        &self,
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn on_module_init(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("📊 DatabaseService: Connecting to PostgreSQL...");
-        println!("   Connection: {}", mask_connection_string(&self.connection_string));
+        println!(
+            "   Connection: {}",
+            mask_connection_string(&self.connection_string)
+        );
 
         // Create connection pool with configuration
         let pool = PgPoolOptions::new()
@@ -109,9 +108,7 @@ impl OnModuleInit for DatabaseService {
             .await?;
 
         // Test the connection
-        sqlx::query("SELECT 1")
-            .fetch_one(&pool)
-            .await?;
+        sqlx::query("SELECT 1").fetch_one(&pool).await?;
 
         // Store the pool
         *self.pool.write().await = Some(pool);
@@ -137,7 +134,10 @@ impl OnApplicationShutdown for DatabaseService {
         signal: Option<String>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         if let Some(sig) = signal {
-            println!("📊 DatabaseService: Closing connections (signal: {})...", sig);
+            println!(
+                "📊 DatabaseService: Closing connections (signal: {})...",
+                sig
+            );
         } else {
             println!("📊 DatabaseService: Closing connections...");
         }
@@ -196,11 +196,7 @@ impl DatabaseService {
     }
 
     /// Create a new user
-    pub async fn create_user(
-        &self,
-        username: String,
-        email: String,
-    ) -> Result<User, sqlx::Error> {
+    pub async fn create_user(&self, username: String, email: String) -> Result<User, sqlx::Error> {
         let pool = self.pool().await?;
 
         let user = sqlx::query_as::<_, User>(
@@ -337,7 +333,11 @@ impl UserService {
             .map_err(|e| format!("Failed to create user: {}", e))
     }
 
-    pub async fn update_user(&self, id: i32, req: UpdateUserRequest) -> Result<Option<User>, String> {
+    pub async fn update_user(
+        &self,
+        id: i32,
+        req: UpdateUserRequest,
+    ) -> Result<Option<User>, String> {
         // Validation
         if let Some(ref username) = req.username {
             if username.is_empty() {
@@ -365,7 +365,8 @@ impl UserService {
     }
 
     pub async fn stats(&self) -> Result<serde_json::Value, String> {
-        let count = self.db
+        let count = self
+            .db
             .count_users()
             .await
             .map_err(|e| format!("Failed to get stats: {}", e))?;
@@ -428,7 +429,7 @@ impl UserController {
                     .with_body(json.into_bytes()))
             }
             Ok(None) => Ok(HttpResponse::not_found()
-                .with_body(format!(r#"{{"error": "User not found"}}"#).into_bytes())),
+                .with_body(r#"{"error": "User not found"}"#.to_string().into_bytes())),
             Err(e) => Ok(HttpResponse::internal_server_error()
                 .with_body(format!(r#"{{"error": "{}"}}"#, e).into_bytes())),
         }
@@ -447,8 +448,10 @@ impl UserController {
                     .with_header("Content-Type".to_string(), "application/json".to_string())
                     .with_body(json.into_bytes()))
             }
-            Err(e) => Ok(HttpResponse::new(400)
-                .with_body(format!(r#"{{"error": "{}"}}"#, e).into_bytes())),
+            Err(e) => {
+                Ok(HttpResponse::new(400)
+                    .with_body(format!(r#"{{"error": "{}"}}"#, e).into_bytes()))
+            }
         }
     }
 
@@ -480,11 +483,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("╚══════════════════════════════════════════════════════════════╝\n");
 
     // Get database URL from environment or use default
-    let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| {
-            println!("⚠️  DATABASE_URL not set, using default (demo mode)");
-            "postgres://postgres:password@localhost/armature_demo".to_string()
-        });
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        println!("⚠️  DATABASE_URL not set, using default (demo mode)");
+        "postgres://postgres:password@localhost/armature_demo".to_string()
+    });
 
     println!("📋 Configuration:");
     println!("   Database: {}\n", mask_connection_string(&database_url));
@@ -533,7 +535,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   ✅ UserService created\n");
 
     println!("🔌 Injecting UserService into UserController...");
-    let user_controller = UserController::new((*user_service).clone());
+    let _user_controller = UserController::new((*user_service).clone());
     println!("   ✅ UserController created\n");
 
     // Demonstrate CRUD operations
@@ -622,4 +624,3 @@ fn mask_connection_string(conn_str: &str) -> String {
     }
     conn_str.to_string()
 }
-

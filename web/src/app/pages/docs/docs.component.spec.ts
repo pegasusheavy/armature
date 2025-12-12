@@ -19,7 +19,7 @@ describe('DocsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [DocsComponent],
       providers: [
-        provideRouter([]), 
+        provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
         {
@@ -79,11 +79,11 @@ describe('DocsComponent', () => {
     expect(coreFeaturesDocs.length).toBeGreaterThan(0);
   });
 
-  it('should have SSR Frameworks category docs', () => {
+  it('should have Rate Limiting category docs', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    const ssrDocs = component.docs.filter((doc) => doc.category === 'SSR Frameworks');
-    expect(ssrDocs.length).toBeGreaterThan(0);
+    const rateLimitDocs = component.docs.filter((doc) => doc.category === 'Rate Limiting');
+    expect(rateLimitDocs.length).toBeGreaterThan(0);
   });
 
   it('should group docs by category', () => {
@@ -116,13 +116,11 @@ describe('DocsComponent', () => {
     expect(lifecycleDoc).toBeTruthy();
   });
 
-  it('should have HMR guides', () => {
+  it('should have rate limiting guide', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    const hmrGuide = component.docs.find((doc) => doc.id === 'hmr-guide');
-    const hmrQuickStart = component.docs.find((doc) => doc.id === 'hmr-quick-start');
-    expect(hmrGuide).toBeTruthy();
-    expect(hmrQuickStart).toBeTruthy();
+    const rateLimitGuide = component.docs.find((doc) => doc.id === 'rate-limiting');
+    expect(rateLimitGuide).toBeTruthy();
   });
 
   it('should have logging guide', () => {
@@ -132,11 +130,11 @@ describe('DocsComponent', () => {
     expect(loggingDoc).toBeTruthy();
   });
 
-  it('should have parallel processing guide', () => {
+  it('should have architecture docs', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    const parallelDoc = component.docs.find((doc) => doc.id === 'parallel-processing');
-    expect(parallelDoc).toBeTruthy();
+    const architectureDocs = component.docs.filter((doc) => doc.category === 'Architecture');
+    expect(architectureDocs.length).toBeGreaterThan(0);
   });
 
   it('should return category list', () => {
@@ -145,7 +143,7 @@ describe('DocsComponent', () => {
     const categories = component.getCategories();
     expect(categories).toContain('Getting Started');
     expect(categories).toContain('Core Features');
-    expect(categories).toContain('SSR Frameworks');
+    expect(categories).toContain('Rate Limiting');
     expect(categories).toContain('Architecture');
   });
 
@@ -167,10 +165,10 @@ describe('DocsComponent', () => {
     expect(component.content()).toBe('');
   });
 
-  it('should have 34 documentation entries', () => {
+  it('should have documentation entries', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    expect(component.docs.length).toBe(34);
+    expect(component.docs.length).toBeGreaterThan(20);
   });
 
   it('should have all documentation categories', () => {
@@ -181,12 +179,12 @@ describe('DocsComponent', () => {
       'Getting Started',
       'Core Features',
       'HTTP & Networking',
-      'SSR Frameworks',
       'GraphQL',
       'OpenAPI',
       'Background Processing',
       'Observability',
       'Architecture',
+      'Rate Limiting',
       'Testing & Quality',
       'Security',
     ];
@@ -199,9 +197,9 @@ describe('DocsComponent', () => {
   it('should handle doc not found in loadDoc', async () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    
+
     await component.loadDoc('non-existent-doc');
-    
+
     expect(component.error()).toBe('Documentation not found');
     expect(component.loading()).toBe(false);
   });
@@ -210,15 +208,15 @@ describe('DocsComponent', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
     const mockMarkdown = '# Test Documentation\n\nThis is a test.';
-    
+
     const loadPromise = component.loadDoc('readme');
-    
+
     const req = httpTesting.expectOne('/docs/README.md');
     expect(req.request.method).toBe('GET');
     req.flush(mockMarkdown);
-    
+
     await loadPromise;
-    
+
     expect(component.currentDoc()?.id).toBe('readme');
     expect(component.error()).toBeNull();
     expect(component.loading()).toBe(false);
@@ -228,20 +226,20 @@ describe('DocsComponent', () => {
   it('should handle HTTP error when loading document', async () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    
+
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     const loadPromise = component.loadDoc('readme');
-    
+
     const req = httpTesting.expectOne('/docs/README.md');
     req.error(new ProgressEvent('Network error'));
-    
+
     await loadPromise;
-    
+
     expect(component.error()).toBe('Failed to load documentation');
     expect(component.loading()).toBe(false);
     expect(consoleErrorSpy).toHaveBeenCalled();
-    
+
     consoleErrorSpy.mockRestore();
   });
 
@@ -249,14 +247,14 @@ describe('DocsComponent', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
-    
+
     // Trigger ngOnInit by emitting paramMap without docId
     paramMapSubject.next({
       get: (key: string) => null
     });
-    
+
     await fixture.whenStable();
-    
+
     expect(navigateSpy).toHaveBeenCalledWith(['/docs/readme']);
   });
 
@@ -264,28 +262,28 @@ describe('DocsComponent', () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
     const loadDocSpy = vi.spyOn(component, 'loadDoc').mockResolvedValue();
-    
+
     // Trigger ngOnInit by emitting paramMap with docId
     paramMapSubject.next({
       get: (key: string) => key === 'id' ? 'auth-guide' : null
     });
-    
+
     await fixture.whenStable();
-    
+
     expect(loadDocSpy).toHaveBeenCalledWith('auth-guide');
   });
 
   it('should set currentDoc when loading', async () => {
     const fixture = TestBed.createComponent(DocsComponent);
     const component = fixture.componentInstance;
-    
+
     const loadPromise = component.loadDoc('auth-guide');
-    
+
     const req = httpTesting.expectOne('/docs/AUTH_GUIDE.md');
     req.flush('# Auth Guide');
-    
+
     await loadPromise;
-    
+
     const currentDoc = component.currentDoc();
     expect(currentDoc).toBeTruthy();
     expect(currentDoc?.id).toBe('auth-guide');

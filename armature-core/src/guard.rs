@@ -363,7 +363,10 @@ mod tests {
         };
         let context = GuardContext::new(request);
 
-        assert_eq!(context.request.path_params.get("id"), Some(&"123".to_string()));
+        assert_eq!(
+            context.request.path_params.get("id"),
+            Some(&"123".to_string())
+        );
         assert_eq!(
             context.request.query_params.get("sort"),
             Some(&"asc".to_string())

@@ -7,7 +7,7 @@ Comprehensive performance benchmarks for all major components of the Armature fr
 The benchmark suite measures performance across four categories:
 
 1. **Core Benchmarks** - HTTP, routing, middleware, status codes
-2. **Security Benchmarks** - JWT, CSRF, XSS protection
+2. **Security Benchmarks** - JWT operations
 3. **Validation Benchmarks** - Form validation, email, URL, patterns
 4. **Data Benchmarks** - Queue jobs, cron expressions, caching
 
@@ -25,7 +25,7 @@ cargo bench
 # Core HTTP and routing
 cargo bench --bench core_benchmarks
 
-# Security (JWT, CSRF, XSS)
+# Security (JWT)
 cargo bench --bench security_benchmarks
 
 # Validation
@@ -83,17 +83,6 @@ open target/criterion/report/index.html
 - Token verification
 - Algorithm comparison
 
-#### CSRF Operations
-- Token generation
-- Token encoding/decoding
-- Secret generation
-
-#### XSS Protection
-- HTML sanitization (strict, default, permissive)
-- HTML/JS/URL encoding
-- Attack detection and validation
-- Different payload sizes
-
 ### Validation Benchmarks (`validation_benchmarks.rs`)
 
 - **Email Validation** - Valid and invalid emails
@@ -127,8 +116,6 @@ open target/criterion/report/index.html
 | JSON Parsing (small) | < 1μs | Typical API payload |
 | JWT Sign | < 10μs | HS256 algorithm |
 | JWT Verify | < 20μs | Includes signature check |
-| CSRF Token Gen | < 1μs | Random generation |
-| XSS Sanitize | < 10μs | Simple HTML |
 | Email Validation | < 500ns | Regex check |
 | Middleware Chain (10) | < 5μs | Typical stack |
 
