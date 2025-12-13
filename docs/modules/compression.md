@@ -63,7 +63,7 @@ use armature_compression::CompressionMiddleware;
 
 fn main() {
     let mut chain = MiddlewareChain::new();
-    
+
     // Add compression with default settings (auto-select algorithm)
     chain.use_middleware(CompressionMiddleware::new());
 }
@@ -219,10 +219,10 @@ Images (JPEG, PNG), videos, and archives are already compressed. The default con
 impl CompressionMiddleware {
     /// Create with default settings
     pub fn new() -> Self;
-    
+
     /// Create with custom configuration
     pub fn with_config(config: CompressionConfig) -> Self;
-    
+
     /// Get configuration reference
     pub fn config(&self) -> &CompressionConfig;
 }
@@ -234,16 +234,16 @@ impl CompressionMiddleware {
 impl CompressionConfig {
     /// Create with defaults
     pub fn new() -> Self;
-    
+
     /// Create a builder
     pub fn builder() -> CompressionConfigBuilder;
-    
+
     /// Get effective compression level
     pub fn effective_level(&self) -> u32;
-    
+
     /// Check if content type should be compressed
     pub fn should_compress_content_type(&self, ct: &str) -> bool;
-    
+
     /// Check if size meets threshold
     pub fn should_compress_size(&self, size: usize) -> bool;
 }
@@ -263,13 +263,13 @@ pub enum CompressionAlgorithm {
 impl CompressionAlgorithm {
     /// Get Content-Encoding header value
     pub fn encoding_name(&self) -> Option<&'static str>;
-    
+
     /// Check if feature is enabled
     pub fn is_available(&self) -> bool;
-    
+
     /// Select from Accept-Encoding header
     pub fn select_from_accept_encoding(header: &str) -> Self;
-    
+
     /// Compress data
     pub fn compress(&self, data: &[u8], level: u32) -> Result<Vec<u8>>;
 }

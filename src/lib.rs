@@ -57,6 +57,9 @@ pub use armature_ratelimit;
 #[cfg(feature = "compression")]
 pub use armature_compression;
 
+#[cfg(feature = "webhooks")]
+pub use armature_webhooks;
+
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{
