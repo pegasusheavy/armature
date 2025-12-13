@@ -366,7 +366,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 For reference, these features are already implemented:
 
-- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full), Request Timeout (`#[timeout]` decorator), Request Size Limits (`#[body_limit]` decorator), Global Exception Filters (`#[catch]` decorator), Problem Details (RFC 7807)
+- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full), Request Timeout (`#[timeout]` decorator), Request Size Limits (`#[body_limit]` decorator)
 - **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs

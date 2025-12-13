@@ -4,7 +4,6 @@
 use proc_macro::TokenStream;
 
 mod body_limit_attr;
-mod catch_attr;
 mod controller;
 mod injectable;
 mod module;
@@ -162,52 +161,4 @@ pub fn timeout(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn body_limit(attr: TokenStream, item: TokenStream) -> TokenStream {
     body_limit_attr::body_limit_impl(attr, item)
-}
-
-/// Exception filter decorator
-///
-/// Creates an exception filter from a function. The function should return
-/// `Option<HttpResponse>` - return `Some(response)` to handle the error,
-/// or `None` to pass it to the next filter.
-///
-/// # Usage
-///
-/// ```ignore
-/// use armature::{catch, Error, HttpResponse};
-/// use armature_core::exception_filter::ExceptionContext;
-///
-/// // Catch all errors
-/// #[catch]
-/// async fn handle_all(error: &Error, ctx: &ExceptionContext) -> Option<HttpResponse> {
-///     Some(HttpResponse::internal_server_error())
-/// }
-///
-/// // Catch specific error types
-/// #[catch(NotFound, RouteNotFound)]
-/// async fn handle_not_found(error: &Error, ctx: &ExceptionContext) -> Option<HttpResponse> {
-///     Some(HttpResponse::not_found())
-/// }
-///
-/// // With priority (higher = called earlier)
-/// #[catch(Validation, priority = 100)]
-/// async fn handle_validation(error: &Error, ctx: &ExceptionContext) -> Option<HttpResponse> {
-///     Some(HttpResponse::unprocessable_entity())
-/// }
-///
-/// // With custom name
-/// #[catch(BadRequest, name = "CustomBadRequestFilter")]
-/// async fn handle_bad_request(error: &Error, ctx: &ExceptionContext) -> Option<HttpResponse> {
-///     Some(HttpResponse::bad_request())
-/// }
-/// ```
-///
-/// # Generated Code
-///
-/// The macro generates:
-/// - A struct named `{FunctionName}ExceptionFilter`
-/// - Implementation of `ExceptionFilter` trait
-/// - A convenience function with the original name to create the filter
-#[proc_macro_attribute]
-pub fn catch(attr: TokenStream, item: TokenStream) -> TokenStream {
-    catch_attr::catch_impl(attr, item)
 }
