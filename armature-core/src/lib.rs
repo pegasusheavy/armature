@@ -47,6 +47,7 @@
 //! ```
 
 pub mod application;
+pub mod body_limits;
 pub mod container;
 pub mod error;
 pub mod extractors;
@@ -70,6 +71,7 @@ pub mod websocket;
 
 // Re-export commonly used types
 pub use application::*;
+pub use body_limits::*;
 pub use container::*;
 pub use error::*;
 pub use extractors::{
