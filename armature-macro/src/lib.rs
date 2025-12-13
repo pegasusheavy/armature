@@ -8,6 +8,7 @@ mod injectable;
 mod module;
 mod params;
 mod routes;
+mod timeout_attr;
 
 /// Marks a struct as injectable, allowing it to be registered in the DI container
 #[proc_macro_attribute]
@@ -73,4 +74,47 @@ pub fn param_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Query)]
 pub fn query_derive(input: TokenStream) -> TokenStream {
     params::query_derive_impl(input)
+}
+
+/// Request timeout decorator
+///
+/// Applies a timeout to the decorated route handler. If the handler doesn't
+/// complete within the specified duration, a 408 Request Timeout error is returned.
+///
+/// # Usage
+///
+/// ```ignore
+/// use armature::{get, timeout};
+///
+/// // Timeout in seconds (default unit)
+/// #[timeout(5)]
+/// #[get("/quick")]
+/// async fn quick_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Timeout with explicit unit
+/// #[timeout(seconds = 30)]
+/// #[get("/slow")]
+/// async fn slow_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Timeout in milliseconds
+/// #[timeout(ms = 500)]
+/// #[get("/fast")]
+/// async fn fast_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Timeout in minutes
+/// #[timeout(minutes = 2)]
+/// #[get("/long-running")]
+/// async fn long_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn timeout(attr: TokenStream, item: TokenStream) -> TokenStream {
+    timeout_attr::timeout_impl(attr, item)
 }
