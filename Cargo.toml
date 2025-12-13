@@ -116,6 +116,25 @@ full = [
 ]
 # Full feature set including SAML (requires openssl/xmlsec1)
 full-with-saml = ["full", "saml"]
+# For minimal-versions check: exclude memcached (enum_dispatch 0.3.0 is broken)
+full-minimal-versions = [
+    "graphql",
+    "config",
+    "jwt",
+    "auth",
+    "testing",
+    "validation",
+    "openapi",
+    "cache-redis-only",
+    "cron",
+    "queue",
+    "opentelemetry",
+    "security",
+    "acme",
+    "ratelimit",
+    "compression",
+    "webhooks",
+]
 
 graphql = ["armature-graphql"]
 config = ["armature-config"]
@@ -128,7 +147,9 @@ saml = ["armature-auth/saml"]
 testing = ["armature-testing"]
 validation = ["armature-validation"]
 openapi = ["armature-openapi"]
-cache = ["armature-cache"]
+cache = ["armature-cache", "armature-cache/memcached"]
+# For minimal-versions check: only redis, skip memcached (enum_dispatch 0.3.0 is broken with modern syn)
+cache-redis-only = ["armature-cache"]
 cron = ["armature-cron"]
 queue = ["armature-queue"]
 opentelemetry = ["armature-opentelemetry"]

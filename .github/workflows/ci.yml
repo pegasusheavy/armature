@@ -200,16 +200,17 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      # Note: We test minimal versions WITHOUT SAML because:
+      # Note: We test minimal versions WITHOUT SAML and WITHOUT memcached because:
       # 1. SAML requires system libraries (openssl, xmlsec1) which have version-specific issues
       # 2. The core framework should work with minimal versions of pure Rust dependencies
       # 3. openssl-sys minimum versions have known build script bugs
+      # 4. memcache crate depends on enum_dispatch 0.3.0 which is broken with modern syn
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - name: Check minimal versions
         run: |
           cargo update -Z minimal-versions
-          cargo check --features full
+          cargo check --features full-minimal-versions
 
   # ============================================================================
   # MSRV

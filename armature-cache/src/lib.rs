@@ -6,9 +6,11 @@
 //! # Features
 //!
 //! - `redis` - Enable Redis cache support (enabled by default)
-//! - `memcached` - Enable Memcached cache support (enabled by default)
+//! - `memcached` - Enable Memcached cache support (requires explicit opt-in)
 //!
 //! # Examples
+//!
+//! ## Redis Cache
 //!
 //! ```no_run
 //! use armature_cache::*;
@@ -16,13 +18,23 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), CacheError> {
-//!     // Redis cache
 //!     let redis_config = CacheConfig::redis("redis://localhost:6379")?;
 //!     let redis_cache = RedisCache::new(redis_config).await?;
 //!
 //!     redis_cache.set_json("key", "value".to_string(), Some(Duration::from_secs(60))).await?;
 //!
-//!     // Memcached cache
+//!     Ok(())
+//! }
+//! ```
+//!
+//! ## Memcached Cache (requires `memcached` feature)
+//!
+//! ```ignore
+//! use armature_cache::*;
+//! use std::time::Duration;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), CacheError> {
 //!     let memcached_config = CacheConfig::memcached("memcache://localhost:11211")?;
 //!     let memcached_cache = MemcachedCache::new(memcached_config).await?;
 //!
