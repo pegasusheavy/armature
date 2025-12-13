@@ -105,6 +105,102 @@ impl HealthController {
 }
 ```
 
+## Registering in DI Container
+
+### Using ProviderRegistration in Modules
+
+The recommended way to register `HealthService` in your application is through the module system:
+
+```rust
+use armature_core::{
+    Module, Container, ProviderRegistration, ControllerRegistration,
+    health::{HealthService, HealthServiceBuilder, HealthInfo},
+};
+use std::any::TypeId;
+
+struct AppModule;
+
+impl Module for AppModule {
+    fn providers(&self) -> Vec<ProviderRegistration> {
+        vec![
+            ProviderRegistration {
+                type_id: TypeId::of::<HealthService>(),
+                type_name: "HealthService",
+                register_fn: |container| {
+                    let health_service = HealthServiceBuilder::new()
+                        .with_defaults()
+                        .with_info(HealthInfo::new("my-app").with_version("1.0.0"))
+                        .build();
+                    container.register(health_service);
+                },
+            },
+        ]
+    }
+    
+    fn controllers(&self) -> Vec<ControllerRegistration> {
+        vec![]  // Your controllers
+    }
+    
+    fn imports(&self) -> Vec<Box<dyn Module>> {
+        vec![]
+    }
+    
+    fn exports(&self) -> Vec<TypeId> {
+        vec![TypeId::of::<HealthService>()]
+    }
+}
+```
+
+### Manual Container Registration
+
+For simpler use cases or testing, you can register directly with the container:
+
+```rust
+use armature_core::{Container, health::{HealthService, HealthServiceBuilder}};
+
+fn setup_health_service(container: &Container) {
+    let health_service = HealthServiceBuilder::new()
+        .with_defaults()
+        .build();
+    
+    container.register(health_service);
+}
+
+// Later, resolve and use:
+let health_service = container.resolve::<HealthService>().unwrap();
+let health = health_service.check().await;
+```
+
+### Injecting into Controllers
+
+Once registered, you can inject `HealthService` into your controllers:
+
+```rust
+use armature_core::health::HealthService;
+
+#[controller("/health")]
+#[derive(Default, Clone)]
+struct HealthController {
+    health_service: HealthService,  // Automatically injected!
+}
+
+impl HealthController {
+    #[get("/")]
+    async fn check(&self) -> Result<HttpResponse, Error> {
+        let response = self.health_service.check().await;
+        Ok(HttpResponse::new(response.status.http_status_code())
+            .with_json(&response)?)
+    }
+    
+    #[get("/live")]
+    async fn liveness(&self) -> Result<HttpResponse, Error> {
+        let response = self.health_service.check_liveness().await;
+        Ok(HttpResponse::new(response.status.http_status_code())
+            .with_json(&response)?)
+    }
+}
+```
+
 ## Health Indicators
 
 ### Built-in Indicators
