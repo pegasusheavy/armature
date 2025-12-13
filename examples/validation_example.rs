@@ -76,16 +76,16 @@ impl Validate for UpdateUserDto {
     fn validate(&self) -> Result<(), Vec<ValidationError>> {
         let mut errors = Vec::new();
 
-        if let Some(ref name) = self.name {
-            if let Err(e) = MinLength(2).validate(name, "name") {
-                errors.push(e);
-            }
+        if let Some(ref name) = self.name
+            && let Err(e) = MinLength(2).validate(name, "name")
+        {
+            errors.push(e);
         }
 
-        if let Some(ref email) = self.email {
-            if let Err(e) = IsEmail::validate(email, "email") {
-                errors.push(e);
-            }
+        if let Some(ref email) = self.email
+            && let Err(e) = IsEmail::validate(email, "email")
+        {
+            errors.push(e);
         }
 
         if errors.is_empty() {
