@@ -52,6 +52,7 @@ pub mod error;
 pub mod extractors;
 pub mod form;
 pub mod guard;
+pub mod health;
 pub mod hmr;
 pub mod http;
 pub mod interceptor;
@@ -76,6 +77,7 @@ pub use extractors::{
 };
 pub use form::*;
 pub use guard::*;
+pub use health::*;
 pub use hmr::*;
 pub use http::*;
 pub use interceptor::*;
