@@ -20,21 +20,21 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 |----------|---------|-------------|--------|
 | 🔴 | Request Timeout | Configurable request timeouts with graceful handling | `armature-core` |
 | 🔴 | Request Size Limits | Max body size, max header size configuration | `armature-core` |
-| 🟠 | Content Negotiation | Accept header parsing, response format selection | `armature-core` |
-| 🟠 | ETags & Conditional Requests | If-Match, If-None-Match, If-Modified-Since support | `armature-core` |
-| 🟠 | Response Caching Headers | Cache-Control, Expires, Vary header helpers | `armature-core` |
-| 🟡 | Streaming Responses | Chunked transfer encoding, streaming large files | `armature-core` |
+| ✅ | Content Negotiation | Accept header parsing, response format selection | `armature-core` |
+| ✅ | ETags & Conditional Requests | If-Match, If-None-Match, If-Modified-Since support | `armature-core` |
+| ✅ | Response Caching Headers | Cache-Control, Expires, Vary header helpers | `armature-core` |
+| ✅ | Streaming Responses | Chunked transfer encoding, streaming large files | `armature-core` |
 | ✅ | Request Extractors | Body, Query, Path, Header extractors | `armature-core` |
 
 ### Routing & Controllers
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | API Versioning | URL-based, header-based, and query-based versioning | `armature-core` |
+| ✅ | API Versioning | URL-based, header-based, and query-based versioning | `armature-core` |
 | 🟠 | Route Groups | Group routes with shared middleware/guards | `armature-core` |
 | 🟠 | Route Constraints | Parameter validation at route level | `armature-core` |
-| 🟡 | `#[use_middleware]` Decorator | Apply middleware via decorator syntax | `armature-macro` |
-| 🟡 | `#[use_guard]` Decorator | Apply guards via decorator syntax | `armature-macro` |
+| ✅ | `#[use_middleware]` Decorator | Apply middleware via decorator syntax | `armature-macro` |
+| ✅ | `#[use_guard]` Decorator | Apply guards via decorator syntax | `armature-macro` |
 | ✅ | Path Parameters | `:id` style path parameters | `armature-core` |
 | ✅ | Query Parameters | Query string parsing | `armature-core` |
 
@@ -44,7 +44,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 |----------|---------|-------------|--------|
 | 🔴 | Global Exception Filters | Centralized error transformation | `armature-core` |
 | 🟠 | Problem Details (RFC 7807) | Standardized error response format | `armature-core` |
-| 🟠 | Error Correlation | Tie errors to request IDs for debugging | `armature-core` |
+| ✅ | Error Correlation | Tie errors to request IDs for debugging | `armature-core` |
 | ✅ | HTTP Status Errors | Type-safe error responses | `armature-core` |
 
 ---
@@ -266,7 +266,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | 🟠 | Distributed Locks | Redis-based distributed locks | `armature-distributed` |
-| 🟠 | Request Correlation | Correlation ID propagation | `armature-core` |
+| ✅ | Request Correlation | Correlation ID propagation | `armature-core` |
 | 🟡 | Leader Election | Distributed leader election | `armature-distributed` |
 | 🟡 | Service Discovery | Consul/etcd integration | `armature-discovery` |
 
@@ -326,7 +326,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 1. 🟠 Database Module (SQLx/Diesel/SeaORM)
 2. 🟠 Database Migrations
 3. 🟠 Prometheus Metrics
-4. 🟠 API Versioning
+4. ✅ API Versioning
 5. 🟠 Audit Logging
 6. 🟠 Multi-tenancy
 7. 🟠 Feature Flags
@@ -339,7 +339,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 4. 🟠 MongoDB Integration
 5. 🟠 HTTP Client with Retry
 6. 🟠 Distributed Locks
-7. 🟠 Request Correlation
+7. ✅ Request Correlation
 
 ### Phase 4: Developer Experience (Q4)
 1. 🟡 Admin Dashboard
@@ -369,13 +369,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 For reference, these features are already implemented:
 
-- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors
+- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation
 - **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs
 - **API**: GraphQL, OpenAPI/Swagger, WebSocket, SSE, Webhooks
 - **Security**: Rate Limiting, HTTPS/TLS, ACME Certificates, Security Headers
 - **Observability**: OpenTelemetry, Structured Logging
-- **DX**: CLI, Code Generation, Project Templates, Compression
+- **DX**: CLI, Code Generation, Project Templates, Compression, `#[use_middleware]`, `#[use_guard]` decorators
 - **Testing**: Test Utilities, Validation Framework
 
