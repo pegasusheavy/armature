@@ -14,31 +14,6 @@ permissions:
 
 jobs:
   # ============================================================================
-  # BUILD RUST DOCUMENTATION
-  # ============================================================================
-
-  build-rust-docs:
-    name: Build Rust Docs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Build documentation
-        run: |
-          # Use --features full instead of --all-features to exclude SAML
-          # SAML requires xmlsec1 system library which is not available on GitHub runners
-          cargo doc --features full --no-deps
-          echo '<meta http-equiv="refresh" content="0; url=armature">' > target/doc/index.html
-
-      - name: Upload Rust docs artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: rust-docs
-          path: target/doc/
-
-  # ============================================================================
   # BUILD ANGULAR WEBSITE
   # ============================================================================
 
@@ -107,13 +82,6 @@ jobs:
         with:
           name: website
           path: public/
-
-      - name: Download Rust docs artifact
-        uses: actions/download-artifact@v6
-        with:
-          name: rust-docs
-          path: public/api/
-
       - name: Add .nojekyll
         run: touch public/.nojekyll
 
