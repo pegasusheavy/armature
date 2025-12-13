@@ -190,7 +190,10 @@ impl ErrorResponse {
     /// Convert to JSON string.
     pub fn to_json(&self) -> String {
         serde_json::to_string_pretty(self).unwrap_or_else(|_| {
-            format!(r#"{{"status":{},"message":"{}"}}"#, self.status, self.message)
+            format!(
+                r#"{{"status":{},"message":"{}"}}"#,
+                self.status, self.message
+            )
         })
     }
 
@@ -240,7 +243,10 @@ impl ErrorResponse {
         if !self.validation_errors.is_empty() {
             html.push_str(r#"<div class="validation"><h3>Validation Errors</h3><ul>"#);
             for err in &self.validation_errors {
-                html.push_str(&format!("<li><strong>{}</strong>: {}</li>", err.field, err.message));
+                html.push_str(&format!(
+                    "<li><strong>{}</strong>: {}</li>",
+                    err.field, err.message
+                ));
             }
             html.push_str("</ul></div>");
         }
@@ -276,7 +282,10 @@ impl ErrorResponse {
             detail: self.details.clone(),
             source: if !self.validation_errors.is_empty() {
                 Some(JsonApiErrorSource {
-                    pointer: self.validation_errors.first().map(|e| format!("/data/attributes/{}", e.field)),
+                    pointer: self
+                        .validation_errors
+                        .first()
+                        .map(|e| format!("/data/attributes/{}", e.field)),
                     parameter: None,
                     header: None,
                 })
@@ -318,7 +327,10 @@ impl ErrorResponse {
             vec![GraphQLError {
                 message: self.message.clone(),
                 locations: None,
-                path: self.path.as_ref().map(|p| vec![serde_json::Value::String(p.clone())]),
+                path: self
+                    .path
+                    .as_ref()
+                    .map(|p| vec![serde_json::Value::String(p.clone())]),
                 extensions: Some(GraphQLErrorExtensions {
                     code: self.code.clone().or(self.error_type.clone()),
                     status: Some(self.status),
@@ -327,23 +339,23 @@ impl ErrorResponse {
                 }),
             }]
         } else {
-            self.validation_errors.iter().map(|v| GraphQLError {
-                message: v.message.clone(),
-                locations: None,
-                path: Some(vec![serde_json::Value::String(v.field.clone())]),
-                extensions: Some(GraphQLErrorExtensions {
-                    code: v.rule.clone(),
-                    status: Some(self.status),
-                    timestamp: None,
-                    details: None,
-                }),
-            }).collect()
+            self.validation_errors
+                .iter()
+                .map(|v| GraphQLError {
+                    message: v.message.clone(),
+                    locations: None,
+                    path: Some(vec![serde_json::Value::String(v.field.clone())]),
+                    extensions: Some(GraphQLErrorExtensions {
+                        code: v.rule.clone(),
+                        status: Some(self.status),
+                        timestamp: None,
+                        details: None,
+                    }),
+                })
+                .collect()
         };
 
-        let response = GraphQLErrorResponse {
-            data: None,
-            errors,
-        };
+        let response = GraphQLErrorResponse { data: None, errors };
 
         serde_json::to_string_pretty(&response).unwrap_or_else(|_| self.to_json())
     }
@@ -354,16 +366,20 @@ impl ErrorResponse {
             error: GoogleErrorBody {
                 code: self.status,
                 message: self.message.clone(),
-                status: self.error_type.clone().unwrap_or_else(|| {
-                    google_status_from_http(self.status)
-                }),
-                details: self.validation_errors.iter().map(|v| {
-                    GoogleErrorDetail {
-                        type_url: "type.googleapis.com/google.rpc.BadRequest.FieldViolation".to_string(),
+                status: self
+                    .error_type
+                    .clone()
+                    .unwrap_or_else(|| google_status_from_http(self.status)),
+                details: self
+                    .validation_errors
+                    .iter()
+                    .map(|v| GoogleErrorDetail {
+                        type_url: "type.googleapis.com/google.rpc.BadRequest.FieldViolation"
+                            .to_string(),
                         field: v.field.clone(),
                         description: v.message.clone(),
-                    }
-                }).collect(),
+                    })
+                    .collect(),
             },
         };
 
@@ -373,9 +389,10 @@ impl ErrorResponse {
     /// Convert to AWS-style error format.
     pub fn to_aws(&self) -> String {
         let error = AwsError {
-            __type: self.error_type.clone().unwrap_or_else(|| {
-                format!("{}Exception", aws_error_type(self.status))
-            }),
+            __type: self
+                .error_type
+                .clone()
+                .unwrap_or_else(|| format!("{}Exception", aws_error_type(self.status))),
             message: self.message.clone(),
             code: self.code.clone(),
             request_id: self.request_id.clone(),
@@ -386,22 +403,33 @@ impl ErrorResponse {
 
     /// Convert to Azure-style error format.
     pub fn to_azure(&self) -> String {
-        let inner_errors: Vec<AzureInnerError> = self.validation_errors.iter().map(|v| {
-            AzureInnerError {
-                code: v.rule.clone().unwrap_or_else(|| "ValidationError".to_string()),
+        let inner_errors: Vec<AzureInnerError> = self
+            .validation_errors
+            .iter()
+            .map(|v| AzureInnerError {
+                code: v
+                    .rule
+                    .clone()
+                    .unwrap_or_else(|| "ValidationError".to_string()),
                 message: v.message.clone(),
                 target: Some(v.field.clone()),
-            }
-        }).collect();
+            })
+            .collect();
 
         let error = AzureError {
             error: AzureErrorBody {
                 code: self.code.clone().unwrap_or_else(|| {
-                    self.error_type.clone().unwrap_or_else(|| "Error".to_string())
+                    self.error_type
+                        .clone()
+                        .unwrap_or_else(|| "Error".to_string())
                 }),
                 message: self.message.clone(),
                 target: self.path.clone(),
-                details: if inner_errors.is_empty() { None } else { Some(inner_errors) },
+                details: if inner_errors.is_empty() {
+                    None
+                } else {
+                    Some(inner_errors)
+                },
                 innererror: self.details.as_ref().map(|d| AzureInnerErrorInfo {
                     code: self.error_type.clone(),
                     message: Some(d.clone()),
@@ -421,21 +449,11 @@ impl ErrorResponse {
             ResponseFormat::ProblemDetails => {
                 (self.to_problem_details(), "application/problem+json")
             }
-            ResponseFormat::JsonApi => {
-                (self.to_json_api(), "application/vnd.api+json")
-            }
-            ResponseFormat::GraphQL => {
-                (self.to_graphql(), "application/json")
-            }
-            ResponseFormat::Google => {
-                (self.to_google(), "application/json")
-            }
-            ResponseFormat::Aws => {
-                (self.to_aws(), "application/x-amz-json-1.1")
-            }
-            ResponseFormat::Azure => {
-                (self.to_azure(), "application/json")
-            }
+            ResponseFormat::JsonApi => (self.to_json_api(), "application/vnd.api+json"),
+            ResponseFormat::GraphQL => (self.to_graphql(), "application/json"),
+            ResponseFormat::Google => (self.to_google(), "application/json"),
+            ResponseFormat::Aws => (self.to_aws(), "application/x-amz-json-1.1"),
+            ResponseFormat::Azure => (self.to_azure(), "application/json"),
         };
 
         HttpResponse::new(self.status)
@@ -668,7 +686,8 @@ fn google_status_from_http(status: u16) -> String {
         503 => "UNAVAILABLE",
         504 => "DEADLINE_EXCEEDED",
         _ => "UNKNOWN",
-    }.to_string()
+    }
+    .to_string()
 }
 
 // ============================================================================
@@ -703,7 +722,8 @@ fn aws_error_type(status: u16) -> String {
         500 => "InternalService",
         503 => "ServiceUnavailable",
         _ => "Service",
-    }.to_string()
+    }
+    .to_string()
 }
 
 // ============================================================================
@@ -812,8 +832,7 @@ impl ErrorContext {
 // ============================================================================
 
 /// Type alias for custom transformer functions.
-pub type TransformerFn =
-    Arc<dyn Fn(&Error, &ErrorContext) -> Option<ErrorResponse> + Send + Sync>;
+pub type TransformerFn = Arc<dyn Fn(&Error, &ErrorContext) -> Option<ErrorResponse> + Send + Sync>;
 
 /// Type alias for error filter functions.
 pub type FilterFn = Arc<dyn Fn(&Error) -> Error + Send + Sync>;
@@ -926,7 +945,11 @@ impl ErrorTransformer {
     }
 
     /// Map an error type to a code.
-    pub fn map_error_code(mut self, error_type: impl Into<String>, code: impl Into<String>) -> Self {
+    pub fn map_error_code(
+        mut self,
+        error_type: impl Into<String>,
+        code: impl Into<String>,
+    ) -> Self {
         self.error_codes.insert(error_type.into(), code.into());
         self
     }
@@ -1018,7 +1041,10 @@ impl ErrorTransformer {
             // Secrets
             (r"secret[=:]\s*\S+", "secret=[FILTERED]"),
             // Credit cards (simple pattern)
-            (r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b", "[CARD FILTERED]"),
+            (
+                r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b",
+                "[CARD FILTERED]",
+            ),
             // SSN
             (r"\b\d{3}[- ]?\d{2}[- ]?\d{4}\b", "[SSN FILTERED]"),
         ];
@@ -1037,8 +1063,7 @@ impl ErrorTransformer {
         let status = error.status_code();
         let error_type = self.get_error_type(error);
 
-        let mut response = ErrorResponse::new(status)
-            .error_type(&error_type);
+        let mut response = ErrorResponse::new(status).error_type(&error_type);
 
         // Set message
         if self.production_mode && error.is_server_error() {
@@ -1352,14 +1377,13 @@ mod tests {
 
     #[test]
     fn test_error_transformer_with_custom_transformer() {
-        let transformer = ErrorTransformer::new()
-            .with_transformer(|error, _ctx| {
-                if matches!(error, Error::NotFound(_)) {
-                    Some(ErrorResponse::new(404).message("Custom not found message"))
-                } else {
-                    None
-                }
-            });
+        let transformer = ErrorTransformer::new().with_transformer(|error, _ctx| {
+            if matches!(error, Error::NotFound(_)) {
+                Some(ErrorResponse::new(404).message("Custom not found message"))
+            } else {
+                None
+            }
+        });
 
         let error = Error::NotFound("test".to_string());
         let request = HttpRequest::new("GET".to_string(), "/test".to_string());
@@ -1384,7 +1408,9 @@ mod tests {
     #[test]
     fn test_error_context() {
         let mut request = HttpRequest::new("GET".to_string(), "/api".to_string());
-        request.headers.insert("X-Request-Id".to_string(), "req-456".to_string());
+        request
+            .headers
+            .insert("X-Request-Id".to_string(), "req-456".to_string());
 
         let context = ErrorContext::from_request(request)
             .user_id("user-123")
@@ -1417,13 +1443,17 @@ mod tests {
             Some(&"application/json".to_string())
         );
 
-        let http_response = response.clone().into_http_response(ResponseFormat::PlainText);
+        let http_response = response
+            .clone()
+            .into_http_response(ResponseFormat::PlainText);
         assert_eq!(
             http_response.headers.get("Content-Type"),
             Some(&"text/plain; charset=utf-8".to_string())
         );
 
-        let http_response = response.clone().into_http_response(ResponseFormat::ProblemDetails);
+        let http_response = response
+            .clone()
+            .into_http_response(ResponseFormat::ProblemDetails);
         assert_eq!(
             http_response.headers.get("Content-Type"),
             Some(&"application/problem+json".to_string())
@@ -1513,7 +1543,10 @@ mod tests {
             .map_error_code("VALIDATION_ERROR", "ERR_422");
 
         assert!(transformer.error_codes.contains_key("NOT_FOUND"));
-        assert_eq!(transformer.error_codes.get("NOT_FOUND"), Some(&"ERR_404".to_string()));
+        assert_eq!(
+            transformer.error_codes.get("NOT_FOUND"),
+            Some(&"ERR_404".to_string())
+        );
     }
 
     #[test]
@@ -1537,4 +1570,3 @@ mod tests {
         assert_eq!(transformer.format, ResponseFormat::ProblemDetails);
     }
 }
-
