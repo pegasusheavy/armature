@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="armGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#64748b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#94a3b8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#64748b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#0f172a" />
+  
+  <!-- Mechanical Arm Base -->
+  <g transform="translate(256, 256)">
+    <!-- Upper Arm (bicep area) -->
+    <path 
+      d="M-60 80 
+         C-80 40, -90 -20, -70 -60
+         C-50 -100, 0 -120, 40 -100
+         C80 -80, 100 -30, 90 20
+         L70 20
+         C75 -10, 60 -50, 30 -70
+         C0 -90, -30 -75, -45 -45
+         C-60 -15, -55 25, -40 55
+         Z"
+      fill="url(#armGradient)"
+      stroke="#047857"
+      stroke-width="3"
+    />
+    
+    <!-- Bicep Bulge -->
+    <ellipse cx="-10" cy="-30" rx="55" ry="40" fill="url(#armGradient)" stroke="#047857" stroke-width="3" />
+    
+    <!-- Forearm -->
+    <path 
+      d="M40 -100
+         C80 -110, 120 -80, 140 -40
+         C160 0, 150 60, 120 100
+         L100 90
+         C120 60, 125 15, 110 -20
+         C95 -55, 65 -75, 40 -70
+         Z"
+      fill="url(#armGradient)"
+      stroke="#047857"
+      stroke-width="3"
+    />
+    
+    <!-- Fist -->
+    <g transform="translate(110, 90) rotate(-20)">
+      <rect x="-25" y="-15" width="50" height="45" rx="8" fill="url(#armGradient)" stroke="#047857" stroke-width="3" />
+      <!-- Finger segments -->
+      <rect x="-20" y="25" width="10" height="20" rx="4" fill="url(#armGradient)" stroke="#047857" stroke-width="2" />
+      <rect x="-5" y="28" width="10" height="22" rx="4" fill="url(#armGradient)" stroke="#047857" stroke-width="2" />
+      <rect x="10" y="25" width="10" height="20" rx="4" fill="url(#armGradient)" stroke="#047857" stroke-width="2" />
+      <!-- Thumb -->
+      <rect x="-35" y="-5" width="15" height="25" rx="5" fill="url(#armGradient)" stroke="#047857" stroke-width="2" />
+    </g>
+    
+    <!-- Mechanical Joint Details -->
+    <circle cx="-10" cy="-30" r="12" fill="url(#metalGradient)" stroke="#475569" stroke-width="2" />
+    <circle cx="-10" cy="-30" r="5" fill="#1e293b" />
+    
+    <circle cx="60" cy="-55" r="10" fill="url(#metalGradient)" stroke="#475569" stroke-width="2" />
+    <circle cx="60" cy="-55" r="4" fill="#1e293b" />
+    
+    <!-- Armor Plates -->
+    <path 
+      d="M-50 -10 L-30 -50 L10 -55 L5 -15 Z"
+      fill="none"
+      stroke="#34d399"
+      stroke-width="2"
+      opacity="0.6"
+    />
+    <path 
+      d="M70 -45 L95 -30 L85 10 L60 -5 Z"
+      fill="none"
+      stroke="#34d399"
+      stroke-width="2"
+      opacity="0.6"
+    />
+  </g>
+  
+  <!-- Subtle glow effect -->
+  <circle cx="256" cy="256" r="235" fill="none" stroke="#10b981" stroke-width="2" opacity="0.3" />
+</svg>
+
