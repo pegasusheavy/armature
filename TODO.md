@@ -55,9 +55,9 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Health Check Module | `/health`, `/ready`, `/live` endpoints | `armature-health` |
-| 🟠 | Custom Health Indicators | Register custom health checks | `armature-health` |
-| 🟠 | Kubernetes Probes | K8s-compatible probe endpoints | `armature-health` |
+| ✅ | Health Check Module | `/health`, `/ready`, `/live` endpoints | `armature-core` |
+| ✅ | Custom Health Indicators | Register custom health checks | `armature-core` |
+| ✅ | Kubernetes Probes | K8s-compatible probe endpoints | `armature-core` |
 | ✅ | OpenTelemetry | Distributed tracing and metrics | `armature-opentelemetry` |
 | ✅ | Logging | Structured logging | `armature-core` |
 
@@ -313,7 +313,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 ## Implementation Priority Order
 
 ### Phase 1: Production Essentials (Q1)
-1. 🔴 Health Check Module
+1. ✅ Health Check Module
 2. 🔴 Request Timeout & Size Limits
 3. 🔴 Global Exception Filters
 4. 🔴 Pagination Helpers
@@ -323,8 +323,6 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 8. 🔴 SMTP Integration
 
 ### Phase 2: Enterprise Features (Q2)
-1. 🟠 Database Module (SQLx/Diesel/SeaORM)
-2. 🟠 Database Migrations
 3. 🟠 Prometheus Metrics
 4. ✅ API Versioning
 5. 🟠 Audit Logging
@@ -336,7 +334,6 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 1. 🟠 RabbitMQ/Kafka Integration
 2. 🟠 Event Bus
 3. 🟠 S3/GCS Storage
-4. 🟠 MongoDB Integration
 5. 🟠 HTTP Client with Retry
 6. 🟠 Distributed Locks
 7. ✅ Request Correlation
@@ -369,7 +366,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 For reference, these features are already implemented:
 
-- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation
+- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full)
 - **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs
