@@ -88,6 +88,12 @@ export class DocsComponent implements OnInit {
       category: 'HTTP & Networking',
     },
     {
+      id: 'compression',
+      title: 'Compression',
+      filename: 'COMPRESSION.md',
+      category: 'HTTP & Networking',
+    },
+    {
       id: 'http-status-errors',
       title: 'HTTP Status & Errors',
       filename: 'HTTP_STATUS_ERRORS.md',
