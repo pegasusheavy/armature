@@ -14,6 +14,7 @@
         <a routerLink="/" routerLinkActive="text-primary-600" [routerLinkActiveOptions]="{ exact: true }" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Home</a>
         <a routerLink="/docs" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Docs</a>
         <a routerLink="/comparisons" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Comparisons</a>
+        <a routerLink="/roadmap" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Roadmap</a>
         <a routerLink="/getting-started" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Getting Started</a>
         <a routerLink="/faq" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">FAQ</a>
         <a href="https://github.com/pegasusheavy/armature" target="_blank" class="ml-4 inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 text-sm font-medium">
@@ -78,6 +79,14 @@
         class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
       >
         Comparisons
+      </a>
+      <a
+        routerLink="/roadmap"
+        (click)="toggleMenu()"
+        routerLinkActive="bg-primary-50 text-primary-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+      >
+        Roadmap
       </a>
       <a
         routerLink="/getting-started"
