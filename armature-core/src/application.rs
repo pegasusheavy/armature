@@ -211,6 +211,19 @@ impl Application {
             }
         }
 
+        // Register re-exported modules (they need to be registered too)
+        let re_exports = module.re_exports();
+        if !re_exports.is_empty() {
+            debug!(
+                module_type = module_type,
+                re_export_count = re_exports.len(),
+                "Registering re-exported modules"
+            );
+            for re_exported_module in re_exports {
+                Self::register_module(container, router, re_exported_module.as_ref());
+            }
+        }
+
         // Register all providers
         let providers = module.providers();
         debug!(
@@ -226,6 +239,35 @@ impl Application {
                 provider = provider_reg.type_name,
                 "Provider registered"
             );
+        }
+
+        // Register all guards
+        let guards = module.guards();
+        if !guards.is_empty() {
+            debug!(
+                module_type = module_type,
+                guard_count = guards.len(),
+                "Registering guards"
+            );
+            for guard_reg in guards {
+                match (guard_reg.factory)(container) {
+                    Ok(_guard) => {
+                        debug!(
+                            module_type = module_type,
+                            guard = guard_reg.type_name,
+                            "Guard registered"
+                        );
+                    }
+                    Err(e) => {
+                        error!(
+                            module_type = module_type,
+                            guard = guard_reg.type_name,
+                            error = %e,
+                            "Failed to instantiate guard"
+                        );
+                    }
+                }
+            }
         }
 
         // Register all controllers

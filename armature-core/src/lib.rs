@@ -60,6 +60,7 @@ pub mod interceptor;
 pub mod lifecycle;
 pub mod logging;
 pub mod middleware;
+pub mod module;
 pub mod routing;
 pub mod sse;
 pub mod static_assets;
@@ -87,6 +88,7 @@ pub use interceptor::*;
 pub use lifecycle::*;
 pub use logging::*;
 pub use middleware::*;
+pub use module::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use sse::*;
 pub use static_assets::*;

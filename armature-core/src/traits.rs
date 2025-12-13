@@ -30,11 +30,24 @@ pub trait Module: Send + Sync + 'static {
     /// Returns the list of controller types to register
     fn controllers(&self) -> Vec<ControllerRegistration>;
 
+    /// Returns the list of guard types to register
+    fn guards(&self) -> Vec<crate::module::GuardRegistration> {
+        vec![]
+    }
+
     /// Returns the list of imported modules
     fn imports(&self) -> Vec<Box<dyn Module>>;
 
     /// Returns the list of exported provider types
     fn exports(&self) -> Vec<TypeId>;
+
+    /// Returns the list of re-exported modules
+    ///
+    /// Re-exported modules have their exports forwarded to any module
+    /// that imports this module.
+    fn re_exports(&self) -> Vec<Box<dyn Module>> {
+        vec![]
+    }
 }
 
 /// Trait for request handlers (route methods)
