@@ -145,10 +145,10 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | RabbitMQ Integration | RabbitMQ message broker | `armature-rabbitmq` |
-| 🟠 | Kafka Integration | Apache Kafka support | `armature-kafka` |
-| 🟡 | NATS Integration | NATS messaging | `armature-nats` |
-| 🟡 | AWS SQS/SNS | AWS messaging services | `armature-aws-messaging` |
+| ✅ | RabbitMQ Integration | RabbitMQ message broker | `armature-messaging` |
+| ✅ | Kafka Integration | Apache Kafka support | `armature-messaging` |
+| ✅ | NATS Integration | NATS messaging | `armature-messaging` |
+| ✅ | AWS SQS/SNS | AWS messaging services | `armature-messaging` |
 | ✅ | Job Queue | Redis-based job queue | `armature-queue` |
 
 ### External APIs
@@ -370,6 +370,7 @@ For reference, these features are already implemented:
 - **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs
+- **Messaging**: RabbitMQ, Kafka, NATS, AWS SQS/SNS (unified `armature-messaging` module)
 - **API**: GraphQL, OpenAPI/Swagger, WebSocket, SSE, Webhooks
 - **Security**: Rate Limiting, HTTPS/TLS, ACME Certificates, Security Headers
 - **Observability**: OpenTelemetry, Structured Logging
