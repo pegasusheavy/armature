@@ -36,7 +36,7 @@
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-6">
       <h2 class="text-3xl font-bold text-slate-900 mb-8">Implementation Phases</h2>
-      
+
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         @for (phase of phases; track phase.name) {
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -45,7 +45,7 @@
               <h3 class="text-lg font-semibold">{{ phase.name }}</h3>
               <div class="mt-2">
                 <div class="w-full bg-slate-700 rounded-full h-2">
-                  <div 
+                  <div
                     class="bg-emerald-500 h-2 rounded-full transition-all duration-500"
                     [style.width.%]="getProgress(phase.items)"
                   ></div>
@@ -76,7 +76,7 @@
         <span class="text-3xl">✅</span>
         <h2 class="text-3xl font-bold text-slate-900">Already Completed</h2>
       </div>
-      
+
       <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6">
         <p class="text-slate-600 mb-4">The following features are already implemented and production-ready:</p>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -95,7 +95,7 @@
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-6">
       <h2 class="text-3xl font-bold text-slate-900 mb-8">Feature Categories</h2>
-      
+
       <div class="space-y-8">
         @for (category of categories; track category.name) {
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -107,7 +107,7 @@
                 </span>
               </div>
             </div>
-            
+
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead class="bg-slate-50 border-b border-slate-200">
@@ -154,14 +154,14 @@
         We welcome contributions! Each feature should have comprehensive documentation, working examples, full test coverage, and follow existing code patterns.
       </p>
       <div class="flex gap-4 justify-center">
-        <a 
+        <a
           href="https://github.com/pegasusheavy/armature/blob/develop/CONTRIBUTING.md"
           target="_blank"
           class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 py-3 rounded-lg transition-colors"
         >
           Contributing Guide
         </a>
-        <a 
+        <a
           href="https://github.com/pegasusheavy/armature/issues"
           target="_blank"
           class="bg-slate-700 hover:bg-slate-600 text-white font-medium px-6 py-3 rounded-lg transition-colors"
