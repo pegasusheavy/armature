@@ -47,11 +47,11 @@ impl Middleware for ApiKeyMiddleware {
                 + Send,
         >,
     ) -> Result<HttpResponse, Error> {
-        if let Some(api_key) = req.headers.get("x-api-key") {
-            if self.valid_keys.contains(api_key) {
-                println!("✓ Valid API key: {}", api_key);
-                return next(req).await;
-            }
+        if let Some(api_key) = req.headers.get("x-api-key")
+            && self.valid_keys.contains(api_key)
+        {
+            println!("✓ Valid API key: {}", api_key);
+            return next(req).await;
         }
         Err(Error::Unauthorized(
             "Invalid or missing API key".to_string(),

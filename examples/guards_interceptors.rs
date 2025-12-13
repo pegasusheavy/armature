@@ -59,11 +59,11 @@ impl DataController {
     #[get("/protected")]
     async fn protected_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
         // Check for Bearer token (simple guard simulation)
-        if let Some(auth) = req.headers.get("authorization") {
-            if auth.starts_with("Bearer ") {
-                let service = DataService::default();
-                return Ok(Json(service.get_protected_data()));
-            }
+        if let Some(auth) = req.headers.get("authorization")
+            && auth.starts_with("Bearer ")
+        {
+            let service = DataService::default();
+            return Ok(Json(service.get_protected_data()));
         }
         Err(Error::Unauthorized("Authentication required".to_string()))
     }
@@ -71,11 +71,11 @@ impl DataController {
     #[get("/admin")]
     async fn admin_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
         // Check for admin token (simple roles guard simulation)
-        if let Some(auth) = req.headers.get("authorization") {
-            if auth == "Bearer admin-token" {
-                let service = DataService::default();
-                return Ok(Json(service.get_admin_data()));
-            }
+        if let Some(auth) = req.headers.get("authorization")
+            && auth == "Bearer admin-token"
+        {
+            let service = DataService::default();
+            return Ok(Json(service.get_admin_data()));
         }
         Err(Error::Forbidden("Admin role required".to_string()))
     }

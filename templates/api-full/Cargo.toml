@@ -2,7 +2,7 @@
 name = "api-full"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 
 [dependencies]
 # Armature with full features

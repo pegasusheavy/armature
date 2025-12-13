@@ -70,7 +70,7 @@ jobs:
 
   deploy:
     name: Deploy to gh-pages branch
-    needs: [build-rust-docs, build-website]
+    needs: [build-website]
     runs-on: ubuntu-latest
     # Only deploy on push to main or develop, not on PRs
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
