@@ -120,7 +120,8 @@ cleanup "dist" "Nested dist directories"
 cleanup "target" "Rust target directories"
 
 # Documentation source files (keep only built docs)
-cleanup "*.md" "Markdown files"  # Remove if you don't want raw MD files
+# Note: Keep .md files - the Angular website loads them for documentation
+# cleanup "*.md" "Markdown files"
 cleanup "*.rst" "RST files"
 
 # Rust-specific (in API docs)
