@@ -56,8 +56,6 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | 🔴 | Health Check Module | `/health`, `/ready`, `/live` endpoints | `armature-health` |
-| 🔴 | Database Health | Database connectivity checks | `armature-health` |
-| 🔴 | Redis Health | Redis connectivity checks | `armature-health` |
 | 🟠 | Custom Health Indicators | Register custom health checks | `armature-health` |
 | 🟠 | Kubernetes Probes | K8s-compatible probe endpoints | `armature-health` |
 | ✅ | OpenTelemetry | Distributed tracing and metrics | `armature-opentelemetry` |

@@ -1,0 +1,68 @@
+# Auto-Commit After Work Completion
+
+## Rule
+
+The agent MUST commit changes after completing any task that modifies files.
+
+## When to Commit
+
+Commit after:
+- Implementing a feature
+- Fixing a bug
+- Refactoring code
+- Adding or updating documentation
+- Creating new files
+- Modifying configuration
+- Any other file changes
+
+## How to Commit
+
+1. Stage all changes: `git add -A`
+2. Write a descriptive commit message following conventional commits
+3. Commit the changes: `git commit -m "..."`
+4. Push to the current branch if appropriate
+
+## Commit Message Format
+
+Use conventional commits format:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+- `style`: Code style/formatting changes
+- `perf`: Performance improvements
+
+### Examples
+
+```bash
+git commit -m "feat(auth): add OAuth2 provider support"
+git commit -m "fix(cache): resolve Redis connection timeout"
+git commit -m "docs: update SESSION_GUIDE.md with examples"
+git commit -m "refactor(core): simplify error handling"
+```
+
+## Do NOT Commit When
+
+- Changes are incomplete or broken
+- Tests are failing
+- The user explicitly asks not to commit
+- Only exploring or reading files (no modifications)
+
+## Push Policy
+
+- Push to the current branch after committing unless:
+  - The user asks not to push
+  - There are merge conflicts
+  - The branch is protected and requires PR
