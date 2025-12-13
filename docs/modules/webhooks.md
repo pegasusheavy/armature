@@ -63,16 +63,16 @@ use armature_webhooks::{WebhookClient, WebhookConfig, WebhookPayload};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = WebhookClient::new(WebhookConfig::default());
-    
+
     let payload = WebhookPayload::new("user.created")
         .with_data(serde_json::json!({
             "user_id": "usr_123",
             "email": "user@example.com"
         }));
-    
+
     // Send to a specific URL
     let delivery = client.send("https://example.com/webhook", payload).await?;
-    
+
     println!("Delivery status: {:?}", delivery.status);
     Ok(())
 }
@@ -133,10 +133,10 @@ let receiver = WebhookReceiver::new("your-signing-secret");
 fn handle_webhook(body: &[u8], signature_header: &str) -> Result<(), WebhookError> {
     // Verify and parse in one step
     let payload = receiver.receive(body, signature_header)?;
-    
+
     println!("Received event: {}", payload.event);
     println!("Data: {:?}", payload.data);
-    
+
     Ok(())
 }
 ```

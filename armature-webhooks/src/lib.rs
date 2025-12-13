@@ -20,13 +20,13 @@
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let client = WebhookClient::new(WebhookConfig::default());
-//!     
+//!
 //!     let payload = WebhookPayload::new("user.created")
 //!         .with_data(serde_json::json!({
 //!             "user_id": "123",
 //!             "email": "user@example.com"
 //!         }));
-//!     
+//!
 //!     client.send("https://example.com/webhook", payload).await?;
 //!     Ok(())
 //! }

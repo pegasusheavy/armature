@@ -64,7 +64,8 @@ pub use armature_webhooks;
 pub mod prelude {
     pub use crate::{
         Application,
-        Body,
+        // Derive macros for extractors
+        Body as BodyDerive,
         Container,
         Controller,
         Error,
@@ -73,9 +74,10 @@ pub mod prelude {
         HttpResponse,
         Json,
         Module,
+        // Derive macros
         Param,
         Provider,
-        Query,
+        Query as QueryDerive,
         RequestHandler,
         Route,
         Router,
@@ -88,13 +90,23 @@ pub mod prelude {
         // WebSocket types
         WebSocketMessage,
         WebSocketRoom,
+        // Extractor helper macros
+        body,
         controller,
         delete,
+        // Extractors
+        extractors::{
+            Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
+            PathParams, Query, RawBody,
+        },
         get,
+        header,
         injectable,
         module,
         patch,
+        path,
         post,
         put,
+        query,
     };
 }

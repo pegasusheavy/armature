@@ -278,6 +278,10 @@ name = "webhooks_example"
 path = "examples/webhooks_example.rs"
 required-features = ["webhooks"]
 
+[[example]]
+name = "extractors_example"
+path = "examples/extractors_example.rs"
+
 # Benchmarks
 [[bench]]
 name = "core_benchmarks"
