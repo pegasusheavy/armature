@@ -27,7 +27,9 @@ jobs:
 
       - name: Build documentation
         run: |
-          cargo doc --all-features --no-deps
+          # Use --features full instead of --all-features to exclude SAML
+          # SAML requires xmlsec1 system library which is not available on GitHub runners
+          cargo doc --features full --no-deps
           echo '<meta http-equiv="refresh" content="0; url=armature">' > target/doc/index.html
 
       - name: Upload Rust docs artifact
