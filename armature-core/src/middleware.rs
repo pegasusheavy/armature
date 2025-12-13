@@ -282,31 +282,8 @@ impl Middleware for BodySizeLimitMiddleware {
     }
 }
 
-/// Timeout middleware
-pub struct TimeoutMiddleware {
-    duration: std::time::Duration,
-}
-
-impl TimeoutMiddleware {
-    pub fn new(seconds: u64) -> Self {
-        Self {
-            duration: std::time::Duration::from_secs(seconds),
-        }
-    }
-}
-
-#[async_trait]
-impl Middleware for TimeoutMiddleware {
-    async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
-        match tokio::time::timeout(self.duration, next(req)).await {
-            Ok(result) => result,
-            Err(_) => Err(Error::RequestTimeout(format!(
-                "Request exceeded timeout of {:?}",
-                self.duration
-            ))),
-        }
-    }
-}
+// TimeoutMiddleware is now defined in the `timeout` module with more features.
+// Re-exported from crate::timeout::{TimeoutMiddleware, ConfigurableTimeoutMiddleware, TimeoutConfig}
 
 /// Security headers middleware
 pub struct SecurityHeadersMiddleware {
@@ -690,6 +667,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_timeout_middleware() {
+        use crate::timeout::TimeoutMiddleware;
+
         let middleware = TimeoutMiddleware::new(5);
         let req = HttpRequest::new("GET".to_string(), "/test".to_string());
 

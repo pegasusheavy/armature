@@ -18,7 +18,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Request Timeout | Configurable request timeouts with graceful handling | `armature-core` |
+| ✅ | Request Timeout | Configurable request timeouts with graceful handling | `armature-core` |
 | 🔴 | Request Size Limits | Max body size, max header size configuration | `armature-core` |
 | ✅ | Content Negotiation | Accept header parsing, response format selection | `armature-core` |
 | ✅ | ETags & Conditional Requests | If-Match, If-None-Match, If-Modified-Since support | `armature-core` |
@@ -314,7 +314,7 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 ### Phase 1: Production Essentials (Q1)
 1. ✅ Health Check Module
-2. 🔴 Request Timeout & Size Limits
+2. ✅ Request Timeout (Size Limits still pending)
 3. 🔴 Global Exception Filters
 4. 🔴 Pagination Helpers
 5. 🔴 Circuit Breaker
@@ -366,7 +366,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 For reference, these features are already implemented:
 
-- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full)
+- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full), Request Timeout (`#[timeout]` decorator)
 - **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs

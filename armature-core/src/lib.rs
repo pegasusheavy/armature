@@ -63,6 +63,7 @@ pub mod routing;
 pub mod sse;
 pub mod static_assets;
 pub mod status;
+pub mod timeout;
 pub mod tls;
 pub mod traits;
 pub mod websocket;
@@ -88,6 +89,7 @@ pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous Handler
 pub use sse::*;
 pub use static_assets::*;
 pub use status::*;
+pub use timeout::*;
 pub use tls::*;
 pub use traits::*;
 pub use websocket::*;
