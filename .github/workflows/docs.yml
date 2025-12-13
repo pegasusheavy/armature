@@ -50,6 +50,12 @@ jobs:
         working-directory: web
         run: pnpm install
 
+      - name: Copy docs to web/public/docs for build
+        run: |
+          rm -rf web/public/docs
+          mkdir -p web/public/docs
+          cp docs/*.md web/public/docs/
+
       - name: Build Angular app for GitHub Pages
         working-directory: web
         run: pnpm run build:gh-pages
