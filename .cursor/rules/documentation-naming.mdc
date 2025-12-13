@@ -1,0 +1,43 @@
+# Documentation Naming Convention
+
+## Rule
+All documentation files must follow these conventions:
+
+### File Naming
+- Use **UPPER_SNAKE_CASE** for all documentation file names
+- Example: `SECURITY_GUIDE.md`, `API_VERSIONING_GUIDE.md`, `ERROR_CORRELATION.md`
+
+### Location
+- All documentation files must be placed in the `docs/` folder
+- Website copies should be synced to `web/public/docs/`
+
+### Examples
+
+**Correct:**
+```
+docs/GETTING_STARTED.md
+docs/API_REFERENCE.md
+docs/SECURITY_GUIDE.md
+docs/ERROR_CORRELATION_GUIDE.md
+docs/REQUEST_EXTRACTORS.md
+```
+
+**Incorrect:**
+```
+docs/getting-started.md          # lowercase with hyphens
+docs/apiReference.md             # camelCase
+docs/security_guide.md           # lowercase
+README.md                        # should be in docs/ if it's documentation
+src/docs/guide.md               # wrong location
+```
+
+### Exceptions
+- `README.md` at project root is acceptable
+- `CHANGELOG.md` at project root is acceptable
+- `CONTRIBUTING.md` at project root is acceptable
+- `LICENSE` at project root is acceptable
+
+### When Creating Documentation
+1. Name the file in UPPER_SNAKE_CASE with `.md` extension
+2. Place it in the `docs/` directory
+3. If needed for the website, also copy to `web/public/docs/`
