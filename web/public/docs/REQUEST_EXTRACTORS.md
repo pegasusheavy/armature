@@ -1,12 +1,13 @@
 # Request Extractors
 
-Type-safe extraction of data from HTTP requests using extractors and helper macros.
+Type-safe extraction of data from HTTP requests using extractors, parameter decorators, and helper macros.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
+- [Parameter Decorators (NestJS-Style)](#parameter-decorators-nestjs-style)
 - [Extractor Types](#extractor-types)
 - [Helper Macros](#helper-macros)
 - [Traits](#traits)
@@ -18,8 +19,11 @@ Type-safe extraction of data from HTTP requests using extractors and helper macr
 
 The `armature-core` extractors module provides a type-safe way to extract data from HTTP requests, similar to NestJS decorators or Axum extractors. Instead of manually parsing request bodies, query parameters, and headers, you can use strongly-typed extractors that handle deserialization and error handling automatically.
 
+**NEW: NestJS-Style Parameter Decorators** - Armature now supports decorator attributes directly on function parameters, providing the cleanest possible syntax for extracting request data.
+
 ## Features
 
+- ✅ **NestJS-style parameter decorators** (`#[body]`, `#[query]`, `#[param]`, `#[header]`)
 - ✅ Type-safe body extraction with JSON deserialization
 - ✅ Query parameter extraction with struct mapping
 - ✅ Path parameter extraction with type coercion
@@ -45,6 +49,246 @@ Or use directly:
 armature-core = "0.1"
 ```
 
+## Parameter Decorators (NestJS-Style)
+
+The cleanest way to extract request data is using NestJS-style parameter decorators. These attributes can be applied directly to handler function parameters:
+
+### Basic Example
+
+```rust
+use armature::prelude::*;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct CreateUser {
+    name: String,
+    email: String,
+}
+
+#[derive(Deserialize)]
+struct UserFilters {
+    page: Option<u32>,
+    limit: Option<u32>,
+}
+
+#[controller("/users")]
+struct UserController;
+
+impl UserController {
+    // Parameters are extracted automatically!
+    #[post("")]
+    async fn create(
+        #[body] body: Body<CreateUser>,
+        #[header("Authorization")] auth: Header,
+    ) -> Result<HttpResponse, Error> {
+        println!("Creating user: {}", body.name);
+        println!("Auth token: {}", auth.value());
+        HttpResponse::created().with_json(&body.0)
+    }
+
+    #[get("")]
+    async fn list(
+        #[query] filters: Query<UserFilters>,
+    ) -> Result<HttpResponse, Error> {
+        let page = filters.page.unwrap_or(1);
+        let limit = filters.limit.unwrap_or(10);
+        HttpResponse::ok().with_json(&format!("Page {}, Limit {}", page, limit))
+    }
+
+    #[get("/:id")]
+    async fn get_one(
+        #[param("id")] user_id: Path<u32>,
+    ) -> Result<HttpResponse, Error> {
+        HttpResponse::ok().with_json(&format!("User ID: {}", *user_id))
+    }
+}
+```
+
+### Available Decorator Attributes
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `#[body]` | `Body<T>` | Extract entire JSON request body |
+| `#[body("field")]` | Any | Extract specific field from JSON body |
+| `#[query]` | `Query<T>` | Extract all query parameters as struct |
+| `#[query("name")]` | Any | Extract single query parameter |
+| `#[param("name")]` | `Path<T>` | Extract single path parameter |
+| `#[path("name")]` | `Path<T>` | Alias for `#[param]` |
+| `#[header("name")]` | `Header` | Extract single header value |
+| `#[headers]` | `Headers` | Extract all headers |
+| `#[raw_body]` | `RawBody` | Extract raw body bytes |
+
+### Field-Level Extraction
+
+You can extract specific fields from the body or query parameters directly:
+
+```rust
+#[derive(Deserialize)]
+struct CreateUser {
+    name: String,
+    email: String,
+    age: u32,
+}
+
+#[controller("/users")]
+struct UserController;
+
+impl UserController {
+    // Extract specific fields from body - no need for a DTO struct!
+    #[post("")]
+    async fn create(
+        #[body("name")] name: String,
+        #[body("email")] email: String,
+        #[body("age")] age: u32,
+    ) -> Result<HttpResponse, Error> {
+        println!("Creating user: {} ({}) age {}", name, email, age);
+        HttpResponse::created().with_json(&format!("Created: {}", name))
+    }
+
+    // Mix field-level and full body extraction
+    #[put("/:id")]
+    async fn update(
+        #[param("id")] id: u64,
+        #[body("name")] name: String,  // Just extract name field
+    ) -> Result<HttpResponse, Error> {
+        HttpResponse::ok().with_json(&format!("Updated {} with name {}", id, name))
+    }
+
+    // Extract specific query parameters
+    #[get("")]
+    async fn search(
+        #[query("q")] search_term: String,
+        #[query("page")] page: Option<u32>,  // Optional with default
+        #[query("limit")] limit: Option<u32>,
+    ) -> Result<HttpResponse, Error> {
+        let page = page.unwrap_or(1);
+        let limit = limit.unwrap_or(10);
+        HttpResponse::ok().with_json(&format!("Search: {} page {} limit {}", search_term, page, limit))
+    }
+}
+```
+
+This approach is especially useful when:
+- You only need a few fields from a large request body
+- You want to avoid creating DTOs for simple operations
+- You need to combine parameters from different sources
+
+### Complete Controller Example
+
+```rust
+use armature::prelude::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+struct CreatePostDto {
+    title: String,
+    content: String,
+    tags: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct UpdatePostDto {
+    title: Option<String>,
+    content: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct PostFilters {
+    page: Option<u32>,
+    limit: Option<u32>,
+    tag: Option<String>,
+    author_id: Option<u32>,
+}
+
+#[controller("/posts")]
+struct PostController;
+
+impl PostController {
+    // List posts with filters
+    #[get("")]
+    async fn list(
+        #[query] filters: Query<PostFilters>,
+        #[header("X-Tenant-ID")] tenant: Header,
+    ) -> Result<HttpResponse, Error> {
+        let page = filters.page.unwrap_or(1);
+        let limit = filters.limit.unwrap_or(20);
+        // Query posts...
+        HttpResponse::ok().with_json(&format!("Tenant: {}, Page: {}", tenant.value(), page))
+    }
+
+    // Create a new post
+    #[post("")]
+    async fn create(
+        #[body] body: Body<CreatePostDto>,
+        #[header("Authorization")] auth: Header,
+    ) -> Result<HttpResponse, Error> {
+        // Validate auth token...
+        // Create post with body.title, body.content, body.tags
+        HttpResponse::created().with_json(&body.0)
+    }
+
+    // Get single post
+    #[get("/:id")]
+    async fn get_one(
+        #[param("id")] post_id: Path<u64>,
+    ) -> Result<HttpResponse, Error> {
+        // Fetch post by ID
+        HttpResponse::ok().with_json(&format!("Post {}", *post_id))
+    }
+
+    // Update a post
+    #[put("/:id")]
+    async fn update(
+        #[param("id")] post_id: Path<u64>,
+        #[body] body: Body<UpdatePostDto>,
+    ) -> Result<HttpResponse, Error> {
+        // Update post with ID = *post_id
+        // Apply body.title, body.content if present
+        HttpResponse::ok().with_json(&format!("Updated post {}", *post_id))
+    }
+
+    // Delete a post
+    #[delete("/:id")]
+    async fn delete(
+        #[param("id")] post_id: Path<u64>,
+        #[header("Authorization")] auth: Header,
+    ) -> Result<HttpResponse, Error> {
+        // Verify authorization
+        // Delete post with ID = *post_id
+        HttpResponse::no_content()
+    }
+
+    // Get comments for a post (nested resource)
+    #[get("/:post_id/comments/:comment_id")]
+    async fn get_comment(
+        #[param("post_id")] post_id: Path<u64>,
+        #[param("comment_id")] comment_id: Path<u64>,
+    ) -> Result<HttpResponse, Error> {
+        HttpResponse::ok().with_json(&format!(
+            "Comment {} on post {}",
+            *comment_id, *post_id
+        ))
+    }
+}
+```
+
+### Mixing Decorators with HttpRequest
+
+You can still access the raw `HttpRequest` alongside decorated parameters:
+
+```rust
+#[post("/upload")]
+async fn upload(
+    request: HttpRequest,  // Full request access
+    #[body] metadata: Body<UploadMetadata>,
+    #[header("Content-Type")] content_type: Header,
+) -> Result<HttpResponse, Error> {
+    // Access request.headers, request.method, etc.
+    // Plus extracted metadata and content_type
+    Ok(HttpResponse::ok())
+}
+```
+
 ## Extractor Types
 
 ### Body<T>
@@ -64,13 +308,13 @@ struct CreateUser {
 
 fn create_user_handler(request: &HttpRequest) -> Result<(), Error> {
     let body: Body<CreateUser> = Body::from_request(request)?;
-    
+
     println!("Creating user: {}", body.name);
     println!("Email: {}", body.email);
-    
+
     // Access inner value
     let user = body.into_inner();
-    
+
     Ok(())
 }
 ```
@@ -93,12 +337,12 @@ struct Pagination {
 fn list_users_handler(request: &HttpRequest) -> Result<(), Error> {
     // Request: GET /users?page=2&limit=20&sort=name
     let query: Query<Pagination> = Query::from_request(request)?;
-    
+
     let page = query.page.unwrap_or(1);
     let limit = query.limit.unwrap_or(10);
-    
+
     println!("Page: {}, Limit: {}", page, limit);
-    
+
     Ok(())
 }
 ```
@@ -113,12 +357,12 @@ use armature_core::extractors::{Path, FromRequestNamed};
 fn get_user_handler(request: &HttpRequest) -> Result<(), Error> {
     // Route: /users/:id
     let id: Path<u32> = Path::from_request(request, "id")?;
-    
+
     println!("Fetching user with ID: {}", *id);
-    
+
     // Convert to inner value
     let user_id: u32 = id.into_inner();
-    
+
     Ok(())
 }
 ```
@@ -140,9 +384,9 @@ struct UserPostParams {
 fn get_user_post_handler(request: &HttpRequest) -> Result<(), Error> {
     // Route: /users/:user_id/posts/:post_id
     let params: PathParams<UserPostParams> = PathParams::from_request(request)?;
-    
+
     println!("User: {}, Post: {}", params.user_id, params.post_id);
-    
+
     Ok(())
 }
 ```
@@ -156,12 +400,12 @@ use armature_core::extractors::{Header, FromRequestNamed};
 
 fn auth_handler(request: &HttpRequest) -> Result<(), Error> {
     let auth: Header = Header::from_request(request, "Authorization")?;
-    
+
     println!("Auth header: {}", auth.value());
-    
+
     // Get as owned String
     let token: String = auth.into_value();
-    
+
     Ok(())
 }
 ```
@@ -175,16 +419,16 @@ use armature_core::extractors::{Headers, FromRequest};
 
 fn debug_handler(request: &HttpRequest) -> Result<(), Error> {
     let headers: Headers = Headers::from_request(request)?;
-    
+
     for (name, value) in headers.iter() {
         println!("{}: {}", name, value);
     }
-    
+
     // Check for specific header
     if let Some(content_type) = headers.get("Content-Type") {
         println!("Content-Type: {}", content_type);
     }
-    
+
     Ok(())
 }
 ```
@@ -198,15 +442,15 @@ use armature_core::extractors::{RawBody, FromRequest};
 
 fn raw_handler(request: &HttpRequest) -> Result<(), Error> {
     let raw: RawBody = RawBody::from_request(request)?;
-    
+
     println!("Body length: {} bytes", raw.len());
-    
+
     // Get as Vec<u8>
     let bytes: Vec<u8> = raw.into_inner();
-    
+
     // Or as string (if valid UTF-8)
     let text = raw.as_str()?;
-    
+
     Ok(())
 }
 ```
@@ -228,9 +472,9 @@ struct LoginForm {
 
 fn login_handler(request: &HttpRequest) -> Result<(), Error> {
     let form: Form<LoginForm> = Form::from_request(request)?;
-    
+
     println!("Username: {}", form.username);
-    
+
     Ok(())
 }
 ```
@@ -244,15 +488,15 @@ use armature_core::extractors::{ContentType, FromRequest};
 
 fn content_handler(request: &HttpRequest) -> Result<(), Error> {
     let content_type: ContentType = ContentType::from_request(request)?;
-    
+
     if content_type.is_json() {
         // Handle JSON
     } else if content_type.is_form() {
         // Handle form data
     }
-    
+
     println!("Content-Type: {}", content_type.value());
-    
+
     Ok(())
 }
 ```
@@ -266,13 +510,13 @@ use armature_core::extractors::{Method, FromRequest};
 
 fn method_handler(request: &HttpRequest) -> Result<(), Error> {
     let method: Method = Method::from_request(request)?;
-    
+
     match method.as_str() {
         "GET" => println!("Handling GET"),
         "POST" => println!("Handling POST"),
         _ => println!("Other method: {}", method.as_str()),
     }
-    
+
     Ok(())
 }
 ```
@@ -291,9 +535,9 @@ use armature::prelude::*;
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract body as CreateUser
     let user = body!(request, CreateUser)?;
-    
+
     println!("Name: {}", user.name);
-    
+
     Ok(())
 }
 ```
@@ -308,9 +552,9 @@ use armature::prelude::*;
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract query params as Pagination
     let pagination = query!(request, Pagination)?;
-    
+
     println!("Page: {}", pagination.page.unwrap_or(1));
-    
+
     Ok(())
 }
 ```
@@ -325,12 +569,12 @@ use armature::prelude::*;
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract "id" parameter as u32
     let id: u32 = path!(request, "id", u32)?;
-    
+
     // Extract "slug" parameter as String
     let slug: String = path!(request, "slug", String)?;
-    
+
     println!("ID: {}, Slug: {}", id, slug);
-    
+
     Ok(())
 }
 ```
@@ -345,12 +589,12 @@ use armature::prelude::*;
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract Authorization header
     let auth: String = header!(request, "Authorization")?;
-    
+
     // Extract custom header
     let request_id: String = header!(request, "X-Request-ID")?;
-    
+
     println!("Auth: {}", auth);
-    
+
     Ok(())
 }
 ```
@@ -426,7 +670,7 @@ fn handler(request: &HttpRequest) -> HttpResponse {
                 .json(json!({ "error": format!("Invalid body: {}", e) }));
         }
     };
-    
+
     // Process body...
     HttpResponse::ok()
 }
@@ -441,7 +685,7 @@ fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     let filters = query!(request, Filters)?;
     let id: u32 = path!(request, "id", u32)?;
     let auth = header!(request, "Authorization")?;
-    
+
     // Handle request...
     Ok(HttpResponse::ok())
 }
@@ -452,7 +696,7 @@ fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     let filters = Query::<Filters>::from_request(request)?.into_inner();
     let id = Path::<u32>::from_request(request, "id")?.into_inner();
     let auth = Header::from_request(request, "Authorization")?.into_value();
-    
+
     // Handle request...
     Ok(HttpResponse::ok())
 }
@@ -470,7 +714,7 @@ struct CreateUser {
 
 fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     let user = body!(request, CreateUser)?;
-    
+
     // Validate after extraction
     if user.name.is_empty() {
         return Err(Error::Validation("Name cannot be empty".into()));
@@ -481,7 +725,7 @@ fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     if user.age < 18 {
         return Err(Error::Validation("Must be 18 or older".into()));
     }
-    
+
     // Process valid user...
     Ok(HttpResponse::created())
 }
@@ -541,16 +785,16 @@ use armature::prelude::*;
 fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     // Body extraction
     let user = body!(request, CreateUser)?;
-    
-    // Query extraction  
+
+    // Query extraction
     let filters = query!(request, Filters)?;
-    
+
     // Path extraction
     let id: u32 = path!(request, "id", u32)?;
-    
+
     // Header extraction
     let auth = header!(request, "Authorization")?;
-    
+
     Ok(HttpResponse::ok())
 }
 ```
