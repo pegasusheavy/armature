@@ -103,8 +103,8 @@ export class RoadmapComponent {
     {
       name: 'Error Handling',
       items: [
-        { feature: 'Global Exception Filters', description: 'Centralized error transformation', module: 'armature-core', status: 'critical' },
-        { feature: 'Problem Details (RFC 7807)', description: 'Standardized error response format', module: 'armature-core', status: 'high' },
+        { feature: 'Global Exception Filters', description: 'Centralized error transformation', module: 'armature-core', status: 'completed' },
+        { feature: 'Problem Details (RFC 7807)', description: 'Standardized error response format', module: 'armature-core', status: 'completed' },
         { feature: 'Error Correlation', description: 'Tie errors to request IDs for debugging', module: 'armature-core', status: 'completed' },
         { feature: 'HTTP Status Errors', description: 'Type-safe error responses', module: 'armature-core', status: 'completed' },
       ],

@@ -50,6 +50,8 @@ pub mod application;
 pub mod body_limits;
 pub mod container;
 pub mod error;
+pub mod error_transform;
+pub mod exception_filter;
 pub mod extractors;
 pub mod form;
 pub mod guard;
@@ -75,6 +77,8 @@ pub use application::*;
 pub use body_limits::*;
 pub use container::*;
 pub use error::*;
+pub use error_transform::*;
+pub use exception_filter::*;
 pub use extractors::{
     Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
     PathParams, Query, RawBody,
