@@ -49,6 +49,7 @@
 pub mod application;
 pub mod container;
 pub mod error;
+pub mod extractors;
 pub mod form;
 pub mod guard;
 pub mod hmr;
@@ -69,6 +70,10 @@ pub mod websocket;
 pub use application::*;
 pub use container::*;
 pub use error::*;
+pub use extractors::{
+    Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
+    PathParams, Query, RawBody,
+};
 pub use form::*;
 pub use guard::*;
 pub use hmr::*;
