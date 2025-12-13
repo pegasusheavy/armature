@@ -21,6 +21,7 @@ templates/
 ├── README.md
 ├── api-minimal/          # Bare-bones REST API
 ├── api-full/             # Full-featured API
+├── graphql-api/          # GraphQL API server
 └── microservice/         # Queue-connected worker
 ```
 
@@ -30,6 +31,7 @@ templates/
 |----------|-------------|----------|
 | `api-minimal` | Single-file REST API | Learning, prototyping |
 | `api-full` | Auth, validation, Docker | Production APIs |
+| `graphql-api` | GraphQL API with queries, mutations, subscriptions | GraphQL APIs |
 | `microservice` | Job queue worker | Background processing |
 
 ## Using Templates
@@ -75,6 +77,16 @@ For production with Docker:
 
 ```bash
 docker-compose up -d
+```
+
+#### graphql-api
+
+```bash
+cp -r templates/graphql-api my-graphql
+cd my-graphql
+cp .env.example .env
+cargo run
+# GraphQL Playground at http://localhost:3000/graphql
 ```
 
 #### microservice
@@ -159,6 +171,86 @@ api-full/
 - `GET /api/users` - List users (authenticated)
 - `GET /api/users/:id` - Get user (authenticated)
 - `DELETE /api/users/:id` - Delete user (authenticated)
+
+### graphql-api
+
+Production-ready GraphQL API with queries, mutations, and subscriptions.
+
+**Features:**
+- GraphQL Playground/GraphiQL
+- Query and Mutation resolvers
+- Subscription support
+- Type-safe schema
+- Pagination support
+- Authentication integration
+- Structured logging
+
+**Structure:**
+```
+graphql-api/
+├── Cargo.toml
+├── .env.example
+└── src/
+    ├── main.rs
+    ├── config.rs
+    ├── context.rs
+    ├── schema/
+    │   ├── mod.rs
+    │   ├── query.rs
+    │   ├── mutation.rs
+    │   ├── subscription.rs
+    │   └── types.rs
+    └── services/
+        ├── mod.rs
+        ├── auth.rs
+        ├── user.rs
+        └── book.rs
+```
+
+**Endpoints:**
+- `GET /graphql` - GraphQL Playground
+- `POST /graphql` - GraphQL endpoint
+- `GET /health` - Health check
+- `GET /health/live` - Liveness probe
+- `GET /health/ready` - Readiness probe
+
+**Example Queries:**
+```graphql
+# List all users
+query {
+  users {
+    items { id name email role }
+    total
+    hasMore
+  }
+}
+
+# Get a specific book with author
+query {
+  book(id: "1") {
+    id
+    title
+    author { name email }
+  }
+}
+
+# Create a user
+mutation {
+  createUser(input: { name: "Alice", email: "alice@example.com" }) {
+    id
+    name
+  }
+}
+
+# Search books
+query {
+  searchBooks(query: "Rust") {
+    id
+    title
+    publishedYear
+  }
+}
+```
 
 ### microservice
 
@@ -343,7 +435,8 @@ Templates provide a quick start for common project types:
 | Need | Use |
 |------|-----|
 | Learning Armature | `api-minimal` |
-| Production API | `api-full` |
+| Production REST API | `api-full` |
+| GraphQL API | `graphql-api` |
 | Background jobs | `microservice` |
 
 All templates follow Armature best practices and can be customized as needed.

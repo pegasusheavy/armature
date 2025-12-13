@@ -1,0 +1,39 @@
+[package]
+name = "graphql-api"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+
+# Mark this as a standalone project (not part of workspace)
+[workspace]
+
+[dependencies]
+# Armature with GraphQL features
+armature = { path = "../../", features = ["graphql", "validation"] }
+# Required for macros (these should be re-exported but need explicit dependency)
+armature-core = { path = "../../armature-core" }
+async-graphql = { version = "7.0", features = ["chrono", "uuid"] }
+
+# Required for controller/module macros
+async-trait = "0.1"
+
+# Runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration
+dotenvy = "0.15"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.6", features = ["v4", "serde"] }
+

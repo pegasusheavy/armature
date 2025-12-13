@@ -8,6 +8,7 @@ Starter templates for building applications with the Armature framework.
 |----------|-------------|----------|
 | [api-minimal](./api-minimal/) | Bare-bones REST API | Basic routing, JSON responses |
 | [api-full](./api-full/) | Full-featured API | Auth, validation, OpenAPI, Docker |
+| [graphql-api](./graphql-api/) | GraphQL API server | Queries, mutations, subscriptions, playground |
 | [microservice](./microservice/) | Queue-connected microservice | Job worker, health checks, Docker |
 
 ## Quick Start
@@ -65,6 +66,21 @@ Features:
 - Docker support
 - Health checks
 - CORS configuration
+
+### graphql-api
+
+GraphQL API server. Perfect for:
+- Modern frontend applications
+- Mobile app backends
+- APIs requiring flexible queries
+
+Features:
+- GraphQL Playground/GraphiQL
+- Query, Mutation, Subscription support
+- Type-safe schema with async-graphql
+- Pagination patterns
+- Authentication integration
+- Health endpoints
 
 ### microservice
 
