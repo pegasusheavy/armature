@@ -3,6 +3,7 @@
 
 use proc_macro::TokenStream;
 
+mod body_limit_attr;
 mod controller;
 mod injectable;
 mod module;
@@ -117,4 +118,47 @@ pub fn query_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn timeout(attr: TokenStream, item: TokenStream) -> TokenStream {
     timeout_attr::timeout_impl(attr, item)
+}
+
+/// Request body size limit decorator
+///
+/// Applies a body size limit to the decorated route handler. If the request body
+/// exceeds the specified size, a 413 Payload Too Large error is returned.
+///
+/// # Usage
+///
+/// ```ignore
+/// use armature::{post, body_limit};
+///
+/// // Limit in bytes
+/// #[body_limit(1024)]
+/// #[post("/tiny")]
+/// async fn tiny_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Limit with unit suffix (as string)
+/// #[body_limit("10mb")]
+/// #[post("/upload")]
+/// async fn upload_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Limit with named parameter
+/// #[body_limit(mb = 5)]
+/// #[post("/medium")]
+/// async fn medium_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+///     Ok(HttpResponse::ok())
+/// }
+///
+/// // Various formats supported:
+/// #[body_limit(512kb)]      // 512 kilobytes (identifier style)
+/// #[body_limit(kb = 512)]   // 512 kilobytes (named parameter)
+/// #[body_limit("1.5mb")]    // 1.5 megabytes (string with float)
+/// #[body_limit(1gb)]        // 1 gigabyte
+/// #[body_limit(bytes = 2048)] // 2048 bytes
+/// ```
+#[proc_macro_attribute]
+pub fn body_limit(attr: TokenStream, item: TokenStream) -> TokenStream {
+    body_limit_attr::body_limit_impl(attr, item)
 }
