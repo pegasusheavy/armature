@@ -136,15 +136,15 @@ impl Module for AppModule {
             },
         ]
     }
-    
+
     fn controllers(&self) -> Vec<ControllerRegistration> {
         vec![]  // Your controllers
     }
-    
+
     fn imports(&self) -> Vec<Box<dyn Module>> {
         vec![]
     }
-    
+
     fn exports(&self) -> Vec<TypeId> {
         vec![TypeId::of::<HealthService>()]
     }
@@ -162,7 +162,7 @@ fn setup_health_service(container: &Container) {
     let health_service = HealthServiceBuilder::new()
         .with_defaults()
         .build();
-    
+
     container.register(health_service);
 }
 
@@ -191,7 +191,7 @@ impl HealthController {
         Ok(HttpResponse::new(response.status.http_status_code())
             .with_json(&response)?)
     }
-    
+
     #[get("/live")]
     async fn liveness(&self) -> Result<HttpResponse, Error> {
         let response = self.health_service.check_liveness().await;

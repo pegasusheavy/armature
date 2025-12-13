@@ -251,7 +251,7 @@ fn register_health_service(container: &Container) {
                 .description("My REST API")
         })
         .build();
-    
+
     container.register(health_service);
 }
 
@@ -261,7 +261,7 @@ fn register_custom_health_service(container: &Container) {
         .with_indicator(MemoryHealthIndicator::new(0.9))  // 90% threshold
         .with_indicator(UptimeHealthIndicator::default())
         .build();
-    
+
     container.register(health_service);
 }
 
@@ -279,14 +279,14 @@ impl HealthController {
         Ok(HttpResponse::new(response.status.http_status_code())
             .with_json(&response)?)
     }
-    
+
     #[get("/live")]
     async fn liveness(&self) -> Result<HttpResponse, Error> {
         let response = self.health_service.liveness().await;
         Ok(HttpResponse::new(response.status.http_status_code())
             .with_json(&response)?)
     }
-    
+
     #[get("/ready")]
     async fn readiness(&self) -> Result<HttpResponse, Error> {
         let response = self.health_service.readiness().await;
@@ -325,15 +325,15 @@ impl Module for AppModule {
             // Register other services...
         ]
     }
-    
+
     fn controllers(&self) -> Vec<ControllerRegistration> {
         vec![]  // Your controllers
     }
-    
+
     fn imports(&self) -> Vec<Box<dyn Module>> {
         vec![]
     }
-    
+
     fn exports(&self) -> Vec<TypeId> {
         vec![TypeId::of::<HealthService>()]  // Export for child modules
     }
@@ -349,7 +349,7 @@ use armature_core::{DynamicModule, HealthService, HealthServiceBuilder, provider
 fn create_health_module(app_name: &str, app_version: &str) -> DynamicModule {
     let name = app_name.to_string();
     let version = app_version.to_string();
-    
+
     DynamicModule::new("HealthModule")
         .with_provider(ProviderRegistration {
             type_id: std::any::TypeId::of::<HealthService>(),
@@ -488,7 +488,7 @@ fn setup_app(container: &Container) {
     // Load configuration from environment
     let config = AppConfig::from_env();
     container.register(config.clone());
-    
+
     // Use config to set up other services
     let db_service = DatabaseService::new(&config.database_url);
     container.register(db_service);
@@ -512,7 +512,7 @@ mod tests {
     fn test_controller() {
         let container = Container::new();
         container.register(MockDatabaseService::default());
-        
+
         let controller = UserController::new_with_di(&container).unwrap();
         // Test controller with mock dependencies
     }
@@ -691,12 +691,12 @@ Planned features for the DI system:
 
 Armature's DI system provides:
 
-✅ **Automatic injection** based on field types  
-✅ **Type-safe** resolution at compile time  
-✅ **Modular** organization with imports/exports  
-✅ **Testable** through dependency injection  
-✅ **Performant** with singleton pattern  
-✅ **Familiar** syntax for Angular/Spring developers  
+✅ **Automatic injection** based on field types
+✅ **Type-safe** resolution at compile time
+✅ **Modular** organization with imports/exports
+✅ **Testable** through dependency injection
+✅ **Performant** with singleton pattern
+✅ **Familiar** syntax for Angular/Spring developers
 
 The DI system is the foundation of Armature, enabling clean, maintainable, and testable code.
 
