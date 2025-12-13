@@ -286,7 +286,7 @@ export class DocsComponent implements OnInit {
 
     try {
       const markdown = await this.http
-        .get(`/docs/${doc.filename}`, { responseType: 'text' })
+        .get(`docs/${doc.filename}`, { responseType: 'text' })
         .toPromise();
 
       if (markdown) {
