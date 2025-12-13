@@ -29,7 +29,7 @@ export class RoadmapComponent {
       items: [
         { feature: 'Health Check Module', status: 'completed' },
         { feature: 'Request Timeout & Size Limits', status: 'completed' },
-        { feature: 'Global Exception Filters', status: 'critical' },
+        { feature: 'Global Exception Filters', status: 'completed' },
         { feature: 'Pagination Helpers', status: 'critical' },
         { feature: 'Circuit Breaker', status: 'critical' },
         { feature: 'Connection Draining (Graceful Shutdown)', status: 'critical' },
