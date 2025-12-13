@@ -42,18 +42,93 @@ armature = { version = "0.1", features = ["security"] }
 
 ## Quick Start
 
-### Default Configuration (Recommended)
+### Adding to Middleware Chain (Recommended)
+
+The preferred way to use security middleware is to add it to your application's middleware chain:
 
 ```rust
+use armature::prelude::*;
+use armature::{MiddlewareChain, SecurityHeadersMiddleware};
 use armature_security::SecurityMiddleware;
-use armature_core::HttpResponse;
 
-// Use default settings - all protections enabled
-let security = SecurityMiddleware::default();
+// Create your middleware chain
+let mut middleware_chain = MiddlewareChain::new();
 
-// Apply to response
-let response = HttpResponse::ok();
-let secured_response = security.apply(response);
+// Add security middleware (recommended to be early in the chain)
+middleware_chain.use_middleware(SecurityMiddleware::default());
+
+// Add other middleware
+middleware_chain.use_middleware(SecurityHeadersMiddleware::new());
+
+// Define your module
+#[module(
+    providers: [MyService],
+    controllers: [MyController]
+)]
+#[derive(Default)]
+struct AppModule;
+```
+
+### Full Application Example
+
+```rust
+use armature::prelude::*;
+use armature::{MiddlewareChain, LoggerMiddleware, CorsMiddleware};
+use armature_security::{
+    SecurityMiddleware,
+    content_security_policy::CspConfig,
+    hsts::HstsConfig,
+    frame_guard::FrameGuard,
+};
+
+#[injectable]
+#[derive(Clone, Default)]
+struct ApiService;
+
+#[controller("/api")]
+#[derive(Default, Clone)]
+struct ApiController;
+
+impl ApiController {
+    #[get("/data")]
+    async fn get_data() -> Result<Json<serde_json::Value>, Error> {
+        Ok(Json(serde_json::json!({ "status": "ok" })))
+    }
+}
+
+#[module(
+    providers: [ApiService],
+    controllers: [ApiController]
+)]
+#[derive(Default)]
+struct AppModule;
+
+#[tokio::main]
+async fn main() {
+    // Build middleware chain with security
+    let mut middleware_chain = MiddlewareChain::new();
+    
+    // 1. Logging (first to capture all requests)
+    middleware_chain.use_middleware(LoggerMiddleware::new());
+    
+    // 2. CORS (handle preflight early)
+    middleware_chain.use_middleware(
+        CorsMiddleware::new()
+            .allow_origin("https://example.com")
+            .allow_credentials(true)
+    );
+    
+    // 3. Security headers (apply to all responses)
+    middleware_chain.use_middleware(
+        SecurityMiddleware::new()
+            .with_hsts(HstsConfig::new(31536000).include_subdomains(true))
+            .with_frame_guard(FrameGuard::Deny)
+            .with_csp(CspConfig::new().default_src(vec!["'self'".to_string()]))
+            .hide_powered_by(true)
+    );
+    
+    println!("Server running with security middleware enabled");
+}
 ```
 
 ### Custom Configuration
@@ -73,6 +148,9 @@ let security = SecurityMiddleware::new()
     .with_frame_guard(FrameGuard::Deny)
     .with_referrer_policy(ReferrerPolicy::NoReferrer)
     .hide_powered_by(true);
+
+// Add to middleware chain
+middleware_chain.use_middleware(security);
 ```
 
 ## Configuration
@@ -356,38 +434,153 @@ Main security middleware struct.
 
 ## Examples
 
-### Complete Application
+### Complete Application with Middleware Chain
 
 ```rust
 use armature::prelude::*;
-use armature_security::SecurityMiddleware;
+use armature::{
+    MiddlewareChain, LoggerMiddleware, CorsMiddleware, 
+    RequestIdMiddleware, TimeoutMiddleware
+};
+use armature_security::{
+    SecurityMiddleware,
+    content_security_policy::CspConfig,
+    hsts::HstsConfig,
+    frame_guard::FrameGuard,
+    referrer_policy::ReferrerPolicy,
+};
 
-#[controller("/")]
-struct HomeController;
+#[injectable]
+#[derive(Clone, Default)]
+struct UserService;
 
-impl HomeController {
-    #[get("/")]
-    fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
-        let security = SecurityMiddleware::default();
-        let response = HttpResponse::ok()
-            .with_body(b"Hello, secure world!".to_vec());
-
-        Ok(security.apply(response))
+impl UserService {
+    fn get_users(&self) -> Vec<String> {
+        vec!["Alice".to_string(), "Bob".to_string()]
     }
+}
+
+#[controller("/api/users")]
+#[derive(Default, Clone)]
+struct UserController;
+
+impl UserController {
+    #[get("/")]
+    async fn list_users() -> Result<Json<Vec<String>>, Error> {
+        let service = UserService::default();
+        Ok(Json(service.get_users()))
+    }
+    
+    #[get("/:id")]
+    async fn get_user(req: HttpRequest) -> Result<Json<String>, Error> {
+        let id = req.params.get("id").unwrap_or(&"0".to_string()).clone();
+        Ok(Json(format!("User {}", id)))
+    }
+}
+
+#[module(
+    providers: [UserService],
+    controllers: [UserController]
+)]
+#[derive(Default)]
+struct AppModule;
+
+#[tokio::main]
+async fn main() {
+    println!("🔒 Secure API Server");
+    println!("====================\n");
+    
+    // Build comprehensive middleware stack
+    let mut middleware = MiddlewareChain::new();
+    
+    // Request tracking
+    middleware.use_middleware(RequestIdMiddleware);
+    middleware.use_middleware(LoggerMiddleware::new());
+    
+    // CORS for cross-origin requests
+    middleware.use_middleware(
+        CorsMiddleware::new()
+            .allow_origin("https://myapp.com")
+            .allow_methods("GET, POST, PUT, DELETE")
+            .allow_headers("Content-Type, Authorization")
+            .allow_credentials(true)
+    );
+    
+    // Security headers - comprehensive protection
+    middleware.use_middleware(
+        SecurityMiddleware::new()
+            .with_hsts(
+                HstsConfig::new(31536000)
+                    .include_subdomains(true)
+                    .preload(true)
+            )
+            .with_frame_guard(FrameGuard::Deny)
+            .with_referrer_policy(ReferrerPolicy::StrictOriginWhenCrossOrigin)
+            .with_csp(
+                CspConfig::new()
+                    .default_src(vec!["'self'".to_string()])
+                    .script_src(vec!["'self'".to_string()])
+                    .style_src(vec!["'self'".to_string(), "'unsafe-inline'".to_string()])
+                    .img_src(vec!["'self'".to_string(), "data:".to_string(), "https:".to_string()])
+                    .connect_src(vec!["'self'".to_string(), "https://api.example.com".to_string()])
+            )
+            .hide_powered_by(true)
+    );
+    
+    // Request timeout
+    middleware.use_middleware(TimeoutMiddleware::new(30));
+    
+    println!("Middleware stack configured:");
+    println!("  ✓ Request ID tracking");
+    println!("  ✓ Request logging");
+    println!("  ✓ CORS protection");
+    println!("  ✓ Security headers (HSTS, CSP, Frame-Options, etc.)");
+    println!("  ✓ 30 second timeout");
+    println!();
+    println!("Server running on http://localhost:3000");
 }
 ```
 
-### API with Custom Security
+### API-Only Configuration (Minimal)
 
 ```rust
+use armature::prelude::*;
+use armature::MiddlewareChain;
 use armature_security::{SecurityMiddleware, frame_guard::FrameGuard};
 
-let security = SecurityMiddleware::new()
-    .with_frame_guard(FrameGuard::SameOrigin)
-    .hide_powered_by(true);
+// For API servers that don't serve HTML, use a minimal config
+let mut middleware = MiddlewareChain::new();
 
-// Apply to all API responses
-let secured = security.apply(api_response);
+middleware.use_middleware(
+    SecurityMiddleware::new()
+        .with_frame_guard(FrameGuard::Deny)  // Prevent embedding
+        .hide_powered_by(true)                // Hide server info
+        // Skip CSP for API-only servers
+);
+```
+
+### Development vs Production
+
+```rust
+use armature_security::{SecurityMiddleware, hsts::HstsConfig};
+
+fn create_security_middleware(is_production: bool) -> SecurityMiddleware {
+    if is_production {
+        // Full security for production
+        SecurityMiddleware::new()
+            .with_hsts(HstsConfig::new(31536000).preload(true))
+            .hide_powered_by(true)
+    } else {
+        // Relaxed for development
+        SecurityMiddleware::new()
+            .with_hsts(HstsConfig::new(300)) // Short HSTS for testing
+            .hide_powered_by(false)          // Keep for debugging
+    }
+}
+
+// Usage
+let is_prod = std::env::var("ENVIRONMENT").map(|v| v == "production").unwrap_or(false);
+middleware_chain.use_middleware(create_security_middleware(is_prod));
 ```
 
 ## Summary
