@@ -180,10 +180,10 @@ export class RoadmapComponent {
     {
       name: 'Messaging',
       items: [
-        { feature: 'RabbitMQ Integration', description: 'RabbitMQ message broker', module: 'armature-rabbitmq', status: 'high' },
-        { feature: 'Kafka Integration', description: 'Apache Kafka support', module: 'armature-kafka', status: 'high' },
-        { feature: 'NATS Integration', description: 'NATS messaging', module: 'armature-nats', status: 'medium' },
-        { feature: 'AWS SQS/SNS', description: 'AWS messaging services', module: 'armature-aws-messaging', status: 'medium' },
+        { feature: 'RabbitMQ Integration', description: 'RabbitMQ message broker', module: 'armature-messaging', status: 'completed' },
+        { feature: 'Kafka Integration', description: 'Apache Kafka support', module: 'armature-messaging', status: 'completed' },
+        { feature: 'NATS Integration', description: 'NATS messaging', module: 'armature-messaging', status: 'completed' },
+        { feature: 'AWS SQS/SNS', description: 'AWS messaging services', module: 'armature-messaging', status: 'completed' },
         { feature: 'Job Queue', description: 'Redis-based job queue', module: 'armature-queue', status: 'completed' },
       ],
     },

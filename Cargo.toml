@@ -18,6 +18,7 @@ members = [
     "armature-ratelimit",
     "armature-compression",
     "armature-webhooks",
+    "armature-messaging",
     "armature-cli",
 ]
 exclude = [
@@ -86,6 +87,7 @@ armature-acme = { path = "armature-acme", optional = true }
 armature-ratelimit = { path = "armature-ratelimit", optional = true }
 armature-compression = { path = "armature-compression", optional = true }
 armature-webhooks = { path = "armature-webhooks", optional = true }
+armature-messaging = { path = "armature-messaging", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.35", features = ["full"] }
@@ -113,6 +115,7 @@ full = [
     "ratelimit",
     "compression",
     "webhooks",
+    "messaging",
 ]
 # Full feature set including SAML (requires openssl/xmlsec1)
 full-with-saml = ["full", "saml"]
@@ -158,6 +161,11 @@ acme = ["armature-acme"]
 ratelimit = ["armature-ratelimit"]
 compression = ["armature-compression"]
 webhooks = ["armature-webhooks"]
+messaging = ["armature-messaging"]
+messaging-rabbitmq = ["armature-messaging/rabbitmq"]
+messaging-kafka = ["armature-messaging/kafka"]
+messaging-nats = ["armature-messaging/nats"]
+messaging-full = ["armature-messaging/full"]
 
 [dev-dependencies]
 tokio-test = "0.4"
