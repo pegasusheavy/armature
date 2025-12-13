@@ -229,6 +229,192 @@ struct SharedModule;
 struct UserModule;
 ```
 
+## Registering Built-in Services
+
+Armature provides many built-in services that you can register in the DI container. Here are examples of how to register commonly used services.
+
+### Health Check Service
+
+```rust
+use armature_core::{
+    Container, Provider, HealthService, HealthServiceBuilder,
+    MemoryHealthIndicator, DiskHealthIndicator, UptimeHealthIndicator,
+};
+
+// Method 1: Register a pre-built HealthService using the builder
+fn register_health_service(container: &Container) {
+    let health_service = HealthServiceBuilder::new()
+        .with_defaults()  // Adds memory, disk, and uptime indicators
+        .with_info(|info| {
+            info.name("my-api")
+                .version("1.0.0")
+                .description("My REST API")
+        })
+        .build();
+    
+    container.register(health_service);
+}
+
+// Method 2: Register with custom indicators only
+fn register_custom_health_service(container: &Container) {
+    let health_service = HealthServiceBuilder::new()
+        .with_indicator(MemoryHealthIndicator::new(0.9))  // 90% threshold
+        .with_indicator(UptimeHealthIndicator::default())
+        .build();
+    
+    container.register(health_service);
+}
+
+// Using the health service in a controller
+#[controller("/health")]
+#[derive(Default, Clone)]
+struct HealthController {
+    health_service: HealthService,
+}
+
+impl HealthController {
+    #[get("/")]
+    async fn check(&self) -> Result<HttpResponse, Error> {
+        let response = self.health_service.check().await;
+        Ok(HttpResponse::new(response.status.http_status_code())
+            .with_json(&response)?)
+    }
+    
+    #[get("/live")]
+    async fn liveness(&self) -> Result<HttpResponse, Error> {
+        let response = self.health_service.liveness().await;
+        Ok(HttpResponse::new(response.status.http_status_code())
+            .with_json(&response)?)
+    }
+    
+    #[get("/ready")]
+    async fn readiness(&self) -> Result<HttpResponse, Error> {
+        let response = self.health_service.readiness().await;
+        Ok(HttpResponse::new(response.status.http_status_code())
+            .with_json(&response)?)
+    }
+}
+```
+
+### Registering Services in Modules
+
+```rust
+use armature_core::{
+    Module, Container, ProviderRegistration, ControllerRegistration,
+    HealthService, HealthServiceBuilder,
+};
+use std::any::TypeId;
+
+struct AppModule;
+
+impl Module for AppModule {
+    fn providers(&self) -> Vec<ProviderRegistration> {
+        vec![
+            // Register HealthService with custom configuration
+            ProviderRegistration {
+                type_id: TypeId::of::<HealthService>(),
+                type_name: "HealthService",
+                register_fn: |container| {
+                    let health_service = HealthServiceBuilder::new()
+                        .with_defaults()
+                        .with_info(|info| info.name("my-app").version("1.0.0"))
+                        .build();
+                    container.register(health_service);
+                },
+            },
+            // Register other services...
+        ]
+    }
+    
+    fn controllers(&self) -> Vec<ControllerRegistration> {
+        vec![]  // Your controllers
+    }
+    
+    fn imports(&self) -> Vec<Box<dyn Module>> {
+        vec![]
+    }
+    
+    fn exports(&self) -> Vec<TypeId> {
+        vec![TypeId::of::<HealthService>()]  // Export for child modules
+    }
+}
+```
+
+### Using Dynamic Modules for Service Registration
+
+```rust
+use armature_core::{DynamicModule, HealthService, HealthServiceBuilder, provider_registration};
+
+// Create a reusable health module
+fn create_health_module(app_name: &str, app_version: &str) -> DynamicModule {
+    let name = app_name.to_string();
+    let version = app_version.to_string();
+    
+    DynamicModule::new("HealthModule")
+        .with_provider(ProviderRegistration {
+            type_id: std::any::TypeId::of::<HealthService>(),
+            type_name: "HealthService",
+            register_fn: move |container| {
+                let health_service = HealthServiceBuilder::new()
+                    .with_defaults()
+                    .build();
+                container.register(health_service);
+            },
+        })
+        .export::<HealthService>()
+}
+
+// Use it in your application
+let health_module = create_health_module("my-api", "1.0.0");
+```
+
+### Database and Cache Services
+
+```rust
+use armature_core::{Container, Provider};
+
+// Example: Custom database service wrapper
+#[derive(Clone)]
+struct DatabaseService {
+    connection_string: String,
+    // pool: Arc<Pool>  // Your actual connection pool
+}
+
+impl Provider for DatabaseService {}
+
+impl DatabaseService {
+    pub fn new(connection_string: &str) -> Self {
+        Self {
+            connection_string: connection_string.to_string(),
+        }
+    }
+}
+
+// Register in container
+fn setup_database(container: &Container, connection_string: &str) {
+    let db_service = DatabaseService::new(connection_string);
+    container.register(db_service);
+}
+
+// Example: Cache service with configuration
+#[derive(Clone)]
+struct CacheService {
+    ttl_seconds: u64,
+}
+
+impl Provider for CacheService {}
+
+impl CacheService {
+    pub fn new(ttl_seconds: u64) -> Self {
+        Self { ttl_seconds }
+    }
+}
+
+fn setup_cache(container: &Container) {
+    container.register(CacheService::new(300));  // 5 minute TTL
+}
+```
+
 ## Advanced Patterns
 
 ### Constructor Injection
@@ -256,8 +442,57 @@ let container = Container::new();
 // Register a service
 container.register(MyService::default());
 
+// Register with factory function
+container.register_factory(|| {
+    MyComplexService::new_with_config("some-config")
+});
+
 // Resolve a service
 let service = container.resolve::<MyService>()?;
+
+// Check if service exists
+if container.has::<MyService>() {
+    println!("MyService is registered");
+}
+```
+
+### Registering Services from Configuration
+
+```rust
+use armature_core::{Container, Provider};
+use std::env;
+
+#[derive(Clone)]
+struct AppConfig {
+    database_url: String,
+    redis_url: String,
+    log_level: String,
+}
+
+impl Provider for AppConfig {}
+
+impl AppConfig {
+    pub fn from_env() -> Self {
+        Self {
+            database_url: env::var("DATABASE_URL")
+                .unwrap_or_else(|_| "postgres://localhost/app".to_string()),
+            redis_url: env::var("REDIS_URL")
+                .unwrap_or_else(|_| "redis://localhost:6379".to_string()),
+            log_level: env::var("LOG_LEVEL")
+                .unwrap_or_else(|_| "info".to_string()),
+        }
+    }
+}
+
+fn setup_app(container: &Container) {
+    // Load configuration from environment
+    let config = AppConfig::from_env();
+    container.register(config.clone());
+    
+    // Use config to set up other services
+    let db_service = DatabaseService::new(&config.database_url);
+    container.register(db_service);
+}
 ```
 
 ### Testing with DI
