@@ -6,8 +6,8 @@ description = "GraphQL support for Armature framework"
 
 [dependencies]
 armature-core = { path = "../armature-core" }
-async-graphql = "7.0"
-async-graphql-axum = "7.0"
+async-graphql = "7.0.7"
+async-graphql-axum = "7.0.7"
 tokio = { version = "1.35", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

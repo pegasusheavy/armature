@@ -22,6 +22,7 @@ async fn test_cache_config_with_options() {
     assert_eq!(config.default_ttl, Some(Duration::from_secs(7200)));
 }
 
+#[cfg(feature = "memcached")]
 #[tokio::test]
 async fn test_cache_config_memcached() {
     let config = CacheConfig::memcached("localhost:11211").unwrap();
@@ -33,6 +34,7 @@ async fn test_cache_config_memcached() {
 fn test_cache_backend_debug() {
     // CacheBackend doesn't implement Display, just Debug
     assert_eq!(format!("{:?}", CacheBackend::Redis), "Redis");
+    #[cfg(feature = "memcached")]
     assert_eq!(format!("{:?}", CacheBackend::Memcached), "Memcached");
 }
 
@@ -94,6 +96,7 @@ async fn test_redis_cache_with_ttl() {
     assert_eq!(value, None);
 }
 
+#[cfg(feature = "memcached")]
 #[tokio::test]
 #[ignore]
 async fn test_memcached_cache_set_get() {
