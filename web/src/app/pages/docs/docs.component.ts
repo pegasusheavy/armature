@@ -105,6 +105,18 @@ export class DocsComponent implements OnInit {
       filename: 'WEBSOCKET_SSE_GUIDE.md',
       category: 'HTTP & Networking',
     },
+    {
+      id: 'webhooks',
+      title: 'Webhooks',
+      filename: 'WEBHOOKS.md',
+      category: 'HTTP & Networking',
+    },
+    {
+      id: 'request-extractors',
+      title: 'Request Extractors',
+      filename: 'REQUEST_EXTRACTORS.md',
+      category: 'HTTP & Networking',
+    },
 
     // GraphQL
     {
