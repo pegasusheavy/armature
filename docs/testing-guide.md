@@ -12,8 +12,7 @@ Comprehensive testing utilities for Armature framework applications.
 - [Contract Testing](#contract-testing)
 - [Basic Test Utilities](#basic-test-utilities)
 - [Best Practices](#best-practices)
-- [Examples](#examples)
-- [API Reference](#api-reference)
+- [Summary](#summary)
 
 ## Overview
 
@@ -34,14 +33,12 @@ The `armature-testing` crate provides a comprehensive suite of testing utilities
 - Test fixtures with lifecycle management
 - Database seeding utilities
 - Migration support
-- Before/after hooks
 
 ✅ **Docker Test Containers**
 - Automatic container lifecycle
 - Built-in configurations for Postgres, Redis, MongoDB
 - Custom container support
 - Auto-cleanup on drop
-- Health checks
 
 ✅ **Load Testing**
 - Request count-based testing
@@ -55,19 +52,10 @@ The `armature-testing` crate provides a comprehensive suite of testing utilities
 - Consumer-driven design
 - Contract versioning
 - Verification utilities
-- JSON serialization
-
-✅ **Basic Utilities**
-- HTTP test client
-- Service mocking
-- Fluent assertions
-- Test app builder
 
 ## Integration Test Helpers
 
 ### Database Setup/Teardown
-
-Implement `DatabaseTestHelper` trait for your database:
 
 ```rust
 use armature_testing::integration::*;
@@ -91,22 +79,10 @@ impl DatabaseTestHelper for MyDbHelper {
         // Clean up test data
         Ok(())
     }
-
-    async fn migrate(&self) -> Result<(), IntegrationTestError> {
-        // Run database migrations
-        Ok(())
-    }
-
-    async fn seed(&self) -> Result<(), IntegrationTestError> {
-        // Insert test data
-        Ok(())
-    }
 }
 ```
 
 ### Test Fixtures
-
-Use `TestFixture` for automatic setup/teardown:
 
 ```rust
 use std::sync::Arc;
@@ -122,65 +98,18 @@ fixture.run_test(|| async {
 }).await?;
 ```
 
-### Manual Control
-
-```rust
-let fixture = TestFixture::new(helper)
-    .without_auto_cleanup();
-
-fixture.setup().await?;
-// Run tests
-fixture.teardown().await?;
-```
-
-### Database Seeding
-
-```rust
-let seeder = DatabaseSeeder::new()
-    .add_fixture("users")
-    .add_fixture("posts")
-    .add_fixture("comments");
-
-for fixture_name in seeder.fixtures() {
-    println!("Loading fixture: {}", fixture_name);
-}
-```
-
-### Integration Test Builder
-
-```rust
-let test_suite = IntegrationTestBuilder::new("User API Tests")
-    .before_each(|| async {
-        // Runs before each test
-    })
-    .after_each(|| async {
-        // Runs after each test
-    });
-```
-
 ## Docker Test Containers
-
-### Checking Docker Availability
-
-```rust
-use armature_testing::docker::*;
-
-if !DockerContainer::is_docker_available() {
-    println!("Docker not available");
-    return;
-}
-```
 
 ### PostgreSQL Container
 
 ```rust
+use armature_testing::docker::*;
+
 let config = PostgresContainer::config("testdb", "user", "pass");
 let mut container = DockerContainer::new(config);
 
 container.start().await?;
 // Connection: postgres://user:pass@localhost:5432/testdb
-
-// Run tests...
 
 container.stop().await?;
 // Or let it drop for auto-cleanup
@@ -194,8 +123,6 @@ let mut container = DockerContainer::new(config);
 
 container.start().await?;
 // Connection: redis://localhost:6379
-
-// Container auto-stops on drop
 ```
 
 ### MongoDB Container
@@ -206,39 +133,6 @@ let mut container = DockerContainer::new(config);
 
 container.start().await?;
 // Connection: mongodb://localhost:27017/testdb
-```
-
-### Custom Containers
-
-```rust
-let config = ContainerConfig::new("nginx", "alpine")
-    .with_name("test-nginx")
-    .with_port(8080, 80)
-    .with_env("NGINX_HOST", "localhost")
-    .with_wait_timeout(5);
-
-let mut container = DockerContainer::new(config);
-container.start().await?;
-```
-
-### Container Lifecycle
-
-```rust
-// Check if running
-if container.is_running() {
-    println!("Container is active");
-}
-
-// Get container ID
-if let Some(id) = container.container_id() {
-    println!("Container ID: {}", id);
-}
-
-// Manual stop
-container.stop().await?;
-
-// Auto-stop on drop (RAII)
-drop(container);
 ```
 
 ## Load Testing
@@ -268,22 +162,10 @@ let config = LoadTestConfig::new(20, u64::MAX)
     .with_timeout(Duration::from_secs(10));
 
 let runner = LoadTestRunner::new(config, || async {
-    // Your test code
     Ok(())
 });
 
 let stats = runner.run().await?;
-```
-
-### Rate-Limited Load Test
-
-```rust
-let config = LoadTestConfig::new(10, 1000)
-    .with_rate_limit(50.0);  // Max 50 requests/sec
-
-let runner = LoadTestRunner::new(config, || async {
-    Ok(())
-});
 ```
 
 ### Stress Test (Gradual Ramp-Up)
@@ -321,30 +203,6 @@ The `LoadTestStats` struct provides:
 - `median_response_time` - Median (p50)
 - `p95_response_time` - 95th percentile
 - `p99_response_time` - 99th percentile
-
-### Real-World Example
-
-```rust
-use reqwest;
-
-let config = LoadTestConfig::new(50, 10000)
-    .with_timeout(Duration::from_secs(30));
-
-let runner = LoadTestRunner::new(config, || async {
-    let response = reqwest::get("http://localhost:3000/api/users")
-        .await
-        .map_err(|e| LoadTestError::TestFailed(e.to_string()))?;
-
-    if !response.status().is_success() {
-        return Err(LoadTestError::TestFailed("Request failed".to_string()));
-    }
-
-    Ok(())
-});
-
-let stats = runner.run().await?;
-stats.print();
-```
 
 ## Contract Testing
 
@@ -388,12 +246,6 @@ manager.save(&contract)?;
 // Saves to: ./pacts/frontend-userapi.json
 ```
 
-### Loading Contracts
-
-```rust
-let contract = manager.load("Frontend", "UserAPI")?;
-```
-
 ### Verifying Contracts
 
 ```rust
@@ -404,43 +256,6 @@ match ContractVerifier::verify_interaction(&interaction, &actual_response) {
     Ok(()) => println!("✅ Contract verified"),
     Err(e) => println!("❌ Verification failed: {}", e),
 }
-```
-
-### Contract Request Methods
-
-- `ContractMethod::Get`
-- `ContractMethod::Post`
-- `ContractMethod::Put`
-- `ContractMethod::Delete`
-- `ContractMethod::Patch`
-- `ContractMethod::Head`
-- `ContractMethod::Options`
-
-### Provider States
-
-Provider states set up test conditions:
-
-```rust
-let interaction = ContractInteraction::new(
-    "delete user",
-    request,
-    response,
-)
-.with_provider_state("user with ID 1 exists");
-```
-
-### Multiple Interactions
-
-```rust
-let mut builder = ContractBuilder::new("Frontend", "API");
-
-builder
-    .add_interaction(get_user_interaction)
-    .add_interaction(create_user_interaction)
-    .add_interaction(update_user_interaction)
-    .add_interaction(delete_user_interaction);
-
-let contract = builder.build();
 ```
 
 ## Basic Test Utilities
@@ -504,7 +319,6 @@ assert_json(&response, &serde_json::json!({"status": "ok"}));
 2. **Use RAII** - Let containers auto-cleanup
 3. **Wait for Ready** - Use wait timeouts
 4. **Unique Names** - Use UUIDs for container names
-5. **Resource Limits** - Set appropriate limits
 
 ### Load Testing
 
@@ -512,7 +326,6 @@ assert_json(&response, &serde_json::json!({"status": "ok"}));
 2. **Gradual Increase** - Use stress tests to find limits
 3. **Monitor Metrics** - Track p95/p99, not just average
 4. **Realistic Tests** - Use production-like data
-5. **CI Integration** - Run on every PR
 
 ### Contract Testing
 
@@ -520,114 +333,6 @@ assert_json(&response, &serde_json::json!({"status": "ok"}));
 2. **Version Contracts** - Track contract versions
 3. **Share Contracts** - Use shared repository
 4. **Verify Often** - Run verification in CI
-5. **Provider States** - Use for test setup
-
-### General
-
-1. **Fast Tests** - Keep unit tests under 100ms
-2. **Parallel Execution** - Run tests in parallel
-3. **Clear Names** - Use descriptive test names
-4. **One Assert** - Focus each test on one thing
-5. **No Flakiness** - Eliminate flaky tests immediately
-
-## Examples
-
-See the `examples/` directory:
-
-- `testing_integration.rs` - Integration test helpers
-- `testing_docker.rs` - Docker test containers
-- `testing_load.rs` - Load testing
-- `testing_contract.rs` - Contract testing
-
-Run examples:
-
-```bash
-cargo run --example testing_integration
-cargo run --example testing_docker
-cargo run --example testing_load
-cargo run --example testing_contract
-```
-
-## API Reference
-
-### Integration Module
-
-- `DatabaseTestHelper` - Trait for database helpers
-- `TestFixture<T>` - Test lifecycle manager
-- `IntegrationTestBuilder` - Test suite builder
-- `DatabaseSeeder` - Data seeding utility
-- `IntegrationTestError` - Error type
-
-### Docker Module
-
-- `DockerContainer` - Docker container manager
-- `ContainerConfig` - Container configuration
-- `PostgresContainer` - Postgres helper
-- `RedisContainer` - Redis helper
-- `MongoContainer` - MongoDB helper
-- `DockerError` - Error type
-
-### Load Module
-
-- `LoadTestRunner<F, Fut>` - Load test runner
-- `LoadTestConfig` - Load test configuration
-- `LoadTestStats` - Test statistics
-- `StressTestRunner<F, Fut>` - Stress test runner
-- `LoadTestError` - Error type
-
-### Contract Module
-
-- `ContractBuilder` - Contract builder
-- `Contract` - Consumer contract
-- `ContractInteraction` - Single interaction
-- `ContractRequest` - Request specification
-- `ContractResponse` - Response specification
-- `ContractManager` - Contract file manager
-- `ContractVerifier` - Verification utility
-- `ContractMethod` - HTTP methods
-- `ContractError` - Error type
-
-## Troubleshooting
-
-### Docker Not Available
-
-**Problem:** `Docker not available` error
-
-**Solution:**
-- Install Docker: https://docs.docker.com/get-docker/
-- Start Docker daemon
-- Check with: `docker --version`
-
-### Container Start Fails
-
-**Problem:** Container fails to start
-
-**Solutions:**
-- Ensure port is not in use
-- Check Docker logs: `docker logs <container_id>`
-- Pull image manually: `docker pull <image>`
-- Check Docker daemon is running
-
-### Load Tests Timeout
-
-**Problem:** Load tests timing out
-
-**Solutions:**
-- Increase timeout: `.with_timeout(Duration::from_secs(60))`
-- Reduce concurrency
-- Check target service capacity
-- Verify network connectivity
-
-### Contract Verification Fails
-
-**Problem:** Contract verification fails unexpectedly
-
-**Solutions:**
-- Check JSON structure matches exactly
-- Verify header names (case-sensitive)
-- Check status codes
-- Review provider states
-- Use `println!` for debugging
 
 ## Summary
 
@@ -645,14 +350,6 @@ The `armature-testing` crate provides comprehensive testing utilities:
 - **Reliability** - Isolated, reproducible tests
 - **Performance** - Find bottlenecks early
 - **Confidence** - Comprehensive test coverage
-
-**Next Steps:**
-
-1. Add integration tests with fixtures
-2. Use Docker containers for databases
-3. Run load tests in CI
-4. Implement contract testing
-5. Measure test coverage
 
 Happy Testing! 🧪
 

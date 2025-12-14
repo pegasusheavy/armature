@@ -243,21 +243,6 @@ async fn admin_panel(req: HttpRequest) -> Result<HttpResponse, Error> {
 }
 ```
 
-### Validation Error Helper
-
-```rust
-#[post("/users")]
-async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
-    let age: u32 = extract_field(&req, "age")?;
-
-    if age < 18 {
-        return validation_error!("Age must be at least 18");
-    }
-
-    created_json!({ "message": "User created" })
-}
-```
-
 ## Parameter Extraction
 
 ### Single Path Parameter
@@ -502,42 +487,6 @@ async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
 
 **Result:** 15 lines → 9 lines (40% reduction) with better readability!
 
-### Type-Safe Parameter Extraction
-
-```rust
-#[get("/posts")]
-async fn list_posts(req: HttpRequest) -> Result<HttpResponse, Error> {
-    // Automatic parsing with defaults
-    let page: u32 = query_param!(req, "page").unwrap_or(1);
-    let limit: u32 = query_param!(req, "limit").unwrap_or(20).min(100);
-    let sort: String = query_param!(req, "sort").unwrap_or_else(|| "created_at".to_string());
-
-    let posts = db.list_posts(page, limit, &sort).await?;
-
-    paginated_response!(posts, page, posts.len())
-}
-```
-
-### Consistent Error Handling
-
-```rust
-#[post("/users")]
-async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
-    let name: String = path_param!(req, "name")?;
-    let email: String = path_param!(req, "email")?;
-
-    // Validation with clear error messages
-    validate_required!(name);
-    validate_email!(email);
-    guard!(name.len() >= 3, "Name must be at least 3 characters");
-
-    let user = db.create_user(name, email).await
-        .map_err(|e| log_error!("Failed to create user: {}", e))?;
-
-    created_json!({ "user": user })
-}
-```
-
 ## Summary
 
 ### Available Macros
@@ -579,37 +528,4 @@ async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
 - ✗ Complex business logic
 - ✗ One-off operations
 - ✗ When clarity suffers
-
-### Macro Composition
-
-You can combine multiple macros for powerful, concise code:
-
-```rust
-#[timeout(30)]
-#[body_limit("10mb")]
-#[cache(ttl = 300)]
-#[post("/process")]
-async fn process_data(req: HttpRequest) -> Result<HttpResponse, Error> {
-    let id: i64 = path_param!(req, "id")?;
-    let data: String = path_param!(req, "data")?;
-
-    guard!(!data.is_empty(), "Data cannot be empty");
-
-    match process(id, data).await {
-        Ok(result) => ok_json!(result),
-        Err(e) => log_error!("Processing failed: {}", e),
-    }
-}
-```
-
-This combines:
-- Timeout protection
-- Body size limiting
-- Result caching
-- Parameter extraction
-- Validation
-- Logging
-- Error handling
-
-All in a clean, readable format! 🎉
 

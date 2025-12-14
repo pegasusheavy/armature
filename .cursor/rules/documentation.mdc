@@ -8,21 +8,21 @@ All documentation for the Armature project must be generated in the `docs/` dire
 
 ## Directory Structure
 
+All documentation files go directly in the `docs/` root directory. **Do NOT create subfolders.**
+
 ```
 docs/
 ├── README.md                    # Documentation index
-├── guides/                      # User guides
-│   ├── getting-started.md
-│   └── deployment.md
-├── modules/                     # Module-specific docs
-│   ├── auth.md
-│   ├── cache.md
-│   ├── cron.md
-│   └── queue.md
-├── examples/                    # Example documentation
-│   └── real-world-apps.md
-└── API_REFERENCE.md            # Generated API documentation
+├── getting-started.md           # Getting started guide
+├── auth-guide.md                # Authentication guide
+├── cache-guide.md               # Cache guide
+├── cron-guide.md                # Cron guide
+├── queue-guide.md               # Queue guide
+├── deployment-guide.md          # Deployment guide
+└── *.md                         # All other documentation
 ```
+
+**Important:** Do NOT create subdirectories like `guides/`, `modules/`, or `examples/`. All `.md` files belong in `docs/` root.
 
 ## File Naming
 
@@ -47,26 +47,23 @@ docs/
 
 ### Every Feature Must Have Documentation
 
-When adding a new feature, you MUST create corresponding documentation:
+When adding a new feature, you MUST create corresponding documentation in `docs/`:
 
-1. **Module Documentation** (`docs/modules/`)
-   - Overview of the module
+1. **Feature Guide** (`docs/<feature>-guide.md`)
+   - Overview of the feature
    - Key concepts
    - Configuration options
-   - Common patterns
-
-2. **User Guide** (`docs/guides/` or root `docs/`)
    - Step-by-step instructions
    - Code examples
    - Best practices
    - Troubleshooting
 
-3. **API Reference** (inline code docs)
+2. **API Reference** (inline code docs)
    - Rust doc comments (`///`)
    - Examples in doc comments
    - Clear parameter descriptions
 
-4. **Examples** (`examples/`)
+3. **Code Examples** (`examples/` directory - code only)
    - Working code example
    - Comments explaining key parts
    - README if complex
@@ -482,8 +479,7 @@ armature/
 ├── README.md          ← Project overview (root)
 ├── docs/
 │   ├── README.md      ← Documentation index
-│   ├── *.md           ← All other docs
-│   └── guides/
+│   └── *.md           ← All other docs (flat, no subfolders)
 └── ...
 ```
 
@@ -509,11 +505,12 @@ armature/
 
 **Key Principles:**
 
-1. **Location:** All docs in `docs/` directory (except root README)
+1. **Location:** All docs in `docs/` root directory - NO subfolders (except root README)
 2. **Naming:** lowercase-with-hyphens.md
-3. **Completeness:** Every feature must have documentation
-4. **Quality:** Working code examples, clear explanations
-5. **Maintenance:** Update docs with code changes
-6. **Testing:** All examples must compile
+3. **Flat Structure:** All documentation files go directly in `docs/`, not in subdirectories
+4. **Completeness:** Every feature must have documentation
+5. **Quality:** Working code examples, clear explanations
+6. **Maintenance:** Update docs with code changes
+7. **Testing:** All examples must compile
 
 **Documentation is code!** Treat it with the same care and rigor. 📚
