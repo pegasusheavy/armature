@@ -296,7 +296,6 @@ impl Default for ConfigManager {
     }
 }
 
-impl Provider for ConfigManager {}
 
 #[cfg(test)]
 mod tests {

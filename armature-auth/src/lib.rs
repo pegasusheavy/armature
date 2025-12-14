@@ -143,31 +143,41 @@
 //! # }
 //! ```
 
+pub mod api_key;
 pub mod error;
 pub mod guard;
 pub mod oauth2;
 pub mod password;
+pub mod passwordless;
 pub mod providers;
 #[cfg(feature = "saml")]
 pub mod saml;
 pub mod strategy;
+#[cfg(feature = "two-factor")]
+pub mod two_factor;
 pub mod user;
 
+pub use api_key::{ApiKey, ApiKeyError, ApiKeyManager, ApiKeyStore};
 pub use error::{AuthError, Result};
 pub use guard::{AuthGuard, Guard, RoleGuard};
 pub use oauth2::{OAuth2Provider, OAuth2Token, OAuth2UserInfo};
 pub use password::{PasswordHasher, PasswordVerifier};
+pub use passwordless::{MagicLinkToken, PasswordlessError, WebAuthnManager};
 #[cfg(feature = "saml")]
 pub use saml::{
     ContactInfo, IdpMetadata, SamlAssertion, SamlAuthRequest, SamlConfig, SamlProvider,
     SamlServiceProvider,
 };
 pub use strategy::{AuthStrategy, JwtStrategy, LocalStrategy};
+#[cfg(feature = "two-factor")]
+pub use two_factor::{BackupCodes, TotpSecret, TwoFactorError};
 pub use user::{AuthUser, UserContext};
 
 // Re-export providers
 pub use providers::{
-    Auth0Provider, AwsCognitoProvider, GoogleProvider, MicrosoftEntraProvider, OktaProvider,
+    Auth0Provider, AwsCognitoProvider, DiscordProvider, DiscordUser, GitHubProvider, GitHubUser,
+    GitLabProvider, GitLabUser, GoogleProvider, LinkedInProvider, LinkedInUser,
+    MicrosoftEntraProvider, OktaProvider,
 };
 
 use armature_core::Provider;
@@ -257,7 +267,6 @@ impl Default for AuthService {
     }
 }
 
-impl Provider for AuthService {}
 
 #[cfg(test)]
 mod tests {

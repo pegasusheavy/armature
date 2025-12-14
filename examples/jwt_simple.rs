@@ -144,6 +144,6 @@ fn main() {
     println!("   ✓ Multiple algorithms (HS256, RS256, etc.)");
     println!();
     println!("For a full authentication example, see:");
-    println!("   - docs/JWT_GUIDE.md");
+    println!("   - docs/jwt-guide.md");
     println!("   - examples/jwt_auth.rs");
 }

@@ -31,8 +31,8 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | API Versioning | URL-based, header-based, and query-based versioning | `armature-core` |
-| 🟠 | Route Groups | Group routes with shared middleware/guards | `armature-core` |
-| 🟠 | Route Constraints | Parameter validation at route level | `armature-core` |
+| ✅ | Route Groups | Group routes with shared middleware/guards | `armature-core` |
+| ✅ | Route Constraints | Parameter validation at route level | `armature-core` |
 | ✅ | `#[use_middleware]` Decorator | Apply middleware via decorator syntax | `armature-macro` |
 | ✅ | `#[use_guard]` Decorator | Apply guards via decorator syntax | `armature-macro` |
 | ✅ | Path Parameters | `:id` style path parameters | `armature-core` |
@@ -65,19 +65,19 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Prometheus Metrics | `/metrics` endpoint with custom metrics | `armature-metrics` |
-| 🟠 | Request Metrics | Request count, latency, error rates | `armature-metrics` |
-| 🟠 | Business Metrics | Custom metric registration | `armature-metrics` |
+| ✅ | Prometheus Metrics | `/metrics` endpoint with custom metrics | `armature-metrics` |
+| ✅ | Request Metrics | Request count, latency, error rates | `armature-metrics` |
+| ✅ | Business Metrics | Custom metric registration | `armature-metrics` |
 | 🟡 | Grafana Dashboards | Pre-built dashboard templates | `docs/` |
 
 ### Audit & Compliance
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Audit Logging | Track who did what, when | `armature-audit` |
-| 🟠 | Request/Response Logging | Configurable payload logging | `armature-audit` |
-| 🟡 | Data Masking | Mask sensitive data in logs | `armature-audit` |
-| 🟡 | Retention Policies | Auto-cleanup old audit logs | `armature-audit` |
+| ✅ | Audit Logging | Track who did what, when | `armature-audit` |
+| ✅ | Request/Response Logging | Configurable payload logging | `armature-audit` |
+| ✅ | Data Masking | Mask sensitive data in logs | `armature-audit` |
+| ✅ | Retention Policies | Auto-cleanup old audit logs | `armature-audit` |
 
 ---
 
@@ -97,9 +97,9 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Connection Draining | Wait for in-flight requests | `armature-core` |
-| 🟠 | Shutdown Hooks | Custom cleanup on shutdown | `armature-core` |
-| 🟠 | Health Status Update | Mark unhealthy during shutdown | `armature-core` |
+| ✅ | Connection Draining | Wait for in-flight requests | `armature-core` |
+| ✅ | Shutdown Hooks | Custom cleanup on shutdown | `armature-core` |
+| ✅ | Health Status Update | Mark unhealthy during shutdown | `armature-core` |
 | ✅ | Lifecycle Hooks | OnApplicationShutdown | `armature-core` |
 
 ---
@@ -110,11 +110,11 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Pagination Helpers | Offset, cursor-based pagination | `armature-core` |
-| 🟠 | Sorting Helpers | Multi-field sorting | `armature-core` |
-| 🟠 | Filtering Helpers | Query parameter filtering | `armature-core` |
-| 🟡 | Search Helpers | Full-text search integration | `armature-core` |
-| 🟡 | Field Selection | Sparse fieldsets (GraphQL-like) | `armature-core` |
+| ✅ | Pagination Helpers | Offset, cursor-based pagination | `armature-core` |
+| ✅ | Sorting Helpers | Multi-field sorting | `armature-core` |
+| ✅ | Filtering Helpers | Query parameter filtering | `armature-core` |
+| ✅ | Search Helpers | Full-text search integration | `armature-core` |
+| ✅ | Field Selection | Sparse fieldsets (GraphQL-like) | `armature-core` |
 
 ### File Handling
 
@@ -167,10 +167,10 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | API Key Management | API key generation/rotation | `armature-auth` |
-| 🟠 | Two-Factor Auth (2FA) | TOTP/HOTP support | `armature-auth` |
-| 🟡 | Passwordless Auth | Magic links, WebAuthn | `armature-auth` |
-| 🟡 | Social Auth Extensions | More OAuth providers | `armature-auth` |
+| ✅ | API Key Management | API key generation/rotation | `armature-auth` |
+| ✅ | Two-Factor Auth (2FA) | TOTP/HOTP support | `armature-auth` |
+| ✅ | Passwordless Auth | Magic links, WebAuthn | `armature-auth` |
+| ✅ | Social Auth Extensions | More OAuth providers | `armature-auth` |
 | ✅ | JWT Authentication | JWT token management | `armature-jwt` |
 | ✅ | OAuth2/OIDC | Google, Microsoft, etc. | `armature-auth` |
 | ✅ | SAML 2.0 | Enterprise SSO | `armature-auth` |
@@ -179,10 +179,10 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | CORS Improvements | More granular CORS control | `armature-security` |
-| 🟠 | CSP Headers | Content Security Policy | `armature-security` |
-| 🟠 | HSTS | HTTP Strict Transport Security | `armature-security` |
-| 🟡 | Request Signing | HMAC request verification | `armature-security` |
+| ✅ | CORS Improvements | More granular CORS control | `armature-security` |
+| ✅ | CSP Headers | Content Security Policy | `armature-security` |
+| ✅ | HSTS | HTTP Strict Transport Security | `armature-security` |
+| ✅ | Request Signing | HMAC request verification | `armature-security` |
 | ✅ | Security Headers | Basic security headers | `armature-security` |
 | ✅ | Rate Limiting | Token bucket, sliding window | `armature-ratelimit` |
 
@@ -192,20 +192,20 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Tenant Isolation | Request-scoped tenant context | `armature-tenancy` |
-| 🟠 | Database per Tenant | Separate database connections | `armature-tenancy` |
-| 🟠 | Schema per Tenant | PostgreSQL schema isolation | `armature-tenancy` |
-| 🟡 | Tenant Middleware | Auto tenant resolution | `armature-tenancy` |
-| 🟡 | Tenant-aware Caching | Cache key prefixing | `armature-tenancy` |
+| ✅ | Tenant Isolation | Request-scoped tenant context | `armature-tenancy` |
+| ✅ | Database per Tenant | Separate database connections | `armature-tenancy` |
+| ✅ | Schema per Tenant | PostgreSQL schema isolation | `armature-tenancy` |
+| ✅ | Tenant Middleware | Auto tenant resolution | `armature-tenancy` |
+| ✅ | Tenant-aware Caching | Cache key prefixing | `armature-tenancy` |
 
 ### Feature Flags
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Feature Flags | Toggle features at runtime | `armature-features` |
-| 🟠 | LaunchDarkly Integration | LaunchDarkly support | `armature-features` |
-| 🟡 | A/B Testing | Experiment framework | `armature-features` |
-| 🟡 | Gradual Rollout | Percentage-based rollout | `armature-features` |
+| ✅ | Feature Flags | Toggle features at runtime | `armature-features` |
+| ✅ | LaunchDarkly Integration | LaunchDarkly support | `armature-features` |
+| ✅ | A/B Testing | Experiment framework | `armature-features` |
+| ✅ | Gradual Rollout | Percentage-based rollout | `armature-features` |
 
 ### Internationalization
 
@@ -224,9 +224,9 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | REPL | Interactive Rust REPL | `armature-cli` |
-| 🟡 | Route List | `armature routes` - list all routes | `armature-cli` |
-| 🟡 | Config Validation | `armature config:check` | `armature-cli` |
+| ✅ | REPL | Interactive Rust REPL | `armature-cli` |
+| ✅ | Route List | `armature routes` - list all routes | `armature-cli` |
+| ✅ | Config Validation | `armature config:check` | `armature-cli` | `armature-cli` |
 | ✅ | Code Generation | Controllers, services, modules | `armature-cli` |
 | ✅ | Project Templates | Starter templates | `armature-cli` |
 | ✅ | Dev Server | Hot reloading development | `armature-cli` |
@@ -235,17 +235,17 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | API Playground | Interactive API testing UI | `armature-openapi` |
+| ✅ | API Playground | Interactive API testing UI | `armature-openapi` | `armature-openapi` |
 | ✅ | OpenAPI Generation | Swagger/OpenAPI docs | `armature-openapi` |
 
 ### Testing
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Integration Test Helpers | Database setup/teardown | `armature-testing` |
-| 🟠 | Test Containers | Docker-based testing | `armature-testing` |
-| 🟡 | Load Testing | Performance test utilities | `armature-testing` |
-| 🟡 | Contract Testing | Pact/consumer-driven contracts | `armature-testing` |
+| ✅ | Integration Test Helpers | Database setup/teardown | `armature-testing` |
+| ✅ | Test Containers | Docker-based testing | `armature-testing` |
+| ✅ | Load Testing | Performance test utilities | `armature-testing` |
+| ✅ | Contract Testing | Pact/consumer-driven contracts | `armature-testing` |
 | ✅ | Unit Test Helpers | Mocks, spies, assertions | `armature-testing` |
 
 ---
@@ -256,27 +256,27 @@ A comprehensive list of features to make Armature enterprise-grade, production-r
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Event Bus | In-process event publishing | `armature-events` |
-| 🟠 | Event Handlers | Decorator-based event handling | `armature-events` |
-| 🟡 | Event Sourcing | Event-sourced aggregates | `armature-eventsourcing` |
-| 🟡 | CQRS Support | Command/Query separation | `armature-cqrs` |
+| ✅ | Event Bus | In-process event publishing | `armature-events` |
+| ✅ | Event Handlers | Decorator-based event handling | `armature-events` |
+| ✅ | Event Sourcing | Event-sourced aggregates | `armature-eventsourcing` |
+| ✅ | CQRS Support | Command/Query separation | `armature-cqrs` |
 
 ### Distributed Systems
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Distributed Locks | Redis-based distributed locks | `armature-distributed` |
+| ✅ | Distributed Locks | Redis-based distributed locks | `armature-distributed` |
 | ✅ | Request Correlation | Correlation ID propagation | `armature-core` |
-| 🟡 | Leader Election | Distributed leader election | `armature-distributed` |
-| 🟡 | Service Discovery | Consul/etcd integration | `armature-discovery` |
+| ✅ | Leader Election | Distributed leader election | `armature-distributed` |
+| ✅ | Service Discovery | Consul/etcd integration | `armature-discovery` |
 
 ### Caching Improvements
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Cache Decorators | `#[cache]` method decorator | `armature-cache` |
-| 🟠 | Cache Invalidation | Tag-based invalidation | `armature-cache` |
-| 🟡 | Multi-tier Caching | L1/L2 cache layers | `armature-cache` |
+| ✅ | Cache Decorators | `#[cache]` method decorator | `armature-cache` |
+| ✅ | Cache Invalidation | Tag-based invalidation | `armature-cache` |
+| ✅ | Multi-tier Caching | L1/L2 cache layers | `armature-cache` |
 | ✅ | Redis Cache | Redis caching | `armature-cache` |
 | ✅ | Memcached Cache | Memcached caching | `armature-cache` |
 
@@ -366,14 +366,20 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 For reference, these features are already implemented:
 
-- **Core**: DI, Controllers, Modules, Routing, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full), Request Timeout (`#[timeout]` decorator), Request Size Limits (`#[body_limit]` decorator)
-- **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0), SAML 2.0
+- **Core**: DI, Controllers, Modules, Routing, Route Groups, Route Constraints, Middleware, Guards, Interceptors, API Versioning, Content Negotiation, ETags/Conditional Requests, Streaming Responses, Response Caching Headers, Error Correlation, Request Correlation, Health Checks (liveness/readiness/full), Request Timeout (`#[timeout]` decorator), Request Size Limits (`#[body_limit]` decorator), **Graceful Shutdown (Connection Draining, Shutdown Hooks, Health Status Integration)**, **Pagination & Filtering (Offset/Cursor Pagination, Multi-field Sorting, Query Filtering, Search Integration, Field Selection)**
+- **Auth**: JWT, OAuth2 (Google, Microsoft, Cognito, Okta, Auth0, GitHub, GitLab, Discord, LinkedIn), SAML 2.0, **API Key Management (with DI)**, **2FA (TOTP/HOTP)**, **Passwordless Auth (Magic Links, WebAuthn)**
 - **Data**: Redis Cache, Memcached Cache, Session Storage
 - **Background**: Job Queues, Cron Jobs
 - **Messaging**: RabbitMQ, Kafka, NATS, AWS SQS/SNS (unified `armature-messaging` module)
 - **API**: GraphQL, OpenAPI/Swagger, WebSocket, SSE, Webhooks
-- **Security**: Rate Limiting, HTTPS/TLS, ACME Certificates, Security Headers
-- **Observability**: OpenTelemetry, Structured Logging
-- **DX**: CLI, Code Generation, Project Templates, Compression, `#[use_middleware]`, `#[use_guard]` decorators
-- **Testing**: Test Utilities, Validation Framework
+- **Security**: Rate Limiting, HTTPS/TLS, ACME Certificates, Security Headers, **Granular CORS**, **Content Security Policy (CSP)**, **HSTS (with preload)**, **Request Signing (HMAC-SHA256)**
+- **Observability**: OpenTelemetry, Structured Logging, Prometheus Metrics (Counter, Gauge, Histogram), Request Metrics Middleware, Business Metrics
+- **Audit & Compliance**: Audit Logging, Request/Response Logging, Data Masking (PII, passwords, credit cards), Retention Policies, Multiple Backends (File, Memory, Stdout)
+- **Multi-Tenancy**: Tenant Isolation (request-scoped), **Database Per Tenant (with DI)**, **Schema Per Tenant (PostgreSQL)**, Tenant Middleware (auto resolution), Tenant-Aware Caching (key prefixing)
+- **Feature Flags**: Runtime Feature Toggling, **Targeting Rules**, **A/B Testing (multivariate)**, **Gradual Rollout (percentage-based)**, LaunchDarkly Integration (optional)
+- **DX**: CLI, Code Generation, Project Templates, Compression, `#[use_middleware]`, `#[use_guard]` decorators, **REPL (Interactive Rust)**, **Route Listing**, **Config Validation**, **API Playground (Interactive Testing UI)**
+- **Testing**: Test Utilities, Validation Framework, **Integration Test Helpers (Database Setup/Teardown)**, **Docker Test Containers (Postgres, Redis, MongoDB)**, **Load Testing (Request/Duration-Based, Stress Testing)**, **Contract Testing (Pact-Compatible)**
+- **Event-Driven**: **Event Bus (In-Process Publishing/Subscribing)**, **Event Handlers (Type-Safe, Async)**, **Event Sourcing (Aggregates, Event Store, Snapshots)**, **CQRS (Command/Query Separation, Projections)**
+- **Distributed Systems**: **Distributed Locks (Redis-Based, TTL, RAII)**, **Leader Election (Automatic, Callbacks, TTL Renewal)**, **Service Discovery (Consul, etcd, Load Balancing)**
+- **Caching Improvements**: **Cache Decorators (#[cache] Attribute)**, **Tag-Based Invalidation (Bulk Cache Busting)**, **Multi-Tier Caching (L1/L2 Layers, Auto-Promotion, Write-Through)**
 

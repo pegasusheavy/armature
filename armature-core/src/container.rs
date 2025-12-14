@@ -1,126 +1,293 @@
-// Dependency injection container
+//! Dependency injection container
+//!
+//! This module re-exports the DI container from `dependency-injector` and provides
+//! framework-specific integration.
 
-use crate::logging::{debug, trace};
-use crate::{Error, Provider};
+use crate::Error;
 use std::any::{Any, TypeId};
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-/// The dependency injection container
-#[derive(Clone)]
+// Re-export the core DI types (excluding ProviderRegistration to avoid conflict with traits.rs)
+pub use dependency_injector::{
+    Container as DiContainer, DiError, Factory, Injectable, Lifetime, Provider, Scope,
+    ScopeBuilder, ScopedContainer as DiScopedContainer,
+};
+
+/// The dependency injection container for Armature.
+///
+/// This is a thin wrapper around `dependency_injector::Container` that provides
+/// error conversion to the framework's error type.
+#[derive(Clone, Default)]
 pub struct Container {
-    providers: Arc<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>>,
+    inner: DiContainer,
 }
 
 impl Container {
+    /// Create a new empty container.
+    #[inline]
     pub fn new() -> Self {
-        debug!("Creating new DI container");
         Self {
-            providers: Arc::new(RwLock::new(HashMap::new())),
+            inner: DiContainer::new(),
         }
     }
 
-    /// Register a provider instance
-    pub fn register<T: Provider>(&self, instance: T) {
-        let type_id = TypeId::of::<T>();
-        let type_name = std::any::type_name::<T>();
-
-        trace!(
-            provider = type_name,
-            "Acquiring write lock for registration"
-        );
-        let mut providers = self.providers.write().unwrap();
-        providers.insert(type_id, Arc::new(instance));
-
-        debug!(provider = type_name, "Provider registered in DI container");
+    /// Create with pre-allocated capacity.
+    #[inline]
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            inner: DiContainer::with_capacity(capacity),
+        }
     }
 
-    /// Register a provider from a boxed instance
-    #[allow(clippy::boxed_local)]
-    pub fn register_boxed<T: Provider>(&self, instance: Box<T>) {
-        let type_id = TypeId::of::<T>();
-        let type_name = std::any::type_name::<T>();
-
-        trace!(provider = type_name, "Registering boxed provider");
-        let mut providers = self.providers.write().unwrap();
-        providers.insert(type_id, Arc::new(*instance));
-
-        debug!(provider = type_name, "Boxed provider registered");
+    /// Create a scoped child container.
+    #[inline]
+    pub fn create_scope(&self) -> Self {
+        Self {
+            inner: self.inner.scope(),
+        }
     }
 
-    /// Register a provider by TypeId and Arc (internal use)
-    pub fn register_by_id(&self, type_id: TypeId, instance: Arc<dyn std::any::Any + Send + Sync>) {
-        trace!(type_id = ?type_id, "Registering provider by TypeId");
-        let mut providers = self.providers.write().unwrap();
-        providers.insert(type_id, instance);
-
-        debug!(type_id = ?type_id, "Provider registered by TypeId");
+    /// Alias for create_scope.
+    #[inline]
+    pub fn scope(&self) -> Self {
+        self.create_scope()
     }
 
-    /// Register a provider using a factory function
-    pub fn register_factory<T: Provider, F>(&self, factory: F)
+    /// Register a singleton service.
+    #[inline]
+    pub fn register<T: Injectable>(&self, instance: T) {
+        self.inner.singleton(instance);
+    }
+
+    /// Register a singleton service (explicit).
+    #[inline]
+    pub fn singleton<T: Injectable>(&self, instance: T) {
+        self.inner.singleton(instance);
+    }
+
+    /// Register a lazy singleton.
+    #[inline]
+    pub fn lazy<T: Injectable, F>(&self, factory: F)
     where
-        F: FnOnce() -> T,
+        F: Fn() -> T + Send + Sync + 'static,
     {
-        let type_name = std::any::type_name::<T>();
-        debug!(provider = type_name, "Creating provider from factory");
-
-        let instance = factory();
-        self.register(instance);
+        self.inner.lazy(factory);
     }
 
-    /// Resolve a provider by type
-    pub fn resolve<T: Provider>(&self) -> Result<Arc<T>, Error> {
-        let type_id = TypeId::of::<T>();
-        let type_name = std::any::type_name::<T>();
-
-        trace!(provider = type_name, "Attempting to resolve provider");
-        let providers = self.providers.read().unwrap();
-
-        let result = providers
-            .get(&type_id)
-            .and_then(|any| any.clone().downcast::<T>().ok())
-            .ok_or_else(|| Error::ProviderNotFound(format!("Provider not found: {}", type_name)));
-
-        match &result {
-            Ok(_) => debug!(provider = type_name, "Provider resolved successfully"),
-            Err(_) => debug!(provider = type_name, "Provider not found in container"),
-        }
-
-        result
+    /// Register a transient service.
+    #[inline]
+    pub fn transient<T: Injectable, F>(&self, factory: F)
+    where
+        F: Fn() -> T + Send + Sync + 'static,
+    {
+        self.inner.transient(factory);
     }
 
-    /// Check if a provider is registered
-    pub fn has<T: Provider>(&self) -> bool {
-        let type_id = TypeId::of::<T>();
-        let type_name = std::any::type_name::<T>();
-
-        let providers = self.providers.read().unwrap();
-        let exists = providers.contains_key(&type_id);
-
-        trace!(
-            provider = type_name,
-            exists = exists,
-            "Checked provider existence"
-        );
-        exists
+    /// Register a boxed service instance.
+    #[inline]
+    pub fn register_boxed<T: Injectable>(&self, instance: Box<T>) {
+        self.inner.register_boxed(instance);
     }
 
-    /// Clear all providers
+    /// Register by TypeId directly.
+    #[inline]
+    pub fn register_by_id(&self, type_id: TypeId, instance: Arc<dyn Any + Send + Sync>) {
+        self.inner.register_by_id(type_id, instance);
+    }
+
+    /// Register using a factory function.
+    #[inline]
+    pub fn register_factory<T: Injectable, F>(&self, factory: F)
+    where
+        F: Fn() -> T + Send + Sync + 'static,
+    {
+        self.inner.lazy(factory);
+    }
+
+    /// Resolve a service by type.
+    #[inline]
+    pub fn resolve<T: Injectable>(&self) -> Result<Arc<T>, Error> {
+        self.inner
+            .get::<T>()
+            .map_err(|e| Error::ProviderNotFound(e.to_string()))
+    }
+
+    /// Alias for resolve.
+    #[inline]
+    pub fn get<T: Injectable>(&self) -> Result<Arc<T>, Error> {
+        self.resolve::<T>()
+    }
+
+    /// Try to resolve, returning None if not found.
+    #[inline]
+    pub fn try_resolve<T: Injectable>(&self) -> Option<Arc<T>> {
+        self.inner.try_get()
+    }
+
+    /// Try to get a service.
+    #[inline]
+    pub fn try_get<T: Injectable>(&self) -> Option<Arc<T>> {
+        self.try_resolve::<T>()
+    }
+
+    /// Check if a service is registered.
+    #[inline]
+    pub fn has<T: Injectable>(&self) -> bool {
+        self.inner.contains::<T>()
+    }
+
+    /// Alias for has.
+    #[inline]
+    pub fn contains<T: Injectable>(&self) -> bool {
+        self.has::<T>()
+    }
+
+    /// Clear all services.
+    #[inline]
     pub fn clear(&self) {
-        let mut providers = self.providers.write().unwrap();
-        let count = providers.len();
-        providers.clear();
+        self.inner.clear();
+    }
 
-        debug!(
-            provider_count = count,
-            "Cleared all providers from container"
-        );
+    /// Get the number of registered services.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    /// Check if the container is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    /// Lock the container.
+    #[inline]
+    pub fn lock(&self) {
+        self.inner.lock();
+    }
+
+    /// Check if the container is locked.
+    #[inline]
+    pub fn is_locked(&self) -> bool {
+        self.inner.is_locked()
+    }
+
+    /// Get all registered type IDs.
+    #[inline]
+    pub fn registered_types(&self) -> Vec<TypeId> {
+        self.inner.registered_types()
+    }
+
+    /// Get the scope depth.
+    #[inline]
+    pub fn depth(&self) -> u32 {
+        self.inner.depth()
+    }
+
+    /// Get the inner DI container.
+    #[inline]
+    pub fn inner(&self) -> &DiContainer {
+        &self.inner
     }
 }
 
-impl Default for Container {
-    fn default() -> Self {
-        Self::new()
+impl std::fmt::Debug for Container {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Container")
+            .field("inner", &self.inner)
+            .finish()
+    }
+}
+
+impl From<DiContainer> for Container {
+    fn from(inner: DiContainer) -> Self {
+        Self { inner }
+    }
+}
+
+impl AsRef<DiContainer> for Container {
+    fn as_ref(&self) -> &DiContainer {
+        &self.inner
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Clone)]
+    struct TestService {
+        value: String,
+    }
+
+    #[test]
+    fn test_container_creation() {
+        let container = Container::new();
+        assert!(container.is_empty());
+    }
+
+    #[test]
+    fn test_register_and_resolve() {
+        let container = Container::new();
+        container.register(TestService {
+            value: "test".to_string(),
+        });
+
+        let resolved = container.resolve::<TestService>().unwrap();
+        assert_eq!(resolved.value, "test");
+    }
+
+    #[test]
+    fn test_scoped_container() {
+        let parent = Container::new();
+        parent.register(TestService {
+            value: "parent".to_string(),
+        });
+
+        let child = parent.create_scope();
+
+        // Child can resolve from parent
+        assert!(child.has::<TestService>());
+        let resolved = child.resolve::<TestService>().unwrap();
+        assert_eq!(resolved.value, "parent");
+    }
+
+    #[test]
+    fn test_lazy_singleton() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        static CREATED: AtomicBool = AtomicBool::new(false);
+
+        #[derive(Clone)]
+        struct LazyService;
+
+        let container = Container::new();
+        container.lazy(|| {
+            CREATED.store(true, Ordering::SeqCst);
+            LazyService
+        });
+
+        assert!(!CREATED.load(Ordering::SeqCst));
+
+        let _ = container.get::<LazyService>().unwrap();
+        assert!(CREATED.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn test_transient() {
+        use std::sync::atomic::{AtomicU32, Ordering};
+
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+
+        #[derive(Clone)]
+        struct Counter(u32);
+
+        let container = Container::new();
+        container.transient(|| Counter(COUNTER.fetch_add(1, Ordering::SeqCst)));
+
+        let c1 = container.get::<Counter>().unwrap();
+        let c2 = container.get::<Counter>().unwrap();
+
+        assert_ne!(c1.0, c2.0);
     }
 }

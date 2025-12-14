@@ -89,11 +89,7 @@ impl AuthService {
     }
 }
 
-impl Provider for AuthService {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
+// Provider is automatically implemented via blanket impl
 
 fn base64_encode(input: &str) -> String {
     use std::io::Write;

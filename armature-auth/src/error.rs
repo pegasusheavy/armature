@@ -42,6 +42,24 @@ pub enum AuthError {
 
     #[error("Missing permission: {0}")]
     MissingPermission(String),
+
+    #[error("Configuration error: {0}")]
+    Configuration(String),
+
+    #[error("HTTP request error: {0}")]
+    HttpRequest(String),
+
+    #[error("Invalid response: {0}")]
+    InvalidResponse(String),
+
+    #[error("API key error: {0}")]
+    ApiKeyError(String),
+
+    #[error("Two-factor authentication error: {0}")]
+    TwoFactorError(String),
+
+    #[error("Passwordless auth error: {0}")]
+    PasswordlessError(String),
 }
 
 pub type Result<T> = std::result::Result<T, AuthError>;

@@ -9,6 +9,10 @@
 //! - 🎭 **MockService** - Service mocking
 //! - 👁️ **Spy** - Method call tracking
 //! - ✅ **Assertions** - Fluent test assertions
+//! - 🗄️ **Integration Helpers** - Database setup/teardown
+//! - 🐳 **Docker Containers** - Docker-based testing
+//! - 📊 **Load Testing** - Performance test utilities
+//! - 📜 **Contract Testing** - Pact/consumer-driven contracts
 //!
 //! ## Quick Start
 //!
@@ -86,12 +90,102 @@
 //! // Assert headers
 //! assert_header(&test_response, "Content-Type", "application/json");
 //! ```
+//!
+//! ## Integration Testing with Database
+//!
+//! ```rust,ignore
+//! use armature_testing::integration::*;
+//! use std::sync::Arc;
+//!
+//! // Implement DatabaseTestHelper for your database
+//! struct MyDbHelper;
+//!
+//! #[async_trait]
+//! impl DatabaseTestHelper for MyDbHelper {
+//!     async fn setup(&self) -> Result<(), IntegrationTestError> {
+//!         // Create tables, seed data
+//!         Ok(())
+//!     }
+//!
+//!     async fn teardown(&self) -> Result<(), IntegrationTestError> {
+//!         // Clean up
+//!         Ok(())
+//!     }
+//! }
+//!
+//! // Use in tests
+//! let fixture = TestFixture::new(Arc::new(MyDbHelper));
+//! fixture.run_test(|| async {
+//!     // Your test code
+//!     Ok(())
+//! }).await?;
+//! ```
+//!
+//! ## Docker Test Containers
+//!
+//! ```rust,ignore
+//! use armature_testing::docker::*;
+//!
+//! // Start Postgres container
+//! let config = PostgresContainer::config("testdb", "user", "pass");
+//! let mut container = DockerContainer::new(config);
+//! container.start().await?;
+//!
+//! // Run tests...
+//!
+//! // Container automatically stops on drop
+//! ```
+//!
+//! ## Load Testing
+//!
+//! ```rust,ignore
+//! use armature_testing::load::*;
+//!
+//! let config = LoadTestConfig::new(10, 1000); // 10 concurrent, 1000 requests
+//! let runner = LoadTestRunner::new(config, || async {
+//!     // Your test code
+//!     Ok(())
+//! });
+//!
+//! let stats = runner.run().await?;
+//! stats.print();
+//! ```
+//!
+//! ## Contract Testing
+//!
+//! ```rust,ignore
+//! use armature_testing::contract::*;
+//!
+//! // Create a contract
+//! let request = ContractRequest::new(ContractMethod::Get, "/api/users/1");
+//! let response = ContractResponse::new(200)
+//!     .with_body(serde_json::json!({"id": 1, "name": "Alice"}));
+//!
+//! let mut builder = ContractBuilder::new("Frontend", "Backend");
+//! builder.add_interaction(ContractInteraction::new(
+//!     "get user by ID",
+//!     request,
+//!     response,
+//! ));
+//!
+//! let contract = builder.build();
+//!
+//! // Save contract
+//! let manager = ContractManager::new(PathBuf::from("./pacts"));
+//! manager.save(&contract)?;
+//! ```
 
 mod assertions;
 mod mock;
 mod test_app;
 mod test_client;
 mod test_container;
+
+// New modules
+pub mod integration;
+pub mod docker;
+pub mod load;
+pub mod contract;
 
 pub use assertions::{assert_header, assert_json, assert_status};
 pub use mock::{MockController, MockProvider, MockService};

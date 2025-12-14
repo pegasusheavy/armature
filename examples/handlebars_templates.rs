@@ -139,7 +139,6 @@ struct TemplateService {
     hbs: Arc<Handlebars<'static>>,
 }
 
-impl Provider for TemplateService {}
 
 impl TemplateService {
     fn new() -> Self {
@@ -192,7 +191,6 @@ struct User {
 #[derive(Clone)]
 struct UserService;
 
-impl Provider for UserService {}
 
 impl UserService {
     fn new() -> Self {
@@ -331,6 +329,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ctrl = home_ctrl.clone();
             Box::pin(async move { ctrl.index(req).await })
         }),
+        constraints: None,
     });
 
     // Users list route
@@ -345,6 +344,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ctrl = users_ctrl.clone();
             Box::pin(async move { ctrl.list(req).await })
         }),
+        constraints: None,
     });
 
     // User detail route
@@ -359,6 +359,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ctrl = user_ctrl.clone();
             Box::pin(async move { ctrl.show(req).await })
         }),
+        constraints: None,
     });
 
     let app = Application::new(container, router);

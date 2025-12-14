@@ -70,7 +70,6 @@ impl Default for ConfigService {
     }
 }
 
-impl Provider for ConfigService {}
 
 /// Builder for ConfigService
 pub struct ConfigServiceBuilder {

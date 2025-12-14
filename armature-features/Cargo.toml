@@ -1,0 +1,29 @@
+[package]
+name = "armature-features"
+version = "0.1.0"
+edition = "2024"
+description = "Feature flags, A/B testing, and gradual rollout for Armature framework"
+
+[dependencies]
+armature-core = { path = "../armature-core" }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+sha2 = "0.10"
+hex = "0.4"
+chrono = "0.4"
+rand = "0.8"
+
+# LaunchDarkly integration (optional)
+launchdarkly-server-sdk = { version = "2.0", optional = true }
+futures = { version = "0.3", optional = true }
+
+[features]
+default = []
+launchdarkly = ["dep:launchdarkly-server-sdk", "dep:futures"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+

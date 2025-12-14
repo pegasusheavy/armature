@@ -1,9 +1,9 @@
-<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-stone-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center h-16">
       <!-- Logo -->
       <div class="flex-shrink-0">
-        <a routerLink="/" class="text-xl font-bold text-slate-900 flex items-center gap-2 hover:text-primary-600 transition-colors">
+        <a routerLink="/" class="text-xl font-bold text-stone-900 flex items-center gap-2 hover:text-rust-600 transition-colors">
           <img src="assets/armature-logo.svg" alt="Armature Logo" class="h-8 w-8" />
           <span>Armature</span>
         </a>
@@ -11,13 +11,13 @@
 
       <!-- Desktop Navigation - pushed to right -->
       <nav class="hidden md:flex items-center gap-1 ml-auto">
-        <a routerLink="/" routerLinkActive="text-primary-600" [routerLinkActiveOptions]="{ exact: true }" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Home</a>
-        <a routerLink="/docs" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Docs</a>
-        <a routerLink="/comparisons" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Comparisons</a>
-        <a routerLink="/roadmap" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Roadmap</a>
-        <a routerLink="/getting-started" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">Getting Started</a>
-        <a routerLink="/faq" routerLinkActive="text-primary-600" class="text-slate-600 hover:text-slate-900 px-3 py-2 text-sm font-medium">FAQ</a>
-        <a href="https://github.com/pegasusheavy/armature" target="_blank" class="ml-4 inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 text-sm font-medium">
+        <a routerLink="/" routerLinkActive="text-rust-600" [routerLinkActiveOptions]="{ exact: true }" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">Home</a>
+        <a routerLink="/docs" routerLinkActive="text-rust-600" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">Docs</a>
+        <a routerLink="/comparisons" routerLinkActive="text-rust-600" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">Comparisons</a>
+        <a routerLink="/roadmap" routerLinkActive="text-rust-600" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">Roadmap</a>
+        <a routerLink="/getting-started" routerLinkActive="text-rust-600" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">Getting Started</a>
+        <a routerLink="/faq" routerLinkActive="text-rust-600" class="text-stone-600 hover:text-stone-900 px-3 py-2 text-sm font-medium transition-colors">FAQ</a>
+        <a href="https://github.com/pegasusheavy/armature" target="_blank" class="ml-4 inline-flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg hover:bg-stone-800 text-sm font-medium transition-colors">
           <fa-icon [icon]="['fab', 'github']"></fa-icon>
           GitHub
         </a>
@@ -28,7 +28,7 @@
         <button
           (click)="toggleMenu()"
           type="button"
-          class="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-primary-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+          class="inline-flex items-center justify-center p-2 rounded-lg text-stone-600 hover:text-rust-600 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-rust-500 transition-colors"
         >
           <span class="sr-only">Open main menu</span>
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,54 +53,54 @@
   </div>
 
   <!-- Mobile menu -->
-  <div *ngIf="isMenuOpen" class="md:hidden border-t border-gray-100 bg-white">
+  <div *ngIf="isMenuOpen" class="md:hidden border-t border-stone-200 bg-white">
     <div class="px-4 py-4 space-y-2">
       <a
         routerLink="/"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
+        routerLinkActive="bg-rust-50 text-rust-600"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         Home
       </a>
       <a
         routerLink="/docs"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        routerLinkActive="bg-rust-50 text-rust-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         Documentation
       </a>
       <a
         routerLink="/comparisons"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        routerLinkActive="bg-rust-50 text-rust-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         Comparisons
       </a>
       <a
         routerLink="/roadmap"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        routerLinkActive="bg-rust-50 text-rust-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         Roadmap
       </a>
       <a
         routerLink="/getting-started"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        routerLinkActive="bg-rust-50 text-rust-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         Getting Started
       </a>
       <a
         routerLink="/faq"
         (click)="toggleMenu()"
-        routerLinkActive="bg-primary-50 text-primary-600"
-        class="block px-4 py-3 rounded-lg text-base font-medium text-slate-600 hover:text-primary-600 hover:bg-slate-50 transition-colors"
+        routerLinkActive="bg-rust-50 text-rust-600"
+        class="block px-4 py-3 rounded-lg text-base font-medium text-stone-600 hover:text-rust-600 hover:bg-stone-50 transition-colors"
       >
         FAQ
       </a>
@@ -109,7 +109,7 @@
           href="https://github.com/pegasusheavy/armature"
           target="_blank"
           (click)="toggleMenu()"
-          class="flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors"
+          class="flex items-center justify-center gap-2 bg-stone-900 text-white px-4 py-3 rounded-lg font-medium hover:bg-stone-800 transition-colors"
         >
           <fa-icon [icon]="['fab', 'github']" />
           <span>Star on GitHub</span>

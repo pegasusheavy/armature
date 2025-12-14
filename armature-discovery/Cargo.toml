@@ -1,0 +1,27 @@
+[package]
+name = "armature-discovery"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+thiserror = "1.0"
+tracing = "0.1"
+url = "2.5"
+base64 = "0.22"
+rand = "0.8"
+
+# Optional Consul support
+consul = { version = "0.4", optional = true }
+
+[features]
+default = []
+consul-client = ["consul"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+

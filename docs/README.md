@@ -10,60 +10,109 @@ Start with the main [README](../README.md) in the project root for a quick intro
 
 ### Core Guides
 
-- **[DI_GUIDE.md](DI_GUIDE.md)** - Complete guide to dependency injection
+- **[di-guide.md](di-guide.md)** - Complete guide to dependency injection
   - Service injection
   - Module system
   - Best practices
   - Testing strategies
 
-- **[AUTH_GUIDE.md](AUTH_GUIDE.md)** - Authentication and authorization
+- **[auth-guide.md](auth-guide.md)** - Authentication and authorization
   - Password hashing (Bcrypt, Argon2)
   - JWT integration
   - Guards and RBAC
   - Authentication strategies
 
-- **[OAUTH2_PROVIDERS_GUIDE.md](OAUTH2_PROVIDERS_GUIDE.md)** - OAuth2/OIDC providers
+- **[oauth2-providers-guide.md](oauth2-providers-guide.md)** - OAuth2/OIDC providers
   - Google, Microsoft, AWS, Okta, Auth0
   - Setup and configuration
   - OAuth2 flow
   - Best practices
 
-- **[CONFIG_GUIDE.md](CONFIG_GUIDE.md)** - Configuration management
+- **[config-guide.md](config-guide.md)** - Configuration management
   - Environment variables and .env files
   - Multiple configuration formats
   - Type-safe configuration
   - Validation
 
-- **[GRAPHQL_GUIDE.md](GRAPHQL_GUIDE.md)** - GraphQL API development
-  - Schema definition
-  - Queries, mutations, and subscriptions
-  - DI integration
-  - Best practices
+### API & Data
 
-- **[WEBSOCKET_SSE_GUIDE.md](WEBSOCKET_SSE_GUIDE.md)** - Real-time communication guide
-  - WebSocket rooms and broadcasting
-  - Server-Sent Events streaming
-  - Usage examples
-  - Performance tips
+- **[graphql-guide.md](graphql-guide.md)** - GraphQL API development
+- **[graphql-configuration.md](graphql-configuration.md)** - GraphQL configuration options
+- **[openapi-guide.md](openapi-guide.md)** - OpenAPI/Swagger documentation
+- **[request-extractors.md](request-extractors.md)** - Request data extraction
+- **[api-versioning-guide.md](api-versioning-guide.md)** - API versioning strategies
+- **[content-negotiation-guide.md](content-negotiation-guide.md)** - Content type negotiation
 
-- **[NESTJS_ECOSYSTEM_ANALYSIS.md](NESTJS_ECOSYSTEM_ANALYSIS.md)** - Ecosystem analysis
-  - Feature comparisons with NestJS
-  - Implementation roadmap
-  - Priority recommendations
+### Real-Time & Communication
 
-### Reference Documentation
+- **[websocket-sse-guide.md](websocket-sse-guide.md)** - WebSocket & SSE guide
+- **[webhooks.md](webhooks.md)** - Webhook handling
+- **[streaming-responses-guide.md](streaming-responses-guide.md)** - Streaming responses
 
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Framework implementation details
-  - Architecture overview
-  - Technical implementation
-  - Statistics and metrics
-  - Development roadmap
+### Security
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
-  - Development setup
-  - Code style
-  - Testing requirements
-  - Pull request process
+- **[security-guide.md](security-guide.md)** - Security best practices
+- **[https-guide.md](https-guide.md)** - HTTPS configuration
+- **[acme-certificates.md](acme-certificates.md)** - Let's Encrypt/ACME certificates
+- **[session-guide.md](session-guide.md)** - Session management
+- **[use-guard-guide.md](use-guard-guide.md)** - Using guards for authorization
+- **[guards-interceptors.md](guards-interceptors.md)** - Guards and interceptors
+
+### Performance & Caching
+
+- **[queue-guide.md](queue-guide.md)** - Job queue system
+- **[cron-guide.md](cron-guide.md)** - Scheduled tasks/cron jobs
+- **[rate-limiting-guide.md](rate-limiting-guide.md)** - Rate limiting
+- **[response-caching-guide.md](response-caching-guide.md)** - Response caching
+- **[compression.md](compression.md)** - Response compression
+- **[request-timeouts-guide.md](request-timeouts-guide.md)** - Request timeouts
+- **[etag-conditional-requests-guide.md](etag-conditional-requests-guide.md)** - ETag and conditional requests
+
+### Observability
+
+- **[opentelemetry-guide.md](opentelemetry-guide.md)** - OpenTelemetry integration
+- **[logging-guide.md](logging-guide.md)** - Logging configuration
+- **[debug-logging-guide.md](debug-logging-guide.md)** - Debug logging
+- **[health-check-guide.md](health-check-guide.md)** - Health checks
+- **[error-correlation-guide.md](error-correlation-guide.md)** - Error correlation
+
+### Architecture
+
+- **[lifecycle-hooks.md](lifecycle-hooks.md)** - Lifecycle hooks
+- **[use-middleware-guide.md](use-middleware-guide.md)** - Middleware usage
+- **[stateless-architecture.md](stateless-architecture.md)** - Stateless design patterns
+- **[server-integration.md](server-integration.md)** - Server integration
+- **[http-status-errors.md](http-status-errors.md)** - HTTP status and error handling
+- **[error-transformation-guide.md](error-transformation-guide.md)** - Error transformation
+
+### Macros & Code Generation
+
+- **[macro-overview.md](macro-overview.md)** - Overview of Armature macros
+- **[project-templates.md](project-templates.md)** - Project templates
+
+### Testing & Quality
+
+- **[testing-documentation.md](testing-documentation.md)** - Testing guide
+- **[testing-coverage.md](testing-coverage.md)** - Test coverage
+- **[documentation-testing.md](documentation-testing.md)** - Documentation testing
+
+### Feature Guides (in guides/)
+
+- **[guides/route-groups-guide.md](guides/route-groups-guide.md)** - Route groups
+- **[guides/route-constraints-guide.md](guides/route-constraints-guide.md)** - Route constraints
+- **[guides/metrics-guide.md](guides/metrics-guide.md)** - Prometheus metrics
+- **[guides/audit-guide.md](guides/audit-guide.md)** - Audit logging
+- **[guides/graceful-shutdown-guide.md](guides/graceful-shutdown-guide.md)** - Graceful shutdown
+- **[guides/pagination-filtering-guide.md](guides/pagination-filtering-guide.md)** - Pagination & filtering
+- **[guides/security-advanced-guide.md](guides/security-advanced-guide.md)** - Advanced security
+- **[guides/cache-improvements-guide.md](guides/cache-improvements-guide.md)** - Cache improvements
+- **[guides/macros-guide.md](guides/macros-guide.md)** - Macros in depth
+- **[guides/testing-guide.md](guides/testing-guide.md)** - Testing utilities
+
+### Benchmarks
+
+- **[guides/armature-vs-nodejs-benchmark.md](guides/armature-vs-nodejs-benchmark.md)** - Armature vs Node.js frameworks
+- **[guides/armature-vs-nextjs-benchmark.md](guides/armature-vs-nextjs-benchmark.md)** - Armature vs Next.js
 
 ## Quick Links
 
@@ -114,28 +163,41 @@ let broadcaster = SseBroadcaster::new();
 broadcaster.broadcast_message("Update".to_string()).await?;
 ```
 
-## Additional Resources
-
-- [Cargo.toml](../Cargo.toml) - Dependencies and workspace configuration
-- [Examples README](../examples/README.md) - Detailed example descriptions
-- [Tests](../armature-core/tests/) - Test suite for reference
-
-## Community & Support
-
-- Report issues on GitHub
-- Check existing documentation before asking questions
-- Contribute improvements via pull requests
-
 ## Documentation Structure
 
 ```
 docs/
-├── README.md                    # This file
-├── DI_GUIDE.md                 # Dependency Injection guide
-├── WEBSOCKET_SSE_GUIDE.md      # WebSocket & SSE guide
-├── IMPLEMENTATION_SUMMARY.md    # Implementation details
-└── CONTRIBUTING.md              # Contributing guidelines
+├── README.md                         # This file (index)
+├── guides/                           # Feature-specific guides
+│   ├── route-groups-guide.md
+│   ├── route-constraints-guide.md
+│   ├── metrics-guide.md
+│   ├── audit-guide.md
+│   ├── graceful-shutdown-guide.md
+│   ├── pagination-filtering-guide.md
+│   ├── security-advanced-guide.md
+│   ├── cache-improvements-guide.md
+│   ├── macros-guide.md
+│   ├── testing-guide.md
+│   ├── armature-vs-nodejs-benchmark.md
+│   └── armature-vs-nextjs-benchmark.md
+├── auth-guide.md                     # Authentication
+├── config-guide.md                   # Configuration
+├── di-guide.md                       # Dependency injection
+├── graphql-guide.md                  # GraphQL
+├── openapi-guide.md                  # OpenAPI/Swagger
+├── queue-guide.md                    # Job queues
+├── security-guide.md                 # Security
+├── websocket-sse-guide.md            # Real-time
+└── ...                               # Other guides
 ```
+
+## Naming Conventions
+
+All documentation files follow these conventions:
+- **lowercase with hyphens**: `my-feature-guide.md`
+- **descriptive names**: `oauth2-providers-guide.md` not `oauth.md`
+- **.md extension** for all Markdown files
 
 ## Version
 
@@ -144,4 +206,3 @@ This documentation is for Armature version 0.1.0.
 ---
 
 For the latest updates and more information, visit the main [README](../README.md).
-

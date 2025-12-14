@@ -1,0 +1,11 @@
+[package]
+name = "armature-macros"
+version = "0.1.0"
+edition = "2024"
+description = "Declarative macros for the Armature framework"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+armature-core = { path = "../armature-core" }
+serde_json = "1.0"
+

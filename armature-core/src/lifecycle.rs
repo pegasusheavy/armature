@@ -13,14 +13,11 @@
 //!
 //! ```
 //! use armature_core::lifecycle::{OnModuleInit, OnModuleDestroy};
-//! use armature_core::Provider;
 //! use async_trait::async_trait;
 //!
 //! struct MyService {
 //!     name: String,
 //! }
-//!
-//! impl Provider for MyService {}
 //!
 //! #[async_trait]
 //! impl OnModuleInit for MyService {

@@ -51,13 +51,8 @@ impl<Query, Mutation, Subscription> Clone for GraphQLSchema<Query, Mutation, Sub
     }
 }
 
-impl<Query, Mutation, Subscription> Provider for GraphQLSchema<Query, Mutation, Subscription>
-where
-    Query: async_graphql::ObjectType + 'static,
-    Mutation: async_graphql::ObjectType + 'static,
-    Subscription: async_graphql::SubscriptionType + 'static,
-{
-}
+// Provider is automatically implemented via blanket impl
+// when Query, Mutation, Subscription all satisfy Send + Sync + 'static
 
 /// GraphQL request handling
 pub struct GraphQLRequest {

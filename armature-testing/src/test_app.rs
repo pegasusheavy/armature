@@ -138,6 +138,7 @@ impl TestAppBuilder {
             method: HttpMethod::GET,
             path: path.to_string(),
             handler: Arc::new(move |req| Box::pin(handler(req))),
+            constraints: None,
         });
         self
     }

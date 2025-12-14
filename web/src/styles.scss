@@ -1,12 +1,329 @@
-@import "tailwindcss";
+@use "tailwindcss";
+
+/* ============================================
+   RUST THEME - Armature Documentation
+   ============================================
+
+   Primary: Rust Orange (#CE422B)
+   Inspired by Rust programming language branding
+   with warm, earthy tones and high contrast.
+*/
+
+/* CSS Custom Properties for Rust Theme */
+:root {
+  /* Rust Brand Colors */
+  --rust-50: #fef7f6;
+  --rust-100: #fdeeed;
+  --rust-200: #fbd9d5;
+  --rust-300: #f7b8af;
+  --rust-400: #f08d7d;
+  --rust-500: #e54d32;
+  --rust-600: #ce422b;
+  --rust-700: #b73a24;
+  --rust-800: #8a2d1c;
+  --rust-900: #6b2517;
+  --rust-950: #3d120b;
+
+  /* Warm Stone/Charcoal (instead of cold slate) */
+  --stone-50: #fafaf9;
+  --stone-100: #f5f5f4;
+  --stone-200: #e7e5e4;
+  --stone-300: #d6d3d1;
+  --stone-400: #a8a29e;
+  --stone-500: #78716c;
+  --stone-600: #57534e;
+  --stone-700: #44403c;
+  --stone-800: #292524;
+  --stone-900: #1c1917;
+  --stone-950: #0c0a09;
+
+  /* Code block colors - Rust-inspired syntax theme */
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --code-keyword: #ce422b;
+  --code-function: #dcdcaa;
+  --code-string: #ce9178;
+  --code-comment: #6a9955;
+  --code-type: #4ec9b0;
+  --code-number: #b5cea8;
+  --code-attribute: #9cdcfe;
+  --code-macro: #c586c0;
+
+  /* Accent colors */
+  --accent-gold: #d4a017;
+  --accent-copper: #b87333;
+  --accent-bronze: #cd7f32;
+}
+
+/* Tailwind v4 Theme Extensions */
+@theme {
+  --color-rust-50: var(--rust-50);
+  --color-rust-100: var(--rust-100);
+  --color-rust-200: var(--rust-200);
+  --color-rust-300: var(--rust-300);
+  --color-rust-400: var(--rust-400);
+  --color-rust-500: var(--rust-500);
+  --color-rust-600: var(--rust-600);
+  --color-rust-700: var(--rust-700);
+  --color-rust-800: var(--rust-800);
+  --color-rust-900: var(--rust-900);
+  --color-rust-950: var(--rust-950);
+
+  /* Override primary with rust colors */
+  --color-primary-50: var(--rust-50);
+  --color-primary-100: var(--rust-100);
+  --color-primary-200: var(--rust-200);
+  --color-primary-300: var(--rust-300);
+  --color-primary-400: var(--rust-400);
+  --color-primary-500: var(--rust-500);
+  --color-primary-600: var(--rust-600);
+  --color-primary-700: var(--rust-700);
+  --color-primary-800: var(--rust-800);
+  --color-primary-900: var(--rust-900);
+  --color-primary-950: var(--rust-950);
+}
 
 /* Base styles */
 html, body {
   height: 100%;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: var(--stone-50);
+  color: var(--stone-900);
 }
 
 /* Code styling */
 code, pre {
-  font-family: "Fira Code", "JetBrains Mono", ui-monospace, monospace;
+  font-family: "Fira Code", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+/* Syntax highlighting for code blocks */
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: 0.5rem;
+  overflow-x: auto;
+
+  code {
+    .keyword, .kw { color: var(--code-keyword); font-weight: 500; }
+    .function, .fn { color: var(--code-function); }
+    .string, .str { color: var(--code-string); }
+    .comment, .cm { color: var(--code-comment); font-style: italic; }
+    .type, .ty { color: var(--code-type); }
+    .number, .num { color: var(--code-number); }
+    .attribute, .attr { color: var(--code-attribute); }
+    .macro, .mc { color: var(--code-macro); }
+  }
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--rust-200);
+  color: var(--rust-900);
+}
+
+/* Links */
+a {
+  color: var(--rust-600);
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--rust-700);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--stone-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stone-400);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--rust-400);
+  }
+}
+
+/* Focus states */
+*:focus-visible {
+  outline: 2px solid var(--rust-500);
+  outline-offset: 2px;
+}
+
+/* Button hover effect */
+.btn-rust {
+  background: linear-gradient(135deg, var(--rust-500) 0%, var(--rust-600) 100%);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px -2px rgba(206, 66, 43, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, var(--rust-400) 0%, var(--rust-500) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px -2px rgba(206, 66, 43, 0.4);
+  }
+}
+
+/* Card styling */
+.card-rust {
+  background: white;
+  border: 1px solid var(--stone-200);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--rust-200);
+    box-shadow: 0 10px 40px -10px rgba(206, 66, 43, 0.15);
+  }
+}
+
+/* Gradient text */
+.text-rust-gradient {
+  background: linear-gradient(135deg, var(--rust-500) 0%, var(--rust-700) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Badge styling */
+.badge-rust {
+  background: var(--rust-100);
+  color: var(--rust-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+/* Animations */
+@keyframes rust-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(206, 66, 43, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(206, 66, 43, 0);
+  }
+}
+
+.animate-rust-pulse {
+  animation: rust-pulse 2s infinite;
+}
+
+/* Terminal window styling */
+.terminal-window {
+  background: var(--stone-900);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  .terminal-header {
+    background: var(--stone-800);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--stone-700);
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+
+      &.red { background: #ff5f56; }
+      &.yellow { background: #ffbd2e; }
+      &.green { background: #27ca40; }
+    }
+  }
+
+  .terminal-body {
+    padding: 1.25rem;
+    color: var(--stone-300);
+    font-size: 0.875rem;
+    line-height: 1.6;
+
+    .prompt { color: var(--rust-400); }
+    .command { color: var(--stone-100); }
+    .output { color: var(--code-type); }
+    .comment { color: var(--stone-500); }
+  }
+}
+
+/* Hero gradient background */
+.hero-rust-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--stone-900) 0%,
+    #2d1f1a 50%,
+    var(--stone-950) 100%
+  );
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(206, 66, 43, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(206, 66, 43, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}
+
+/* Feature card icons */
+.icon-rust {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--rust-100);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rust-600);
+}
+
+/* Documentation sidebar */
+.docs-sidebar {
+  border-right: 1px solid var(--stone-200);
+
+  a {
+    color: var(--stone-600);
+    padding: 0.5rem 1rem;
+    display: block;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--stone-100);
+      color: var(--stone-900);
+    }
+
+    &.active {
+      background: var(--rust-50);
+      color: var(--rust-700);
+      font-weight: 500;
+      border-left: 3px solid var(--rust-500);
+      margin-left: -1px;
+    }
+  }
+}
+
+/* Smooth animations */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }

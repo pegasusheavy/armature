@@ -1,16 +1,10 @@
-// Core traits for the Armature framework
+//! Core traits for the Armature framework
 
 use async_trait::async_trait;
 use std::any::TypeId;
-use std::fmt::Debug;
 
-/// Trait for types that can be provided by the DI container
-pub trait Provider: Send + Sync + 'static {
-    /// Returns the TypeId of the provider
-    fn type_id(&self) -> TypeId {
-        TypeId::of::<Self>()
-    }
-}
+// Re-export DI traits from dependency-injector
+pub use dependency_injector::{Injectable, Provider};
 
 /// Trait for HTTP controllers
 #[async_trait]
@@ -119,7 +113,9 @@ impl HttpMethod {
 pub struct ProviderRegistration {
     pub type_id: TypeId,
     pub type_name: &'static str,
-    pub register_fn: fn(&crate::Container),
+    /// Function that registers the provider in the container.
+    /// Uses the Container wrapper type from armature-core.
+    pub register_fn: fn(&crate::container::Container),
 }
 
 impl std::fmt::Debug for ProviderRegistration {
