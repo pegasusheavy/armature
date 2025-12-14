@@ -106,11 +106,7 @@ impl UserService {
     }
 }
 
-impl Provider for UserService {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
+// Provider is automatically implemented via blanket impl
 
 // =============================================================================
 // Controllers

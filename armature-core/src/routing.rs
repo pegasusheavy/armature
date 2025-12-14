@@ -1,6 +1,7 @@
 // Routing system for HTTP requests
 
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
+use crate::route_constraint::RouteConstraints;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -20,9 +21,12 @@ pub struct Route {
     pub method: HttpMethod,
     pub path: String,
     pub handler: HandlerFn,
+    /// Optional route constraints for parameter validation
+    pub constraints: Option<RouteConstraints>,
 }
 
 /// Router for managing routes and dispatching requests
+#[derive(Clone)]
 pub struct Router {
     pub routes: Vec<Route>,
 }
@@ -35,6 +39,26 @@ impl Router {
     /// Add a route to the router
     pub fn add_route(&mut self, route: Route) {
         self.routes.push(route);
+    }
+
+    /// Match a route without executing the handler.
+    /// Returns the handler and path parameters if a route matches.
+    /// Useful for route lookup benchmarking and inspection.
+    pub fn match_route(&self, method: &str, path: &str) -> Option<(HandlerFn, HashMap<String, String>)> {
+        // Strip query string if present
+        let path = path.split('?').next().unwrap_or(path);
+
+        for route in &self.routes {
+            if route.method.as_str() != method {
+                continue;
+            }
+
+            if let Some(params) = match_path(&route.path, path) {
+                return Some((route.handler.clone(), params));
+            }
+        }
+
+        None
     }
 
     /// Find a route that matches the request
@@ -57,6 +81,11 @@ impl Router {
             }
 
             if let Some(params) = match_path(&route.path, path) {
+                // Validate route constraints if present
+                if let Some(constraints) = &route.constraints {
+                    constraints.validate(&params)?;
+                }
+
                 request.path_params = params;
                 return (route.handler)(request).await;
             }
@@ -230,6 +259,7 @@ mod tests {
             handler: std::sync::Arc::new(|_req| {
                 Box::pin(async move { Ok(crate::HttpResponse::ok()) })
             }),
+            constraints: None,
         };
 
         assert_eq!(route.method, HttpMethod::GET);
@@ -245,6 +275,7 @@ mod tests {
             handler: std::sync::Arc::new(|_req| {
                 Box::pin(async move { Ok(crate::HttpResponse::ok()) })
             }),
+            constraints: None,
         };
 
         router.add_route(route);
@@ -262,6 +293,7 @@ mod tests {
                 handler: std::sync::Arc::new(|_req| {
                     Box::pin(async move { Ok(crate::HttpResponse::ok()) })
                 }),
+                constraints: None,
             };
             router.add_route(route);
         }

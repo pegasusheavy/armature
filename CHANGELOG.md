@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bypass keys for whitelisting specific clients
   - Fail-open mode for high availability
 - Rate limiting example (`examples/rate_limiting.rs`)
-- Comprehensive documentation (`docs/RATE_LIMITING_GUIDE.md`)
+- Comprehensive documentation (`docs/rate-limiting-guide.md`)
 
 #### Armature CLI (`armature-cli`)
 - New `armature-cli` crate for code generation and development tools
@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **api-minimal** - Single-file REST API for learning and prototyping
   - **api-full** - Production-ready API with JWT auth, validation, Docker, health checks
   - **microservice** - Queue-connected worker with Prometheus metrics and graceful shutdown
-- Template documentation (`docs/PROJECT_TEMPLATES.md`)
+- Template documentation (`docs/project-templates.md`)
 - Each template includes:
   - `Cargo.toml` with appropriate dependencies
   - `.env.example` for configuration
@@ -85,10 +85,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - API documentation integration at `/api/`
 
 #### Documentation
-- `docs/RATE_LIMITING_GUIDE.md` - Rate limiting usage and best practices
-- `docs/PROJECT_TEMPLATES.md` - Template usage and customization guide
-- `docs/DEBUG_LOGGING_GUIDE.md` - Debug logging configuration
-- `docs/LOGGING_GUIDE.md` - Logging system documentation
+- `docs/rate-limiting-guide.md` - Rate limiting usage and best practices
+- `docs/project-templates.md` - Template usage and customization guide
+- `docs/debug-logging-guide.md` - Debug logging configuration
+- `docs/logging-guide.md` - Logging system documentation
 - GitHub Pages deployment with Angular website at `https://pegasusheavy.github.io/armature/`
 - `examples/handlebars_templates.rs` - Demonstrates using Handlebars with DI container
 
@@ -145,7 +145,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ### Upgrade Guide
 
-See [docs/MIGRATION.md](docs/MIGRATION.md) for detailed upgrade instructions between major versions.
+See [docs/migration.md](docs/migration.md) for detailed upgrade instructions between major versions.
 
 ---
 

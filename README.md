@@ -267,7 +267,7 @@ Available hooks:
 - `OnApplicationShutdown` - Called during graceful shutdown
 - `BeforeApplicationShutdown` - Called before shutdown hooks
 
-See the [Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md) for complete documentation.
+See the [Lifecycle Hooks Guide](docs/lifecycle-hooks.md) for complete documentation.
 
 ## Routing
 
@@ -310,7 +310,7 @@ assert_eq!(error.status_code(), 401);
 assert!(error.is_client_error());
 ```
 
-See the [HTTP Status & Errors Guide](docs/HTTP_STATUS_ERRORS.md) for complete documentation.
+See the [HTTP Status & Errors Guide](docs/http-status-errors.md) for complete documentation.
 
 ## Guards and Interceptors
 
@@ -331,7 +331,7 @@ match guard.can_activate(&context).await {
 // Built-in interceptors: LoggingInterceptor, TransformInterceptor, CacheInterceptor
 ```
 
-See the [Guards & Interceptors Guide](docs/GUARDS_INTERCEPTORS.md) for detailed documentation.
+See the [Guards & Interceptors Guide](docs/guards-interceptors.md) for detailed documentation.
 
 ## Request/Response Handling
 
@@ -568,21 +568,21 @@ MIT
 Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 **Getting Started:**
-- **[Dependency Injection Guide](docs/DI_GUIDE.md)** - Complete DI system documentation
-- **[Configuration Guide](docs/CONFIG_GUIDE.md)** - Configuration management system
+- **[Dependency Injection Guide](docs/di-guide.md)** - Complete DI system documentation
+- **[Configuration Guide](docs/config-guide.md)** - Configuration management system
 
 **Core Features:**
-- **[Lifecycle Hooks Guide](docs/LIFECYCLE_HOOKS.md)** - Service lifecycle management with hooks
-- **[Authentication Guide](docs/AUTH_GUIDE.md)** - JWT, OAuth2, and SAML authentication
-- **[Guards & Interceptors](docs/GUARDS_INTERCEPTORS.md)** - Request processing and authorization
-- **[Rate Limiting Guide](docs/RATE_LIMITING_GUIDE.md)** - API rate limiting with multiple algorithms
+- **[Lifecycle Hooks Guide](docs/lifecycle-hooks.md)** - Service lifecycle management with hooks
+- **[Authentication Guide](docs/auth-guide.md)** - JWT, OAuth2, and SAML authentication
+- **[Guards & Interceptors](docs/guards-interceptors.md)** - Request processing and authorization
+- **[Rate Limiting Guide](docs/rate-limiting-guide.md)** - API rate limiting with multiple algorithms
 - **[Compression Guide](docs/modules/compression.md)** - HTTP response compression middleware
 
 **Advanced:**
-- **[GraphQL Guide](docs/GRAPHQL_GUIDE.md)** - GraphQL API development
-- **[WebSocket & SSE Guide](docs/WEBSOCKET_SSE_GUIDE.md)** - Real-time communication guide
-- **[Logging Guide](docs/LOGGING_GUIDE.md)** - Structured logging with tracing
-- **[Parallel Processing Guide](docs/PARALLEL_PROCESSING_GUIDE.md)** - Multithreading and optimization
+- **[GraphQL Guide](docs/graphql-guide.md)** - GraphQL API development
+- **[WebSocket & SSE Guide](docs/websocket-sse-guide.md)** - Real-time communication guide
+- **[Logging Guide](docs/logging-guide.md)** - Structured logging with tracing
+- **[Parallel Processing Guide](docs/parallel-processing-guide.md)** - Multithreading and optimization
 
 **And more guides covering testing, security, and deployment!**
 
@@ -615,6 +615,6 @@ The website automatically deploys to GitHub Pages when changes are merged to the
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](docs/CONTRIBUTING.md) and feel free to submit a Pull Request.
+Contributions are welcome! Please read our [Contributing Guide](docs/contributing.md) and feel free to submit a Pull Request.
 
 

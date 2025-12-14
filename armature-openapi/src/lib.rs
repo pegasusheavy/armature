@@ -107,9 +107,11 @@
 //! ```
 
 pub mod builder;
+pub mod playground;
 pub mod spec;
 pub mod swagger;
 
 pub use builder::*;
+pub use playground::*;
 pub use spec::*;
 pub use swagger::*;

@@ -107,6 +107,7 @@
 
 pub mod content_security_policy;
 pub mod content_type_options;
+pub mod cors;
 pub mod dns_prefetch_control;
 pub mod download_options;
 pub mod expect_ct;
@@ -115,6 +116,7 @@ pub mod hsts;
 pub mod permitted_cross_domain_policies;
 pub mod powered_by;
 pub mod referrer_policy;
+pub mod request_signing;
 pub mod xss_filter;
 
 use armature_core::HttpResponse;

@@ -109,8 +109,8 @@ async fn main() {
     println!();
 
     println!("📄 For complete integration, see:");
-    println!("   - docs/AUTH_GUIDE.md");
-    println!("   - docs/SAML_GUIDE.md (coming soon)");
+    println!("   - docs/auth-guide.md");
+    println!("   - docs/saml-guide.md (coming soon)");
 }
 
 // Sample IdP metadata (simplified for demo)

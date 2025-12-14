@@ -4,14 +4,13 @@ use syn::{ItemStruct, parse_macro_input};
 
 pub fn injectable_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemStruct);
-    let struct_name = &input.ident;
-    let generics = &input.generics;
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
+    // The #[injectable] attribute is now a marker that the type can be used with DI.
+    // Since `Provider` is a blanket impl for `Send + Sync + 'static` types,
+    // we no longer need to generate an explicit impl.
+    // The macro now just passes through the struct definition.
     let expanded = quote! {
         #input
-
-        impl #impl_generics armature_core::Provider for #struct_name #ty_generics #where_clause {}
     };
 
     TokenStream::from(expanded)

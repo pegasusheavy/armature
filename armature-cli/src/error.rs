@@ -34,6 +34,12 @@ pub enum CliError {
 
     /// Build error
     Build(String),
+
+    /// Validation error
+    Validation(String),
+
+    /// Tool error (external tool execution)
+    Tool(String),
 }
 
 impl fmt::Display for CliError {
@@ -51,6 +57,8 @@ impl fmt::Display for CliError {
             CliError::InvalidArgument(msg) => write!(f, "Invalid argument: {}", msg),
             CliError::Watch(msg) => write!(f, "Watch error: {}", msg),
             CliError::Build(msg) => write!(f, "Build error: {}", msg),
+            CliError::Validation(msg) => write!(f, "Validation error: {}", msg),
+            CliError::Tool(msg) => write!(f, "Tool error: {}", msg),
         }
     }
 }

@@ -95,6 +95,7 @@ fn bench_routing(c: &mut Criterion) {
                 method: HttpMethod::GET,
                 path: "/api/test".to_string(),
                 handler,
+                constraints: None,
             };
             black_box(route);
         })

@@ -7,7 +7,6 @@ struct ServiceA {
     value: String,
 }
 
-impl Provider for ServiceA {}
 
 #[derive(Clone)]
 struct ServiceB {
@@ -15,7 +14,6 @@ struct ServiceB {
     name: String,
 }
 
-impl Provider for ServiceB {}
 
 #[test]
 fn test_register_and_resolve_service() {

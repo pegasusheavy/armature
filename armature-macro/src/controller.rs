@@ -39,7 +39,8 @@ pub fn controller_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #input
 
-        impl armature_core::Provider for #struct_name {}
+        // Provider trait is now a blanket impl for Send + Sync + 'static types,
+        // so no explicit impl is needed.
 
         #[async_trait::async_trait]
         impl armature_core::Controller for #struct_name {

@@ -1,0 +1,38 @@
+[package]
+name = "armature-storage"
+version = "0.1.0"
+edition = "2024"
+description = "File storage and upload handling for Armature"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/armature-rs/armature"
+
+[dependencies]
+armature-core = { path = "../armature-core" }
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bytes = "1.5"
+mime = "0.3"
+mime_guess = "2.0"
+thiserror = "1.0"
+tracing = "0.1"
+uuid = { version = "1.11", features = ["v4"] }
+
+# Cloud storage clients (optional features)
+aws-sdk-s3 = { version = "1.0", optional = true }
+google-cloud-storage = { version = "0.16", optional = true }
+azure_storage = { version = "0.20", optional = true }
+azure_storage_blobs = { version = "0.20", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"
+
+[features]
+default = []
+s3 = ["aws-sdk-s3"]
+gcs = ["google-cloud-storage"]
+azure = ["azure_storage", "azure_storage_blobs"]
+all-providers = ["s3", "gcs", "azure"]
+

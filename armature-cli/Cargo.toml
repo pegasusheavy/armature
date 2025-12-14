@@ -1,7 +1,7 @@
 [package]
 name = "armature-cli"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Pegasus Heavy Industries LLC"]
 description = "CLI tool for Armature framework - code generation and development server"
 license = "Apache-2.0"

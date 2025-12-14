@@ -32,7 +32,7 @@
 //! let claims = jwt_manager.verify_token(&token)?;
 //! ```
 //!
-//! See the [Stateless Architecture Guide](../docs/STATELESS_ARCHITECTURE.md).
+//! See the [Stateless Architecture Guide](../docs/stateless-architecture.md).
 //!
 //! # When to Use Sessions
 //!

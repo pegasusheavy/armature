@@ -11,6 +11,7 @@ async fn test_static_route() {
         handler: Arc::new(|_req| {
             Box::pin(async { Ok(HttpResponse::ok().with_body(b"Hello, World!".to_vec())) })
         }),
+        constraints: None,
     });
 
     let request = HttpRequest::new("GET".to_string(), "/hello".to_string());
@@ -33,6 +34,7 @@ async fn test_path_parameter() {
                 Ok(HttpResponse::ok().with_body(id.as_bytes().to_vec()))
             })
         }),
+        constraints: None,
     });
 
     let request = HttpRequest::new("GET".to_string(), "/users/123".to_string());
@@ -66,6 +68,7 @@ async fn test_query_parameters() {
                 Ok(HttpResponse::ok().with_body(query.as_bytes().to_vec()))
             })
         }),
+        constraints: None,
     });
 
     let request = HttpRequest::new("GET".to_string(), "/search?q=rust".to_string());

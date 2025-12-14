@@ -74,6 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .await
             })
         }),
+        constraints: None,
     });
 
     // Example 2: SPA mode (fallback to index.html)
@@ -97,6 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 server.serve(&spa_req).await
             })
         }),
+        constraints: None,
     });
 
     // Example 3: Maximum performance (immutable assets + Brotli)
@@ -121,6 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 server.serve(&cdn_req).await
             })
         }),
+        constraints: None,
     });
 
     // Example 4: Development mode (no caching)
@@ -143,6 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .await
             })
         }),
+        constraints: None,
     });
 
     // Example 5: Custom per-filetype caching
@@ -174,6 +178,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 server.serve(&custom_req).await
             })
         }),
+        constraints: None,
     });
 
     // API route for comparison
@@ -188,6 +193,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }))
             })
         }),
+        constraints: None,
     });
 
     // Info page
@@ -316,6 +322,7 @@ curl -H "Accept-Encoding: gzip" http://localhost:3000/static/script.js --output 
                     .with_body(html.as_bytes().to_vec()))
             })
         }),
+        constraints: None,
     });
 
     println!("\n🚀 Server starting on http://localhost:3000");

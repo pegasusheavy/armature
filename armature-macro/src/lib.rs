@@ -4,6 +4,7 @@
 use proc_macro::TokenStream;
 
 mod body_limit_attr;
+mod cache_attr;
 mod controller;
 mod injectable;
 mod module;
@@ -161,4 +162,55 @@ pub fn timeout(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn body_limit(attr: TokenStream, item: TokenStream) -> TokenStream {
     body_limit_attr::body_limit_impl(attr, item)
+}
+
+/// Cache method decorator
+///
+/// Automatically caches the result of a method. The cache key is generated from
+/// the function name and arguments, and successful results are stored with a TTL.
+///
+/// # Usage
+///
+/// ```ignore
+/// use armature::cache;
+///
+/// // Basic caching with default TTL (1 hour)
+/// #[cache]
+/// async fn get_user(id: i64) -> Result<User, Error> {
+///     // Expensive operation
+/// }
+///
+/// // Custom TTL (in seconds)
+/// #[cache(ttl = 300)]
+/// async fn get_posts(user_id: i64) -> Result<Vec<Post>, Error> {
+///     // Cached for 5 minutes
+/// }
+///
+/// // Custom cache key template
+/// #[cache(key = "user:profile:{}", ttl = 600)]
+/// async fn get_profile(user_id: i64) -> Result<Profile, Error> {
+///     // Cached with specific key format
+/// }
+///
+/// // With tags for invalidation
+/// #[cache(ttl = 3600, tag = "users")]
+/// async fn get_all_users() -> Result<Vec<User>, Error> {
+///     // Can be invalidated by tag
+/// }
+/// ```
+///
+/// # Requirements
+///
+/// - The function must be async
+/// - The return type must be `Result<T, E>` where `T: Serialize + DeserializeOwned`
+/// - Requires a `__cache` or `__tagged_cache` variable in scope
+///
+/// # Notes
+///
+/// - Only successful results (`Ok` variants) are cached
+/// - Cache keys are generated from the function name and arguments
+/// - Default TTL is 3600 seconds (1 hour)
+#[proc_macro_attribute]
+pub fn cache(attr: TokenStream, item: TokenStream) -> TokenStream {
+    cache_attr::cache_impl(attr, item)
 }

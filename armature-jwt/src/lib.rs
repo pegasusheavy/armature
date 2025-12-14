@@ -170,7 +170,6 @@ impl JwtManager {
     }
 }
 
-impl Provider for JwtManager {}
 
 impl Default for JwtManager {
     fn default() -> Self {

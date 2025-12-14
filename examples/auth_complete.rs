@@ -196,6 +196,6 @@ fn main() {
     println!("   ✓ Authentication strategies");
     println!();
     println!("For HTTP integration examples, see:");
-    println!("   - docs/AUTH_GUIDE.md");
+    println!("   - docs/auth-guide.md");
     println!("   - examples/jwt_auth.rs");
 }

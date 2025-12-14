@@ -164,8 +164,8 @@ async fn main() {
     println!();
 
     println!("📖 For complete integration examples, see:");
-    println!("   - docs/AUTH_GUIDE.md");
-    println!("   - docs/OAUTH2_GUIDE.md (coming soon)");
+    println!("   - docs/auth-guide.md");
+    println!("   - docs/oauth2-guide.md (coming soon)");
     println!();
 
     println!("🔧 Setup Instructions:");

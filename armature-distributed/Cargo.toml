@@ -1,0 +1,20 @@
+[package]
+name = "armature-distributed"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.6", features = ["v4"] }
+chrono = "0.4"
+thiserror = "1.0"
+tracing = "0.1"
+rand = "0.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
+

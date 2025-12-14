@@ -119,6 +119,7 @@ pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
                                         .with_body(b"Route handler placeholder".to_vec()))
                                 })
                             }),
+                            constraints: None,
                         };
                         router.add_route(route);
                     }

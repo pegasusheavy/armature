@@ -123,7 +123,7 @@ impl Session {
 /// // Client stores token, server validates on each request
 /// ```
 ///
-/// See the [Stateless Architecture Guide](../docs/STATELESS_ARCHITECTURE.md)
+/// See the [Stateless Architecture Guide](../docs/stateless-architecture.md)
 /// for why stateless is preferred.
 ///
 /// # When to Use Sessions

@@ -27,11 +27,21 @@ tokio = { version = "1.35", features = ["full"] }
 # Enable with `saml` feature. Note: This requires system libraries (libxml2, xmlsec1)
 samael = { version = "0.0.19", optional = true }
 
+# 2FA support
+totp-lite = { version = "2.0", optional = true }
+data-encoding = { version = "2.5", optional = true }
+qrcode = { version = "0.14", optional = true }
+
+# WebAuthn support
+webauthn-rs = { version = "0.5", optional = true }
+
 # Common utilities
 chrono = "0.4"
 flate2 = { version = "1.0.17", optional = true }  # Used by SAML
 quick-xml = { version = "0.38", features = ["serialize"], optional = true }  # Used by SAML
 uuid = { version = "1.7", features = ["v4"] }
+sha2 = "0.10"
+hex = "0.4"
 
 [features]
 default = []
@@ -39,6 +49,12 @@ default = []
 # On Ubuntu/Debian: apt-get install libxml2-dev libxmlsec1-dev libxmlsec1-openssl
 # On macOS: brew install libxmlsec1
 saml = ["dep:samael", "dep:flate2", "dep:quick-xml"]
+# Two-factor authentication support
+two-factor = ["dep:totp-lite", "dep:data-encoding", "dep:qrcode"]
+# WebAuthn passwordless authentication
+webauthn = ["dep:webauthn-rs"]
+# All additional auth features
+full = ["saml", "two-factor", "webauthn"]
 
 [dev-dependencies]
 tokio-test = "0.4"

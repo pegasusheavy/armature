@@ -123,6 +123,7 @@ mod tests {
                 let c = ctrl.clone();
                 Box::pin(async move { c.get_all()?.into_response() })
             }),
+            constraints: None,
         });
 
         let client = TestClient::new(Arc::new(router));
@@ -161,6 +162,7 @@ mod tests {
                     c.get_one(id)?.into_response()
                 })
             }),
+            constraints: None,
         });
 
         let client = TestClient::new(Arc::new(router));
@@ -199,6 +201,7 @@ mod tests {
                     c.get_one(id)?.into_response()
                 })
             }),
+            constraints: None,
         });
 
         let client = TestClient::new(Arc::new(router));

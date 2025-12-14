@@ -105,9 +105,5 @@ impl Default for UserService {
     }
 }
 
-impl Provider for UserService {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
+// Provider is automatically implemented via blanket impl
 

@@ -5,7 +5,6 @@ struct TestService {
     name: String,
 }
 
-impl Provider for TestService {}
 
 #[test]
 fn test_register_and_resolve() {

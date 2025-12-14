@@ -1,25 +1,11 @@
-// Home component - minimal custom styles
-// Most styling handled by Tailwind CSS
+// Home component - Rust theme syntax highlighting
+// Most styling handled by Tailwind CSS and global styles
 
-// Code block syntax highlighting
+// Code block syntax highlighting - Rust-inspired palette
 pre code {
   font-family: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
-  
-  .keyword {
-    color: #c678dd;
-  }
-  
-  .function {
-    color: #61afef;
-  }
-  
-  .string {
-    color: #98c379;
-  }
-  
-  .comment {
-    color: #5c6370;
-  }
+  font-size: 0.875rem;
+  line-height: 1.7;
 }
 
 // Smooth animations
