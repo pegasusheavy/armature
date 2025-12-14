@@ -25,73 +25,96 @@ export class DocsComponent implements OnInit {
   error = signal<string | null>(null);
   currentDoc = signal<DocMetadata | null>(null);
 
-  // Documentation metadata
+  // Documentation metadata - all lowercase with hyphens
   docs: DocMetadata[] = [
     // Getting Started
-    { id: 'readme', title: 'Getting Started', filename: 'README.md', category: 'Getting Started' },
-    { id: 'di-guide', title: 'Dependency Injection', filename: 'DI_GUIDE.md', category: 'Getting Started' },
-    { id: 'config-guide', title: 'Configuration', filename: 'CONFIG_GUIDE.md', category: 'Getting Started' },
-    { id: 'project-templates', title: 'Project Templates', filename: 'PROJECT_TEMPLATES.md', category: 'Getting Started' },
-    { id: 'lifecycle-hooks', title: 'Lifecycle Hooks', filename: 'LIFECYCLE_HOOKS.md', category: 'Getting Started' },
+    { id: 'readme', title: 'Documentation Index', filename: 'README.md', category: 'Getting Started' },
+    { id: 'di-guide', title: 'Dependency Injection', filename: 'di-guide.md', category: 'Getting Started' },
+    { id: 'config-guide', title: 'Configuration', filename: 'config-guide.md', category: 'Getting Started' },
+    { id: 'project-templates', title: 'Project Templates', filename: 'project-templates.md', category: 'Getting Started' },
+    { id: 'lifecycle-hooks', title: 'Lifecycle Hooks', filename: 'lifecycle-hooks.md', category: 'Getting Started' },
+    { id: 'macro-overview', title: 'Macro Overview', filename: 'macro-overview.md', category: 'Getting Started' },
+
+    // Authentication & Security
+    { id: 'auth-guide', title: 'Authentication', filename: 'auth-guide.md', category: 'Authentication & Security' },
+    { id: 'oauth2-providers', title: 'OAuth2 Providers', filename: 'oauth2-providers-guide.md', category: 'Authentication & Security' },
+    { id: 'security-guide', title: 'Security Guide', filename: 'security-guide.md', category: 'Authentication & Security' },
+    { id: 'session-guide', title: 'Session Management', filename: 'session-guide.md', category: 'Authentication & Security' },
+    { id: 'rate-limiting', title: 'Rate Limiting', filename: 'rate-limiting-guide.md', category: 'Authentication & Security' },
 
     // Core Features
-    { id: 'auth-guide', title: 'Authentication', filename: 'AUTH_GUIDE.md', category: 'Core Features' },
-    { id: 'oauth2-guide', title: 'OAuth2 Providers', filename: 'OAUTH2_PROVIDERS_GUIDE.md', category: 'Core Features' },
-    { id: 'guards-interceptors', title: 'Guards & Interceptors', filename: 'GUARDS_INTERCEPTORS.md', category: 'Core Features' },
-    { id: 'use-guard', title: '#[use_guard] Decorator', filename: 'USE_GUARD_GUIDE.md', category: 'Core Features' },
-    { id: 'use-middleware', title: '#[use_middleware] Decorator', filename: 'USE_MIDDLEWARE_GUIDE.md', category: 'Core Features' },
-    { id: 'session-guide', title: 'Session Management', filename: 'SESSION_GUIDE.md', category: 'Core Features' },
+    { id: 'guards-interceptors', title: 'Guards & Interceptors', filename: 'guards-interceptors.md', category: 'Core Features' },
+    { id: 'use-guard', title: '#[use_guard] Decorator', filename: 'use-guard-guide.md', category: 'Core Features' },
+    { id: 'use-middleware', title: '#[use_middleware] Decorator', filename: 'use-middleware-guide.md', category: 'Core Features' },
+    { id: 'request-extractors', title: 'Request Extractors', filename: 'request-extractors.md', category: 'Core Features' },
+
+    // Routing
+    { id: 'route-groups', title: 'Route Groups', filename: 'guides/route-groups-guide.md', category: 'Routing' },
+    { id: 'route-constraints', title: 'Route Constraints', filename: 'guides/route-constraints-guide.md', category: 'Routing' },
 
     // HTTP & Networking
-    { id: 'https-guide', title: 'HTTPS Setup', filename: 'HTTPS_GUIDE.md', category: 'HTTP & Networking' },
-    { id: 'acme-certificates', title: 'ACME Certificates', filename: 'ACME_CERTIFICATES.md', category: 'HTTP & Networking' },
-    { id: 'compression', title: 'Compression', filename: 'COMPRESSION.md', category: 'HTTP & Networking' },
-    { id: 'http-status-errors', title: 'HTTP Status & Errors', filename: 'HTTP_STATUS_ERRORS.md', category: 'HTTP & Networking' },
-    { id: 'websocket-sse', title: 'WebSocket & SSE', filename: 'WEBSOCKET_SSE_GUIDE.md', category: 'HTTP & Networking' },
-    { id: 'webhooks', title: 'Webhooks', filename: 'WEBHOOKS.md', category: 'HTTP & Networking' },
-    { id: 'request-extractors', title: 'Request Extractors', filename: 'REQUEST_EXTRACTORS.md', category: 'HTTP & Networking' },
-    { id: 'request-timeouts', title: 'Request Timeouts', filename: 'REQUEST_TIMEOUTS_GUIDE.md', category: 'HTTP & Networking' },
-    { id: 'streaming-responses', title: 'Streaming Responses', filename: 'STREAMING_RESPONSES_GUIDE.md', category: 'HTTP & Networking' },
+    { id: 'https-guide', title: 'HTTPS Setup', filename: 'https-guide.md', category: 'HTTP & Networking' },
+    { id: 'acme-certificates', title: 'ACME Certificates', filename: 'acme-certificates.md', category: 'HTTP & Networking' },
+    { id: 'compression', title: 'Compression', filename: 'compression.md', category: 'HTTP & Networking' },
+    { id: 'http-status-errors', title: 'HTTP Status & Errors', filename: 'http-status-errors.md', category: 'HTTP & Networking' },
+    { id: 'websocket-sse', title: 'WebSocket & SSE', filename: 'websocket-sse-guide.md', category: 'HTTP & Networking' },
+    { id: 'webhooks', title: 'Webhooks', filename: 'webhooks.md', category: 'HTTP & Networking' },
+    { id: 'request-timeouts', title: 'Request Timeouts', filename: 'request-timeouts-guide.md', category: 'HTTP & Networking' },
+    { id: 'streaming-responses', title: 'Streaming Responses', filename: 'streaming-responses-guide.md', category: 'HTTP & Networking' },
 
     // API Features
-    { id: 'api-versioning', title: 'API Versioning', filename: 'API_VERSIONING_GUIDE.md', category: 'API Features' },
-    { id: 'content-negotiation', title: 'Content Negotiation', filename: 'CONTENT_NEGOTIATION_GUIDE.md', category: 'API Features' },
-    { id: 'response-caching', title: 'Response Caching', filename: 'RESPONSE_CACHING_GUIDE.md', category: 'API Features' },
-    { id: 'etag-conditional', title: 'ETags & Conditional Requests', filename: 'ETAG_CONDITIONAL_REQUESTS_GUIDE.md', category: 'API Features' },
+    { id: 'api-versioning', title: 'API Versioning', filename: 'api-versioning-guide.md', category: 'API Features' },
+    { id: 'content-negotiation', title: 'Content Negotiation', filename: 'content-negotiation-guide.md', category: 'API Features' },
+    { id: 'response-caching', title: 'Response Caching', filename: 'response-caching-guide.md', category: 'API Features' },
+    { id: 'etag-conditional', title: 'ETags & Conditional Requests', filename: 'etag-conditional-requests-guide.md', category: 'API Features' },
+    { id: 'pagination-filtering', title: 'Pagination & Filtering', filename: 'guides/pagination-filtering-guide.md', category: 'API Features' },
 
     // GraphQL
-    { id: 'graphql-guide', title: 'GraphQL Guide', filename: 'GRAPHQL_GUIDE.md', category: 'GraphQL' },
-    { id: 'graphql-config', title: 'GraphQL Configuration', filename: 'GRAPHQL_CONFIGURATION.md', category: 'GraphQL' },
+    { id: 'graphql-guide', title: 'GraphQL Guide', filename: 'graphql-guide.md', category: 'GraphQL' },
+    { id: 'graphql-config', title: 'GraphQL Configuration', filename: 'graphql-configuration.md', category: 'GraphQL' },
 
     // OpenAPI
-    { id: 'openapi-guide', title: 'OpenAPI Guide', filename: 'OPENAPI_GUIDE.md', category: 'OpenAPI' },
+    { id: 'openapi-guide', title: 'OpenAPI Guide', filename: 'openapi-guide.md', category: 'OpenAPI' },
 
     // Background Processing
-    { id: 'queue-guide', title: 'Job Queues', filename: 'QUEUE_GUIDE.md', category: 'Background Processing' },
-    { id: 'cron-guide', title: 'Cron Jobs', filename: 'CRON_GUIDE.md', category: 'Background Processing' },
+    { id: 'queue-guide', title: 'Job Queues', filename: 'queue-guide.md', category: 'Background Processing' },
+    { id: 'cron-guide', title: 'Cron Jobs', filename: 'cron-guide.md', category: 'Background Processing' },
+    { id: 'graceful-shutdown', title: 'Graceful Shutdown', filename: 'guides/graceful-shutdown-guide.md', category: 'Background Processing' },
 
     // Observability
-    { id: 'logging-guide', title: 'Logging', filename: 'LOGGING_GUIDE.md', category: 'Observability' },
-    { id: 'debug-logging', title: 'Debug Logging', filename: 'DEBUG_LOGGING_GUIDE.md', category: 'Observability' },
-    { id: 'opentelemetry-guide', title: 'OpenTelemetry', filename: 'OPENTELEMETRY_GUIDE.md', category: 'Observability' },
-    { id: 'health-check', title: 'Health Checks', filename: 'HEALTH_CHECK_GUIDE.md', category: 'Observability' },
-    { id: 'error-correlation', title: 'Error Correlation', filename: 'ERROR_CORRELATION_GUIDE.md', category: 'Observability' },
+    { id: 'logging-guide', title: 'Logging', filename: 'logging-guide.md', category: 'Observability' },
+    { id: 'debug-logging', title: 'Debug Logging', filename: 'debug-logging-guide.md', category: 'Observability' },
+    { id: 'opentelemetry-guide', title: 'OpenTelemetry', filename: 'opentelemetry-guide.md', category: 'Observability' },
+    { id: 'health-check', title: 'Health Checks', filename: 'health-check-guide.md', category: 'Observability' },
+    { id: 'error-correlation', title: 'Error Correlation', filename: 'error-correlation-guide.md', category: 'Observability' },
+    { id: 'metrics-guide', title: 'Prometheus Metrics', filename: 'guides/metrics-guide.md', category: 'Observability' },
+    { id: 'audit-guide', title: 'Audit Logging', filename: 'guides/audit-guide.md', category: 'Observability' },
+
+    // Caching
+    { id: 'cache-improvements', title: 'Cache Improvements', filename: 'guides/cache-improvements-guide.md', category: 'Caching' },
 
     // Architecture
-    { id: 'stateless-architecture', title: 'Stateless Architecture', filename: 'STATELESS_ARCHITECTURE.md', category: 'Architecture' },
-    { id: 'server-integration', title: 'Server Integration', filename: 'SERVER_INTEGRATION.md', category: 'Architecture' },
+    { id: 'stateless-architecture', title: 'Stateless Architecture', filename: 'stateless-architecture.md', category: 'Architecture' },
+    { id: 'server-integration', title: 'Server Integration', filename: 'server-integration.md', category: 'Architecture' },
 
-    // Security
-    { id: 'security-guide', title: 'Security Guide', filename: 'SECURITY_GUIDE.md', category: 'Security' },
-    { id: 'rate-limiting', title: 'Rate Limiting', filename: 'RATE_LIMITING_GUIDE.md', category: 'Security' },
+    // Advanced Security
+    { id: 'security-advanced', title: 'Advanced Security', filename: 'guides/security-advanced-guide.md', category: 'Advanced Features' },
+
+    // Macros
+    { id: 'macros-guide', title: 'Macros In-Depth', filename: 'guides/macros-guide.md', category: 'Macros' },
 
     // Error Handling
-    { id: 'error-transformation', title: 'Error Transformation', filename: 'ERROR_TRANSFORMATION_GUIDE.md', category: 'Error Handling' },
+    { id: 'error-transformation', title: 'Error Transformation', filename: 'error-transformation-guide.md', category: 'Error Handling' },
 
     // Testing & Quality
-    { id: 'testing-coverage', title: 'Testing Coverage', filename: 'TESTING_COVERAGE.md', category: 'Testing & Quality' },
-    { id: 'testing-documentation', title: 'Testing Documentation', filename: 'TESTING_DOCUMENTATION.md', category: 'Testing & Quality' },
-    { id: 'documentation-testing', title: 'Documentation Testing', filename: 'DOCUMENTATION_TESTING.md', category: 'Testing & Quality' },
+    { id: 'testing-guide', title: 'Testing Utilities', filename: 'guides/testing-guide.md', category: 'Testing & Quality' },
+    { id: 'testing-coverage', title: 'Testing Coverage', filename: 'testing-coverage.md', category: 'Testing & Quality' },
+    { id: 'testing-documentation', title: 'Testing Documentation', filename: 'testing-documentation.md', category: 'Testing & Quality' },
+    { id: 'documentation-testing', title: 'Documentation Testing', filename: 'documentation-testing.md', category: 'Testing & Quality' },
+
+    // Benchmarks
+    { id: 'armature-vs-nodejs', title: 'Armature vs Node.js', filename: 'guides/armature-vs-nodejs-benchmark.md', category: 'Benchmarks' },
+    { id: 'armature-vs-nextjs', title: 'Armature vs Next.js', filename: 'guides/armature-vs-nextjs-benchmark.md', category: 'Benchmarks' },
   ];
 
   // Group docs by category
@@ -174,4 +197,3 @@ export class DocsComponent implements OnInit {
     return Object.keys(this.docsByCategory());
   }
 }
-
