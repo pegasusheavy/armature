@@ -9,7 +9,206 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### Rate Limiting Module (`armature-ratelimit`)
+#### Cloud Provider SDKs
+- **`armature-aws`** - AWS SDK integration with feature-gated services
+  - S3, DynamoDB, SQS, SNS, SES, Lambda, Secrets Manager, KMS, Cognito
+  - Dynamic service loading via feature flags
+  - DI container integration
+  - Environment-based configuration
+  - LocalStack emulator support
+- **`armature-gcp`** - Google Cloud SDK integration
+  - Cloud Storage, Pub/Sub, Firestore, Spanner, BigQuery
+  - Feature-gated compilation
+  - GCP emulator support
+- **`armature-azure`** - Azure SDK integration
+  - Blob Storage, Queue Storage, Cosmos DB, Service Bus, Key Vault
+  - Azurite emulator support
+
+#### Serverless Deployment
+- **`armature-lambda`** - AWS Lambda runtime for Armature
+  - API Gateway, ALB, and Function URL support
+  - Request/response conversion
+  - Cold start optimization
+  - Lambda-specific Dockerfile templates
+- **`armature-cloudrun`** - Google Cloud Run deployment
+  - Health check utilities
+  - Cloud Logging integration
+  - Graceful shutdown support
+  - Cloud Build configuration
+- **`armature-azure-functions`** - Azure Functions custom handler
+  - HTTP trigger support
+  - Request/response bindings
+  - Azure Container Apps deployment
+
+#### Redis Integration
+- **`armature-redis`** - Centralized Redis client crate
+  - Connection pooling with bb8
+  - Pub/Sub messaging support
+  - Cluster, TLS, and Sentinel support
+  - Shared across all crates (cache, queue, distributed, ratelimit, session)
+
+#### HTTP Client
+- **`armature-http-client`** - Production-ready HTTP client
+  - Automatic retry with configurable backoff (constant, linear, exponential, jitter)
+  - Circuit breaker integration
+  - Request/response interceptors
+  - Middleware chain support
+  - Timeout policies
+
+#### gRPC Support
+- **`armature-grpc`** - gRPC server and client
+  - Tonic-based implementation
+  - Interceptors for auth and metrics
+  - Health checking and reflection
+  - Type aliases for complex signatures
+
+#### GraphQL Client
+- **`armature-graphql-client`** - GraphQL client for federation
+  - Query batching
+  - Subscription support via WebSocket
+  - Automatic retry
+  - Variables and fragments
+
+#### Email System
+- **`armature-mail`** - Comprehensive email module
+  - SMTP transport with TLS/STARTTLS
+  - Provider integrations: SendGrid, AWS SES, Mailgun
+  - Handlebars email templates
+  - Attachment support (inline and download)
+  - Email queue with async sending, retries, and dead letter queue
+  - Redis-backed queue storage
+
+#### Push Notifications
+- **`armature-push`** - Multi-platform push notifications
+  - Web Push with VAPID
+  - Firebase Cloud Messaging (FCM)
+  - Apple Push Notification Service (APNS)
+  - Unified push service API
+  - Batch sending support
+  - Device token management
+
+#### File Storage
+- **`armature-storage`** - File storage abstraction
+  - Local filesystem storage
+  - AWS S3 with presigned URLs and server-side encryption
+  - Google Cloud Storage with signed URLs
+  - Azure Blob Storage with Azurite support
+  - Multipart upload handling with streaming
+  - File validation (type, size, extension)
+
+#### Resilience Patterns
+- **`armature-core/resilience`** - Production resilience patterns
+  - Circuit Breaker (Open/Closed/Half-Open states, sliding window)
+  - Retry with Backoff (constant, linear, exponential, jitter)
+  - Bulkhead (semaphore-based concurrency limiting)
+  - Timeout policies
+  - Fallback handlers with chains
+
+#### CLI Enhancements
+- Interactive project creation wizard
+- `armature add <feature>` - Add features to existing projects
+- `armature check` - Validate project configuration
+- `armature routes` - List all registered routes
+- `armature config:check` - Validate configuration files
+- Shell completions (bash, zsh, fish, PowerShell)
+- Improved colored output and progress indicators
+
+#### Developer Experience
+- Prelude modules added to all major crates for easier imports
+- `Result<T>` type aliases in crates with Error types
+- Convenience methods on `HttpResponse` (ok, created, no_content, bad_request, etc.)
+- Convenience methods on `Container` (require, get_or_default, register_if_missing)
+- Enhanced error messages with actionable suggestions
+- Debug and Display implementations for all public types
+
+#### Cookbook Examples
+- `examples/crud_api.rs` - Complete REST API with CRUD operations
+- `examples/auth_api.rs` - JWT authentication flow
+- `examples/realtime_api.rs` - WebSocket/SSE real-time communication
+
+#### Benchmarks
+- `benches/resilience_benchmarks.rs` - Circuit breaker, retry, bulkhead, timeout
+- `benches/cache_benchmarks.rs` - Cache operations and tiered caching
+- `benches/auth_benchmarks.rs` - Password hashing and JWT operations
+- `benches/ratelimit_benchmarks.rs` - Rate limiting algorithms
+- `benches/storage_benchmarks.rs` - File validation and storage operations
+- `benches/http_client_benchmarks.rs` - HTTP client patterns
+
+#### DevOps Templates
+- **Dockerfile templates** (Alpine-based, multi-stage, cargo-chef)
+  - `templates/api-minimal/Dockerfile`
+  - `templates/api-full/Dockerfile`
+  - `templates/microservice/Dockerfile`
+  - `templates/graphql-api/Dockerfile`
+  - `templates/lambda/Dockerfile` (x86_64 and ARM64)
+  - `templates/cloudrun/Dockerfile`
+  - `templates/azure-container/Dockerfile`
+- **Docker Compose** for all templates with development services
+- **Kubernetes manifests** (`templates/k8s/`)
+  - Deployment, Service, Ingress
+  - HPA, PDB, NetworkPolicy
+  - ConfigMap, Secret, ServiceAccount
+  - Kustomization base
+- **Helm chart** (`templates/helm/armature/`)
+  - Production-ready values
+  - Configurable replicas, resources, probes
+  - Ingress and service configuration
+- **CI/CD workflows**
+  - GitHub Actions (CI, Release, Docs, PR automation)
+  - Jenkins pipelines (basic, Docker agent, multibranch)
+
+#### Documentation
+- `docs/cloud-providers-guide.md` - AWS, GCP, Azure SDK usage
+- `docs/redis-guide.md` - Centralized Redis integration
+- `docs/dependency-injection-guide.md` - Advanced DI patterns
+- Updated `docs/README.md` with comprehensive documentation index
+- Angular-based docs overview component with proper routing
+
+#### SEO & AI SEO
+- Comprehensive `index.html` meta tags
+  - Open Graph and Twitter Card tags
+  - JSON-LD schemas (SoftwareApplication, Organization, WebSite, FAQPage, BreadcrumbList)
+- `robots.txt` with 15+ AI crawler rules (GPTBot, Claude, Bingbot, etc.)
+- `sitemap.xml` expanded to 35+ URLs
+- `llms.txt` - AI-readable project summary (llmstxt.org standard)
+- `ai.txt` - AI interaction guidelines and code generation style
+- `.well-known/security.txt` - Security vulnerability reporting
+- `humans.txt` - Team credits and technology stack
+
+### Changed
+
+- **Web app theme**: Migrated to Tailswatch oxide dark theme
+- **Documentation structure**: Flattened docs/ directory (removed guides/ subfolder)
+- **Mobile navigation**: Fixed menu collapse behavior
+- **Comparisons page**: Refactored to emphasize Armature strengths
+- **Roadmap**: Updated to show 98% feature completion
+- Updated all URLs from `quinnjr.github.io` to `pegasusheavy.github.io`
+- Renamed builder methods to use `with_*` pattern for better ergonomics
+- Updated `tonic` to 0.14, `prost` to 0.14
+- Updated `redis` to 1.0, `bb8-redis` to 0.18
+- Updated `lambda_http` and `lambda_runtime` to 1.0
+- Updated `web-push` to 0.11
+
+### Fixed
+
+- Fixed `HealthChecker` trait for object safety (dyn compatibility)
+- Fixed `lambda_http` and `aws_lambda_events` API compatibility
+- Fixed `web_push` crate API changes
+- Fixed `tonic` gRPC framework API changes
+- Fixed benchmark compilation errors
+- Fixed clippy warnings across all crates
+- Removed all `unsafe` code blocks (replaced with safe alternatives)
+- Fixed mobile menu not closing when navigation link clicked
+
+### Removed
+
+- **`armature-di`** crate - Use `dependency-injector` crate directly
+- Removed `unsafe impl Send/Sync` blocks (now compiler-verified)
+- Removed `unsafe env::set_var` from tests
+
+---
+
+## Rate Limiting Module (`armature-ratelimit`)
 - New `armature-ratelimit` crate for comprehensive API rate limiting
 - **Algorithms**:
   - Token Bucket - smooth rate limiting with burst capacity
@@ -55,6 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **api-minimal** - Single-file REST API for learning and prototyping
   - **api-full** - Production-ready API with JWT auth, validation, Docker, health checks
   - **microservice** - Queue-connected worker with Prometheus metrics and graceful shutdown
+  - **graphql-api** - GraphQL API template
 - Template documentation (`docs/project-templates.md`)
 - Each template includes:
   - `Cargo.toml` with appropriate dependencies
@@ -64,7 +264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Core Framework
 - Initial release of Armature framework
 - Core framework with dependency injection and decorators
-- Authentication support (JWT, OAuth2, SAML)
+- Authentication support (JWT, OAuth2, SAML, 2FA, Passwordless)
 - GraphQL support
 - Validation framework
 - Testing utilities
@@ -79,46 +279,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive debug logging throughout the framework
 - 30+ working examples refactored to use module/controller pattern
 - Angular 21 documentation website with:
-  - Tailwind CSS 4 styling
+  - Tailwind CSS 4 styling with Tailswatch oxide theme
   - SPA routing with 404.html fallback for GitHub Pages
   - Vitest for unit testing
   - API documentation integration at `/api/`
-
-#### Documentation
-- `docs/rate-limiting-guide.md` - Rate limiting usage and best practices
-- `docs/project-templates.md` - Template usage and customization guide
-- `docs/debug-logging-guide.md` - Debug logging configuration
-- `docs/logging-guide.md` - Logging system documentation
-- GitHub Pages deployment with Angular website at `https://pegasusheavy.github.io/armature/`
-- `examples/handlebars_templates.rs` - Demonstrates using Handlebars with DI container
-
-### Changed
-- GitHub Actions CI/CD workflows
-- GitHub Pages deployment for documentation website with Angular SPA support
-- GitHub Security Advisories for vulnerability reporting
-- **All examples now use module/controller pattern** instead of manual route registration
-- All middleware implementations now implement `armature_core::Middleware` trait
-- `RateLimitMiddleware` now implements `armature_core::Middleware` for `MiddlewareChain` integration
-- `SecurityMiddleware` now implements `armature_core::Middleware` for `MiddlewareChain` integration
-- Updated `Application::create::<Module>()` as the standard app bootstrapping pattern
-
-### Deprecated
-- N/A
-
-### Removed
-- **SSR Modules** - Removed `armature-angular`, `armature-react`, `armature-vue`, `armature-svelte` crates
-- **Security Modules** - Removed `armature-csrf` and `armature-xss` crates (use `armature-security` instead)
-- **Handlebars Plugin** - Removed `armature-handlebars` crate (use `handlebars` crate directly with DI container - see `examples/handlebars_templates.rs`)
-
-### Fixed
-- Fixed `CertificateParams::new` type mismatch in TLS module
-- Fixed clippy warnings across multiple crates
-- Code formatting standardized with `cargo fmt`
 
 ### Security
 - Added cargo-husky for Git hooks (pre-commit, pre-push, commit-msg)
 - Branch protection via Git hooks
 - Automated linting and testing on commits
+- Comprehensive `.gitignore` and `.dockerignore`
 
 ## [0.1.0] - TBD
 
@@ -151,5 +321,3 @@ See [docs/migration.md](docs/migration.md) for detailed upgrade instructions bet
 
 [Unreleased]: https://github.com/pegasusheavy/armature/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/pegasusheavy/armature/releases/tag/v0.1.0
-
-
