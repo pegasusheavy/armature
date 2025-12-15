@@ -1,0 +1,81 @@
+# =============================================================================
+# Armature GraphQL API - Docker Compose Configuration
+# =============================================================================
+# Usage:
+#   Development: docker compose up
+#   With DB:     docker compose --profile database up
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # GraphQL API Service
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - RUST_LOG=${RUST_LOG:-info,async_graphql=debug}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - GRAPHQL_PLAYGROUND=${GRAPHQL_PLAYGROUND:-true}
+      - GRAPHQL_INTROSPECTION=${GRAPHQL_INTROSPECTION:-true}
+      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@db:5432/graphql}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-graphql}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis (for caching/subscriptions)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+

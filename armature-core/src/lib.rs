@@ -1,50 +1,129 @@
-//! Core library for the Armature HTTP framework.
+//! # Armature Core
 //!
-//! This module contains the foundational types, traits, and runtime components
+//! Core library for the Armature HTTP framework - a modern, type-safe web framework for Rust
+//! inspired by Angular and NestJS.
+//!
+//! This crate provides the foundational types, traits, and runtime components
 //! for building web applications with Armature.
 //!
-//! ## Quick Start - HTTP Request Handling
+//! ## Features
+//!
+//! - **HTTP Handling**: Request/Response types with fluent builders
+//! - **Routing**: Path parameters, query strings, and constraints
+//! - **Dependency Injection**: Type-safe DI container
+//! - **Middleware**: Composable request/response processing
+//! - **Guards**: Authentication and authorization
+//! - **Resilience**: Circuit breakers, retries, bulkheads, and timeouts
+//! - **Logging**: Structured logging with tracing integration
+//! - **Health Checks**: Readiness and liveness probes
+//! - **WebSocket & SSE**: Real-time communication support
+//!
+//! ## Quick Start
+//!
+//! ### HTTP Request Handling
 //!
 //! ```
 //! use armature_core::HttpRequest;
 //!
-//! // Create an HTTP request using the constructor
+//! // Create an HTTP request
 //! let request = HttpRequest::new("GET".to_string(), "/api/users".to_string());
 //!
 //! assert_eq!(request.method, "GET");
 //! assert_eq!(request.path, "/api/users");
-//! assert!(request.headers.is_empty());
-//! assert!(request.body.is_empty());
 //!
-//! // Create a POST request with query and path params
-//! let mut post_request = HttpRequest::new("POST".to_string(), "/api/users/{id}".to_string());
-//! post_request.path_params.insert("id".to_string(), "123".to_string());
-//! post_request.query_params.insert("format".to_string(), "json".to_string());
-//! post_request.body = b"{\"name\":\"John\"}".to_vec();
+//! // Access path and query parameters
+//! let mut post = HttpRequest::new("POST".to_string(), "/api/users/123".to_string());
+//! post.path_params.insert("id".to_string(), "123".to_string());
+//! post.query_params.insert("format".to_string(), "json".to_string());
+//! post.body = b"{\"name\":\"John\"}".to_vec();
 //!
-//! assert_eq!(post_request.method, "POST");
-//! assert_eq!(post_request.path_params.get("id").unwrap(), "123");
+//! assert_eq!(post.param("id"), Some(&"123".to_string()));
+//! assert_eq!(post.query("format"), Some(&"json".to_string()));
 //! ```
 //!
-//! ## HTTP Response Builder
+//! ### HTTP Response Builder
 //!
 //! ```
 //! use armature_core::HttpResponse;
+//! use serde_json::json;
 //!
-//! // Create a successful response
-//! let response = HttpResponse::ok()
-//!     .with_header("Content-Type".to_string(), "application/json".to_string())
-//!     .with_body(b"{\"status\":\"ok\"}".to_vec());
-//!
+//! // JSON response (shorthand)
+//! let response = HttpResponse::json(&json!({"message": "Hello"})).unwrap();
 //! assert_eq!(response.status, 200);
-//! assert!(response.headers.contains_key("Content-Type"));
 //!
-//! // Create an error response
-//! let not_found = HttpResponse::not_found()
-//!     .with_body(b"Resource not found".to_vec());
+//! // HTML response
+//! let html = HttpResponse::html("<h1>Welcome</h1>");
+//! assert_eq!(html.status, 200);
 //!
-//! assert_eq!(not_found.status, 404);
+//! // Redirect
+//! let redirect = HttpResponse::redirect("https://example.com");
+//! assert_eq!(redirect.status, 302);
+//!
+//! // With fluent builder
+//! let custom = HttpResponse::ok()
+//!     .content_type("application/xml")
+//!     .cache_control("max-age=3600")
+//!     .with_body(b"<xml/>".to_vec());
 //! ```
+//!
+//! ### Dependency Injection
+//!
+//! ```
+//! use armature_core::Container;
+//!
+//! #[derive(Clone, Default)]
+//! struct Config { debug: bool }
+//!
+//! #[derive(Clone)]
+//! struct UserService { config: std::sync::Arc<Config> }
+//!
+//! let container = Container::new();
+//!
+//! // Register services
+//! container.register(Config { debug: true });
+//!
+//! // Resolve services
+//! let config = container.require::<Config>();
+//! assert!(config.debug);
+//!
+//! // Get or use default
+//! let config2 = container.get_or_default::<Config>();
+//! ```
+//!
+//! ### Error Handling
+//!
+//! ```
+//! use armature_core::Error;
+//!
+//! // Create errors with convenience methods
+//! let err = Error::not_found("User not found");
+//! assert_eq!(err.status_code(), 404);
+//! assert!(err.is_client_error());
+//!
+//! let err = Error::validation("Email is required");
+//! assert_eq!(err.status_code(), 400);
+//!
+//! // Get help suggestions
+//! let err = Error::unauthorized("Invalid token");
+//! if let Some(help) = err.help() {
+//!     println!("Help: {}", help);
+//! }
+//! ```
+//!
+//! ## Module Overview
+//!
+//! | Module | Description |
+//! |--------|-------------|
+//! | [`application`] | Application bootstrap and lifecycle |
+//! | [`container`] | Dependency injection container |
+//! | [`routing`] | Request routing and handlers |
+//! | [`middleware`] | Middleware chain processing |
+//! | [`guard`] | Route guards for authorization |
+//! | [`resilience`] | Circuit breaker, retry, bulkhead patterns |
+//! | [`health`] | Health check endpoints |
+//! | [`logging`] | Structured logging |
+//! | [`websocket`] | WebSocket support |
+//! | [`sse`] | Server-Sent Events |
 
 pub mod application;
 pub mod body_limits;
@@ -62,6 +141,7 @@ pub mod logging;
 pub mod middleware;
 pub mod module;
 pub mod pagination;
+pub mod resilience;
 pub mod route_constraint;
 pub mod route_group;
 pub mod routing;
@@ -94,6 +174,13 @@ pub use logging::*;
 pub use middleware::*;
 pub use module::*;
 pub use pagination::*;
+pub use resilience::{
+    CircuitBreaker, CircuitBreakerConfig, CircuitBreakerError, CircuitState, CircuitBreakerStats,
+    Retry, RetryConfig, RetryError, BackoffStrategy,
+    Bulkhead, BulkheadConfig, BulkheadError, BulkheadStats,
+    Timeout as ResilienceTimeout, TimeoutConfig, TimeoutError,
+    Fallback, FallbackBuilder, FallbackChain, fallback_value, fallback_default,
+};
 pub use route_constraint::*;
 pub use route_group::*;
 pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn

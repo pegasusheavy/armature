@@ -1,0 +1,50 @@
+[package]
+name = "armature-lambda"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "AWS Lambda runtime adapter for Armature applications"
+keywords = ["lambda", "serverless", "aws", "armature", "api-gateway"]
+categories = ["web-programming", "asynchronous"]
+
+[dependencies]
+# Armature core
+armature-core = { path = "../armature-core" }
+
+# AWS Lambda runtime
+lambda_http = "0.13"
+lambda_runtime = "0.13"
+
+# AWS SDK (optional, for AWS service access)
+armature-aws = { path = "../armature-aws", optional = true }
+
+# Async runtime
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
+async-trait = "0.1"
+
+# HTTP types
+http = "1.1"
+bytes = "1.5"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+
+[features]
+default = []
+aws-services = ["armature-aws"]
+

@@ -311,7 +311,7 @@ impl ShutdownManager {
     /// Shutdown with custom phases
     ///
     /// For advanced use cases where you need fine-grained control.
-    pub async fn shutdown_with_phases(&self) -> ShutdownPhases {
+    pub async fn shutdown_with_phases(&self) -> ShutdownPhases<'_> {
         ShutdownPhases {
             manager: self,
         }

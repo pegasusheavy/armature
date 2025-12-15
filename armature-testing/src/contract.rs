@@ -203,17 +203,11 @@ impl Participant {
 /// Contract metadata
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[derive(Default)]
 pub struct ContractMetadata {
     pub pact_specification: PactSpecification,
 }
 
-impl Default for ContractMetadata {
-    fn default() -> Self {
-        Self {
-            pact_specification: PactSpecification::default(),
-        }
-    }
-}
 
 /// Pact specification version
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -358,14 +352,13 @@ impl ContractManager {
             let entry = entry.map_err(|e| ContractError::IoError(e.to_string()))?;
             let filename = entry.file_name().to_string_lossy().to_string();
 
-            if filename.ends_with(".json") {
-                if let Some(parts) = filename.strip_suffix(".json") {
+            if filename.ends_with(".json")
+                && let Some(parts) = filename.strip_suffix(".json") {
                     let parts: Vec<&str> = parts.split('-').collect();
                     if parts.len() >= 2 {
                         contracts.push((parts[0].to_string(), parts[1].to_string()));
                     }
                 }
-            }
         }
 
         Ok(contracts)

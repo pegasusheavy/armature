@@ -1,0 +1,140 @@
+# =============================================================================
+# Azure Container Apps Configuration
+# =============================================================================
+# Deploy with: az containerapp create --yaml containerapp.yaml
+# =============================================================================
+
+# apiVersion: 2024-03-01
+location: eastus
+name: armature-app
+type: Microsoft.App/containerApps
+
+properties:
+  # ---------------------------------------------------------------------------
+  # Managed Environment
+  # ---------------------------------------------------------------------------
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.App/managedEnvironments/{environment-name}
+
+  # ---------------------------------------------------------------------------
+  # Configuration
+  # ---------------------------------------------------------------------------
+  configuration:
+    # Ingress configuration
+    ingress:
+      external: true
+      targetPort: 80
+      transport: http
+      allowInsecure: false
+      traffic:
+        - latestRevision: true
+          weight: 100
+
+      # CORS configuration
+      corsPolicy:
+        allowedOrigins:
+          - "*"
+        allowedMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        allowedHeaders:
+          - "*"
+        maxAge: 3600
+
+    # Secrets
+    secrets:
+      - name: database-url
+        value: "{DATABASE_URL}"
+      - name: redis-url
+        value: "{REDIS_URL}"
+      - name: acr-password
+        value: "{ACR_PASSWORD}"
+
+    # Container Registry
+    registries:
+      - server: myregistry.azurecr.io
+        username: myregistry
+        passwordSecretRef: acr-password
+
+    # Active revisions mode
+    activeRevisionsMode: Single
+
+  # ---------------------------------------------------------------------------
+  # Template
+  # ---------------------------------------------------------------------------
+  template:
+    containers:
+      - name: armature-app
+        image: myregistry.azurecr.io/armature-app:latest
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+
+        # Environment variables
+        env:
+          - name: PORT
+            value: "80"
+          - name: RUST_LOG
+            value: "info"
+          - name: DATABASE_URL
+            secretRef: database-url
+          - name: REDIS_URL
+            secretRef: redis-url
+
+        # Probes
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /health/live
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          - type: Readiness
+            httpGet:
+              path: /health/ready
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          - type: Startup
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 30
+
+    # Scaling
+    scale:
+      minReplicas: 0
+      maxReplicas: 10
+      rules:
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "50"
+
+        # Custom scaling rule example (CPU-based)
+        # - name: cpu-scaling
+        #   custom:
+        #     type: cpu
+        #     metadata:
+        #       type: Utilization
+        #       value: "70"
+
+    # Revision suffix (optional)
+    # revisionSuffix: "v1"
+
+  # ---------------------------------------------------------------------------
+  # Tags
+  # ---------------------------------------------------------------------------
+  tags:
+    environment: production
+    application: armature
+    team: backend
+

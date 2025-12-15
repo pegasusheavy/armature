@@ -1,0 +1,11 @@
+# =============================================================================
+# Armature - Kubernetes Namespace
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: armature
+  labels:
+    app.kubernetes.io/name: armature
+    app.kubernetes.io/managed-by: armature-cli
+

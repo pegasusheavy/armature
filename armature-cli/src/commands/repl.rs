@@ -105,9 +105,9 @@ fn launch_evcxr_repl() -> Result<(), CliError> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
-        .map_err(|e| CliError::Io(e))?;
+        .map_err(CliError::Io)?;
 
-    let status = child.wait().map_err(|e| CliError::Io(e))?;
+    let status = child.wait().map_err(CliError::Io)?;
 
     if !status.success() {
         return Err(CliError::Tool("evcxr_repl exited with error".to_string()));

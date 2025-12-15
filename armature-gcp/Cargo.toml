@@ -1,0 +1,70 @@
+[package]
+name = "armature-gcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Google Cloud Platform services integration for Armature - dynamically loadable and DI-ready"
+keywords = ["gcp", "google-cloud", "firestore", "pubsub", "bigquery"]
+categories = ["web-programming", "asynchronous"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["sync"] }
+async-trait = "0.1"
+
+# GCP authentication
+gcp_auth = { version = "0.12", optional = true }
+
+# GCP services (all optional)
+google-cloud-storage = { version = "0.22", optional = true }
+google-cloud-pubsub = { version = "0.28", optional = true }
+google-cloud-spanner = { version = "0.33", optional = true }
+google-cloud-bigquery = { version = "0.15", optional = true }
+
+# Firestore uses tonic-based client
+google-cloud-googleapis = { version = "0.15", optional = true }
+tonic = { version = "0.12", optional = true }
+
+# HTTP client for REST APIs
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"], optional = true }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+tracing = "0.1"
+parking_lot = "0.12"
+jsonwebtoken = { version = "9.3", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+
+[features]
+default = []
+# Core auth
+auth = ["gcp_auth"]
+# Individual services
+storage = ["google-cloud-storage", "auth"]
+pubsub = ["google-cloud-pubsub", "auth"]
+spanner = ["google-cloud-spanner", "auth"]
+bigquery = ["google-cloud-bigquery", "auth"]
+firestore = ["google-cloud-googleapis", "tonic", "auth"]
+# REST-based services (use HTTP client)
+cloud-run = ["reqwest", "jsonwebtoken", "auth"]
+cloud-functions = ["reqwest", "jsonwebtoken", "auth"]
+secret-manager = ["reqwest", "jsonwebtoken", "auth"]
+# Service groups
+data = ["storage", "firestore", "spanner", "bigquery"]
+messaging = ["pubsub"]
+compute = ["cloud-run", "cloud-functions"]
+# All services
+all = ["data", "messaging", "compute", "secret-manager"]
+

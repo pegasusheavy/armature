@@ -1,0 +1,125 @@
+# =============================================================================
+# Armature Azure Container - Local Development Environment
+# =============================================================================
+# Simulates Azure Container Apps environment locally with Azurite
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Application
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: armature-azure-app
+    ports:
+      - "80:80"
+    environment:
+      - PORT=80
+      - RUST_LOG=debug
+      - AZURE_FUNCTIONS_ENVIRONMENT=Development
+      - WEBSITE_SITE_NAME=armature-app
+      - DATABASE_URL=postgres://armature:armature@postgres:5432/armature
+      - REDIS_URL=redis://redis:6379
+      # Azure Storage connection (Azurite)
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: armature-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=armature
+      - POSTGRES_PASSWORD=armature
+      - POSTGRES_DB=armature
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U armature"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: armature-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Azurite - Azure Storage Emulator
+  # ---------------------------------------------------------------------------
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: armature-azurite
+    ports:
+      - "10000:10000"  # Blob
+      - "10001:10001"  # Queue
+      - "10002:10002"  # Table
+    volumes:
+      - azurite_data:/data
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+
+  # ---------------------------------------------------------------------------
+  # Azure Cosmos DB Emulator (Optional - requires license acceptance)
+  # ---------------------------------------------------------------------------
+  # cosmos:
+  #   image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+  #   container_name: armature-cosmos
+  #   ports:
+  #     - "8081:8081"
+  #     - "10250-10256:10250-10256"
+  #   environment:
+  #     - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10
+  #     - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+  #   volumes:
+  #     - cosmos_data:/tmp/cosmos/appdata
+
+  # ---------------------------------------------------------------------------
+  # Service Bus Emulator (Optional)
+  # ---------------------------------------------------------------------------
+  # servicebus:
+  #   image: azure/servicebus-emulator:latest
+  #   container_name: armature-servicebus
+  #   ports:
+  #     - "5672:5672"
+  #     - "5673:5673"
+
+volumes:
+  postgres_data:
+  redis_data:
+  azurite_data:
+  # cosmos_data:
+
+networks:
+  default:
+    name: armature-azure-net
+

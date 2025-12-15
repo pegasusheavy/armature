@@ -180,7 +180,6 @@ pub use providers::{
     MicrosoftEntraProvider, OktaProvider,
 };
 
-use armature_core::Provider;
 use armature_jwt::JwtManager;
 use std::sync::Arc;
 
@@ -265,6 +264,34 @@ impl Default for AuthService {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_auth::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::api_key::{ApiKey, ApiKeyManager, ApiKeyStore};
+    pub use crate::error::{AuthError, Result};
+    pub use crate::guard::{AuthGuard, Guard, RoleGuard};
+    pub use crate::oauth2::{OAuth2Provider, OAuth2Token, OAuth2UserInfo};
+    pub use crate::password::{PasswordHasher, PasswordVerifier};
+    pub use crate::strategy::{AuthStrategy, JwtStrategy, LocalStrategy};
+    pub use crate::user::{AuthUser, UserContext};
+    pub use crate::AuthService;
+
+    // OAuth2 providers
+    pub use crate::providers::{
+        Auth0Provider, AwsCognitoProvider, DiscordProvider, GitHubProvider, GitLabProvider,
+        GoogleProvider, LinkedInProvider, MicrosoftEntraProvider, OktaProvider,
+    };
+
+    #[cfg(feature = "saml")]
+    pub use crate::saml::{SamlConfig, SamlProvider, SamlServiceProvider};
+
+    #[cfg(feature = "two-factor")]
+    pub use crate::two_factor::{BackupCodes, TotpSecret, TwoFactorError};
 }
 
 

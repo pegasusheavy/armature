@@ -11,6 +11,7 @@ use std::path::Path;
 struct RouteInfo {
     method: String,
     path: String,
+    #[allow(dead_code)]
     handler: String,
     middleware: Vec<String>,
     guards: Vec<String>,
@@ -68,11 +69,10 @@ fn find_routes(dir: &str) -> Result<Vec<RouteInfo>, CliError> {
     ];
 
     for path in paths_to_search {
-        if Path::new(&path).exists() {
-            if let Ok(content) = fs::read_to_string(&path) {
+        if Path::new(&path).exists()
+            && let Ok(content) = fs::read_to_string(&path) {
                 routes.extend(parse_routes(&content));
             }
-        }
     }
 
     // Search in controllers directory
@@ -97,11 +97,10 @@ fn parse_routes(content: &str) -> Vec<RouteInfo> {
         let line = line.trim();
 
         // Match route decorators like #[get("/path")]
-        if line.starts_with("#[") && line.contains("(\"") {
-            if let Some(route) = parse_route_decorator(line) {
+        if line.starts_with("#[") && line.contains("(\"")
+            && let Some(route) = parse_route_decorator(line) {
                 routes.push(route);
             }
-        }
     }
 
     routes
@@ -113,9 +112,9 @@ fn parse_route_decorator(line: &str) -> Option<RouteInfo> {
 
     for method in methods {
         let pattern = format!("#[{}(\"", method);
-        if line.contains(&pattern) {
-            if let Some(start) = line.find("(\"") {
-                if let Some(end) = line[start..].find("\")") {
+        if line.contains(&pattern)
+            && let Some(start) = line.find("(\"")
+                && let Some(end) = line[start..].find("\")") {
                     let path = &line[start + 2..start + end];
                     return Some(RouteInfo {
                         method: method.to_uppercase(),
@@ -125,8 +124,6 @@ fn parse_route_decorator(line: &str) -> Option<RouteInfo> {
                         guards: Vec::new(),
                     });
                 }
-            }
-        }
     }
 
     None
@@ -138,7 +135,7 @@ fn print_routes_table(routes: &[RouteInfo]) {
     let path_width = routes.iter().map(|r| r.path.len()).max().unwrap_or(4).max(4);
 
     // Print header
-    println!("{:width$}  {}", "METHOD", "PATH", width = method_width);
+    println!("{:width$}  PATH", "METHOD", width = method_width);
     println!("{}", "-".repeat(method_width + path_width + 2));
 
     // Print routes

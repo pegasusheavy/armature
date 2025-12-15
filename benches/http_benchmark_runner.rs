@@ -35,9 +35,8 @@
 //! - NestJS: 3008
 
 use std::collections::HashMap;
-use std::io::BufReader;
 use std::process::{Command, Stdio};
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Framework configuration for benchmarking
 #[derive(Debug, Clone)]
@@ -391,12 +390,12 @@ fn parse_wrk_output(output: &str, url: &str) -> Result<BenchmarkResult, String> 
 
 fn parse_duration_to_ms(s: &str) -> f64 {
     let s = s.trim();
-    if s.ends_with("ms") {
-        s[..s.len() - 2].parse().unwrap_or(0.0)
-    } else if s.ends_with("us") {
-        s[..s.len() - 2].parse::<f64>().unwrap_or(0.0) / 1000.0
-    } else if s.ends_with('s') {
-        s[..s.len() - 1].parse::<f64>().unwrap_or(0.0) * 1000.0
+    if let Some(stripped) = s.strip_suffix("ms") {
+        stripped.parse().unwrap_or(0.0)
+    } else if let Some(stripped) = s.strip_suffix("us") {
+        stripped.parse::<f64>().unwrap_or(0.0) / 1000.0
+    } else if let Some(stripped) = s.strip_suffix('s') {
+        stripped.parse::<f64>().unwrap_or(0.0) * 1000.0
     } else {
         s.parse().unwrap_or(0.0)
     }
@@ -404,12 +403,12 @@ fn parse_duration_to_ms(s: &str) -> f64 {
 
 fn parse_transfer_rate(s: &str) -> f64 {
     let s = s.trim();
-    if s.ends_with("MB") {
-        s[..s.len() - 2].parse().unwrap_or(0.0)
-    } else if s.ends_with("KB") {
-        s[..s.len() - 2].parse::<f64>().unwrap_or(0.0) / 1024.0
-    } else if s.ends_with("GB") {
-        s[..s.len() - 2].parse::<f64>().unwrap_or(0.0) * 1024.0
+    if let Some(stripped) = s.strip_suffix("MB") {
+        stripped.parse().unwrap_or(0.0)
+    } else if let Some(stripped) = s.strip_suffix("KB") {
+        stripped.parse::<f64>().unwrap_or(0.0) / 1024.0
+    } else if let Some(stripped) = s.strip_suffix("GB") {
+        stripped.parse::<f64>().unwrap_or(0.0) * 1024.0
     } else {
         s.parse().unwrap_or(0.0)
     }

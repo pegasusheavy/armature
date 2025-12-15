@@ -1,0 +1,21 @@
+apiVersion: v2
+name: armature
+description: A Helm chart for deploying Armature applications on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - armature
+  - rust
+  - api
+  - web-framework
+maintainers:
+  - name: Armature Team
+    url: https://github.com/armature-rs/armature
+home: https://armature.rs
+sources:
+  - https://github.com/armature-rs/armature
+annotations:
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/license: MIT
+

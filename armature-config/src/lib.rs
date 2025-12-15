@@ -136,7 +136,6 @@ pub use error::{ConfigError, Result};
 pub use loader::{ConfigLoader, FileFormat};
 pub use validation::{ConfigValidator, Validate};
 
-use armature_core::Provider;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -257,6 +256,18 @@ impl ConfigManager {
         config.contains_key(key)
     }
 
+    /// Remove a key from the configuration
+    pub fn remove(&self, key: &str) {
+        let mut config = self.config.write().unwrap();
+        config.remove(key);
+    }
+
+    /// Clear all configuration
+    pub fn clear(&self) {
+        let mut config = self.config.write().unwrap();
+        config.clear();
+    }
+
     /// Get all configuration keys
     pub fn keys(&self) -> Vec<String> {
         let config = self.config.read().unwrap();
@@ -294,6 +305,20 @@ impl Default for ConfigManager {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_config::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::config_service::ConfigService;
+    pub use crate::env::EnvLoader;
+    pub use crate::error::{ConfigError, Result};
+    pub use crate::loader::{ConfigLoader, FileFormat};
+    pub use crate::validation::{ConfigValidator, Validate};
+    pub use crate::ConfigManager;
 }
 
 

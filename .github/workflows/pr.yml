@@ -1,0 +1,119 @@
+# GitHub Actions PR Automation
+#
+# Auto-labels PRs based on files changed and runs quick checks
+
+name: PR Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  # ============================================================================
+  # AUTO-LABEL
+  # ============================================================================
+
+  label:
+    name: Auto Label
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Label PR
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+
+  # ============================================================================
+  # SIZE CHECK
+  # ============================================================================
+
+  size:
+    name: PR Size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        id: size
+        run: |
+          ADDITIONS=$(gh pr view ${{ github.event.pull_request.number }} --json additions -q '.additions')
+          DELETIONS=$(gh pr view ${{ github.event.pull_request.number }} --json deletions -q '.deletions')
+          TOTAL=$((ADDITIONS + DELETIONS))
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+          if [ $TOTAL -gt 1000 ]; then
+            echo "⚠️ Large PR: $TOTAL lines changed"
+            echo "Consider breaking this into smaller PRs"
+          elif [ $TOTAL -gt 500 ]; then
+            echo "📦 Medium PR: $TOTAL lines changed"
+          else
+            echo "✅ Small PR: $TOTAL lines changed"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # COMMIT MESSAGE CHECK
+  # ============================================================================
+
+  commits:
+    name: Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          echo "Checking commit message format..."
+
+          # Get all commits in PR
+          COMMITS=$(git log --format='%s' origin/${{ github.base_ref }}..HEAD)
+
+          # Check for conventional commits
+          PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+'
+
+          while IFS= read -r commit; do
+            if [[ ! "$commit" =~ $PATTERN ]]; then
+              echo "❌ Invalid commit message: $commit"
+              echo "Expected format: type(scope): description"
+              echo "Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+            else
+              echo "✅ $commit"
+            fi
+          done <<< "$COMMITS"
+
+  # ============================================================================
+  # DOCUMENTATION CHECK
+  # ============================================================================
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for documentation
+        run: |
+          # Get list of changed files
+          CHANGED=$(gh pr view ${{ github.event.pull_request.number }} --json files -q '.files[].path')
+
+          # Check if Rust files changed but no docs
+          HAS_RS=$(echo "$CHANGED" | grep -E '\.rs$' || true)
+          HAS_DOCS=$(echo "$CHANGED" | grep -E '(docs/|\.md$)' || true)
+
+          if [ -n "$HAS_RS" ] && [ -z "$HAS_DOCS" ]; then
+            echo "⚠️ Rust files changed but no documentation updates found"
+            echo "Consider updating documentation if this adds new features"
+          else
+            echo "✅ Documentation check passed"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

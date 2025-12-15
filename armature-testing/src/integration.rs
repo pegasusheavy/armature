@@ -3,8 +3,13 @@
 //! Provides database setup/teardown and integration test utilities.
 
 use async_trait::async_trait;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 use thiserror::Error;
+
+/// Type alias for async test hook function.
+pub type AsyncTestHookFn = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send + Sync>;
 
 /// Integration test errors
 #[derive(Debug, Error)]
@@ -109,11 +114,10 @@ impl<T: DatabaseTestHelper> TestFixture<T> {
         let result = test_fn().await;
 
         // Teardown (even if test failed)
-        if self.auto_cleanup {
-            if let Err(e) = self.teardown().await {
+        if self.auto_cleanup
+            && let Err(e) = self.teardown().await {
                 eprintln!("Warning: Teardown failed: {}", e);
             }
-        }
 
         result
     }
@@ -123,8 +127,8 @@ impl<T: DatabaseTestHelper> TestFixture<T> {
 pub struct IntegrationTestBuilder {
     #[allow(dead_code)]
     name: String,
-    before_each: Vec<Box<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync>>,
-    after_each: Vec<Box<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync>>,
+    before_each: Vec<AsyncTestHookFn>,
+    after_each: Vec<AsyncTestHookFn>,
 }
 
 impl IntegrationTestBuilder {

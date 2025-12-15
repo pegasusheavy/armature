@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{parse_macro_input, Expr};
 
 pub fn test_request_impl(input: TokenStream) -> TokenStream {
-    let expr = parse_macro_input!(input as Expr);
+    let _expr = parse_macro_input!(input as Expr);
 
     let expanded = quote! {
         {

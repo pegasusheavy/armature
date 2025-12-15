@@ -1,7 +1,7 @@
 //! Retention policies for audit logs
 
 use crate::backend::AuditBackend;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
 use std::sync::Arc;
 use tokio::time::interval;
 

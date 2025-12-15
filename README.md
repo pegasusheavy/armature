@@ -578,6 +578,10 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - **[Rate Limiting Guide](docs/rate-limiting-guide.md)** - API rate limiting with multiple algorithms
 - **[Compression Guide](docs/modules/compression.md)** - HTTP response compression middleware
 
+**☁️ Cloud Providers:**
+- **[Cloud Providers Guide](docs/cloud-providers-guide.md)** - AWS, GCP, and Azure integrations
+- **[Redis Guide](docs/redis-guide.md)** - Centralized Redis with connection pooling
+
 **Advanced:**
 - **[GraphQL Guide](docs/graphql-guide.md)** - GraphQL API development
 - **[WebSocket & SSE Guide](docs/websocket-sse-guide.md)** - Real-time communication guide
@@ -585,6 +589,73 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 - **[Parallel Processing Guide](docs/parallel-processing-guide.md)** - Multithreading and optimization
 
 **And more guides covering testing, security, and deployment!**
+
+## ☁️ Cloud Provider Integrations
+
+Armature provides first-class integrations with major cloud providers through dedicated crates:
+
+| Crate | Provider | Key Services |
+|-------|----------|--------------|
+| `armature-aws` | **Amazon Web Services** | S3, DynamoDB, SQS, SNS, SES, Lambda, KMS, Cognito |
+| `armature-gcp` | **Google Cloud Platform** | Cloud Storage, Pub/Sub, Firestore, Spanner, BigQuery |
+| `armature-azure` | **Microsoft Azure** | Blob Storage, Cosmos DB, Service Bus, Key Vault |
+| `armature-redis` | **Redis** | Connection pooling, Pub/Sub, Cluster support |
+
+**Features:**
+- 🔌 **Dynamic Service Loading** - Only compile what you need via feature flags
+- 💉 **DI Integration** - Register once, inject across your entire application
+- ⚡ **Lazy Initialization** - Services created on-demand
+- 🔧 **Environment Config** - Reads from standard cloud environment variables
+
+```rust
+// Add only the services you need
+[dependencies]
+armature-aws = { version = "0.1", features = ["s3", "sqs"] }
+armature-gcp = { version = "0.1", features = ["storage", "pubsub"] }
+armature-redis = "0.1"
+```
+
+```rust
+// Register cloud services in your DI container
+#[module_impl]
+impl CloudModule {
+    #[provider(singleton)]
+    async fn aws() -> Arc<AwsServices> {
+        let config = AwsConfig::from_env()
+            .enable_s3()
+            .enable_sqs()
+            .build();
+        AwsServices::new(config).await.unwrap()
+    }
+
+    #[provider(singleton)]
+    async fn redis() -> Arc<RedisService> {
+        Arc::new(RedisService::new(RedisConfig::from_env().build()).await.unwrap())
+    }
+}
+
+// Use in controllers via injection
+#[controller("/files")]
+impl FileController {
+    #[post("/upload")]
+    async fn upload(
+        &self,
+        #[inject] aws: Arc<AwsServices>,
+        body: Bytes,
+    ) -> Result<Json<Response>, HttpError> {
+        let s3 = aws.s3()?;
+        s3.put_object()
+            .bucket("my-bucket")
+            .key("file.txt")
+            .body(body.into())
+            .send()
+            .await?;
+        Ok(Json(Response { success: true }))
+    }
+}
+```
+
+📖 See the **[Cloud Providers Guide](docs/cloud-providers-guide.md)** for complete documentation.
 
 ## Website Development
 

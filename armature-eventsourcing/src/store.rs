@@ -81,7 +81,7 @@ impl EventStore for InMemoryEventStore {
         events: &[DomainEvent],
         expected_version: Option<u64>,
     ) -> Result<(), EventStoreError> {
-        let mut entry = self.events.entry(aggregate_id.to_string()).or_insert_with(Vec::new);
+        let mut entry = self.events.entry(aggregate_id.to_string()).or_default();
 
         // Check version if specified
         if let Some(expected) = expected_version {

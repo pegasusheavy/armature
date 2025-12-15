@@ -1,0 +1,101 @@
+# =============================================================================
+# Armature Microservice - Docker Compose Configuration
+# =============================================================================
+# Usage:
+#   Development:  docker compose up
+#   Scale:        docker compose up --scale service=3
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Microservice
+  # ---------------------------------------------------------------------------
+  service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - RUST_LOG=${RUST_LOG:-info}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - SERVICE_NAME=${SERVICE_NAME:-microservice}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      # Service discovery
+      - CONSUL_URL=${CONSUL_URL:-http://consul:8500}
+      # Distributed tracing
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_ENDPOINT:-http://jaeger:4317}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+
+  # ---------------------------------------------------------------------------
+  # Redis (messaging/caching)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # ---------------------------------------------------------------------------
+  # Consul (Service Discovery) - Optional
+  # ---------------------------------------------------------------------------
+  consul:
+    image: hashicorp/consul:1.17
+    command: agent -dev -client=0.0.0.0
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    profiles:
+      - discovery
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Jaeger (Distributed Tracing) - Optional
+  # ---------------------------------------------------------------------------
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"  # UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    profiles:
+      - tracing
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+

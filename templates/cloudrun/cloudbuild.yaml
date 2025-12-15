@@ -1,0 +1,94 @@
+# =============================================================================
+# Google Cloud Build Configuration for Cloud Run
+# =============================================================================
+# This file configures Cloud Build to build and deploy to Cloud Run
+# =============================================================================
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Step 1: Build the container image
+  # ---------------------------------------------------------------------------
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:latest'
+      - '-f'
+      - 'Dockerfile'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:latest'
+      - '.'
+
+  # ---------------------------------------------------------------------------
+  # Step 2: Push to Artifact Registry
+  # ---------------------------------------------------------------------------
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}'
+
+  # ---------------------------------------------------------------------------
+  # Step 3: Deploy to Cloud Run
+  # ---------------------------------------------------------------------------
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${SHORT_SHA}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--memory'
+      - '${_MEMORY}'
+      - '--cpu'
+      - '${_CPU}'
+      - '--min-instances'
+      - '${_MIN_INSTANCES}'
+      - '--max-instances'
+      - '${_MAX_INSTANCES}'
+      - '--concurrency'
+      - '${_CONCURRENCY}'
+      - '--timeout'
+      - '${_TIMEOUT}'
+      - '--allow-unauthenticated'  # Remove for private services
+
+# ---------------------------------------------------------------------------
+# Substitutions (defaults, can be overridden)
+# ---------------------------------------------------------------------------
+substitutions:
+  _SERVICE: armature-app
+  _REGION: us-central1
+  _REPOSITORY: armature
+  _MEMORY: 256Mi
+  _CPU: '1'
+  _MIN_INSTANCES: '0'
+  _MAX_INSTANCES: '10'
+  _CONCURRENCY: '80'
+  _TIMEOUT: 300s
+
+# ---------------------------------------------------------------------------
+# Options
+# ---------------------------------------------------------------------------
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+
+# ---------------------------------------------------------------------------
+# Images to be pushed
+# ---------------------------------------------------------------------------
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:latest'
+
+# ---------------------------------------------------------------------------
+# Timeout
+# ---------------------------------------------------------------------------
+timeout: 1200s  # 20 minutes for Rust builds
+

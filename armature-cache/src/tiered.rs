@@ -83,15 +83,14 @@ where
     /// Get value from cache (checks L1 then L2)
     pub async fn get(&self, key: &str) -> CacheResult<Option<String>> {
         // Try L1 first
-        if self.config.enable_l1 {
-            if let Some(value) = self.l1.get_json(key).await? {
+        if self.config.enable_l1
+            && let Some(value) = self.l1.get_json(key).await? {
                 return Ok(Some(value));
             }
-        }
 
         // Try L2
-        if self.config.enable_l2 {
-            if let Some(value) = self.l2.get_json(key).await? {
+        if self.config.enable_l2
+            && let Some(value) = self.l2.get_json(key).await? {
                 // Promote to L1 if configured
                 if self.config.enable_l1 && self.config.promote_to_l1 {
                     // Use shorter TTL for L1
@@ -103,7 +102,6 @@ where
                 }
                 return Ok(Some(value));
             }
-        }
 
         Ok(None)
     }
@@ -239,11 +237,10 @@ impl CacheStore for InMemoryCache {
     async fn get_json(&self, key: &str) -> CacheResult<Option<String>> {
         let data = self.data.read().await;
         if let Some(entry) = data.get(key) {
-            if let Some(expires_at) = entry.expires_at {
-                if tokio::time::Instant::now() > expires_at {
+            if let Some(expires_at) = entry.expires_at
+                && tokio::time::Instant::now() > expires_at {
                     return Ok(None); // Expired
                 }
-            }
             Ok(Some(entry.value.clone()))
         } else {
             Ok(None)

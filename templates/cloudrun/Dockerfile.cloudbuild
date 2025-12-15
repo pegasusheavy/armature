@@ -1,0 +1,46 @@
+# =============================================================================
+# Armature Google Cloud Run - Cloud Build Optimized
+# =============================================================================
+# Optimized for Google Cloud Build with caching
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder
+# -----------------------------------------------------------------------------
+FROM rust:1.85-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    musl-dev \
+    openssl-dev \
+    openssl-libs-static \
+    pkgconfig
+
+# Cache dependencies
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release --target x86_64-unknown-linux-musl || true
+RUN rm -rf src
+
+# Build application
+COPY src ./src
+RUN cargo build --release --target x86_64-unknown-linux-musl
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
+
+WORKDIR /app
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/app /app/server
+
+ENV PORT=8080
+EXPOSE 8080
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/app/server"]
+

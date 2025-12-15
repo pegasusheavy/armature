@@ -1,0 +1,21 @@
+# =============================================================================
+# Armature - Kubernetes Service Template
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name | default "armature-api" }}
+  namespace: {{ .Values.namespace | default "armature" }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+    app.kubernetes.io/managed-by: armature-cli
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port | default 80 }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+

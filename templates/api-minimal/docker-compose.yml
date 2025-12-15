@@ -1,0 +1,51 @@
+# =============================================================================
+# Armature API Minimal - Docker Compose Configuration
+# =============================================================================
+# Usage:
+#   Development: docker compose up
+#   Production:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # API Service
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - RUST_LOG=${RUST_LOG:-info}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # Development Services (optional)
+  # ---------------------------------------------------------------------------
+  # Uncomment if your API needs Redis
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 3
+
+# volumes:
+#   redis_data:
+

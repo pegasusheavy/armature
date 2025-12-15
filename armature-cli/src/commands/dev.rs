@@ -79,13 +79,8 @@ async fn run_with_cargo_watch(
     println!("  {} Press {} to stop", "→".dimmed(), "Ctrl+C".yellow());
     println!();
 
-    // Set environment variables
-    // SAFETY: We're setting these before spawning any threads in this function
-    unsafe {
-        std::env::set_var("PORT", port.to_string());
-        std::env::set_var("HOST", host);
-    }
-
+    // Environment variables are passed directly to the child process via Command::env()
+    // No need to modify the current process environment
     let status = Command::new("cargo")
         .args(&args)
         .current_dir(project_root)

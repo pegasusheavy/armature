@@ -1,61 +1,132 @@
-//! File storage and upload handling for Armature
+//! # Armature Storage
 //!
-//! This module provides:
-//! - Multipart file upload handling
-//! - File validation (type, size, extension)
-//! - Multiple storage backends (Local, S3, GCS, Azure Blob)
-//! - Dependency injection for cloud providers
-//! - Production-ready file management
+//! Multipart file upload handling and storage backends for Armature applications.
 //!
-//! # Features
+//! ## Features
 //!
-//! - **Multipart Upload** - Handle file uploads from forms
-//! - **Validation** - Type, size, extension validation
-//! - **Local Storage** - Filesystem storage
-//! - **S3 Storage** - AWS S3 (with DI)
-//! - **GCS Storage** - Google Cloud Storage (with DI)
-//! - **Azure Blob** - Azure Blob Storage (with DI)
+//! - **Multipart Upload**: Parse multipart/form-data requests
+//! - **File Validation**: Type, size, extension, and content validation
+//! - **Local Storage**: Filesystem-based storage
+//! - **S3 Storage**: AWS S3 compatible storage (optional)
+//! - **GCS Storage**: Google Cloud Storage (optional)
+//! - **Azure Blob**: Azure Blob Storage (optional)
+//! - **Streaming**: Memory-efficient streaming uploads
 //!
-//! # Quick Start
+//! ## Quick Start
 //!
-//! ```no_run
-//! use armature_storage::*;
+//! ```rust,ignore
+//! use armature::prelude::*;
+//! use armature_storage::{Multipart, UploadedFile, FileValidator, LocalStorage, Storage};
 //!
-//! # async fn example() -> Result<(), StorageError> {
-//! // Create local storage
-//! let storage = LocalStorage::new("./uploads");
+//! #[controller("/files")]
+//! struct FileController;
 //!
-//! // Upload a file
-//! let metadata = storage.put("user-avatar.jpg", b"file data").await?;
-//! println!("Uploaded: {}", metadata.key);
-//! # Ok(())
-//! # }
+//! #[controller_impl]
+//! impl FileController {
+//!     #[post("/upload")]
+//!     async fn upload(
+//!         &self,
+//!         multipart: Multipart,
+//!         #[inject] storage: LocalStorage,
+//!     ) -> Result<Json<UploadResponse>, HttpError> {
+//!         let validator = FileValidator::new()
+//!             .max_size(10 * 1024 * 1024) // 10 MB
+//!             .allowed_types(&["image/jpeg", "image/png"])
+//!             .allowed_extensions(&["jpg", "jpeg", "png"]);
+//!
+//!         let mut files = Vec::new();
+//!         let mut stream = multipart.into_stream();
+//!
+//!         while let Some(field) = stream.next_field().await? {
+//!             if field.name() == Some("file") {
+//!                 let file = UploadedFile::from_field(field).await?;
+//!                 validator.validate(&file)?;
+//!
+//!                 let metadata = storage.put_file(&file).await?;
+//!                 files.push(metadata);
+//!             }
+//!         }
+//!
+//!         Ok(Json(UploadResponse { files }))
+//!     }
+//! }
+//! ```
+//!
+//! ## With S3 Storage
+//!
+//! ```rust,ignore
+//! use armature_storage::{S3Storage, S3Config};
+//!
+//! #[module_impl]
+//! impl StorageModule {
+//!     #[provider]
+//!     async fn s3_storage() -> S3Storage {
+//!         S3Storage::new(S3Config {
+//!             bucket: "my-bucket".to_string(),
+//!             region: "us-east-1".to_string(),
+//!             ..Default::default()
+//!         }).await.unwrap()
+//!     }
+//! }
 //! ```
 
-pub mod storage;
-pub mod validation;
-pub mod multipart;
-pub mod local;
+mod error;
+mod storage;
+mod multipart;
+mod validation;
+mod file;
+mod local;
 
 #[cfg(feature = "s3")]
-pub mod s3;
+mod s3;
 
 #[cfg(feature = "gcs")]
-pub mod gcs;
+mod gcs;
 
 #[cfg(feature = "azure")]
-pub mod azure;
+mod azure;
 
-pub use storage::*;
-pub use validation::*;
-pub use multipart::*;
-pub use local::*;
+pub use error::{StorageError, Result};
+pub use storage::{Storage, StorageMetadata, StorageConfig, generate_unique_key, calculate_checksum, sanitize_filename};
+pub use multipart::{Multipart, MultipartField, MultipartStream};
+pub use validation::{FileValidator, ValidationError, ValidationRule};
+pub use file::{UploadedFile, FileInfo};
+pub use local::{LocalStorage, LocalStorageConfig};
 
 #[cfg(feature = "s3")]
-pub use s3::*;
+pub use s3::{S3Storage, S3Config};
 
 #[cfg(feature = "gcs")]
-pub use gcs::*;
+pub use gcs::{GcsStorage, GcsConfig};
 
 #[cfg(feature = "azure")]
-pub use azure::*;
+pub use azure::{AzureBlobStorage, AzureBlobConfig};
+
+// Re-export useful types
+pub use bytes::Bytes;
+pub use mime::Mime;
+
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_storage::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::error::{Result, StorageError};
+    pub use crate::file::{FileInfo, UploadedFile};
+    pub use crate::local::{LocalStorage, LocalStorageConfig};
+    pub use crate::multipart::{Multipart, MultipartField, MultipartStream};
+    pub use crate::storage::{Storage, StorageConfig, StorageMetadata};
+    pub use crate::validation::{FileValidator, ValidationError, ValidationRule};
+
+    #[cfg(feature = "s3")]
+    pub use crate::s3::{S3Config, S3Storage};
+
+    #[cfg(feature = "gcs")]
+    pub use crate::gcs::{GcsConfig, GcsStorage};
+
+    #[cfg(feature = "azure")]
+    pub use crate::azure::{AzureBlobConfig, AzureBlobStorage};
+
+    pub use bytes::Bytes;
+}

@@ -6,7 +6,9 @@ edition = "2024"
 [dependencies]
 tokio = { version = "1.35", features = ["full"] }
 async-trait = "0.1"
-redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }
+# Redis for distributed locks/leader election - uses armature-redis for DI integration
+armature-redis = { path = "../armature-redis" }
+redis = { version = "1.0", features = ["tokio-comp", "connection-manager"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "1.6", features = ["v4"] }

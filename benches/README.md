@@ -5,13 +5,27 @@ including comparisons with other popular Rust web frameworks.
 
 ## Overview
 
-The benchmark suite measures performance across five categories:
+The benchmark suite measures performance across **15 categories**:
 
-1. **Core Benchmarks** - HTTP, routing, middleware, status codes
-2. **Security Benchmarks** - JWT operations
+### Core Framework Benchmarks
+1. **Core Benchmarks** - HTTP request/response, routing, middleware, status codes
+2. **Security Benchmarks** - JWT operations (sign, verify, algorithms)
 3. **Validation Benchmarks** - Form validation, email, URL, patterns
-4. **Data Benchmarks** - Queue jobs, cron expressions, caching
+4. **Data Benchmarks** - Queue jobs, cron expressions
 5. **Framework Comparison** - Comparison with Actix-web, Axum, Warp, Rocket
+
+### Infrastructure Benchmarks
+6. **Resilience Benchmarks** - Circuit breaker, retry, bulkhead, timeout, fallback
+7. **HTTP Client Benchmarks** - Client config, retry, circuit breaker, request building
+8. **Storage Benchmarks** - File validation, multipart, local/S3 storage
+9. **Cache Benchmarks** - Memory cache, TTL, serialization, concurrent access
+10. **Redis Benchmarks** - Config, keys, serialization, commands, pub/sub
+
+### Application Benchmarks
+11. **Auth Benchmarks** - Password hashing, API keys, guards, OAuth2, session IDs
+12. **Mail Benchmarks** - Email building, attachments, templates, SMTP config
+13. **Session Benchmarks** - Session ID generation, data management, cookie parsing
+14. **Rate Limit Benchmarks** - Token bucket, sliding window, concurrent access
 
 ## Quick Start
 
@@ -40,6 +54,7 @@ cargo bench
 ### Run Specific Benchmark Suite
 
 ```bash
+# === Core Framework Benchmarks ===
 # Core HTTP and routing
 cargo bench --bench core_benchmarks
 
@@ -54,6 +69,35 @@ cargo bench --bench data_benchmarks
 
 # Framework comparison (micro-benchmarks)
 cargo bench --bench framework_comparison
+
+# === Infrastructure Benchmarks ===
+# Resilience patterns (circuit breaker, retry, bulkhead)
+cargo bench --bench resilience_benchmarks
+
+# HTTP Client operations
+cargo bench --bench http_client_benchmarks
+
+# File storage and validation
+cargo bench --bench storage_benchmarks
+
+# Caching operations
+cargo bench --bench cache_benchmarks
+
+# Redis operations
+cargo bench --bench redis_benchmarks
+
+# === Application Benchmarks ===
+# Authentication operations
+cargo bench --bench auth_benchmarks
+
+# Email operations
+cargo bench --bench mail_benchmarks
+
+# Session management
+cargo bench --bench session_benchmarks
+
+# Rate limiting
+cargo bench --bench ratelimit_benchmarks
 ```
 
 ### Run Specific Benchmark
@@ -225,6 +269,85 @@ open target/criterion/report/index.html
 - **Handlers** - Async handler invocation patterns
 - **Full Cycle** - Complete request handling
 
+### Resilience Benchmarks (`resilience_benchmarks.rs`)
+
+- **Circuit Breaker** - Creation, state checks, recording success/failure
+- **Retry** - Config creation, backoff calculation
+- **Bulkhead** - Creation, permit acquisition, stats
+- **Timeout** - Creation, wrap operations
+- **Fallback** - Single and chained fallbacks
+- **Combined Patterns** - Full resilience stack overhead
+
+### HTTP Client Benchmarks (`http_client_benchmarks.rs`)
+
+- **Configuration** - Default, builder, full config
+- **Retry Config** - None, default, backoff strategies
+- **Circuit Breaker** - State checks, recording
+- **Request Building** - GET, POST, headers
+- **Response Processing** - Status checks, URL parsing
+
+### Storage Benchmarks (`storage_benchmarks.rs`)
+
+- **File Validation** - Size, MIME type, extension checks
+- **File Metadata** - Filename sanitization, key generation, checksums
+- **Local Storage** - Config, storage creation
+- **Uploaded File** - Clone, extension, MIME parsing
+- **Bytes Operations** - Creation, slicing
+
+### Cache Benchmarks (`cache_benchmarks.rs`)
+
+- **Cache Keys** - Simple, formatted, hashed keys
+- **Memory Cache** - Create, set, get (hit/miss), delete, exists
+- **TTL Management** - Set with various TTLs
+- **Serialization** - JSON serialize/deserialize for cache values
+- **Concurrent Access** - Mixed read/write workloads
+
+### Auth Benchmarks (`auth_benchmarks.rs`)
+
+- **Password Hashing** - Hash short/long passwords, verify
+- **API Key** - Generate, parse, compare
+- **Auth Guards** - Role/permission checking
+- **User Context** - Creation, cloning
+- **OAuth2** - Token creation, serialization
+- **Session ID** - UUID generation, random bytes, hex encoding
+
+### Redis Benchmarks (`redis_benchmarks.rs`)
+
+- **Configuration** - Default, builder, full config, URL parsing
+- **Key Generation** - Simple, formatted, complex, batch keys
+- **Value Serialization** - Small/medium/large JSON
+- **Command Building** - GET, SET, HSET, MGET, pipeline
+- **Pub/Sub** - Channel names, message serialization
+- **Lua Scripts** - Simple and complex scripts
+
+### Mail Benchmarks (`mail_benchmarks.rs`)
+
+- **Email Address** - Creation, parsing, validation
+- **Email Building** - Simple, HTML, multiple recipients, headers
+- **Attachments** - Small/medium, MIME type detection
+- **Templates** - Engine creation, registration, rendering
+- **SMTP Config** - Basic, from environment
+- **Email Serialization** - Simple/complex emails
+
+### Session Benchmarks (`session_benchmarks.rs`)
+
+- **Session ID** - UUID, random bytes, validation
+- **Configuration** - Default, custom, cookie building
+- **Session Data** - Create, get, insert, remove, contains
+- **Serialization** - Simple/complex session data
+- **Cookie Parsing** - Extract session ID, parse all cookies
+- **Memory Store** - Create, get (hit/miss), delete
+
+### Rate Limit Benchmarks (`ratelimit_benchmarks.rs`)
+
+- **Configuration** - Basic, per-route, builder
+- **Key Generation** - IP, user, route, complex keys
+- **Memory Limiter** - Create, check, remaining, reset
+- **Sliding Window** - Timestamp, window calculation
+- **Token Bucket** - Creation, consumption, refill
+- **Response Headers** - Rate limit headers, retry-after
+- **Concurrent Access** - Mixed workload, hot keys
+
 ## Performance Targets
 
 ### Target Latencies (p50)
@@ -238,6 +361,14 @@ open target/criterion/report/index.html
 | Email Validation | < 500ns | Regex check |
 | Route Match (100 routes) | < 1μs | Prefix tree |
 | DI Resolution | < 50ns | DashMap lookup |
+| Circuit Breaker Check | < 50ns | State lookup |
+| Bulkhead Acquire | < 100ns | Semaphore acquire |
+| Cache Get (memory) | < 500ns | DashMap lookup |
+| Session ID Generate | < 1μs | UUID v4 |
+| Rate Limit Check | < 100ns | Counter increment |
+| File Validation | < 1μs | Size + MIME check |
+| API Key Generate | < 5μs | Random bytes + encoding |
+| Email Build (simple) | < 500ns | String allocation |
 
 ### Throughput Targets
 

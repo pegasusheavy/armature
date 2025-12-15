@@ -1,0 +1,54 @@
+[package]
+name = "armature-push"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Push notifications for Armature - Web Push, FCM, and APNS"
+keywords = ["push", "notifications", "fcm", "apns", "web-push"]
+categories = ["web-programming", "asynchronous"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["sync", "time"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+tracing = "0.1"
+uuid = { version = "1.11", features = ["v4"] }
+base64 = "0.22"
+url = "2.5"
+
+# Web Push (VAPID)
+web-push = { version = "0.10", optional = true }
+
+# JWT for FCM/APNS
+jsonwebtoken = { version = "9.3", optional = true }
+
+# Cryptography for APNS
+p256 = { version = "0.13", features = ["ecdsa", "pem"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+tokio-test = "0.4"
+
+[features]
+default = ["web-push", "fcm"]
+web-push = ["dep:web-push"]
+fcm = ["jsonwebtoken"]
+apns = ["jsonwebtoken", "p256"]
+all = ["web-push", "fcm", "apns"]
+

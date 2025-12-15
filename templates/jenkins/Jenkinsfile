@@ -1,0 +1,167 @@
+// =============================================================================
+// Armature Application - Jenkins Pipeline
+// =============================================================================
+// Usage: Copy this Jenkinsfile to your project root
+// Requirements: Docker, Rust toolchain (or use Docker agent)
+// =============================================================================
+
+pipeline {
+    agent any
+
+    environment {
+        CARGO_HOME = "${WORKSPACE}/.cargo"
+        RUSTUP_HOME = "${WORKSPACE}/.rustup"
+        RUST_BACKTRACE = '1'
+        CARGO_TERM_COLOR = 'always'
+    }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+        // =====================================================================
+        // CHECKOUT
+        // =====================================================================
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // =====================================================================
+        // BUILD
+        // =====================================================================
+        stage('Build') {
+            steps {
+                sh '''
+                    echo "🔨 Building application..."
+                    cargo build --release
+                '''
+            }
+        }
+
+        // =====================================================================
+        // TEST
+        // =====================================================================
+        stage('Test') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        sh '''
+                            echo "🧪 Running unit tests..."
+                            cargo test --lib --release
+                        '''
+                    }
+                }
+                stage('Integration Tests') {
+                    steps {
+                        sh '''
+                            echo "🔗 Running integration tests..."
+                            cargo test --test '*' --release || true
+                        '''
+                    }
+                }
+                stage('Doc Tests') {
+                    steps {
+                        sh '''
+                            echo "📚 Running doc tests..."
+                            cargo test --doc --release
+                        '''
+                    }
+                }
+            }
+        }
+
+        // =====================================================================
+        // LINT
+        // =====================================================================
+        stage('Lint') {
+            parallel {
+                stage('Format') {
+                    steps {
+                        sh '''
+                            echo "📝 Checking formatting..."
+                            cargo fmt -- --check
+                        '''
+                    }
+                }
+                stage('Clippy') {
+                    steps {
+                        sh '''
+                            echo "📎 Running Clippy..."
+                            cargo clippy --all-targets --release -- -D warnings
+                        '''
+                    }
+                }
+            }
+        }
+
+        // =====================================================================
+        // SECURITY
+        // =====================================================================
+        stage('Security Audit') {
+            steps {
+                sh '''
+                    echo "🔒 Running security audit..."
+                    cargo audit || true
+                '''
+            }
+        }
+
+        // =====================================================================
+        // BUILD DOCKER IMAGE
+        // =====================================================================
+        stage('Docker Build') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                    buildingTag()
+                }
+            }
+            steps {
+                sh '''
+                    echo "🐳 Building Docker image..."
+                    docker build -t ${JOB_NAME}:${BUILD_NUMBER} .
+                    docker tag ${JOB_NAME}:${BUILD_NUMBER} ${JOB_NAME}:latest
+                '''
+            }
+        }
+
+        // =====================================================================
+        // DEPLOY (customize as needed)
+        // =====================================================================
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🚀 Deploying to production..."
+                // Add your deployment commands here
+                // Examples:
+                // - kubectl apply -f k8s/
+                // - helm upgrade --install myapp ./helm/armature
+                // - docker push ${REGISTRY}/${JOB_NAME}:${BUILD_NUMBER}
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "🧹 Cleaning up..."
+            cleanWs()
+        }
+        success {
+            echo "✅ Pipeline succeeded!"
+        }
+        failure {
+            echo "❌ Pipeline failed!"
+            // Add notification (Slack, email, etc.)
+        }
+    }
+}
+
