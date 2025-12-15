@@ -5,6 +5,8 @@
 //! Note: This example requires Redis to be running
 //! Start Redis: docker run -p 6379:6379 redis
 
+#![allow(unused_imports)]
+
 use std::time::Duration;
 
 #[tokio::main]
@@ -17,14 +19,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Try to connect to Redis
     println!("Attempting to connect to Redis...");
 
-    // Import the distributed lock module
-    use armature_distributed::*;
-
     // For demo purposes, we'll show the API even if Redis isn't running
     println!("\n📚 API Overview:\n");
 
     println!("1. Basic Lock Usage:");
     println!("   ```rust");
+    println!("   use armature_distributed::*;");
+    println!("   ");
     println!("   let lock = RedisLock::new(");
     println!("       \"my-resource\",");
     println!("       Duration::from_secs(30),");

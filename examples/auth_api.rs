@@ -8,9 +8,11 @@
 //!
 //! Run with: `cargo run --example auth_api --features "auth jwt"`
 
+#![allow(dead_code)]
+
 use armature::prelude::*;
-use armature_auth::prelude::*;
-use armature_jwt::prelude::*;
+use armature_auth::{PasswordHasher, PasswordVerifier};
+use armature_jwt::{JwtConfig, JwtManager};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -71,11 +73,11 @@ pub struct UserProfile {
 /// JWT Claims.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserClaims {
-    pub sub: String,        // user id
+    pub sub: String,
     pub email: String,
     pub role: String,
-    pub exp: i64,           // expiration timestamp
-    pub iat: i64,           // issued at
+    pub exp: i64,
+    pub iat: i64,
 }
 
 impl User {
@@ -151,11 +153,7 @@ pub struct AuthenticationService {
 }
 
 impl AuthenticationService {
-    pub fn new(
-        repository: UserRepository,
-        jwt_manager: JwtManager,
-        token_expiry_secs: u64,
-    ) -> Self {
+    pub fn new(repository: UserRepository, jwt_manager: JwtManager, token_expiry_secs: u64) -> Self {
         Self {
             repository,
             jwt_manager,
@@ -165,52 +163,46 @@ impl AuthenticationService {
     }
 
     /// Register a new user.
-    pub fn register(&self, req: RegisterRequest) -> Result<User, String> {
-        // Validate email
+    pub fn register(&self, req: RegisterRequest) -> std::result::Result<User, String> {
         if !req.email.contains('@') {
             return Err("Invalid email format".to_string());
         }
 
-        // Check if email exists
         if self.repository.email_exists(&req.email) {
             return Err("Email already registered".to_string());
         }
 
-        // Validate password
         if req.password.len() < 8 {
             return Err("Password must be at least 8 characters".to_string());
         }
 
-        // Hash password
         let password_hash = self
             .password_hasher
             .hash(&req.password)
-            .map_err(|e| format!("Failed to hash password: {}", e))?;
+            .map_err(|e| e.to_string())?;
 
-        // Create user
-        let user = self.repository.create(req.email, password_hash, UserRole::User);
+        let user = self
+            .repository
+            .create(req.email, password_hash, UserRole::User);
         Ok(user)
     }
 
     /// Authenticate a user and generate tokens.
-    pub fn login(&self, req: LoginRequest) -> Result<AuthResponse, String> {
-        // Find user
+    pub fn login(&self, req: LoginRequest) -> std::result::Result<AuthResponse, String> {
         let user = self
             .repository
             .find_by_email(&req.email)
-            .ok_or_else(|| "Invalid email or password".to_string())?;
+            .ok_or_else(|| "Invalid credentials".to_string())?;
 
-        // Verify password
         let valid = self
             .password_hasher
             .verify(&req.password, &user.password_hash)
-            .map_err(|e| format!("Password verification failed: {}", e))?;
+            .map_err(|e| e.to_string())?;
 
         if !valid {
-            return Err("Invalid email or password".to_string());
+            return Err("Invalid credentials".to_string());
         }
 
-        // Generate JWT
         let now = chrono::Utc::now().timestamp();
         let claims = UserClaims {
             sub: user.id.to_string(),
@@ -220,10 +212,7 @@ impl AuthenticationService {
             iat: now,
         };
 
-        let access_token = self
-            .jwt_manager
-            .sign(&claims)
-            .map_err(|e| format!("Failed to generate token: {}", e))?;
+        let access_token = self.jwt_manager.sign(&claims).map_err(|e| e.to_string())?;
 
         Ok(AuthResponse {
             access_token,
@@ -234,11 +223,8 @@ impl AuthenticationService {
     }
 
     /// Validate a JWT token and return the user.
-    pub fn validate_token(&self, token: &str) -> Result<(User, UserClaims), String> {
-        let claims: UserClaims = self
-            .jwt_manager
-            .verify(token)
-            .map_err(|e| format!("Invalid token: {}", e))?;
+    pub fn validate_token(&self, token: &str) -> std::result::Result<(User, UserClaims), String> {
+        let claims: UserClaims = self.jwt_manager.verify(token).map_err(|e| e.to_string())?;
 
         let user_id: u64 = claims
             .sub
@@ -255,78 +241,73 @@ impl AuthenticationService {
 }
 
 // =============================================================================
+// Global state for sharing auth service
+// =============================================================================
+
+static AUTH_SERVICE: std::sync::OnceLock<AuthenticationService> = std::sync::OnceLock::new();
+
+fn get_auth_service() -> &'static AuthenticationService {
+    AUTH_SERVICE
+        .get()
+        .expect("AuthenticationService not initialized")
+}
+
+// =============================================================================
 // Controllers
 // =============================================================================
 
 /// Public authentication endpoints.
 #[controller("/api/auth")]
+#[derive(Default, Clone)]
 struct AuthController;
 
-#[controller_impl]
 impl AuthController {
-    /// POST /api/auth/register - Register a new user
     #[post("/register")]
-    async fn register(
-        &self,
-        #[inject] auth: Arc<AuthenticationService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn register(req: HttpRequest) -> Result<HttpResponse, Error> {
         let body: RegisterRequest = req
             .json()
             .map_err(|e| Error::bad_request(format!("Invalid JSON: {}", e)))?;
 
-        match auth.register(body) {
+        match get_auth_service().register(body) {
             Ok(user) => {
                 let profile = user.to_profile();
                 let mut response = HttpResponse::created();
                 response = response.with_json(&profile)?;
                 Ok(response)
             }
-            Err(msg) => Err(Error::validation(msg)),
+            Err(e) => Err(Error::validation(e)),
         }
     }
 
-    /// POST /api/auth/login - Authenticate and get tokens
     #[post("/login")]
-    async fn login(
-        &self,
-        #[inject] auth: Arc<AuthenticationService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn login(req: HttpRequest) -> Result<HttpResponse, Error> {
         let body: LoginRequest = req
             .json()
             .map_err(|e| Error::bad_request(format!("Invalid JSON: {}", e)))?;
 
-        match auth.login(body) {
+        match get_auth_service().login(body) {
             Ok(response) => HttpResponse::json(&response),
-            Err(msg) => Err(Error::unauthorized(msg)),
+            Err(e) => Err(Error::unauthorized(e)),
         }
     }
 }
 
 /// Protected user endpoints.
 #[controller("/api/users")]
+#[derive(Default, Clone)]
 struct UserController;
 
-#[controller_impl]
 impl UserController {
-    /// GET /api/users/me - Get current user profile
     #[get("/me")]
-    async fn get_me(
-        &self,
-        #[inject] auth: Arc<AuthenticationService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
-        // Extract token from Authorization header
+    async fn get_me(req: HttpRequest) -> Result<HttpResponse, Error> {
         let token = Self::extract_token(&req)?;
-        let (user, _claims) = auth
+        let (user, _claims) = get_auth_service()
             .validate_token(token)
-            .map_err(|e| Error::unauthorized(e))?;
+            .map_err(Error::unauthorized)?;
 
         HttpResponse::json(&user.to_profile())
     }
 
-    /// Helper to extract bearer token from Authorization header
     fn extract_token(req: &HttpRequest) -> Result<&str, Error> {
         let header = req
             .headers
@@ -342,24 +323,17 @@ impl UserController {
 
 /// Admin-only endpoints.
 #[controller("/api/admin")]
+#[derive(Default, Clone)]
 struct AdminController;
 
-#[controller_impl]
 impl AdminController {
-    /// GET /api/admin/stats - Get admin statistics (admin only)
     #[get("/stats")]
-    async fn get_stats(
-        &self,
-        #[inject] auth: Arc<AuthenticationService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
-        // Extract and validate token
+    async fn get_stats(req: HttpRequest) -> Result<HttpResponse, Error> {
         let token = UserController::extract_token(&req)?;
-        let (user, _claims) = auth
+        let (user, _claims) = get_auth_service()
             .validate_token(token)
-            .map_err(|e| Error::unauthorized(e))?;
+            .map_err(Error::unauthorized)?;
 
-        // Check admin role
         if user.role != UserRole::Admin {
             return Err(Error::forbidden("Admin access required"));
         }
@@ -376,27 +350,11 @@ impl AdminController {
 // Module
 // =============================================================================
 
-#[module]
-struct AuthModule;
-
-#[module_impl]
-impl AuthModule {
-    fn providers(&self) -> Vec<ProviderRegistration> {
-        vec![]
-    }
-
-    fn controllers(&self) -> Vec<ControllerRegistration> {
-        vec![]
-    }
-
-    fn imports(&self) -> Vec<Box<dyn Module>> {
-        vec![]
-    }
-
-    fn exports(&self) -> Vec<std::any::TypeId> {
-        vec![]
-    }
-}
+#[module(
+    controllers: [AuthController, UserController, AdminController]
+)]
+#[derive(Default)]
+struct AppModule;
 
 // =============================================================================
 // Main
@@ -404,61 +362,46 @@ impl AuthModule {
 
 #[tokio::main]
 async fn main() {
-    // Initialize logging
-    let _guard = LogConfig::new()
-        .level(LogLevel::Info)
-        .format(LogFormat::Pretty)
-        .init();
-
-    info!("Starting Auth API example");
+    println!("Starting Auth API example");
 
     // Configure JWT
     let jwt_config = JwtConfig::new("your-super-secret-key-change-in-production".to_string());
     let jwt_manager = JwtManager::new(jwt_config).expect("Failed to create JWT manager");
 
-    // Create services
+    // Create repository and seed admin user
     let repository = UserRepository::new();
-
-    // Create an admin user for testing
     {
         let hasher = PasswordHasher::default();
         let hash = hasher.hash("admin123").unwrap();
         repository.create("admin@example.com".to_string(), hash, UserRole::Admin);
     }
 
+    // Initialize global auth service
     let auth_service = AuthenticationService::new(repository, jwt_manager, 3600);
+    if AUTH_SERVICE.set(auth_service).is_err() {
+        panic!("Failed to set auth service");
+    }
 
-    // Create the DI container
-    let container = Container::new();
-    container.register(auth_service);
+    println!("Server running at http://127.0.0.1:3000");
+    println!();
+    println!("Test the API:");
+    println!();
+    println!("  1. Register a new user:");
+    println!(r#"     curl -X POST http://localhost:3000/api/auth/register \"#);
+    println!(r#"       -H "Content-Type: application/json" \"#);
+    println!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
+    println!();
+    println!("  2. Login to get a token:");
+    println!(r#"     curl -X POST http://localhost:3000/api/auth/login \"#);
+    println!(r#"       -H "Content-Type: application/json" \"#);
+    println!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
+    println!();
+    println!("  3. Access protected endpoint:");
+    println!(r#"     curl http://localhost:3000/api/users/me \"#);
+    println!(r#"       -H "Authorization: Bearer YOUR_TOKEN""#);
+    println!();
+    println!("  Admin credentials: admin@example.com / admin123");
 
-    // Build the application
-    let app = Application::builder()
-        .container(container)
-        .build()
-        .expect("Failed to build application");
-
-    // Start the server
-    info!("Server running at http://127.0.0.1:3000");
-    info!("");
-    info!("Test the API:");
-    info!("");
-    info!("  1. Register a new user:");
-    info!(r#"     curl -X POST http://localhost:3000/api/auth/register \"#);
-    info!(r#"       -H "Content-Type: application/json" \"#);
-    info!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
-    info!("");
-    info!("  2. Login to get a token:");
-    info!(r#"     curl -X POST http://localhost:3000/api/auth/login \"#);
-    info!(r#"       -H "Content-Type: application/json" \"#);
-    info!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
-    info!("");
-    info!("  3. Access protected endpoint:");
-    info!(r#"     curl http://localhost:3000/api/users/me \"#);
-    info!(r#"       -H "Authorization: Bearer YOUR_TOKEN""#);
-    info!("");
-    info!("  Admin credentials: admin@example.com / admin123");
-
-    app.listen("127.0.0.1:3000").await.expect("Server failed");
+    let app = Application::create::<AppModule>().await;
+    app.listen(3000).await.unwrap();
 }
-

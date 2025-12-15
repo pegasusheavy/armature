@@ -8,6 +8,8 @@
 //!
 //! Run with: `cargo run --example realtime_api`
 
+#![allow(dead_code)]
+
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -50,7 +52,7 @@ pub struct UserStatus {
 // =============================================================================
 
 /// Service for broadcasting messages to connected clients.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BroadcastService {
     sender: broadcast::Sender<ChatMessage>,
     message_id: Arc<AtomicU64>,
@@ -93,22 +95,28 @@ impl BroadcastService {
 }
 
 // =============================================================================
+// Global State
+// =============================================================================
+
+static BROADCAST_SERVICE: std::sync::OnceLock<BroadcastService> = std::sync::OnceLock::new();
+
+fn get_broadcast_service() -> &'static BroadcastService {
+    BROADCAST_SERVICE.get().expect("BroadcastService not initialized")
+}
+
+// =============================================================================
 // Controllers
 // =============================================================================
 
 /// REST API endpoints for chat.
 #[controller("/api/chat")]
+#[derive(Default, Clone)]
 struct ChatController;
 
-#[controller_impl]
 impl ChatController {
     /// POST /api/chat/messages - Send a message (broadcasts to all clients)
     #[post("/messages")]
-    async fn send_message(
-        &self,
-        #[inject] broadcast: Arc<BroadcastService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn send_message(req: HttpRequest) -> Result<HttpResponse, Error> {
         #[derive(Deserialize)]
         struct SendMessage {
             username: String,
@@ -124,18 +132,15 @@ impl ChatController {
             return Err(Error::validation("Message content cannot be empty"));
         }
 
-        let message = broadcast.broadcast(body.username, body.content, body.room);
+        let message = get_broadcast_service().broadcast(body.username, body.content, body.room);
         HttpResponse::json(&message)
     }
 
     /// GET /api/chat/stats - Get chat statistics
     #[get("/stats")]
-    async fn get_stats(
-        &self,
-        #[inject] broadcast: Arc<BroadcastService>,
-    ) -> Result<HttpResponse, Error> {
+    async fn get_stats() -> Result<HttpResponse, Error> {
         HttpResponse::json(&serde_json::json!({
-            "active_connections": broadcast.subscriber_count(),
+            "active_connections": get_broadcast_service().subscriber_count(),
             "status": "online",
         }))
     }
@@ -143,13 +148,13 @@ impl ChatController {
 
 /// Server-Sent Events endpoint.
 #[controller("/api/events")]
+#[derive(Default, Clone)]
 struct EventsController;
 
-#[controller_impl]
 impl EventsController {
     /// GET /api/events/stream - SSE stream of server events
     #[get("/stream")]
-    async fn event_stream(&self) -> Result<HttpResponse, Error> {
+    async fn event_stream() -> Result<HttpResponse, Error> {
         // This would normally return an SSE stream
         // For demonstration, we'll return a simple message
         HttpResponse::json(&serde_json::json!({
@@ -160,7 +165,7 @@ impl EventsController {
 
     /// GET /api/events/heartbeat - SSE heartbeat stream
     #[get("/heartbeat")]
-    async fn heartbeat(&self) -> Result<HttpResponse, Error> {
+    async fn heartbeat() -> Result<HttpResponse, Error> {
         HttpResponse::json(&serde_json::json!({
             "message": "Heartbeat endpoint for connection keep-alive",
             "interval_seconds": 30,
@@ -170,13 +175,13 @@ impl EventsController {
 
 /// WebSocket endpoint.
 #[controller("/api/ws")]
+#[derive(Default, Clone)]
 struct WebSocketController;
 
-#[controller_impl]
 impl WebSocketController {
     /// GET /api/ws/info - WebSocket connection info
     #[get("/info")]
-    async fn ws_info(&self) -> Result<HttpResponse, Error> {
+    async fn ws_info() -> Result<HttpResponse, Error> {
         HttpResponse::json(&serde_json::json!({
             "websocket_url": "ws://localhost:3000/ws/chat",
             "supported_protocols": ["chat.v1"],
@@ -200,7 +205,7 @@ impl WebSocketController {
 // =============================================================================
 
 /// Spawns a background task that broadcasts periodic events.
-async fn spawn_event_generator(broadcast: Arc<BroadcastService>) {
+async fn spawn_event_generator() {
     let mut interval = interval(Duration::from_secs(30));
     let events = vec![
         ("System", "Server health check completed"),
@@ -214,12 +219,12 @@ async fn spawn_event_generator(broadcast: Arc<BroadcastService>) {
 
         let (username, content) = events[event_idx % events.len()];
         let content = if content.contains("checking") {
-            format!("Connected clients: {}", broadcast.subscriber_count())
+            format!("Connected clients: {}", get_broadcast_service().subscriber_count())
         } else {
             content.to_string()
         };
 
-        broadcast.broadcast(
+        get_broadcast_service().broadcast(
             username.to_string(),
             content,
             Some("announcements".to_string()),
@@ -233,27 +238,11 @@ async fn spawn_event_generator(broadcast: Arc<BroadcastService>) {
 // Module
 // =============================================================================
 
-#[module]
-struct RealtimeModule;
-
-#[module_impl]
-impl RealtimeModule {
-    fn providers(&self) -> Vec<ProviderRegistration> {
-        vec![]
-    }
-
-    fn controllers(&self) -> Vec<ControllerRegistration> {
-        vec![]
-    }
-
-    fn imports(&self) -> Vec<Box<dyn Module>> {
-        vec![]
-    }
-
-    fn exports(&self) -> Vec<std::any::TypeId> {
-        vec![]
-    }
-}
+#[module(
+    controllers: [ChatController, EventsController, WebSocketController]
+)]
+#[derive(Default)]
+struct AppModule;
 
 // =============================================================================
 // Main
@@ -261,54 +250,37 @@ impl RealtimeModule {
 
 #[tokio::main]
 async fn main() {
-    // Initialize logging
-    let _guard = LogConfig::new()
-        .level(LogLevel::Info)
-        .format(LogFormat::Pretty)
-        .init();
-
-    info!("Starting Real-time API example");
+    println!("Starting Real-time API example");
 
     // Create broadcast service
-    let broadcast = Arc::new(BroadcastService::new(100));
+    let broadcast = BroadcastService::new(100);
+    BROADCAST_SERVICE.set(broadcast).expect("Failed to set broadcast service");
 
     // Spawn background event generator
-    let broadcast_clone = broadcast.clone();
     tokio::spawn(async move {
-        spawn_event_generator(broadcast_clone).await;
+        spawn_event_generator().await;
     });
 
-    // Create the DI container
-    let container = Container::new();
-    container.register(broadcast);
+    println!("Server running at http://127.0.0.1:3000");
+    println!();
+    println!("Available endpoints:");
+    println!();
+    println!("  Chat API:");
+    println!("    POST /api/chat/messages - Send a chat message");
+    println!("    GET  /api/chat/stats    - Get chat statistics");
+    println!();
+    println!("  Events API:");
+    println!("    GET  /api/events/stream    - SSE event stream");
+    println!("    GET  /api/events/heartbeat - Heartbeat stream");
+    println!();
+    println!("  WebSocket Info:");
+    println!("    GET  /api/ws/info - WebSocket connection details");
+    println!();
+    println!("Test sending a message:");
+    println!(r#"  curl -X POST http://localhost:3000/api/chat/messages \"#);
+    println!(r#"    -H "Content-Type: application/json" \"#);
+    println!(r#"    -d '{{"username":"Alice","content":"Hello!","room":"general"}}'"#);
 
-    // Build the application
-    let app = Application::builder()
-        .container(container)
-        .build()
-        .expect("Failed to build application");
-
-    // Start the server
-    info!("Server running at http://127.0.0.1:3000");
-    info!("");
-    info!("Available endpoints:");
-    info!("");
-    info!("  Chat API:");
-    info!("    POST /api/chat/messages - Send a chat message");
-    info!("    GET  /api/chat/stats    - Get chat statistics");
-    info!("");
-    info!("  Events API:");
-    info!("    GET  /api/events/stream    - SSE event stream");
-    info!("    GET  /api/events/heartbeat - Heartbeat stream");
-    info!("");
-    info!("  WebSocket Info:");
-    info!("    GET  /api/ws/info - WebSocket connection details");
-    info!("");
-    info!("Test sending a message:");
-    info!(r#"  curl -X POST http://localhost:3000/api/chat/messages \"#);
-    info!(r#"    -H "Content-Type: application/json" \"#);
-    info!(r#"    -d '{{"username":"Alice","content":"Hello!","room":"general"}}'"#);
-
-    app.listen("127.0.0.1:3000").await.expect("Server failed");
+    let app = Application::create::<AppModule>().await;
+    app.listen(3000).await.expect("Server failed");
 }
-

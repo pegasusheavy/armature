@@ -167,14 +167,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let actual_delete_response = ContractResponse::new(204);
 
     // Verify each interaction
-    let mut verification_results = vec![
+    let verification_results = vec![
         (contract.interactions[0].clone(), actual_get_response),
         (contract.interactions[1].clone(), actual_create_response),
         (contract.interactions[2].clone(), actual_update_response),
         (contract.interactions[3].clone(), actual_delete_response),
     ];
 
-    for (i, (interaction, actual)) in verification_results.iter().enumerate() {
+    for (interaction, actual) in verification_results.iter() {
         print!("   Verifying '{}': ", interaction.description);
         match ContractVerifier::verify_interaction(interaction, actual) {
             Ok(()) => println!("✅ PASS"),

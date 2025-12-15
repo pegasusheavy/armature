@@ -2,7 +2,7 @@
 //!
 //! Demonstrates the various utility macros available in Armature.
 
-use armature_core::{HttpResponse, Error};
+use armature_core::HttpResponse;
 use serde_json::json;
 
 #[tokio::main]
