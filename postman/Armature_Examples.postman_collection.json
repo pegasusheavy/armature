@@ -1,0 +1,1027 @@
+{
+  "info": {
+    "_postman_id": "armature-examples-collection",
+    "name": "Armature Framework Examples",
+    "description": "Comprehensive Postman collection for testing Armature framework examples.\n\nEach folder corresponds to an example in the `examples/` directory.\nMake sure to run the relevant example before testing:\n\n```bash\ncargo run --example <example_name> --features full\n```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Simple API",
+      "description": "Basic routing and JSON responses.\n\nRun: `cargo run --example simple`\nPort: 3001",
+      "item": [
+        {
+          "name": "Hello World",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3001/api/hello",
+              "host": ["{{base_url}}"],
+              "port": "3001",
+              "path": ["api", "hello"]
+            },
+            "description": "Returns a hello message from Armature."
+          }
+        },
+        {
+          "name": "Echo Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hello from Postman!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3001/api/echo",
+              "host": ["{{base_url}}"],
+              "port": "3001",
+              "path": ["api", "echo"]
+            },
+            "description": "Echoes back the message sent in the request body."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. REST API (Tasks)",
+      "description": "RESTful API with CRUD operations.\n\nRun: `cargo run --example rest_api`\nPort: 3002",
+      "item": [
+        {
+          "name": "List All Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3002/tasks",
+              "host": ["{{base_url}}"],
+              "port": "3002",
+              "path": ["tasks"]
+            },
+            "description": "Get all tasks."
+          }
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3002/tasks/1",
+              "host": ["{{base_url}}"],
+              "port": "3002",
+              "path": ["tasks", "1"]
+            },
+            "description": "Get a specific task by ID."
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 0,\n  \"title\": \"New Task from Postman\",\n  \"completed\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3002/tasks",
+              "host": ["{{base_url}}"],
+              "port": "3002",
+              "path": ["tasks"]
+            },
+            "description": "Create a new task."
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"title\": \"Updated Task\",\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3002/tasks/1",
+              "host": ["{{base_url}}"],
+              "port": "3002",
+              "path": ["tasks", "1"]
+            },
+            "description": "Update an existing task."
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3002/tasks/1",
+              "host": ["{{base_url}}"],
+              "port": "3002",
+              "path": ["tasks", "1"]
+            },
+            "description": "Delete a task by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. CRUD API (Users)",
+      "description": "Complete CRUD API with pagination.\n\nRun: `cargo run --example crud_api`\nPort: 3000",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/users",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users"]
+            },
+            "description": "List all users with pagination."
+          }
+        },
+        {
+          "name": "List Users (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/users?page=1&per_page=2",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "List users with pagination parameters."
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/users/1",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users", "1"]
+            },
+            "description": "Get a specific user by ID."
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Diana Prince\",\n  \"email\": \"diana@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/api/users",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users"]
+            },
+            "description": "Create a new user."
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Smith Updated\",\n  \"email\": \"alice.updated@example.com\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/api/users/1",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users", "1"]
+            },
+            "description": "Update an existing user."
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/users/1",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users", "1"]
+            },
+            "description": "Delete a user by ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Auth API",
+      "description": "Authentication API with JWT.\n\nRun: `cargo run --example auth_api`\nPort: 3000",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"name\": \"New User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/api/auth/register",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/api/auth/login",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login and receive a JWT token."
+          }
+        },
+        {
+          "name": "Get Current User (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/auth/me",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get the current authenticated user. Requires JWT token."
+          }
+        },
+        {
+          "name": "Get Auth Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/auth/stats",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "auth", "stats"]
+            },
+            "description": "Get authentication statistics."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Real-time API",
+      "description": "Real-time communication with WebSockets and SSE.\n\nRun: `cargo run --example realtime_api`\nPort: 3000",
+      "item": [
+        {
+          "name": "Send Chat Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"Alice\",\n  \"content\": \"Hello from Postman!\",\n  \"room\": \"general\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/api/chat/messages",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "chat", "messages"]
+            },
+            "description": "Send a chat message to broadcast."
+          }
+        },
+        {
+          "name": "Get Chat Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/chat/stats",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "chat", "stats"]
+            },
+            "description": "Get chat statistics and active connections."
+          }
+        },
+        {
+          "name": "Get Events Stream Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/events/stream",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "events", "stream"]
+            },
+            "description": "Get SSE stream info."
+          }
+        },
+        {
+          "name": "Get Heartbeat Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/events/heartbeat",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "events", "heartbeat"]
+            },
+            "description": "Get heartbeat endpoint info."
+          }
+        },
+        {
+          "name": "Get WebSocket Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/ws/info",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "ws", "info"]
+            },
+            "description": "Get WebSocket connection details."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. GraphQL API",
+      "description": "GraphQL API with queries and mutations.\n\nRun: `cargo run --example graphql_api`\nPort: 3007",
+      "item": [
+        {
+          "name": "Get All Books",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { books { id title author year } }\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3007/graphql",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql"]
+            },
+            "description": "Query all books."
+          }
+        },
+        {
+          "name": "Get Book by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { book(id: \\\"1\\\") { id title author year } }\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3007/graphql",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql"]
+            },
+            "description": "Query a specific book by ID."
+          }
+        },
+        {
+          "name": "Search Books",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { searchBooks(query: \\\"Rust\\\") { id title author } }\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3007/graphql",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql"]
+            },
+            "description": "Search books by title."
+          }
+        },
+        {
+          "name": "Get All Authors",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { authors { id name books { title } } }\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3007/graphql",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql"]
+            },
+            "description": "Query all authors with their books."
+          }
+        },
+        {
+          "name": "Create Book (Mutation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { createBook(title: \\\"Zero To Production\\\", author: \\\"Luca Palmieri\\\", year: 2022) { id title author year } }\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3007/graphql",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql"]
+            },
+            "description": "Create a new book."
+          }
+        },
+        {
+          "name": "Get GraphQL Schema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3007/graphql/schema",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["graphql", "schema"]
+            },
+            "description": "Get the GraphQL schema in SDL format."
+          }
+        },
+        {
+          "name": "GraphQL Playground",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3007/playground",
+              "host": ["{{base_url}}"],
+              "port": "3007",
+              "path": ["playground"]
+            },
+            "description": "Access the GraphQL playground UI."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Pagination & Filtering",
+      "description": "Advanced pagination, filtering, and sorting.\n\nRun: `cargo run --example pagination_example`\nPort: 3000",
+      "item": [
+        {
+          "name": "Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": [""]
+            },
+            "description": "Get API documentation with all supported parameters."
+          }
+        },
+        {
+          "name": "List Users (Basic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"]
+            },
+            "description": "List all users."
+          }
+        },
+        {
+          "name": "List Users (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?page=2&per_page=3",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "page", "value": "2"},
+                {"key": "per_page", "value": "3"}
+              ]
+            },
+            "description": "List users with pagination."
+          }
+        },
+        {
+          "name": "List Users (Sorted)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?sort=-created_at,name",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "sort", "value": "-created_at,name"}
+              ]
+            },
+            "description": "List users sorted by created_at (desc) then name (asc)."
+          }
+        },
+        {
+          "name": "List Users (Filtered by Status)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?status=active",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "status", "value": "active"}
+              ]
+            },
+            "description": "List only active users."
+          }
+        },
+        {
+          "name": "List Users (Filtered by Age)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?age__gte=25",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "age__gte", "value": "25"}
+              ]
+            },
+            "description": "List users with age >= 25."
+          }
+        },
+        {
+          "name": "List Users (Field Selection)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?fields=id,name,email",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "fields", "value": "id,name,email"}
+              ]
+            },
+            "description": "List users with only selected fields."
+          }
+        },
+        {
+          "name": "List Users (Combined)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users?page=1&per_page=5&sort=-age&status=active&fields=id,name,age",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "5"},
+                {"key": "sort", "value": "-age"},
+                {"key": "status", "value": "active"},
+                {"key": "fields", "value": "id,name,age"}
+              ]
+            },
+            "description": "Combined pagination, sorting, filtering, and field selection."
+          }
+        },
+        {
+          "name": "List Users (Cursor Pagination)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/users/cursor?limit=3",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["users", "cursor"],
+              "query": [
+                {"key": "limit", "value": "3"}
+              ]
+            },
+            "description": "List users with cursor-based pagination."
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Validation",
+      "description": "Input validation examples.\n\nRun: `cargo run --example validation_example`\nPort: 3018",
+      "item": [
+        {
+          "name": "Create User (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"age\": 30,\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create a user with valid data."
+          }
+        },
+        {
+          "name": "Create User (Invalid - Empty Name)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"john@example.com\",\n  \"age\": 30,\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create user with empty name - should return validation error."
+          }
+        },
+        {
+          "name": "Create User (Invalid - Bad Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John\",\n  \"email\": \"invalid-email\",\n  \"age\": 30,\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create user with invalid email - should return validation error."
+          }
+        },
+        {
+          "name": "Create User (Invalid - Underage)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Young Person\",\n  \"email\": \"young@example.com\",\n  \"age\": 10,\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create user with age < 18 - should return validation error."
+          }
+        },
+        {
+          "name": "Create User (Invalid - Short Password)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John\",\n  \"email\": \"john@example.com\",\n  \"age\": 30,\n  \"password\": \"short\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create user with password < 8 chars - should return validation error."
+          }
+        },
+        {
+          "name": "Create User (Multiple Errors)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"invalid\",\n  \"age\": -5,\n  \"password\": \"x\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users"]
+            },
+            "description": "Create user with multiple validation errors."
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3018/users/1",
+              "host": ["{{base_url}}"],
+              "port": "3018",
+              "path": ["users", "1"]
+            },
+            "description": "Update a user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Metrics",
+      "description": "Prometheus metrics endpoints.\n\nRun: `cargo run --example metrics_example`\nPort: 3000",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": [""]
+            },
+            "description": "Home endpoint - increments page_views counter."
+          }
+        },
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/users",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "users"]
+            },
+            "description": "Users endpoint - records API latency."
+          }
+        },
+        {
+          "name": "Get Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/posts",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "posts"]
+            },
+            "description": "Posts endpoint."
+          }
+        },
+        {
+          "name": "Get Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/metrics",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["metrics"]
+            },
+            "description": "Get Prometheus metrics in text format."
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Health Checks",
+      "description": "Common health check endpoints (available in most examples).",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/health",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["health"]
+            },
+            "description": "Basic health check endpoint."
+          }
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/ready",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["ready"]
+            },
+            "description": "Kubernetes readiness probe."
+          }
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/live",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["live"]
+            },
+            "description": "Kubernetes liveness probe."
+          }
+        }
+      ]
+    }
+  ]
+}
+
