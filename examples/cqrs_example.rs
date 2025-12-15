@@ -264,7 +264,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .await?;
 
-    let user3_id = command_bus
+    let _user3_id = command_bus
         .execute(CreateUserCommand {
             email: "charlie@example.com".to_string(),
             name: "Charlie".to_string(),

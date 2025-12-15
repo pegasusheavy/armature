@@ -5,6 +5,8 @@
 //!
 //! Run with: `cargo run --example crud_api`
 
+#![allow(dead_code)]
+
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -53,7 +55,7 @@ pub struct PagedResponse<T> {
 // =============================================================================
 
 /// In-memory repository for users.
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct UserRepository {
     users: Arc<RwLock<HashMap<u64, User>>>,
     next_id: Arc<RwLock<u64>>,
@@ -165,7 +167,7 @@ impl UserRepository {
 // =============================================================================
 
 /// User service with business logic.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct UserService {
     repository: UserRepository,
 }
@@ -181,13 +183,13 @@ impl UserService {
         self.repository.find_all(page, per_page)
     }
 
-    pub fn get_user(&self, id: u64) -> Result<User, String> {
+    pub fn get_user(&self, id: u64) -> std::result::Result<User, String> {
         self.repository
             .find_by_id(id)
             .ok_or_else(|| format!("User with id {} not found", id))
     }
 
-    pub fn create_user(&self, req: CreateUserRequest) -> Result<User, String> {
+    pub fn create_user(&self, req: CreateUserRequest) -> std::result::Result<User, String> {
         // Validation
         if req.name.trim().is_empty() {
             return Err("Name is required".to_string());
@@ -202,7 +204,7 @@ impl UserService {
         Ok(self.repository.create(req.name, req.email))
     }
 
-    pub fn update_user(&self, id: u64, req: UpdateUserRequest) -> Result<User, String> {
+    pub fn update_user(&self, id: u64, req: UpdateUserRequest) -> std::result::Result<User, String> {
         // Validate email if provided
         if let Some(ref email) = req.email {
             if !email.contains('@') {
@@ -215,7 +217,7 @@ impl UserService {
             .ok_or_else(|| format!("User with id {} not found", id))
     }
 
-    pub fn delete_user(&self, id: u64) -> Result<(), String> {
+    pub fn delete_user(&self, id: u64) -> std::result::Result<(), String> {
         if self.repository.delete(id) {
             Ok(())
         } else {
@@ -225,22 +227,28 @@ impl UserService {
 }
 
 // =============================================================================
+// Global state for sharing service
+// =============================================================================
+
+static USER_SERVICE: std::sync::OnceLock<UserService> = std::sync::OnceLock::new();
+
+fn get_user_service() -> &'static UserService {
+    USER_SERVICE.get().expect("UserService not initialized")
+}
+
+// =============================================================================
 // Controller
 // =============================================================================
 
 /// REST API controller for users.
 #[controller("/api/users")]
+#[derive(Default, Clone)]
 struct UserController;
 
-#[controller_impl]
 impl UserController {
     /// GET /api/users - List all users with pagination
     #[get("")]
-    async fn list_users(
-        &self,
-        #[inject] service: Arc<UserService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn list_users(req: HttpRequest) -> Result<HttpResponse, Error> {
         let page: usize = req
             .query("page")
             .and_then(|p| p.parse().ok())
@@ -250,23 +258,19 @@ impl UserController {
             .and_then(|p| p.parse().ok())
             .unwrap_or(10);
 
-        let result = service.list_users(page, per_page);
+        let result = get_user_service().list_users(page, per_page);
         HttpResponse::json(&result)
     }
 
     /// GET /api/users/:id - Get a user by ID
     #[get("/:id")]
-    async fn get_user(
-        &self,
-        #[inject] service: Arc<UserService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id: u64 = req
             .param("id")
             .and_then(|id| id.parse().ok())
             .ok_or_else(|| Error::bad_request("Invalid user ID"))?;
 
-        match service.get_user(id) {
+        match get_user_service().get_user(id) {
             Ok(user) => HttpResponse::json(&user),
             Err(msg) => Err(Error::not_found(msg)),
         }
@@ -274,16 +278,12 @@ impl UserController {
 
     /// POST /api/users - Create a new user
     #[post("")]
-    async fn create_user(
-        &self,
-        #[inject] service: Arc<UserService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let body: CreateUserRequest = req
             .json()
             .map_err(|e| Error::bad_request(format!("Invalid JSON: {}", e)))?;
 
-        match service.create_user(body) {
+        match get_user_service().create_user(body) {
             Ok(user) => {
                 let mut response = HttpResponse::created();
                 response = response.with_json(&user)?;
@@ -295,11 +295,7 @@ impl UserController {
 
     /// PUT /api/users/:id - Update an existing user
     #[put("/:id")]
-    async fn update_user(
-        &self,
-        #[inject] service: Arc<UserService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn update_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id: u64 = req
             .param("id")
             .and_then(|id| id.parse().ok())
@@ -309,7 +305,7 @@ impl UserController {
             .json()
             .map_err(|e| Error::bad_request(format!("Invalid JSON: {}", e)))?;
 
-        match service.update_user(id, body) {
+        match get_user_service().update_user(id, body) {
             Ok(user) => HttpResponse::json(&user),
             Err(msg) => Err(Error::not_found(msg)),
         }
@@ -317,17 +313,13 @@ impl UserController {
 
     /// DELETE /api/users/:id - Delete a user
     #[delete("/:id")]
-    async fn delete_user(
-        &self,
-        #[inject] service: Arc<UserService>,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, Error> {
+    async fn delete_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id: u64 = req
             .param("id")
             .and_then(|id| id.parse().ok())
             .ok_or_else(|| Error::bad_request("Invalid user ID"))?;
 
-        match service.delete_user(id) {
+        match get_user_service().delete_user(id) {
             Ok(()) => Ok(HttpResponse::no_content()),
             Err(msg) => Err(Error::not_found(msg)),
         }
@@ -338,27 +330,11 @@ impl UserController {
 // Module
 // =============================================================================
 
-#[module]
-struct UserModule;
-
-#[module_impl]
-impl UserModule {
-    fn providers(&self) -> Vec<ProviderRegistration> {
-        vec![]
-    }
-
-    fn controllers(&self) -> Vec<ControllerRegistration> {
-        vec![]
-    }
-
-    fn imports(&self) -> Vec<Box<dyn Module>> {
-        vec![]
-    }
-
-    fn exports(&self) -> Vec<std::any::TypeId> {
-        vec![]
-    }
-}
+#[module(
+    controllers: [UserController]
+)]
+#[derive(Default)]
+struct AppModule;
 
 // =============================================================================
 // Main
@@ -366,37 +342,21 @@ impl UserModule {
 
 #[tokio::main]
 async fn main() {
-    // Initialize logging
-    let _guard = LogConfig::new()
-        .level(LogLevel::Info)
-        .format(LogFormat::Pretty)
-        .init();
+    println!("Starting CRUD API example");
 
-    info!("Starting CRUD API example");
-
-    // Create the DI container
-    let container = Container::new();
-
-    // Register services
+    // Create and register services
     let repository = UserRepository::with_seed_data();
     let service = UserService::new(repository);
-    container.register(service);
+    USER_SERVICE.set(service).expect("Failed to set user service");
 
-    // Build the application
-    let app = Application::builder()
-        .container(container)
-        .build()
-        .expect("Failed to build application");
+    println!("Server running at http://127.0.0.1:3000");
+    println!("Try these endpoints:");
+    println!("  GET    /api/users          - List all users");
+    println!("  GET    /api/users/1        - Get user by ID");
+    println!("  POST   /api/users          - Create a user");
+    println!("  PUT    /api/users/1        - Update a user");
+    println!("  DELETE /api/users/1        - Delete a user");
 
-    // Start the server
-    info!("Server running at http://127.0.0.1:3000");
-    info!("Try these endpoints:");
-    info!("  GET    /api/users          - List all users");
-    info!("  GET    /api/users/1        - Get user by ID");
-    info!("  POST   /api/users          - Create a user");
-    info!("  PUT    /api/users/1        - Update a user");
-    info!("  DELETE /api/users/1        - Delete a user");
-
-    app.listen("127.0.0.1:3000").await.expect("Server failed");
+    let app = Application::create::<AppModule>().await;
+    app.listen(3000).await.unwrap();
 }
-

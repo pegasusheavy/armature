@@ -170,7 +170,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let l1_combined = Arc::new(InMemoryCache::new());
     let l2_combined = Arc::new(InMemoryCache::new());
-    let tiered_backend = TieredCache::new(l1_combined, l2_combined);
+    let _tiered_backend = TieredCache::new(l1_combined, l2_combined);
 
     // Note: This would require wrapping TieredCache to implement CacheStore
     println!("   💡 Tip: Wrap TieredCache with CacheStore impl for tagged support");
