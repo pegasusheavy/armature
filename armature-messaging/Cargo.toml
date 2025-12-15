@@ -38,7 +38,7 @@ lapin = { version = "2.3", optional = true }
 rdkafka = { version = "0.36", features = ["cmake-build"], optional = true }
 
 # NATS
-async-nats = { version = "0.38", optional = true }
+async-nats = { version = "0.45", optional = true }
 
 # AWS SQS/SNS
 aws-config = { version = "1.5", optional = true }
