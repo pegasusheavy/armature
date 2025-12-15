@@ -1,7 +1,7 @@
 //! Multi-Tenancy for Armature
 //!
 //! Comprehensive multi-tenancy support with tenant isolation, database per tenant,
-//! schema per tenant, and tenant-aware caching.
+//! schema per tenant, tenant-aware caching, and full lifecycle management.
 //!
 //! # Features
 //!
@@ -11,6 +11,8 @@
 //! - 🔍 **Tenant Resolution** - Multiple resolution strategies
 //! - 🚀 **Auto Middleware** - Automatic tenant resolution
 //! - 💾 **Tenant-Aware Caching** - Automatic cache key prefixing
+//! - 📝 **Tenant Management** - Full CRUD and lifecycle management
+//! - 🎛️ **Plans & Limits** - Built-in usage tracking and limits
 //!
 //! # Quick Start
 //!
@@ -101,9 +103,34 @@
 //! cache.set(&tenant, "users:1", data, None).await?;
 //! let value = cache.get(&tenant, "users:1").await?;
 //! ```
+//!
+//! ## 6. Tenant Management
+//!
+//! ```rust,ignore
+//! use armature_tenancy::*;
+//!
+//! // Create a tenant manager
+//! let store = Arc::new(InMemoryManagedTenantStore::new());
+//! let manager = TenantManager::with_store(store);
+//!
+//! // Create a new tenant
+//! let request = CreateTenantRequest::new("acme-corp")
+//!     .with_display_name("Acme Corporation")
+//!     .with_plan(TenantPlan::Professional);
+//!
+//! let tenant = manager.create(request).await?;
+//!
+//! // Manage lifecycle
+//! manager.suspend(&tenant.tenant.id, "Payment overdue").await?;
+//! manager.activate(&tenant.tenant.id).await?;
+//!
+//! // Check usage against limits
+//! let violations = manager.check_limits(&tenant.tenant.id).await?;
+//! ```
 
 pub mod cache;
 pub mod database;
+pub mod management;
 pub mod middleware;
 pub mod resolver;
 pub mod schema;
@@ -111,6 +138,11 @@ pub mod tenant;
 
 pub use cache::{CacheError, CacheKeyBuilder, CacheProvider, TenantCache};
 pub use database::{DatabaseProvider, TenantDatabaseConfig, TenantDatabaseManager};
+pub use management::{
+    CreateTenantRequest, InMemoryManagedTenantStore, ManagedTenant, ManagedTenantStore,
+    NoOpProvisioner, TenantFilter, TenantLimits, TenantManager, TenantPlan, TenantProvisioner,
+    TenantStatus, TenantUsage, UpdateTenantRequest,
+};
 pub use middleware::{get_tenant_id, get_tenant_name, TenantMiddleware};
 pub use resolver::{
     HeaderTenantResolver, JwtTenantResolver, PathTenantResolver, SubdomainTenantResolver,
@@ -118,4 +150,22 @@ pub use resolver::{
 };
 pub use schema::{SchemaConfig, SchemaManager, SchemaProvider, TenantQuery};
 pub use tenant::{Tenant, TenantContext};
+
+/// Prelude module for convenient imports
+pub mod prelude {
+    pub use crate::cache::{CacheProvider, TenantCache};
+    pub use crate::database::{DatabaseProvider, TenantDatabaseManager};
+    pub use crate::management::{
+        CreateTenantRequest, ManagedTenant, ManagedTenantStore, TenantFilter, TenantLimits,
+        TenantManager, TenantPlan, TenantProvisioner, TenantStatus, TenantUsage,
+        UpdateTenantRequest,
+    };
+    pub use crate::middleware::TenantMiddleware;
+    pub use crate::resolver::{
+        HeaderTenantResolver, JwtTenantResolver, PathTenantResolver, SubdomainTenantResolver,
+        TenantError, TenantResolver, TenantStore,
+    };
+    pub use crate::schema::SchemaManager;
+    pub use crate::tenant::{Tenant, TenantContext};
+}
 
