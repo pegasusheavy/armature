@@ -11,28 +11,144 @@ Cargo.lock
 *.swo
 *~
 .DS_Store
+*.iml
+
+# Cursor
+.cursor/
 
 # Build artifacts
 *.so
 *.dylib
 *.dll
 *.a
+*.o
+*.obj
 
-# Node.js (for SSR examples)
+# Node.js / Angular / Web
 node_modules/
 dist/
 build/
+.angular/
+.nx/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .npm
 .yarn
+.pnpm-store/
 
-# Environment
+# Environment & Secrets
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
 
 # OS
 Thumbs.db
+.DS_Store
+Desktop.ini
+ehthumbs.db
+
+# Coverage & Testing
+coverage/
+*.lcov
+lcov.info
+tarpaulin-report.html
+tarpaulin-report.json
+cobertura.xml
+.nyc_output/
+test-results/
+junit.xml
+
+# Documentation builds
+docs/_build/
+docs/site/
+book/
+mdbook/
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Kubernetes secrets (but keep templates)
+*-secret.yaml
+!templates/k8s/secret.yaml
+
+# Serverless
+.serverless/
+.aws-sam/
+samconfig.toml
+
+# Terraform / Infrastructure
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+
+# Profiling & Debugging
+*.prof
+*.trace
+flamegraph.svg
+perf.data
+perf.data.old
+cachegrind.out.*
+callgrind.out.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# Logs
+logs/
+*.log
+log/
+
+# Database files (local dev)
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Generated files
+*.generated.*
+generated/
+
+# macOS
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+# Benchmarks output
+criterion/
+benches/target/
+
+# Cargo specific
+.cargo/
+!.cargo/config.toml
+
+# Rust analyzer
+rust-project.json
