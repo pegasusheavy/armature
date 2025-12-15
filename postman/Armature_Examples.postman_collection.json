@@ -270,7 +270,7 @@
     },
     {
       "name": "04. Auth API",
-      "description": "Authentication API with JWT.\n\nRun: `cargo run --example auth_api`\nPort: 3000",
+      "description": "Authentication API with JWT.\n\nRun: `cargo run --example auth_api`\nPort: 3000\n\nControllers:\n- AuthController: /api/auth (register, login)\n- UserController: /api/users (me)\n- AdminController: /api/admin (stats)",
       "item": [
         {
           "name": "Register User",
@@ -284,7 +284,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"name\": \"New User\"\n}"
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
             },
             "url": {
               "raw": "{{base_url}}:3000/api/auth/register",
@@ -329,26 +329,31 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}:3000/api/auth/me",
+              "raw": "{{base_url}}:3000/api/users/me",
               "host": ["{{base_url}}"],
               "port": "3000",
-              "path": ["api", "auth", "me"]
+              "path": ["api", "users", "me"]
             },
-            "description": "Get the current authenticated user. Requires JWT token."
+            "description": "Get the current authenticated user. Requires JWT token.\n\nNote: Endpoint is on UserController at /api/users/me"
           }
         },
         {
-          "name": "Get Auth Stats",
+          "name": "Get Admin Stats (Admin Only)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}:3000/api/auth/stats",
+              "raw": "{{base_url}}:3000/api/admin/stats",
               "host": ["{{base_url}}"],
               "port": "3000",
-              "path": ["api", "auth", "stats"]
+              "path": ["api", "admin", "stats"]
             },
-            "description": "Get authentication statistics."
+            "description": "Get admin statistics. Requires admin role.\n\nNote: Endpoint is on AdminController at /api/admin/stats\n\nUse admin credentials: admin@example.com / admin123"
           }
         }
       ]
@@ -1024,4 +1029,3 @@
     }
   ]
 }
-
