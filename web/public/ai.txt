@@ -92,7 +92,7 @@ use armature::prelude::*;
 struct MyService;
 
 #[controller("/api/resource")]
-#[derive(Default, Clone)]  
+#[derive(Default, Clone)]
 struct MyController;
 
 impl MyController {
@@ -111,7 +111,7 @@ struct AppModule;
 # CONTACT
 # =============================================================================
 
-Contact: quinnjr@linux.com
+Contact: pegasusheavyindustries@gmail.com
 Organization: Pegasus Heavy Industries
 Maintainer: Joseph R. Quinn
 

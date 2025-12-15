@@ -196,5 +196,5 @@ Armature is built on Tokio and delivers exceptional performance:
 
 - Author: Joseph R. Quinn
 - Organization: Pegasus Heavy Industries
-- Email: quinnjr@linux.com
+- Email: pegasusheavyindustries@gmail.com
 
