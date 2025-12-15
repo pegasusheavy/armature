@@ -120,9 +120,10 @@ impl GraphQLService {
 
 // GraphQL controller
 #[controller("/api/graphql")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct GraphQLController;
 
+#[routes]
 impl GraphQLController {
     /// Main GraphQL endpoint
     #[post("")]
@@ -214,7 +215,7 @@ impl GraphQLController {
     providers: [GraphQLService],
     controllers: [GraphQLController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

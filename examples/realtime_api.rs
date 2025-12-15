@@ -113,6 +113,7 @@ fn get_broadcast_service() -> &'static BroadcastService {
 #[derive(Default, Clone)]
 struct ChatController;
 
+#[routes]
 impl ChatController {
     /// POST /api/chat/messages - Send a message (broadcasts to all clients)
     #[post("/messages")]
@@ -151,6 +152,7 @@ impl ChatController {
 #[derive(Default, Clone)]
 struct EventsController;
 
+#[routes]
 impl EventsController {
     /// GET /api/events/stream - SSE stream of server events
     #[get("/stream")]
@@ -178,6 +180,7 @@ impl EventsController {
 #[derive(Default, Clone)]
 struct WebSocketController;
 
+#[routes]
 impl WebSocketController {
     /// GET /api/ws/info - WebSocket connection info
     #[get("/info")]
@@ -241,7 +244,7 @@ async fn spawn_event_generator() {
 #[module(
     controllers: [ChatController, EventsController, WebSocketController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 // =============================================================================

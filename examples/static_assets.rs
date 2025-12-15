@@ -19,6 +19,7 @@ struct ApiController {
     service: ApiService,
 }
 
+#[routes]
 impl ApiController {
     #[get("/data")]
     async fn get_data(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -33,7 +34,7 @@ impl ApiController {
     providers: [ApiService],
     controllers: [ApiController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

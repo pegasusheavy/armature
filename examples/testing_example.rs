@@ -65,20 +65,21 @@ struct UserController {
     user_service: UserService,
 }
 
+#[routes]
 impl UserController {
-    fn get_all(&self) -> Result<Json<Vec<User>>, Error> {
-        Ok(Json(self.user_service.get_all()))
+    fn get_all(&self) -> Result<HttpResponse, Error> {
+        HttpResponse::json(&self.user_service.get_all())
     }
 
-    fn get_one(&self, id: i32) -> Result<Json<User>, Error> {
-        self.user_service
+    fn get_one(&self, id: i32) -> Result<HttpResponse, Error> {
+        let user = self.user_service
             .get_by_id(id)
-            .map(Json)
-            .ok_or_else(|| Error::NotFound(format!("User {} not found", id)))
+            .ok_or_else(|| Error::NotFound(format!("User {} not found", id)))?;
+        HttpResponse::json(&user)
     }
 
-    fn create(&self, user: User) -> Result<Json<User>, Error> {
-        Ok(Json(self.user_service.create(user)))
+    fn create(&self, user: User) -> Result<HttpResponse, Error> {
+        HttpResponse::json(&self.user_service.create(user))
     }
 }
 

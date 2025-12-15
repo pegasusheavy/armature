@@ -239,6 +239,7 @@ struct HomeController {
     templates: TemplateService,
 }
 
+#[routes]
 impl HomeController {
     async fn index(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let data = serde_json::json!({
@@ -264,6 +265,7 @@ struct UserController {
     users: UserService,
 }
 
+#[routes]
 impl UserController {
     async fn list(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         let users = self.users.get_all();

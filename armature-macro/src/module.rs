@@ -87,36 +87,38 @@ pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
                     Ok(Box::new(instance) as Box<dyn std::any::Any + Send + Sync>)
                 },
                 route_registrar: |_container, router, controller_any| {
-                    use armature_core::Controller;
+                    // Get base path from constant
+                    let base_path = #ty::BASE_PATH;
 
+                    // Downcast the controller
                     let controller = controller_any.downcast::<#ty>()
                         .map_err(|_| armature_core::Error::Internal("Failed to downcast controller".to_string()))?;
 
-                    // Get the base path and routes from the controller
-                    let base_path = controller.base_path();
-                    let routes = controller.routes();
-
-                    // Wrap controller in Arc for shared ownership across route handlers
+                    // Wrap in Arc for shared ownership
                     let controller = std::sync::Arc::new(*controller);
 
+                    // Get route handlers from the controller
+                    let route_handlers = #ty::__route_handlers(controller);
+
                     // Register each route
-                    for route_def in routes {
-                        let full_path = if route_def.path.is_empty() {
+                    for (method, path, handler) in route_handlers {
+                        let full_path = if path.is_empty() {
                             base_path.to_string()
-                        } else if base_path.ends_with('/') || route_def.path.starts_with('/') {
-                            format!("{}{}", base_path.trim_end_matches('/'), route_def.path)
+                        } else if base_path.ends_with('/') || path.starts_with('/') {
+                            format!("{}{}", base_path.trim_end_matches('/'), path)
                         } else {
-                            format!("{}/{}", base_path, route_def.path)
+                            format!("{}/{}", base_path, path)
                         };
 
+                        let handler = handler.clone();
                         let route = armature_core::routing::Route {
-                            method: route_def.method,
+                            method: armature_core::HttpMethod::from_str(method)
+                                .unwrap_or(armature_core::HttpMethod::GET),
                             path: full_path,
                             handler: std::sync::Arc::new(move |req| {
+                                let handler = handler.clone();
                                 Box::pin(async move {
-                                    // Placeholder - actual handler dispatch would go here
-                                    Ok(armature_core::HttpResponse::ok()
-                                        .with_body(b"Route handler placeholder".to_vec()))
+                                    handler(req).await
                                 })
                             }),
                             constraints: None,

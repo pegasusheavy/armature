@@ -60,16 +60,17 @@ impl NewsService {
 #[derive(Default, Clone)]
 struct EventsController;
 
+#[routes]
 impl EventsController {
     #[get("/stats")]
-    async fn get_stats() -> Result<Json<serde_json::Value>, Error> {
+    async fn get_stats() -> Result<HttpResponse, Error> {
         let stock_service = StockTickerService::default();
         let news_service = NewsService::default();
 
-        Ok(Json(serde_json::json!({
+        HttpResponse::json(&serde_json::json!({
             "stock_ticker": stock_service.get_stats(),
             "news": news_service.get_stats()
-        })))
+        }))
     }
 
     #[get("/stocks")]
@@ -95,7 +96,7 @@ impl EventsController {
     providers: [StockTickerService, NewsService],
     controllers: [EventsController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

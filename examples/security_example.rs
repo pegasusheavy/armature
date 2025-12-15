@@ -46,9 +46,10 @@ impl SecurityService {
 // ========== Controllers ==========
 
 #[controller("/")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct HomeController;
 
+#[routes]
 impl HomeController {
     #[get("")]
     async fn index() -> Result<HttpResponse, Error> {
@@ -118,23 +119,24 @@ impl HomeController {
 }
 
 #[controller("/api")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct ApiController;
 
+#[routes]
 impl ApiController {
     #[get("/data")]
-    async fn get_data() -> Result<Json<serde_json::Value>, Error> {
+    async fn get_data() -> Result<HttpResponse, Error> {
         let service = SecurityService::default();
-        Ok(Json(service.get_security_info()))
+        HttpResponse::json(&service.get_security_info())
     }
 
     #[get("/custom")]
-    async fn get_custom() -> Result<Json<serde_json::Value>, Error> {
-        Ok(Json(serde_json::json!({
+    async fn get_custom() -> Result<HttpResponse, Error> {
+        HttpResponse::json(&serde_json::json!({
             "message": "Custom security configuration",
             "frame_options": "SAMEORIGIN",
             "referrer_policy": "strict-origin-when-cross-origin"
-        })))
+        }))
     }
 }
 
@@ -144,7 +146,7 @@ impl ApiController {
     providers: [SecurityService],
     controllers: [HomeController, ApiController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 // ========== Main ==========

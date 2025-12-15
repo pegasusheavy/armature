@@ -33,18 +33,19 @@ impl TaskService {
 }
 
 #[controller("/tasks")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct TaskController;
 
+#[routes]
 impl TaskController {
     #[get("")]
-    async fn list() -> Result<Json<Vec<Task>>, Error> {
+    async fn list() -> Result<HttpResponse, Error> {
         let service = TaskService;
-        Ok(Json(service.get_all()))
+        HttpResponse::json(&service.get_all())
     }
 
     #[get("/:id")]
-    async fn get(req: HttpRequest) -> Result<Json<Task>, Error> {
+    async fn get(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req
             .param("id")
             .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
@@ -59,23 +60,23 @@ impl TaskController {
             .find(|t| t.id == id)
             .ok_or_else(|| Error::RouteNotFound("Task not found".to_string()))?;
 
-        Ok(Json(task))
+        HttpResponse::json(&task)
     }
 
     #[post("")]
-    async fn create(req: HttpRequest) -> Result<Json<Task>, Error> {
+    async fn create(req: HttpRequest) -> Result<HttpResponse, Error> {
         let mut task: Task = req.json()?;
         task.id = 3; // In real app, would be auto-generated
-        Ok(Json(task))
+        HttpResponse::json(&task)
     }
 
     #[put("/:id")]
-    async fn update(req: HttpRequest) -> Result<Json<Task>, Error> {
+    async fn update(req: HttpRequest) -> Result<HttpResponse, Error> {
         let _id = req
             .param("id")
             .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
         let task: Task = req.json()?;
-        Ok(Json(task))
+        HttpResponse::json(&task)
     }
 
     #[delete("/:id")]

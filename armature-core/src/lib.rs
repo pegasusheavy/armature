@@ -143,6 +143,7 @@ pub mod module;
 pub mod pagination;
 pub mod resilience;
 pub mod route_constraint;
+pub mod route_registry;
 pub mod route_group;
 pub mod routing;
 pub mod shutdown;
@@ -192,3 +193,6 @@ pub use timeout::*;
 pub use tls::*;
 pub use traits::*;
 pub use websocket::*;
+
+// Re-export inventory for route registration macros
+pub use inventory;

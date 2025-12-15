@@ -95,9 +95,10 @@ struct FormController {
     providers: [FormService],
     controllers: [FormController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
+#[routes]
 impl FormController {
     #[get("/")]
     async fn show_forms(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {

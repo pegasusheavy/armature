@@ -156,9 +156,10 @@ impl MutationRoot {
 // ========== Controllers ==========
 
 #[controller("/graphql")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct GraphQLController;
 
+#[routes]
 impl GraphQLController {
     #[post("")]
     async fn execute(req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -221,9 +222,10 @@ impl GraphQLController {
 }
 
 #[controller("/playground")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct PlaygroundController;
 
+#[routes]
 impl PlaygroundController {
     #[get("")]
     async fn playground() -> Result<HttpResponse, Error> {
@@ -240,7 +242,7 @@ impl PlaygroundController {
     providers: [BookService],
     controllers: [GraphQLController, PlaygroundController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 // ========== Application ==========

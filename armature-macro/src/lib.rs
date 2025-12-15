@@ -10,6 +10,7 @@ mod injectable;
 mod module;
 mod params;
 mod routes;
+mod routes_impl;
 mod timeout_attr;
 
 /// Marks a struct as injectable, allowing it to be registered in the DI container
@@ -58,6 +59,40 @@ pub fn delete(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn patch(attr: TokenStream, item: TokenStream) -> TokenStream {
     routes::route_impl(attr, item, "PATCH")
+}
+
+/// Routes impl block decorator
+///
+/// This macro should be applied to the impl block of a controller to register
+/// all route handlers with the framework. It works in conjunction with route
+/// decorators (#[get], #[post], etc.) to enable proper route registration.
+///
+/// # Usage
+///
+/// ```ignore
+/// use armature::{controller, routes, get, post};
+///
+/// #[controller("/api")]
+/// #[derive(Default)]
+/// struct ApiController;
+///
+/// #[routes]
+/// impl ApiController {
+///     #[get("/hello")]
+///     async fn hello() -> Result<Json<Message>, Error> {
+///         Ok(Json(Message { text: "Hello!".to_string() }))
+///     }
+///
+///     #[post("/echo")]
+///     async fn echo(req: HttpRequest) -> Result<Json<Message>, Error> {
+///         let msg: Message = req.json()?;
+///         Ok(Json(msg))
+///     }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn routes(attr: TokenStream, item: TokenStream) -> TokenStream {
+    routes_impl::routes_impl(attr, item)
 }
 
 /// Extracts and deserializes the request body

@@ -8,7 +8,7 @@ pub use armature_core::*;
 
 // Re-export procedural macros
 pub use armature_macro::{
-    Body, Param, Query, controller, delete, get, injectable, module, patch, post, put,
+    Body, Param, Query, controller, delete, get, injectable, module, patch, post, put, routes,
 };
 
 // Re-export optional crates
@@ -108,5 +108,6 @@ pub mod prelude {
         post,
         put,
         query,
+        routes,
     };
 }

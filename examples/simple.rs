@@ -10,21 +10,22 @@ struct Message {
 }
 
 #[controller("/api")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct ApiController;
 
+#[routes]
 impl ApiController {
     #[get("/hello")]
-    async fn hello() -> Result<Json<Message>, Error> {
-        Ok(Json(Message {
+    async fn hello() -> Result<HttpResponse, Error> {
+        HttpResponse::json(&Message {
             text: "Hello from Armature!".to_string(),
-        }))
+        })
     }
 
     #[post("/echo")]
-    async fn echo(req: HttpRequest) -> Result<Json<Message>, Error> {
+    async fn echo(req: HttpRequest) -> Result<HttpResponse, Error> {
         let msg: Message = req.json()?;
-        Ok(Json(msg))
+        HttpResponse::json(&msg)
     }
 }
 
