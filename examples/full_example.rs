@@ -60,19 +60,20 @@ impl UserService {
 
 // Controller with dependency injection
 #[controller("/users")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct UserController;
 
+#[routes]
 impl UserController {
     #[get("")]
-    async fn get_users() -> Result<Json<Vec<User>>, Error> {
+    async fn get_users() -> Result<HttpResponse, Error> {
         let service = UserService::default();
         let users = service.get_all_users();
-        Ok(Json(users))
+        HttpResponse::json(&users)
     }
 
     #[get("/:id")]
-    async fn get_user(req: HttpRequest) -> Result<Json<User>, Error> {
+    async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req
             .param("id")
             .ok_or_else(|| Error::Validation("Missing id parameter".to_string()))?;
@@ -85,30 +86,31 @@ impl UserController {
             .get_user_by_id(id)
             .ok_or_else(|| Error::RouteNotFound(format!("User {} not found", id)))?;
 
-        Ok(Json(user))
+        HttpResponse::json(&user)
     }
 
     #[post("")]
-    async fn create_user(req: HttpRequest) -> Result<Json<User>, Error> {
+    async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
         let dto: CreateUserDto = req.json()?;
         let service = UserService::default();
         let user = service.create_user(dto.name, dto.email);
-        Ok(Json(user))
+        HttpResponse::json(&user)
     }
 }
 
 // Health check controller
 #[controller("/health")]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct HealthController;
 
+#[routes]
 impl HealthController {
     #[get("")]
-    async fn health_check() -> Result<Json<serde_json::Value>, Error> {
-        Ok(Json(serde_json::json!({
+    async fn health_check() -> Result<HttpResponse, Error> {
+        HttpResponse::json(&serde_json::json!({
             "status": "healthy",
             "version": env!("CARGO_PKG_VERSION"),
-        })))
+        }))
     }
 }
 
@@ -117,7 +119,7 @@ impl HealthController {
     providers: [UserService],
     controllers: [UserController, HealthController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

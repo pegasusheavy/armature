@@ -245,6 +245,7 @@ fn get_user_service() -> &'static UserService {
 #[derive(Default, Clone)]
 struct UserController;
 
+#[routes]
 impl UserController {
     /// GET /api/users - List all users with pagination
     #[get("")]

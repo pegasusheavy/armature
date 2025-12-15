@@ -261,6 +261,7 @@ fn get_auth_service() -> &'static AuthenticationService {
 #[derive(Default, Clone)]
 struct AuthController;
 
+#[routes]
 impl AuthController {
     #[post("/register")]
     async fn register(req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -297,6 +298,7 @@ impl AuthController {
 #[derive(Default, Clone)]
 struct UserController;
 
+#[routes]
 impl UserController {
     #[get("/me")]
     async fn get_me(req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -326,6 +328,7 @@ impl UserController {
 #[derive(Default, Clone)]
 struct AdminController;
 
+#[routes]
 impl AdminController {
     #[get("/stats")]
     async fn get_stats(req: HttpRequest) -> Result<HttpResponse, Error> {

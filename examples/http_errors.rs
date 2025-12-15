@@ -119,15 +119,16 @@ impl ItemService {
 #[derive(Default, Clone)]
 struct ErrorController;
 
+#[routes]
 impl ErrorController {
     #[get("/statuses")]
-    async fn list_statuses() -> Result<Json<Vec<StatusInfo>>, Error> {
+    async fn list_statuses() -> Result<HttpResponse, Error> {
         let service = ItemService::default();
-        Ok(Json(service.list_statuses()))
+        HttpResponse::json(&service.list_statuses())
     }
 
     #[get("/items/:id")]
-    async fn get_item(req: HttpRequest) -> Result<Json<Item>, Error> {
+    async fn get_item(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req
             .param("id")
             .ok_or_else(|| Error::BadRequest("Missing ID".to_string()))?;
@@ -136,7 +137,8 @@ impl ErrorController {
             .map_err(|_| Error::BadRequest("Invalid ID format".to_string()))?;
 
         let service = ItemService::default();
-        service.get_item(id).map(Json)
+        let item = service.get_item(id)?;
+        HttpResponse::json(&item)
     }
 }
 
@@ -146,7 +148,7 @@ impl ErrorController {
     providers: [ItemService],
     controllers: [ErrorController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

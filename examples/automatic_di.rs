@@ -57,16 +57,17 @@ struct BookController {
     book_service: BookService,
 }
 
+#[routes]
 impl BookController {
     #[get("")]
-    async fn list() -> Result<Json<Vec<Book>>, Error> {
+    async fn list() -> Result<HttpResponse, Error> {
         let service = BookService::default();
         let books = service.get_all_books();
-        Ok(Json(books))
+        HttpResponse::json(&books)
     }
 
     #[get("/:id")]
-    async fn get(req: HttpRequest) -> Result<Json<Book>, Error> {
+    async fn get(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req
             .param("id")
             .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
@@ -81,7 +82,7 @@ impl BookController {
             .find(|b| b.id == id)
             .ok_or_else(|| Error::RouteNotFound("Book not found".to_string()))?;
 
-        Ok(Json(book))
+        HttpResponse::json(&book)
     }
 }
 
@@ -91,7 +92,7 @@ impl BookController {
     providers: [LoggerService, BookService],
     controllers: [BookController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 // ========== Main ==========

@@ -41,9 +41,10 @@ impl ChatService {
 #[derive(Default, Clone)]
 struct ChatController;
 
+#[routes]
 impl ChatController {
     #[post("/:room/message")]
-    async fn send_message(req: HttpRequest) -> Result<Json<serde_json::Value>, Error> {
+    async fn send_message(req: HttpRequest) -> Result<HttpResponse, Error> {
         let room_name = req
             .param("room")
             .ok_or_else(|| Error::Validation("Missing room parameter".to_string()))?;
@@ -53,13 +54,13 @@ impl ChatController {
         let service = ChatService::default();
         service.broadcast_to_room(&room_name, message).await?;
 
-        Ok(Json(serde_json::json!({
+        HttpResponse::json(&serde_json::json!({
             "status": "sent"
-        })))
+        }))
     }
 
     #[get("/:room/stats")]
-    async fn get_stats(req: HttpRequest) -> Result<Json<serde_json::Value>, Error> {
+    async fn get_stats(req: HttpRequest) -> Result<HttpResponse, Error> {
         let room_name = req
             .param("room")
             .ok_or_else(|| Error::Validation("Missing room parameter".to_string()))?;
@@ -68,10 +69,10 @@ impl ChatController {
         let room = service.get_room(&room_name).await;
         let count = room.connection_count().await;
 
-        Ok(Json(serde_json::json!({
+        HttpResponse::json(&serde_json::json!({
             "room": room_name,
             "connections": count
-        })))
+        }))
     }
 }
 
@@ -79,7 +80,7 @@ impl ChatController {
     providers: [ChatService],
     controllers: [ChatController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

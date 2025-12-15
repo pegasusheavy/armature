@@ -138,17 +138,18 @@ impl UserService {
 #[derive(Clone, Default)]
 struct UserController;
 
+#[routes]
 impl UserController {
     #[post("")]
-    async fn create(req: HttpRequest) -> Result<Json<User>, Error> {
+    async fn create(req: HttpRequest) -> Result<HttpResponse, Error> {
         let dto: CreateUserDto = ValidationPipe::parse(&req)?;
         let service = UserService::default();
         let user = service.create(dto)?;
-        Ok(Json(user))
+        HttpResponse::json(&user)
     }
 
     #[put("/:id")]
-    async fn update(req: HttpRequest) -> Result<Json<User>, Error> {
+    async fn update(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id = req
             .path_params
             .get("id")
@@ -158,7 +159,7 @@ impl UserController {
         let dto: UpdateUserDto = ValidationPipe::parse(&req)?;
         let service = UserService::default();
         let user = service.update(id, dto)?;
-        Ok(Json(user))
+        HttpResponse::json(&user)
     }
 }
 
@@ -168,7 +169,7 @@ impl UserController {
     providers: [UserService],
     controllers: [UserController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

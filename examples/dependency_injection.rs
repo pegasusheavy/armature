@@ -87,16 +87,17 @@ struct ProductController {
     product_service: ProductService,
 }
 
+#[routes]
 impl ProductController {
     #[get("")]
-    async fn list_products() -> Result<Json<Vec<Product>>, Error> {
+    async fn list_products() -> Result<HttpResponse, Error> {
         let service = ProductService::default();
         let products = service.get_all_products();
-        Ok(Json(products))
+        HttpResponse::json(&products)
     }
 
     #[get("/:id")]
-    async fn get_product(req: HttpRequest) -> Result<Json<Product>, Error> {
+    async fn get_product(req: HttpRequest) -> Result<HttpResponse, Error> {
         let id_str = req
             .param("id")
             .ok_or_else(|| Error::Validation("Missing id".to_string()))?;
@@ -106,17 +107,17 @@ impl ProductController {
 
         let service = ProductService::default();
         match service.get_product_by_id(id) {
-            Some(product) => Ok(Json(product)),
+            Some(product) => HttpResponse::json(&product),
             None => Err(Error::RouteNotFound(format!("Product {} not found", id))),
         }
     }
 
     #[post("")]
-    async fn create_product(req: HttpRequest) -> Result<Json<Product>, Error> {
+    async fn create_product(req: HttpRequest) -> Result<HttpResponse, Error> {
         let dto: CreateProductDto = req.json()?;
         let service = ProductService::default();
         let product = service.create_product(dto.name, dto.price);
-        Ok(Json(product))
+        HttpResponse::json(&product)
     }
 }
 
@@ -125,13 +126,14 @@ impl ProductController {
 #[derive(Default, Clone)]
 struct HealthController;
 
+#[routes]
 impl HealthController {
     #[get("")]
-    async fn check() -> Result<Json<serde_json::Value>, Error> {
-        Ok(Json(serde_json::json!({
+    async fn check() -> Result<HttpResponse, Error> {
+        HttpResponse::json(&serde_json::json!({
             "status": "healthy",
             "message": "DI example is running"
-        })))
+        }))
     }
 }
 
@@ -141,7 +143,7 @@ impl HealthController {
     providers: [DatabaseService, ProductService],
     controllers: [ProductController, HealthController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 // ========== Main Application ==========

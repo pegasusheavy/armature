@@ -155,19 +155,20 @@ impl DataService {
 #[derive(Default, Clone)]
 struct ApiController;
 
+#[routes]
 impl ApiController {
     #[get("/public")]
-    async fn get_public_data() -> Result<Json<ApiResponse>, Error> {
-        Ok(Json(ApiResponse {
+    async fn get_public_data() -> Result<HttpResponse, Error> {
+        HttpResponse::json(&ApiResponse {
             message: "Public data - no middleware required".to_string(),
             data: None,
-        }))
+        })
     }
 
     #[get("/protected")]
-    async fn get_protected_data() -> Result<Json<ApiResponse>, Error> {
+    async fn get_protected_data() -> Result<HttpResponse, Error> {
         let service = DataService::default();
-        Ok(Json(service.get_data()))
+        HttpResponse::json(&service.get_data())
     }
 
     #[get("/slow")]
@@ -190,7 +191,7 @@ impl ApiController {
     providers: [DataService],
     controllers: [ApiController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]

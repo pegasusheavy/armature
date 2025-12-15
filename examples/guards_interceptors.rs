@@ -49,33 +49,34 @@ impl DataService {
 #[derive(Default, Clone)]
 struct DataController;
 
+#[routes]
 impl DataController {
     #[get("/public")]
-    async fn public_endpoint() -> Result<Json<Message>, Error> {
+    async fn public_endpoint() -> Result<HttpResponse, Error> {
         let service = DataService::default();
-        Ok(Json(service.get_public_data()))
+        HttpResponse::json(&service.get_public_data())
     }
 
     #[get("/protected")]
-    async fn protected_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
+    async fn protected_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
         // Check for Bearer token (simple guard simulation)
         if let Some(auth) = req.headers.get("authorization")
             && auth.starts_with("Bearer ")
         {
             let service = DataService::default();
-            return Ok(Json(service.get_protected_data()));
+            return HttpResponse::json(&service.get_protected_data());
         }
         Err(Error::Unauthorized("Authentication required".to_string()))
     }
 
     #[get("/admin")]
-    async fn admin_endpoint(req: HttpRequest) -> Result<Json<Message>, Error> {
+    async fn admin_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
         // Check for admin token (simple roles guard simulation)
         if let Some(auth) = req.headers.get("authorization")
             && auth == "Bearer admin-token"
         {
             let service = DataService::default();
-            return Ok(Json(service.get_admin_data()));
+            return HttpResponse::json(&service.get_admin_data());
         }
         Err(Error::Forbidden("Admin role required".to_string()))
     }
@@ -87,7 +88,7 @@ impl DataController {
     providers: [DataService],
     controllers: [DataController]
 )]
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct AppModule;
 
 #[tokio::main]
