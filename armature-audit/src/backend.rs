@@ -194,7 +194,7 @@ impl MultiBackend {
     }
 
     /// Add a backend
-    pub fn add(mut self, backend: Box<dyn AuditBackend>) -> Self {
+    pub fn with_backend(mut self, backend: Box<dyn AuditBackend>) -> Self {
         self.backends.push(backend);
         self
     }

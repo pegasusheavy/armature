@@ -1,7 +1,6 @@
 // ConfigService - High-level configuration service
 
 use crate::{ConfigManager, Result};
-use armature_core::Provider;
 use serde::de::DeserializeOwned;
 
 /// High-level configuration service

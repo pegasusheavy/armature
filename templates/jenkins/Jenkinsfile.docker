@@ -1,0 +1,109 @@
+// =============================================================================
+// Armature Application - Jenkins Pipeline (Docker Agent)
+// =============================================================================
+// Uses Docker containers for build environment - no local Rust needed
+// =============================================================================
+
+pipeline {
+    agent {
+        docker {
+            image 'rust:1.85-alpine'
+            args '-v cargo-cache:/usr/local/cargo/registry'
+        }
+    }
+
+    environment {
+        RUST_BACKTRACE = '1'
+        CARGO_TERM_COLOR = 'always'
+    }
+
+    options {
+        timeout(time: 45, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+        // =====================================================================
+        // SETUP
+        // =====================================================================
+        stage('Setup') {
+            steps {
+                sh '''
+                    echo "🔧 Setting up build environment..."
+                    apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconfig
+                    rustc --version
+                    cargo --version
+                '''
+            }
+        }
+
+        // =====================================================================
+        // BUILD
+        // =====================================================================
+        stage('Build') {
+            steps {
+                sh '''
+                    echo "🔨 Building application..."
+                    cargo build --release --target x86_64-unknown-linux-musl
+                '''
+            }
+        }
+
+        // =====================================================================
+        // TEST
+        // =====================================================================
+        stage('Test') {
+            steps {
+                sh '''
+                    echo "🧪 Running tests..."
+                    cargo test --release --target x86_64-unknown-linux-musl
+                '''
+            }
+        }
+
+        // =====================================================================
+        // LINT
+        // =====================================================================
+        stage('Lint') {
+            steps {
+                sh '''
+                    echo "📎 Running lints..."
+                    rustup component add rustfmt clippy || true
+                    cargo fmt -- --check || true
+                    cargo clippy --all-targets --release -- -D warnings || true
+                '''
+            }
+        }
+
+        // =====================================================================
+        // ARCHIVE ARTIFACTS
+        // =====================================================================
+        stage('Archive') {
+            steps {
+                sh '''
+                    echo "📦 Archiving artifacts..."
+                    mkdir -p artifacts
+                    cp target/x86_64-unknown-linux-musl/release/${JOB_BASE_NAME} artifacts/ || \
+                    cp target/release/${JOB_BASE_NAME} artifacts/ || \
+                    echo "No binary found"
+                '''
+                archiveArtifacts artifacts: 'artifacts/**', allowEmptyArchive: true
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "🧹 Pipeline complete"
+        }
+        success {
+            echo "✅ Build succeeded!"
+        }
+        failure {
+            echo "❌ Build failed!"
+        }
+    }
+}
+

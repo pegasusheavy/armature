@@ -24,6 +24,9 @@ futures-util = "0.3"
 tokio-stream = "0.1"
 regex = "1.10"
 
+# Resilience patterns
+parking_lot = "0.12"
+
 # Hot Module Reload (HMR)
 notify = "8.0"
 

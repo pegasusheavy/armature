@@ -103,7 +103,7 @@ fn validate_config_file(file: &str) -> Result<ValidationResult, CliError> {
 
     // Read file
     let content = fs::read_to_string(file)
-        .map_err(|e| CliError::Io(e))?;
+        .map_err(CliError::Io)?;
 
     // Determine file type and validate
     if file.ends_with(".toml") {
@@ -134,13 +134,11 @@ fn validate_toml(content: &str, errors: &mut Vec<String>, warnings: &mut Vec<Str
                 }
 
                 // Check for database config
-                if table.contains_key("database") {
-                    if let Some(db) = table.get("database").and_then(|v| v.as_table()) {
-                        if !db.contains_key("url") && !db.contains_key("host") {
+                if table.contains_key("database")
+                    && let Some(db) = table.get("database").and_then(|v| v.as_table())
+                        && !db.contains_key("url") && !db.contains_key("host") {
                             warnings.push("Database config missing 'url' or 'host'".to_string());
                         }
-                    }
-                }
             }
         }
         Err(e) => {

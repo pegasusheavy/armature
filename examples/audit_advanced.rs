@@ -31,9 +31,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Combine backends
     let multi_backend = MultiBackend::new()
-        .add(Box::new(file_backend))
-        .add(Box::new(MemoryBackend::new()))
-        .add(Box::new(stdout_backend));
+        .with_backend(Box::new(file_backend))
+        .with_backend(Box::new(MemoryBackend::new()))
+        .with_backend(Box::new(stdout_backend));
 
     info!("✓ Multiple backends configured:");
     info!("  - File (audit.log)");

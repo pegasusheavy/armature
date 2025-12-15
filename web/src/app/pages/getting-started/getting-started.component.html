@@ -1,8 +1,8 @@
-<section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-rust-50 to-stone-100">
+<section class="py-20 px-4 sm:px-6 lg:px-8 bg-stone-900">
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-4xl font-bold text-center text-stone-900 mb-12">Quick Start</h2>
-    <div class="bg-stone-900 rounded-xl p-8 shadow-2xl overflow-x-auto">
-      <pre class="text-sm text-stone-100"><code class="language-rust">use armature::prelude::*;
+    <h2 class="text-4xl font-bold text-center text-white mb-12">Quick Start</h2>
+    <div class="bg-stone-950 rounded-xl p-8 shadow-2xl overflow-x-auto border border-stone-800">
+      <pre class="text-sm text-stone-300"><code class="language-rust">use armature::prelude::*;
 
 // Injectable service
 #[injectable]
@@ -44,25 +44,25 @@ async fn main() &#123;
   </div>
 </section>
 
-<section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+<section class="py-20 px-4 sm:px-6 lg:px-8 bg-stone-950">
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-4xl font-bold text-center text-stone-900 mb-12">Installation</h2>
+    <h2 class="text-4xl font-bold text-center text-white mb-12">Installation</h2>
 
     <div class="space-y-8">
       <!-- CLI Installation (Recommended) -->
-      <div class="bg-gradient-to-r from-rust-50 to-orange-50 p-6 rounded-xl border-2 border-rust-200">
+      <div class="bg-gradient-to-r from-rust-900/30 to-orange-900/30 p-6 rounded-xl border-2 border-rust-700">
         <div class="flex items-center mb-4">
           <span class="bg-rust-600 text-white text-xs font-bold px-2 py-1 rounded mr-3">RECOMMENDED</span>
-          <h3 class="text-2xl font-bold text-stone-900">
-            <fa-icon [icon]="['fas', 'terminal']" class="text-rust-600 mr-2" />
+          <h3 class="text-2xl font-bold text-white">
+            <fa-icon [icon]="['fas', 'terminal']" class="text-rust-400 mr-2" />
             Using Armature CLI
           </h3>
         </div>
-        <p class="text-stone-600 mb-4">
+        <p class="text-stone-400 mb-4">
           The CLI provides code generation, project scaffolding, and a development server with hot reloading.
         </p>
-        <div class="bg-stone-900 rounded-lg p-6 overflow-x-auto">
-          <pre class="text-sm text-stone-100"><code><span class="text-stone-500"># Install the CLI</span>
+        <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
+          <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># Install the CLI</span>
 cargo install armature-cli
 
 <span class="text-stone-500"># Create a new project</span>
@@ -72,21 +72,21 @@ armature new my-api
 cd my-api
 armature dev</code></pre>
         </div>
-        <p class="mt-4 text-stone-600">
+        <p class="mt-4 text-stone-400">
           Your server is now running at
-          <code class="bg-stone-100 px-2 py-1 rounded">http://127.0.0.1:3000</code>
+          <code class="bg-stone-800 px-2 py-1 rounded text-rust-400">http://127.0.0.1:3000</code>
           with automatic rebuilding on file changes.
         </p>
       </div>
 
       <!-- Code Generation -->
       <div>
-        <h3 class="text-2xl font-bold text-stone-900 mb-4">
-          <fa-icon [icon]="['fas', 'magic']" class="text-rust-600 mr-2" />
+        <h3 class="text-2xl font-bold text-white mb-4">
+          <fa-icon [icon]="['fas', 'magic']" class="text-rust-400 mr-2" />
           Generate Code
         </h3>
-        <div class="bg-stone-900 rounded-lg p-6 overflow-x-auto">
-          <pre class="text-sm text-stone-100"><code><span class="text-stone-500"># Generate a controller</span>
+        <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
+          <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># Generate a controller</span>
 armature generate controller users
 
 <span class="text-stone-500"># Generate a service</span>
@@ -102,119 +102,119 @@ armature generate guard admin</code></pre>
       </div>
 
       <!-- Manual Setup -->
-      <div class="border-t pt-8">
-        <h3 class="text-2xl font-bold text-stone-900 mb-4">
-          <fa-icon [icon]="['fas', 'download']" class="text-rust-600 mr-2" />
+      <div class="border-t border-stone-800 pt-8">
+        <h3 class="text-2xl font-bold text-white mb-4">
+          <fa-icon [icon]="['fas', 'download']" class="text-rust-400 mr-2" />
           Manual Setup
         </h3>
-        <p class="text-stone-600 mb-4">Or add Armature directly to an existing project:</p>
-        <div class="bg-stone-900 rounded-lg p-6 overflow-x-auto">
-          <pre class="text-sm text-stone-100"><code>[dependencies]
+        <p class="text-stone-400 mb-4">Or add Armature directly to an existing project:</p>
+        <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
+          <pre class="text-sm text-stone-300"><code>[dependencies]
 armature = "0.1"
 tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
         </div>
       </div>
 
       <div>
-        <h3 class="text-2xl font-bold text-stone-900 mb-4">
-          <fa-icon [icon]="['fas', 'rocket']" class="text-rust-600 mr-2" />
+        <h3 class="text-2xl font-bold text-white mb-4">
+          <fa-icon [icon]="['fas', 'rocket']" class="text-rust-400 mr-2" />
           Run your app
         </h3>
-        <div class="bg-stone-900 rounded-lg p-6 overflow-x-auto">
-          <pre class="text-sm text-stone-100"><code><span class="text-stone-500"># With CLI (recommended)</span>
+        <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
+          <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># With CLI (recommended)</span>
 armature dev
 
 <span class="text-stone-500"># Or with cargo</span>
 cargo run</code></pre>
         </div>
-        <p class="mt-4 text-stone-600">
+        <p class="mt-4 text-stone-400">
           Your server is now running at
-          <code class="bg-stone-100 px-2 py-1 rounded">http://127.0.0.1:3000</code>
+          <code class="bg-stone-800 px-2 py-1 rounded text-rust-400">http://127.0.0.1:3000</code>
         </p>
       </div>
 
       <div>
-        <h3 class="text-2xl font-bold text-stone-900 mb-4">
-          <fa-icon [icon]="['fas', 'book']" class="text-rust-600 mr-2" />
+        <h3 class="text-2xl font-bold text-white mb-4">
+          <fa-icon [icon]="['fas', 'book']" class="text-rust-400 mr-2" />
           Next Steps
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">📖 Read the Documentation</h4>
-            <p class="text-stone-700 text-sm mb-3">
-              Explore 34 comprehensive guides covering all framework features.
+          <div class="bg-gradient-to-br from-blue-900/30 to-blue-900/50 p-6 rounded-lg border border-blue-800">
+            <h4 class="font-bold text-white mb-2">📖 Read the Documentation</h4>
+            <p class="text-stone-400 text-sm mb-3">
+              Explore comprehensive guides covering all framework features.
             </p>
             <a
               routerLink="/docs"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              View Docs →
+              Browse Documentation →
             </a>
           </div>
 
-          <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">💻 Browse Examples</h4>
-            <p class="text-stone-700 text-sm mb-3">
+          <div class="bg-gradient-to-br from-green-900/30 to-green-900/50 p-6 rounded-lg border border-green-800">
+            <h4 class="font-bold text-white mb-2">💻 Browse Examples</h4>
+            <p class="text-stone-400 text-sm mb-3">
               Check out 30+ working examples covering all features.
             </p>
             <a
               href="https://github.com/pegasusheavy/armature/tree/develop/examples"
               target="_blank"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              View Examples →
+              See Code Examples →
             </a>
           </div>
 
-          <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">🔐 Add Authentication</h4>
-            <p class="text-stone-700 text-sm mb-3">
+          <div class="bg-gradient-to-br from-purple-900/30 to-purple-900/50 p-6 rounded-lg border border-purple-800">
+            <h4 class="font-bold text-white mb-2">🔐 Add Authentication</h4>
+            <p class="text-stone-400 text-sm mb-3">
               Integrate JWT, OAuth2, or SAML authentication in minutes.
             </p>
             <a
               routerLink="/docs/auth-guide"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              Auth Guide →
+              Learn Authentication →
             </a>
           </div>
 
-          <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">🔥 Hot Module Reload</h4>
-            <p class="text-stone-700 text-sm mb-3">
-              Live reload JS/TS/CSS during development with WebSocket notifications.
+          <div class="bg-gradient-to-br from-orange-900/30 to-orange-900/50 p-6 rounded-lg border border-orange-800">
+            <h4 class="font-bold text-white mb-2">🔥 Real-time Features</h4>
+            <p class="text-stone-400 text-sm mb-3">
+              Add WebSockets and Server-Sent Events for live updates.
             </p>
             <a
-              routerLink="/docs/hmr-quick-start"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              routerLink="/docs/websocket-sse"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              HMR Guide →
+              Real-time Guide →
             </a>
           </div>
 
-          <div class="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">♻️ Lifecycle Hooks</h4>
-            <p class="text-stone-700 text-sm mb-3">
+          <div class="bg-gradient-to-br from-pink-900/30 to-pink-900/50 p-6 rounded-lg border border-pink-800">
+            <h4 class="font-bold text-white mb-2">♻️ Lifecycle Hooks</h4>
+            <p class="text-stone-400 text-sm mb-3">
               Manage resources with NestJS-inspired lifecycle hooks.
             </p>
             <a
               routerLink="/docs/lifecycle-hooks"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              Lifecycle Guide →
+              Lifecycle Management →
             </a>
           </div>
 
-          <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg">
-            <h4 class="font-bold text-stone-900 mb-2">📊 Logging & Observability</h4>
-            <p class="text-stone-700 text-sm mb-3">
+          <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-900/50 p-6 rounded-lg border border-yellow-800">
+            <h4 class="font-bold text-white mb-2">📊 Logging & Observability</h4>
+            <p class="text-stone-400 text-sm mb-3">
               Structured logging with tracing, metrics, and OpenTelemetry.
             </p>
             <a
               routerLink="/docs/logging-guide"
-              class="text-rust-600 hover:text-rust-700 font-medium text-sm"
+              class="text-rust-400 hover:text-rust-300 font-medium text-sm"
             >
-              Logging Guide →
+              Setup Logging →
             </a>
           </div>
         </div>

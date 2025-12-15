@@ -1,0 +1,30 @@
+# =============================================================================
+# Armature - ConfigMap Template
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name | default "armature-api" }}-config
+  namespace: {{ .Values.namespace | default "armature" }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+    app.kubernetes.io/managed-by: armature-cli
+data:
+  # Application configuration
+  config.toml: |
+    [server]
+    host = "0.0.0.0"
+    port = 3000
+
+    [logging]
+    level = "info"
+    format = "json"
+
+    [metrics]
+    enabled = true
+    endpoint = "/metrics"
+
+    [health]
+    liveness_path = "/health/live"
+    readiness_path = "/health/ready"
+

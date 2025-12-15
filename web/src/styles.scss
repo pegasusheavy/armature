@@ -1,30 +1,36 @@
-@use "tailwindcss";
-
 /* ============================================
-   RUST THEME - Armature Documentation
+   ARMATURE DOCUMENTATION
+   Using Tailswatch Oxide Theme
    ============================================
 
-   Primary: Rust Orange (#CE422B)
-   Inspired by Rust programming language branding
-   with warm, earthy tones and high contrast.
+   Oxide: Rust programming language inspired dark theme
+   from @pegasusheavy/tailswatch
+   https://github.com/pegasusheavy/tailswatch
 */
 
-/* CSS Custom Properties for Rust Theme */
-:root {
-  /* Rust Brand Colors */
-  --rust-50: #fef7f6;
-  --rust-100: #fdeeed;
-  --rust-200: #fbd9d5;
-  --rust-300: #f7b8af;
-  --rust-400: #f08d7d;
-  --rust-500: #e54d32;
-  --rust-600: #ce422b;
-  --rust-700: #b73a24;
-  --rust-800: #8a2d1c;
-  --rust-900: #6b2517;
-  --rust-950: #3d120b;
+@use "tailwindcss";
+@use "@pegasusheavy/tailswatch/themes/oxide";
 
-  /* Warm Stone/Charcoal (instead of cold slate) */
+/* ============================================
+   CUSTOM OVERRIDES & EXTENSIONS
+   ============================================ */
+
+/* Alias old theme colors to new oxide theme colors */
+:root {
+  /* Rust color aliases (maps to oxide primary) */
+  --rust-50: var(--color-primary-50);
+  --rust-100: var(--color-primary-100);
+  --rust-200: var(--color-primary-200);
+  --rust-300: var(--color-primary-300);
+  --rust-400: var(--color-primary-400);
+  --rust-500: var(--color-primary-500);
+  --rust-600: var(--color-primary-600);
+  --rust-700: var(--color-primary-700);
+  --rust-800: var(--color-primary-800);
+  --rust-900: var(--color-primary-900);
+  --rust-950: var(--color-primary-950);
+
+  /* Stone color aliases (maps to oxide neutral tones) */
   --stone-50: #fafaf9;
   --stone-100: #f5f5f4;
   --stone-200: #e7e5e4;
@@ -36,26 +42,9 @@
   --stone-800: #292524;
   --stone-900: #1c1917;
   --stone-950: #0c0a09;
-
-  /* Code block colors - Rust-inspired syntax theme */
-  --code-bg: #1e1e1e;
-  --code-text: #d4d4d4;
-  --code-keyword: #ce422b;
-  --code-function: #dcdcaa;
-  --code-string: #ce9178;
-  --code-comment: #6a9955;
-  --code-type: #4ec9b0;
-  --code-number: #b5cea8;
-  --code-attribute: #9cdcfe;
-  --code-macro: #c586c0;
-
-  /* Accent colors */
-  --accent-gold: #d4a017;
-  --accent-copper: #b87333;
-  --accent-bronze: #cd7f32;
 }
 
-/* Tailwind v4 Theme Extensions */
+/* Tailwind v4 Theme Extensions for backward compatibility */
 @theme {
   --color-rust-50: var(--rust-50);
   --color-rust-100: var(--rust-100);
@@ -69,26 +58,40 @@
   --color-rust-900: var(--rust-900);
   --color-rust-950: var(--rust-950);
 
-  /* Override primary with rust colors */
-  --color-primary-50: var(--rust-50);
-  --color-primary-100: var(--rust-100);
-  --color-primary-200: var(--rust-200);
-  --color-primary-300: var(--rust-300);
-  --color-primary-400: var(--rust-400);
-  --color-primary-500: var(--rust-500);
-  --color-primary-600: var(--rust-600);
-  --color-primary-700: var(--rust-700);
-  --color-primary-800: var(--rust-800);
-  --color-primary-900: var(--rust-900);
-  --color-primary-950: var(--rust-950);
+  --color-stone-50: var(--stone-50);
+  --color-stone-100: var(--stone-100);
+  --color-stone-200: var(--stone-200);
+  --color-stone-300: var(--stone-300);
+  --color-stone-400: var(--stone-400);
+  --color-stone-500: var(--stone-500);
+  --color-stone-600: var(--stone-600);
+  --color-stone-700: var(--stone-700);
+  --color-stone-800: var(--stone-800);
+  --color-stone-900: var(--stone-900);
+  --color-stone-950: var(--stone-950);
+}
+
+/* Additional CSS Custom Properties */
+:root {
+  /* Code block colors - Enhanced syntax highlighting */
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --code-keyword: var(--color-primary-500);
+  --code-function: #dcdcaa;
+  --code-string: #ce9178;
+  --code-comment: #6a9955;
+  --code-type: #4ec9b0;
+  --code-number: #b5cea8;
+  --code-attribute: #9cdcfe;
+  --code-macro: #c586c0;
 }
 
 /* Base styles */
 html, body {
   height: 100%;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: var(--stone-50);
-  color: var(--stone-900);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 /* Code styling */
@@ -101,7 +104,7 @@ code, pre {
 pre {
   background: var(--code-bg);
   color: var(--code-text);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   overflow-x: auto;
 
   code {
@@ -118,17 +121,17 @@ pre {
 
 /* Selection color */
 ::selection {
-  background-color: var(--rust-200);
-  color: var(--rust-900);
+  background-color: var(--color-primary-300);
+  color: var(--color-primary-950);
 }
 
 /* Links */
 a {
-  color: var(--rust-600);
+  color: var(--color-primary-400);
   transition: color 0.2s ease;
 
   &:hover {
-    color: var(--rust-700);
+    color: var(--color-primary-300);
   }
 }
 
@@ -139,66 +142,68 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--stone-100);
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--stone-400);
+  background: var(--color-primary-700);
   border-radius: 4px;
 
   &:hover {
-    background: var(--rust-400);
+    background: var(--color-primary-500);
   }
 }
 
 /* Focus states */
 *:focus-visible {
-  outline: 2px solid var(--rust-500);
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
-/* Button hover effect */
+/* Button primary style */
+.btn-primary,
 .btn-rust {
-  background: linear-gradient(135deg, var(--rust-500) 0%, var(--rust-600) 100%);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
   color: white;
   font-weight: 500;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 14px -2px rgba(206, 66, 43, 0.3);
+  box-shadow: 0 4px 14px -2px rgba(206, 66, 43, 0.4);
 
   &:hover {
-    background: linear-gradient(135deg, var(--rust-400) 0%, var(--rust-500) 100%);
+    background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-500) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px -2px rgba(206, 66, 43, 0.4);
+    box-shadow: 0 6px 20px -2px rgba(206, 66, 43, 0.5);
+    color: white;
   }
 }
 
 /* Card styling */
-.card-rust {
-  background: white;
-  border: 1px solid var(--stone-200);
-  border-radius: 0.75rem;
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: var(--rust-200);
-    box-shadow: 0 10px 40px -10px rgba(206, 66, 43, 0.15);
+    border-color: var(--color-primary-700);
+    box-shadow: var(--shadow-lg);
   }
 }
 
 /* Gradient text */
-.text-rust-gradient {
-  background: linear-gradient(135deg, var(--rust-500) 0%, var(--rust-700) 100%);
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-600) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* Badge styling */
-.badge-rust {
-  background: var(--rust-100);
-  color: var(--rust-700);
+.badge {
+  background: var(--color-primary-900);
+  color: var(--color-primary-200);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
@@ -206,33 +211,34 @@ a {
 }
 
 /* Animations */
-@keyframes rust-pulse {
+@keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(206, 66, 43, 0.4);
+    box-shadow: 0 0 0 0 var(--color-primary-500);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(206, 66, 43, 0);
+    box-shadow: 0 0 0 8px transparent;
   }
 }
 
-.animate-rust-pulse {
-  animation: rust-pulse 2s infinite;
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
 }
 
 /* Terminal window styling */
 .terminal-window {
-  background: var(--stone-900);
-  border-radius: 0.75rem;
+  background: #0d0d0d;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
 
   .terminal-header {
-    background: var(--stone-800);
+    background: #1a1a1a;
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--stone-700);
+    border-bottom: 1px solid var(--color-border);
 
     .terminal-dot {
       width: 12px;
@@ -247,24 +253,25 @@ a {
 
   .terminal-body {
     padding: 1.25rem;
-    color: var(--stone-300);
+    color: #a0a0a0;
     font-size: 0.875rem;
     line-height: 1.6;
 
-    .prompt { color: var(--rust-400); }
-    .command { color: var(--stone-100); }
+    .prompt { color: var(--color-primary-400); }
+    .command { color: #f0f0f0; }
     .output { color: var(--code-type); }
-    .comment { color: var(--stone-500); }
+    .comment { color: #666; }
   }
 }
 
 /* Hero gradient background */
+.hero-gradient,
 .hero-rust-gradient {
   background: linear-gradient(
     135deg,
-    var(--stone-900) 0%,
-    #2d1f1a 50%,
-    var(--stone-950) 100%
+    var(--color-background) 0%,
+    #1a0f0a 50%,
+    #0d0505 100%
   );
   position: relative;
   overflow: hidden;
@@ -284,39 +291,41 @@ a {
 }
 
 /* Feature card icons */
-.icon-rust {
+.icon-box {
   width: 2.5rem;
   height: 2.5rem;
-  background: var(--rust-100);
-  border-radius: 0.5rem;
+  background: var(--color-primary-900);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--rust-600);
+  color: var(--color-primary-400);
 }
 
 /* Documentation sidebar */
 .docs-sidebar {
-  border-right: 1px solid var(--stone-200);
+  border-right: 1px solid var(--color-border);
 
   a {
-    color: var(--stone-600);
+    color: var(--color-foreground);
+    opacity: 0.7;
     padding: 0.5rem 1rem;
     display: block;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-sm);
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--stone-100);
-      color: var(--stone-900);
+      background: var(--color-surface);
+      opacity: 1;
     }
 
     &.active {
-      background: var(--rust-50);
-      color: var(--rust-700);
+      background: var(--color-primary-900);
+      color: var(--color-primary-300);
       font-weight: 500;
-      border-left: 3px solid var(--rust-500);
+      border-left: 3px solid var(--color-primary-500);
       margin-left: -1px;
+      opacity: 1;
     }
   }
 }
@@ -326,4 +335,120 @@ a {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
+}
+
+/* Navigation styling for dark theme */
+.nav-link {
+  color: var(--color-foreground);
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+    color: var(--color-primary-400);
+  }
+}
+
+/* Feature cards for oxide theme */
+.feature-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--color-primary-600);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px -10px rgba(206, 66, 43, 0.2);
+  }
+
+  .feature-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Code inline styling */
+:not(pre) > code {
+  background: var(--color-surface);
+  color: var(--color-primary-400);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875em;
+  border: 1px solid var(--color-border);
+}
+
+/* Table styling for dark theme */
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+  }
+
+  th {
+    background: var(--color-surface);
+    color: var(--color-foreground);
+    font-weight: 600;
+  }
+
+  tr:hover td {
+    background: var(--color-surface-muted);
+  }
+}
+
+/* Blockquote styling */
+blockquote {
+  border-left: 4px solid var(--color-primary-500);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--color-foreground);
+  opacity: 0.9;
+  background: var(--color-surface);
+  padding: 1rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Rust crab accent (fun!) */
+.rust-crab {
+  color: var(--color-primary-500);
+  font-size: 1.5rem;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &.complete {
+    background: #064e3b;
+    color: #6ee7b7;
+  }
+
+  &.in-progress {
+    background: #78350f;
+    color: #fcd34d;
+  }
+
+  &.planned {
+    background: var(--color-surface);
+    color: var(--color-foreground);
+    border: 1px solid var(--color-border);
+  }
 }

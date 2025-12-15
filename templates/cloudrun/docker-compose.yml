@@ -1,0 +1,105 @@
+# =============================================================================
+# Armature Cloud Run - Local Development Environment
+# =============================================================================
+# Simulates Cloud Run environment locally
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Application (Cloud Run simulation)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime-debug  # Use debug target for local development
+    container_name: armature-cloudrun-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Cloud Run environment variables
+      - PORT=8080
+      - K_SERVICE=armature-app
+      - K_REVISION=armature-app-00001
+      - K_CONFIGURATION=armature-app
+      - GOOGLE_CLOUD_PROJECT=local-project
+      # Application configuration
+      - RUST_LOG=debug
+      - DATABASE_URL=postgres://armature:armature@postgres:5432/armature
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: armature-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=armature
+      - POSTGRES_PASSWORD=armature
+      - POSTGRES_DB=armature
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U armature"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: armature-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Pub/Sub Emulator (Google Cloud Pub/Sub)
+  # ---------------------------------------------------------------------------
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: armature-pubsub
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085
+    ports:
+      - "8085:8085"
+
+  # ---------------------------------------------------------------------------
+  # Firestore Emulator
+  # ---------------------------------------------------------------------------
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: armature-firestore
+    command: gcloud emulators firestore start --host-port=0.0.0.0:8086
+    ports:
+      - "8086:8086"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: armature-cloudrun-net
+

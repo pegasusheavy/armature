@@ -19,7 +19,8 @@ futures = "0.3"
 uuid = { version = "1.11", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 
-# Redis support (default)
+# Redis support (default) - uses armature-redis for DI integration
+armature-redis = { path = "../armature-redis", optional = true }
 redis = { version = "1.0", features = ["tokio-comp", "connection-manager"], optional = true }
 
 # Memcached support (optional feature flag)
@@ -31,7 +32,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-feature
 [features]
 # Redis is the default backend
 default = ["redis"]
-redis = ["dep:redis"]
+redis = ["dep:redis", "armature-redis"]
 memcached = ["dep:memcache"]
 memcached-tls = ["memcache/tls"]  # Requires openssl
 couchdb = ["dep:reqwest"]

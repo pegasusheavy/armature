@@ -1,0 +1,167 @@
+# Labeler configuration for auto-labeling PRs
+# Used by .github/workflows/pr.yml
+
+# Core framework
+core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-core/**'
+          - 'src/**'
+
+# Macros
+macros:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-macro/**'
+          - 'armature-macros/**'
+          - 'armature-macros-utils/**'
+
+# Authentication
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-auth/**'
+          - 'armature-jwt/**'
+          - 'armature-session/**'
+
+# Security
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-security/**'
+          - 'armature-ratelimit/**'
+          - 'armature-acme/**'
+
+# Caching
+cache:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-cache/**'
+
+# Queue & Background Jobs
+queue:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-queue/**'
+          - 'armature-cron/**'
+
+# Messaging
+messaging:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-messaging/**'
+
+# GraphQL
+graphql:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-graphql/**'
+          - 'armature-graphql-client/**'
+
+# gRPC
+grpc:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-grpc/**'
+
+# Observability
+observability:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-metrics/**'
+          - 'armature-opentelemetry/**'
+          - 'armature-audit/**'
+
+# Testing
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-testing/**'
+          - '**/*_test.rs'
+          - '**/tests/**'
+
+# Documentation
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - '**/*.md'
+
+# CI/CD
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'Jenkinsfile*'
+
+# Docker/K8s
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/Dockerfile'
+          - '**/docker-compose*.yml'
+          - 'templates/k8s/**'
+          - 'templates/helm/**'
+
+# Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/Cargo.toml'
+          - '**/Cargo.lock'
+
+# Examples
+examples:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'examples/**'
+          - 'templates/api-*/**'
+          - 'templates/graphql-*/**'
+          - 'templates/microservice/**'
+
+# CLI
+cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-cli/**'
+
+# Storage
+storage:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-storage/**'
+
+# Events
+events:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-events/**'
+          - 'armature-eventsourcing/**'
+          - 'armature-cqrs/**'
+
+# Distributed
+distributed:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-distributed/**'
+          - 'armature-discovery/**'
+
+# Multi-tenancy
+tenancy:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-tenancy/**'
+
+# Feature flags
+features:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'armature-features/**'
+
+# Website
+website:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'web/**'
+

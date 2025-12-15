@@ -1,31 +1,48 @@
-<div class="bg-stone-50 min-h-screen">
+<div class="bg-stone-950 min-h-screen">
   <!-- Hero Section -->
-  <section class="bg-gradient-to-br from-stone-900 to-stone-800 text-white py-16">
+  <section class="bg-gradient-to-br from-stone-900 to-stone-800 text-white py-16 border-b border-stone-800">
     <div class="max-w-7xl mx-auto px-6">
       <h1 class="text-4xl md:text-5xl font-bold mb-4">Feature Roadmap</h1>
-      <p class="text-xl text-stone-300 max-w-3xl">
-        Track the progress of Armature Framework's development. See what's completed, what's in progress, and what's planned for the future.
+      <p class="text-xl text-stone-400 max-w-3xl mb-8">
+        Track the progress of Armature Framework's development. The framework is feature-complete for enterprise production use.
       </p>
+
+      <!-- Overall Progress -->
+      <div class="bg-stone-800/50 rounded-xl p-6 border border-stone-700 max-w-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-lg font-semibold text-white">Overall Progress</span>
+          <span class="text-2xl font-bold text-emerald-400">{{ getTotalCompleted() }}/{{ getTotalFeatures() }}</span>
+        </div>
+        <div class="w-full bg-stone-700 rounded-full h-3 mb-2">
+          <div
+            class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
+            [style.width.%]="(getTotalCompleted() / getTotalFeatures()) * 100"
+          ></div>
+        </div>
+        <p class="text-stone-400 text-sm">
+          {{ ((getTotalCompleted() / getTotalFeatures()) * 100).toFixed(0) }}% complete — Only i18n and Grafana dashboards remaining!
+        </p>
+      </div>
     </div>
   </section>
 
   <!-- Legend -->
-  <section class="bg-white border-b border-stone-200 py-6">
+  <section class="bg-stone-900 border-b border-stone-800 py-6">
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex flex-wrap gap-4 items-center justify-center">
-        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-medium">
+        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-400 text-sm font-medium border border-emerald-800">
           ✅ Completed
         </span>
-        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium">
+        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/50 text-red-400 text-sm font-medium border border-red-800">
           🔴 Critical
         </span>
-        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-sm font-medium">
+        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-orange-900/50 text-orange-400 text-sm font-medium border border-orange-800">
           🟠 High Priority
         </span>
-        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium">
+        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-900/50 text-yellow-400 text-sm font-medium border border-yellow-800">
           🟡 Medium Priority
         </span>
-        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium">
+        <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/50 text-green-400 text-sm font-medium border border-green-800">
           🟢 Low Priority
         </span>
       </div>
@@ -35,11 +52,11 @@
   <!-- Implementation Phases -->
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-3xl font-bold text-stone-900 mb-8">Implementation Phases</h2>
+      <h2 class="text-3xl font-bold text-white mb-8">Implementation Phases</h2>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         @for (phase of phases; track phase.name) {
-          <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
             <div class="bg-stone-800 text-white px-6 py-4">
               <span class="text-sm font-medium text-stone-400">{{ phase.quarter }}</span>
               <h3 class="text-lg font-semibold">{{ phase.name }}</h3>
@@ -57,7 +74,7 @@
               @for (item of phase.items; track item.feature) {
                 <li class="flex items-center gap-2 text-sm">
                   <span>{{ getStatusIcon(item.status) }}</span>
-                  <span [class]="item.status === 'completed' ? 'text-stone-500 line-through' : 'text-stone-700'">
+                  <span [class]="item.status === 'completed' ? 'text-stone-500 line-through' : 'text-stone-300'">
                     {{ item.feature }}
                   </span>
                 </li>
@@ -70,19 +87,19 @@
   </section>
 
   <!-- Already Completed -->
-  <section class="py-12 bg-emerald-50">
+  <section class="py-12 bg-emerald-950/30 border-y border-emerald-900/50">
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex items-center gap-3 mb-8">
         <span class="text-3xl">✅</span>
-        <h2 class="text-3xl font-bold text-stone-900">Already Completed</h2>
+        <h2 class="text-3xl font-bold text-white">Already Completed</h2>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6">
-        <p class="text-stone-600 mb-4">The following features are already implemented and production-ready:</p>
+      <div class="bg-stone-900 rounded-xl shadow-sm border border-emerald-800 p-6">
+        <p class="text-stone-400 mb-4">The following features are already implemented and production-ready:</p>
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           @for (feature of completedFeatures; track feature) {
-            <div class="flex items-start gap-2 text-sm text-stone-700">
-              <span class="text-emerald-500 mt-0.5">✓</span>
+            <div class="flex items-start gap-2 text-sm text-stone-300">
+              <span class="text-emerald-400 mt-0.5">✓</span>
               <span>{{ feature }}</span>
             </div>
           }
@@ -94,15 +111,15 @@
   <!-- Detailed Categories -->
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-3xl font-bold text-stone-900 mb-8">Feature Categories</h2>
+      <h2 class="text-3xl font-bold text-white mb-8">Feature Categories</h2>
 
       <div class="space-y-8">
         @for (category of categories; track category.name) {
-          <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
-            <div class="bg-stone-100 px-6 py-4 border-b border-stone-200">
+          <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
+            <div class="bg-stone-800 px-6 py-4 border-b border-stone-700">
               <div class="flex items-center justify-between">
-                <h3 class="text-xl font-semibold text-stone-800">{{ category.name }}</h3>
-                <span class="text-sm text-stone-500">
+                <h3 class="text-xl font-semibold text-white">{{ category.name }}</h3>
+                <span class="text-sm text-stone-400">
                   {{ getCompletedCount(category.items) }}/{{ category.items.length }} completed
                 </span>
               </div>
@@ -110,30 +127,30 @@
 
             <div class="overflow-x-auto">
               <table class="w-full">
-                <thead class="bg-stone-50 border-b border-stone-200">
+                <thead class="bg-stone-800/50 border-b border-stone-700">
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Feature</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider hidden md:table-cell">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider hidden lg:table-cell">Module</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">Feature</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden md:table-cell">Description</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden lg:table-cell">Module</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody class="divide-y divide-stone-800">
                   @for (item of category.items; track item.feature) {
-                    <tr class="hover:bg-stone-50">
+                    <tr class="hover:bg-stone-800/50">
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStatusClass(item.status)">
                           {{ getStatusIcon(item.status) }} {{ item.status | titlecase }}
                         </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap font-medium text-stone-900">
+                      <td class="px-6 py-4 whitespace-nowrap font-medium text-white">
                         {{ item.feature }}
                       </td>
-                      <td class="px-6 py-4 text-stone-600 hidden md:table-cell">
+                      <td class="px-6 py-4 text-stone-400 hidden md:table-cell">
                         {{ item.description }}
                       </td>
                       <td class="px-6 py-4 hidden lg:table-cell">
-                        <code class="text-xs bg-stone-100 px-2 py-1 rounded text-stone-600">{{ item.module }}</code>
+                        <code class="text-xs bg-stone-800 px-2 py-1 rounded text-stone-300 border border-stone-700">{{ item.module }}</code>
                       </td>
                     </tr>
                   }
@@ -147,7 +164,7 @@
   </section>
 
   <!-- Contributing CTA -->
-  <section class="py-16 bg-stone-900 text-white">
+  <section class="py-16 bg-stone-900 text-white border-t border-stone-800">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <h2 class="text-3xl font-bold mb-4">Want to Contribute?</h2>
       <p class="text-stone-400 mb-8">
@@ -172,4 +189,3 @@
     </div>
   </section>
 </div>
-

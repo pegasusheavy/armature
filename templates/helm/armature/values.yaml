@@ -1,0 +1,189 @@
+# =============================================================================
+# Armature Helm Chart - Default Values
+# =============================================================================
+
+# Application name
+name: armature-api
+
+# Number of replicas
+replicaCount: 3
+
+# Container image configuration
+image:
+  repository: ghcr.io/armature-rs/armature-api
+  tag: ""  # Defaults to Chart appVersion
+  pullPolicy: IfNotPresent
+
+# Image pull secrets for private registries
+imagePullSecrets: []
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3000"
+  prometheus.io/path: "/metrics"
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: armature-api-tls
+      hosts:
+        - api.example.com
+
+# Resource limits and requests
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+pdb:
+  enabled: true
+  minAvailable: 1
+
+# Network Policy
+networkPolicy:
+  enabled: false
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: armature-api
+          topologyKey: kubernetes.io/hostname
+
+# Environment variables
+env:
+  HOST: "0.0.0.0"
+  PORT: "3000"
+  RUST_LOG: "info"
+  ENVIRONMENT: "production"
+
+# Environment variables from secrets
+envFrom: []
+#  - secretRef:
+#      name: armature-secrets
+
+# Secrets (will be created as a Kubernetes Secret)
+secrets:
+  # Set these via --set or values file override
+  databaseUrl: ""
+  redisUrl: ""
+  jwtSecret: ""
+
+# ConfigMap data
+config:
+  enabled: true
+  data:
+    config.toml: |
+      [server]
+      host = "0.0.0.0"
+      port = 3000
+
+      [logging]
+      level = "info"
+      format = "json"
+
+# Liveness probe
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Readiness probe
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Startup probe
+startupProbe:
+  httpGet:
+    path: /health/live
+    port: http
+  initialDelaySeconds: 2
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
+
+# Termination grace period
+terminationGracePeriodSeconds: 30
+
+# Extra volumes
+extraVolumes: []
+
+# Extra volume mounts
+extraVolumeMounts: []
+
+# Init containers
+initContainers: []
+
+# Sidecar containers
+sidecars: []
+

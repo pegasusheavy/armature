@@ -1,0 +1,119 @@
+# =============================================================================
+# Armature Azure Functions - Custom Handler Container
+# =============================================================================
+# Features:
+# - Azure Functions custom handler support
+# - Multi-stage build for minimal size
+# - Rust binary as custom handler
+# - Function bindings support
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder
+# -----------------------------------------------------------------------------
+FROM rust:1.85-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    musl-dev \
+    openssl-dev \
+    openssl-libs-static \
+    pkgconfig
+
+# Cache dependencies
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo build --release --target x86_64-unknown-linux-musl || true
+RUN rm -rf src
+
+# Build application
+COPY src ./src
+RUN cargo build --release --target x86_64-unknown-linux-musl
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime - Azure Functions base image
+# -----------------------------------------------------------------------------
+FROM mcr.microsoft.com/azure-functions/base:4-slim AS runtime
+
+WORKDIR /home/site/wwwroot
+
+# Copy the binary
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/app /home/site/wwwroot/handler
+
+# Copy function configuration files
+COPY host.json ./
+COPY local.settings.json* ./
+COPY */function.json ./
+
+# Set the custom handler
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
+    FUNCTIONS_CUSTOMHANDLER_PORT=80
+
+# Expose port
+EXPOSE 80
+
+# =============================================================================
+# Required Files
+# =============================================================================
+# host.json - Configure custom handler:
+# {
+#   "version": "2.0",
+#   "customHandler": {
+#     "description": {
+#       "defaultExecutablePath": "handler",
+#       "workingDirectory": "",
+#       "arguments": []
+#     },
+#     "enableForwardingHttpRequest": true
+#   },
+#   "extensionBundle": {
+#     "id": "Microsoft.Azure.Functions.ExtensionBundle",
+#     "version": "[4.*, 5.0.0)"
+#   }
+# }
+#
+# api/function.json - HTTP trigger:
+# {
+#   "bindings": [
+#     {
+#       "type": "httpTrigger",
+#       "direction": "in",
+#       "name": "req",
+#       "methods": ["get", "post", "put", "delete"],
+#       "route": "{*route}"
+#     },
+#     {
+#       "type": "http",
+#       "direction": "out",
+#       "name": "$return"
+#     }
+#   ]
+# }
+# =============================================================================
+
+# =============================================================================
+# Deployment Instructions
+# =============================================================================
+# 1. Build the image:
+#    docker build -t armature-functions -f Dockerfile.functions .
+#
+# 2. Tag for ACR:
+#    docker tag armature-functions myregistry.azurecr.io/armature-functions:latest
+#
+# 3. Push to ACR:
+#    az acr login --name myregistry
+#    docker push myregistry.azurecr.io/armature-functions:latest
+#
+# 4. Create Function App with container:
+#    az functionapp create \
+#      --name my-function-app \
+#      --resource-group my-rg \
+#      --storage-account mystorageaccount \
+#      --plan my-plan \
+#      --deployment-container-image-name myregistry.azurecr.io/armature-functions:latest \
+#      --functions-version 4
+# =============================================================================
+

@@ -8,50 +8,50 @@ pub enum Error {
     #[error("HTTP error: {0}")]
     Http(String),
 
-    #[error("Route not found: {0}")]
+    #[error("Route not found: '{0}'. Check your controller paths and ensure the route is registered.")]
     RouteNotFound(String),
 
-    #[error("Method not allowed: {0}")]
+    #[error("Method {0} not allowed. Verify the HTTP method matches your route definition (#[get], #[post], etc.).")]
     MethodNotAllowed(String),
 
-    #[error("Dependency injection error: {0}")]
+    #[error("Dependency injection error: {0}. Ensure all dependencies are registered with the container.")]
     DependencyInjection(String),
 
-    #[error("Provider not found: {0}")]
+    #[error("Provider not found: '{0}'. Did you forget to register it? Use container.register() or add it to your module's providers().")]
     ProviderNotFound(String),
 
-    #[error("Serialization error: {0}")]
+    #[error("Serialization error: {0}. Ensure your type implements Serialize correctly.")]
     Serialization(String),
 
-    #[error("Deserialization error: {0}")]
+    #[error("Deserialization error: {0}. Check that the request body matches the expected format.")]
     Deserialization(String),
 
     #[error("Validation error: {0}")]
     Validation(String),
 
-    #[error("Internal server error: {0}")]
+    #[error("Internal server error: {0}. Check server logs for details.")]
     Internal(String),
 
-    #[error("Forbidden: {0}")]
+    #[error("Forbidden: {0}. User lacks required permissions for this resource.")]
     Forbidden(String),
 
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
     // 4xx Client Errors
-    #[error("Bad Request: {0}")]
+    #[error("Bad Request: {0}. Check the request parameters and body format.")]
     BadRequest(String),
 
-    #[error("Unauthorized: {0}")]
+    #[error("Unauthorized: {0}. Include valid authentication credentials (e.g., Bearer token in Authorization header).")]
     Unauthorized(String),
 
     #[error("Payment Required: {0}")]
     PaymentRequired(String),
 
-    #[error("Not Found: {0}")]
+    #[error("Not Found: {0}. Verify the resource exists and the URL is correct.")]
     NotFound(String),
 
-    #[error("Not Acceptable: {0}")]
+    #[error("Not Acceptable: {0}. Check the Accept header matches available response formats.")]
     NotAcceptable(String),
 
     #[error("Proxy Authentication Required: {0}")]
@@ -72,13 +72,13 @@ pub enum Error {
     #[error("Precondition Failed: {0}")]
     PreconditionFailed(String),
 
-    #[error("Payload Too Large: {0}")]
+    #[error("Payload Too Large: {0}. Reduce the request body size or increase the server's body_limit.")]
     PayloadTooLarge(String),
 
-    #[error("URI Too Long: {0}")]
+    #[error("URI Too Long: {0}. Use POST with a request body instead of query parameters.")]
     UriTooLong(String),
 
-    #[error("Unsupported Media Type: {0}")]
+    #[error("Unsupported Media Type: {0}. Set Content-Type header to a supported format (e.g., application/json).")]
     UnsupportedMediaType(String),
 
     #[error("Range Not Satisfiable: {0}")]
@@ -111,7 +111,7 @@ pub enum Error {
     #[error("Precondition Required: {0}")]
     PreconditionRequired(String),
 
-    #[error("Too Many Requests: {0}")]
+    #[error("Too Many Requests: {0}. Rate limit exceeded. Wait before retrying or reduce request frequency.")]
     TooManyRequests(String),
 
     #[error("Request Header Fields Too Large: {0}")]
@@ -121,16 +121,16 @@ pub enum Error {
     UnavailableForLegalReasons(String),
 
     // 5xx Server Errors
-    #[error("Not Implemented: {0}")]
+    #[error("Not Implemented: {0}. This feature is not yet available.")]
     NotImplemented(String),
 
-    #[error("Bad Gateway: {0}")]
+    #[error("Bad Gateway: {0}. The upstream server returned an invalid response.")]
     BadGateway(String),
 
-    #[error("Service Unavailable: {0}")]
+    #[error("Service Unavailable: {0}. Server is temporarily unable to handle requests. Try again later.")]
     ServiceUnavailable(String),
 
-    #[error("Gateway Timeout: {0}")]
+    #[error("Gateway Timeout: {0}. The upstream server did not respond in time.")]
     GatewayTimeout(String),
 
     #[error("HTTP Version Not Supported: {0}")]
@@ -224,6 +224,99 @@ impl Error {
     /// Check if this is a server error (5xx)
     pub fn is_server_error(&self) -> bool {
         self.http_status().is_server_error()
+    }
+
+    // ============================================================================
+    // Convenience Constructors
+    // ============================================================================
+
+    /// Create a bad request error with a message.
+    pub fn bad_request(msg: impl Into<String>) -> Self {
+        Self::BadRequest(msg.into())
+    }
+
+    /// Create an unauthorized error with a message.
+    pub fn unauthorized(msg: impl Into<String>) -> Self {
+        Self::Unauthorized(msg.into())
+    }
+
+    /// Create a forbidden error with a message.
+    pub fn forbidden(msg: impl Into<String>) -> Self {
+        Self::Forbidden(msg.into())
+    }
+
+    /// Create a not found error with a message.
+    pub fn not_found(msg: impl Into<String>) -> Self {
+        Self::NotFound(msg.into())
+    }
+
+    /// Create a conflict error with a message.
+    pub fn conflict(msg: impl Into<String>) -> Self {
+        Self::Conflict(msg.into())
+    }
+
+    /// Create an internal server error with a message.
+    pub fn internal(msg: impl Into<String>) -> Self {
+        Self::Internal(msg.into())
+    }
+
+    /// Create a validation error with a message.
+    pub fn validation(msg: impl Into<String>) -> Self {
+        Self::Validation(msg.into())
+    }
+
+    /// Create a timeout error with a message.
+    pub fn timeout(msg: impl Into<String>) -> Self {
+        Self::RequestTimeout(msg.into())
+    }
+
+    /// Create a rate limit error with a message.
+    pub fn rate_limited(msg: impl Into<String>) -> Self {
+        Self::TooManyRequests(msg.into())
+    }
+
+    /// Create a service unavailable error with a message.
+    pub fn unavailable(msg: impl Into<String>) -> Self {
+        Self::ServiceUnavailable(msg.into())
+    }
+
+    /// Get a help message with suggestions for resolving this error.
+    pub fn help(&self) -> Option<&'static str> {
+        match self {
+            Error::ProviderNotFound(_) => Some(
+                "Make sure to:\n\
+                 1. Add the provider to your module's providers() method\n\
+                 2. Or register it directly: container.register(MyService::new())\n\
+                 3. Check that the type matches exactly (including generics)"
+            ),
+            Error::RouteNotFound(_) => Some(
+                "Check that:\n\
+                 1. The route is registered in a controller\n\
+                 2. The controller is added to a module\n\
+                 3. The module is imported into your app module\n\
+                 4. The HTTP method matches (GET, POST, etc.)"
+            ),
+            Error::Deserialization(_) => Some(
+                "Verify that:\n\
+                 1. The request body is valid JSON\n\
+                 2. Field names match your struct (check #[serde(rename)] attributes)\n\
+                 3. Data types match (strings vs numbers, etc.)\n\
+                 4. Required fields are present"
+            ),
+            Error::Unauthorized(_) => Some(
+                "To authenticate:\n\
+                 1. Include 'Authorization: Bearer <token>' header\n\
+                 2. Ensure the token is not expired\n\
+                 3. Check that the token has the required scopes"
+            ),
+            Error::TooManyRequests(_) => Some(
+                "To resolve rate limiting:\n\
+                 1. Wait for the retry-after duration\n\
+                 2. Reduce request frequency\n\
+                 3. Check the X-RateLimit-* headers for limits"
+            ),
+            _ => None,
+        }
     }
 }
 

@@ -4,12 +4,30 @@ Starter templates for building applications with the Armature framework.
 
 ## Available Templates
 
+### Application Templates
+
 | Template | Description | Features |
 |----------|-------------|----------|
 | [api-minimal](./api-minimal/) | Bare-bones REST API | Basic routing, JSON responses |
 | [api-full](./api-full/) | Full-featured API | Auth, validation, OpenAPI, Docker |
 | [graphql-api](./graphql-api/) | GraphQL API server | Queries, mutations, subscriptions, playground |
 | [microservice](./microservice/) | Queue-connected microservice | Job worker, health checks, Docker |
+
+### Serverless Deployment Templates
+
+| Template | Platform | Features |
+|----------|----------|----------|
+| [lambda](./lambda/) | AWS Lambda | Container images, ARM64/Graviton2, LocalStack |
+| [cloudrun](./cloudrun/) | Google Cloud Run | Distroless, Cloud Build, GCP emulators |
+| [azure-container](./azure-container/) | Azure Container Apps | Container Apps, Azure Functions, Azurite |
+
+### Infrastructure Templates
+
+| Template | Description | Features |
+|----------|-------------|----------|
+| [k8s](./k8s/) | Kubernetes manifests | Deployment, Service, Ingress, HPA, PDB, NetworkPolicy |
+| [helm](./helm/) | Helm charts | Parameterized K8s deployment |
+| [jenkins](./jenkins/) | Jenkins pipelines | CI/CD templates |
 
 ## Quick Start
 
@@ -123,6 +141,79 @@ armature = { version = "0.1", features = ["auth"] }
 [dependencies]
 armature = { version = "0.1", features = ["ratelimit"] }
 ```
+
+---
+
+## Serverless Deployment
+
+### AWS Lambda
+
+```bash
+# Using cargo-lambda (recommended)
+cargo lambda build --release
+cargo lambda deploy
+
+# Using Docker
+docker build -t my-lambda -f templates/lambda/Dockerfile .
+```
+
+See [templates/lambda/](./lambda/) for details including ARM64 support.
+
+### Google Cloud Run
+
+```bash
+# Quick deploy
+gcloud builds submit --tag gcr.io/PROJECT/armature-app
+gcloud run deploy armature-app --image gcr.io/PROJECT/armature-app --platform managed
+
+# Using Cloud Build
+gcloud builds submit --config=templates/cloudrun/cloudbuild.yaml
+```
+
+See [templates/cloudrun/](./cloudrun/) for Cloud Build configuration.
+
+### Azure Container Apps
+
+```bash
+# Deploy
+docker build -t myregistry.azurecr.io/app -f templates/azure-container/Dockerfile .
+az acr login --name myregistry
+docker push myregistry.azurecr.io/app
+az containerapp create --name app --image myregistry.azurecr.io/app
+```
+
+See [templates/azure-container/](./azure-container/) for Azure Functions support.
+
+---
+
+## Infrastructure
+
+### Kubernetes
+
+```bash
+# Deploy with kubectl
+kubectl apply -k templates/k8s/
+
+# Or with Helm
+helm install armature templates/helm/armature/ -f values.yaml
+```
+
+### Local Development
+
+Each serverless template includes a `docker-compose.yml` with emulators:
+
+```bash
+# Lambda with LocalStack
+cd templates/lambda && docker-compose up -d
+
+# Cloud Run with GCP emulators
+cd templates/cloudrun && docker-compose up -d
+
+# Azure with Azurite
+cd templates/azure-container && docker-compose up -d
+```
+
+---
 
 ## Contributing
 

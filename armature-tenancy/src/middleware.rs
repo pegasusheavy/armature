@@ -67,7 +67,7 @@ impl Middleware for TenantMiddleware {
                 // For now, we'll use a simple approach
 
                 // Create tenant context
-                let context = TenantContext::with_tenant(tenant.clone());
+                let _context = TenantContext::with_tenant(tenant.clone());
 
                 // Store in request headers (temporary approach)
                 // In production, use proper request-local storage

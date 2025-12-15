@@ -1,0 +1,68 @@
+[package]
+name = "armature-grpc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "gRPC server and client support for Armature"
+keywords = ["grpc", "protobuf", "rpc", "server", "client"]
+categories = ["network-programming", "asynchronous"]
+
+[dependencies]
+# gRPC
+tonic = { version = "0.13", features = ["gzip", "zstd"] }
+prost = "0.13"
+prost-types = "0.13"
+
+# Async runtime
+tokio = { version = "1.35", features = ["rt-multi-thread", "net", "sync", "time"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+
+# Tower (middleware)
+tower = { version = "0.5", features = ["timeout", "limit", "load-shed"] }
+tower-service = "0.3"
+
+# HTTP
+http = "1.1"
+http-body = "1.0"
+http-body-util = "0.1"
+bytes = "1.5"
+hyper = { version = "1.4", features = ["server", "http2"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Tracing
+tracing = "0.1"
+
+# Utilities
+async-trait = "0.1"
+futures = "0.3"
+parking_lot = "0.12"
+
+# Optional: Reflection
+tonic-reflection = { version = "0.13", optional = true }
+
+# Optional: Health checking
+tonic-health = { version = "0.13", optional = true }
+
+[build-dependencies]
+tonic-build = "0.13"
+
+[features]
+default = ["health", "reflection"]
+health = ["tonic-health"]
+reflection = ["tonic-reflection"]
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+tokio-test = "0.4"
+

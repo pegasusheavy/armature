@@ -72,7 +72,6 @@ pub use error::{JwtError, Result};
 pub use service::JwtService;
 pub use token::{Token, TokenPair};
 
-use armature_core::Provider;
 
 // Re-export jsonwebtoken types
 pub use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
@@ -175,6 +174,21 @@ impl Default for JwtManager {
     fn default() -> Self {
         Self::new(JwtConfig::default()).expect("Failed to create default JwtManager")
     }
+}
+
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_jwt::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::claims::{Claims, StandardClaims};
+    pub use crate::config::JwtConfig;
+    pub use crate::error::{JwtError, Result};
+    pub use crate::service::JwtService;
+    pub use crate::token::{Token, TokenPair};
+    pub use crate::JwtManager;
+    pub use jsonwebtoken::Algorithm;
 }
 
 #[cfg(test)]

@@ -1,9 +1,7 @@
 //! Aggregate repository
 
-use crate::aggregate::{Aggregate, AggregateError, Snapshot};
-use crate::store::{EventStore, EventStoreError};
-use armature_events::DomainEvent;
-use async_trait::async_trait;
+use crate::aggregate::{Aggregate, AggregateError};
+use crate::store::EventStore;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -79,10 +77,10 @@ where
         aggregate.mark_events_committed();
 
         // Check if we should create a snapshot
-        if let Some(frequency) = self.snapshot_frequency {
-            if aggregate.version() % frequency == 0 {
-                self.create_snapshot(aggregate).await?;
-            }
+        if let Some(frequency) = self.snapshot_frequency
+            && aggregate.version().is_multiple_of(frequency)
+        {
+            self.create_snapshot(aggregate).await?;
         }
 
         Ok(())
@@ -116,6 +114,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use armature_events::DomainEvent;
+    use async_trait::async_trait;
     use crate::aggregate::AggregateRoot;
     use crate::store::InMemoryEventStore;
     use serde::{Deserialize, Serialize};

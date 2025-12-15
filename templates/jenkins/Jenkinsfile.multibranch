@@ -1,0 +1,213 @@
+// =============================================================================
+// Armature Application - Jenkins Multibranch Pipeline
+// =============================================================================
+// Full CI/CD pipeline with environment-specific deployments
+// =============================================================================
+
+def APP_NAME = env.JOB_BASE_NAME ?: 'armature-app'
+def DOCKER_REGISTRY = 'your-registry.com'
+def HELM_RELEASE = APP_NAME
+
+pipeline {
+    agent any
+
+    environment {
+        RUST_BACKTRACE = '1'
+        CARGO_TERM_COLOR = 'always'
+    }
+
+    options {
+        timeout(time: 60, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+        // =====================================================================
+        // CHECKOUT & SETUP
+        // =====================================================================
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    env.GIT_BRANCH_CLEAN = env.BRANCH_NAME.replaceAll('/', '-')
+                }
+            }
+        }
+
+        // =====================================================================
+        // BUILD
+        // =====================================================================
+        stage('Build') {
+            steps {
+                sh '''
+                    echo "🔨 Building ${APP_NAME}..."
+                    cargo build --release
+                '''
+            }
+        }
+
+        // =====================================================================
+        // TEST
+        // =====================================================================
+        stage('Test') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        sh 'cargo test --lib --release -- --test-threads=4'
+                    }
+                    post {
+                        always {
+                            junit allowEmptyResults: true, testResults: 'target/test-results/*.xml'
+                        }
+                    }
+                }
+                stage('Integration Tests') {
+                    when {
+                        anyOf {
+                            branch 'main'
+                            branch 'develop'
+                            changeRequest()
+                        }
+                    }
+                    steps {
+                        sh 'cargo test --test "*" --release || true'
+                    }
+                }
+            }
+        }
+
+        // =====================================================================
+        // CODE QUALITY
+        // =====================================================================
+        stage('Quality') {
+            parallel {
+                stage('Format') {
+                    steps {
+                        sh 'cargo fmt -- --check'
+                    }
+                }
+                stage('Clippy') {
+                    steps {
+                        sh 'cargo clippy --all-targets --release -- -D warnings'
+                    }
+                }
+                stage('Security') {
+                    steps {
+                        sh 'cargo audit || true'
+                    }
+                }
+            }
+        }
+
+        // =====================================================================
+        // BUILD DOCKER IMAGE
+        // =====================================================================
+        stage('Docker') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                    buildingTag()
+                }
+            }
+            steps {
+                script {
+                    def imageTag = env.TAG_NAME ?: "${env.GIT_BRANCH_CLEAN}-${env.GIT_COMMIT_SHORT}"
+
+                    sh """
+                        echo "🐳 Building Docker image..."
+                        docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} .
+                        docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} ${DOCKER_REGISTRY}/${APP_NAME}:${env.GIT_BRANCH_CLEAN}-latest
+                    """
+
+                    env.DOCKER_TAG = imageTag
+                }
+            }
+        }
+
+        // =====================================================================
+        // DEPLOY TO DEVELOPMENT
+        // =====================================================================
+        stage('Deploy Dev') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                echo "🚀 Deploying to development..."
+                sh """
+                    # Example: Helm deployment
+                    # helm upgrade --install ${HELM_RELEASE}-dev ./templates/helm/armature \\
+                    #     --namespace development \\
+                    #     --set image.tag=${env.DOCKER_TAG} \\
+                    #     --set environment=development
+
+                    echo "Deployed ${APP_NAME}:${env.DOCKER_TAG} to development"
+                """
+            }
+        }
+
+        // =====================================================================
+        // DEPLOY TO STAGING
+        // =====================================================================
+        stage('Deploy Staging') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🚀 Deploying to staging..."
+                sh """
+                    # Example: Helm deployment
+                    # helm upgrade --install ${HELM_RELEASE}-staging ./templates/helm/armature \\
+                    #     --namespace staging \\
+                    #     --set image.tag=${env.DOCKER_TAG} \\
+                    #     --set environment=staging
+
+                    echo "Deployed ${APP_NAME}:${env.DOCKER_TAG} to staging"
+                """
+            }
+        }
+
+        // =====================================================================
+        // DEPLOY TO PRODUCTION (manual approval)
+        // =====================================================================
+        stage('Deploy Production') {
+            when {
+                buildingTag()
+            }
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    input message: 'Deploy to production?', ok: 'Deploy'
+                }
+                echo "🚀 Deploying to production..."
+                sh """
+                    # Example: Helm deployment
+                    # helm upgrade --install ${HELM_RELEASE} ./templates/helm/armature \\
+                    #     --namespace production \\
+                    #     --set image.tag=${env.TAG_NAME} \\
+                    #     --set environment=production \\
+                    #     --set replicaCount=3
+
+                    echo "Deployed ${APP_NAME}:${env.TAG_NAME} to production"
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "✅ Pipeline succeeded for ${APP_NAME}"
+            // slackSend(color: 'good', message: "✅ ${APP_NAME} build #${BUILD_NUMBER} succeeded")
+        }
+        failure {
+            echo "❌ Pipeline failed for ${APP_NAME}"
+            // slackSend(color: 'danger', message: "❌ ${APP_NAME} build #${BUILD_NUMBER} failed")
+        }
+    }
+}
+

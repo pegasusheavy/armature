@@ -3,7 +3,7 @@
 //! Strategies for resolving tenant from HTTP requests.
 
 use crate::tenant::Tenant;
-use armature_core::{Error, HttpRequest};
+use armature_core::HttpRequest;
 use async_trait::async_trait;
 use regex::Regex;
 use std::sync::Arc;
@@ -149,11 +149,10 @@ impl SubdomainTenantResolver {
         let host = host.split(':').next().unwrap_or(host);
 
         // Remove base domain
-        if let Some(subdomain) = host.strip_suffix(&format!(".{}", self.base_domain)) {
-            if !subdomain.is_empty() && !subdomain.contains('.') {
+        if let Some(subdomain) = host.strip_suffix(&format!(".{}", self.base_domain))
+            && !subdomain.is_empty() && !subdomain.contains('.') {
                 return Some(subdomain.to_string());
             }
-        }
 
         None
     }

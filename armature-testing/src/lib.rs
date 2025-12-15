@@ -196,6 +196,34 @@ pub use test_container::TestContainer;
 // Re-export common testing utilities
 pub use tokio::test as tokio_test;
 
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_testing::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::assertions::{assert_header, assert_json, assert_status};
+    pub use crate::mock::{MockController, MockProvider, MockService};
+    pub use crate::test_app::{TestApp, TestAppBuilder};
+    pub use crate::test_client::{TestClient, TestResponse};
+    pub use crate::test_container::TestContainer;
+
+    // Integration testing
+    pub use crate::integration::{DatabaseTestHelper, IntegrationTestError, TestFixture};
+
+    // Docker testing
+    pub use crate::docker::{DockerContainer, ContainerConfig};
+
+    // Load testing
+    pub use crate::load::{LoadTestConfig, LoadTestRunner, LoadTestStats};
+
+    // Contract testing
+    pub use crate::contract::{
+        Contract, ContractBuilder, ContractInteraction, ContractManager,
+        ContractMethod, ContractRequest, ContractResponse,
+    };
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

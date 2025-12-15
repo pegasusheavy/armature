@@ -32,7 +32,6 @@
 use chrono::{DateTime, Duration, Utc};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use thiserror::Error;
 
 #[cfg(feature = "webauthn")]
@@ -100,7 +99,7 @@ impl MagicLinkToken {
         identifier: impl Into<String>,
         ttl: std::time::Duration,
     ) -> Result<Self, PasswordlessError> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let bytes: Vec<u8> = (0..32).map(|_| rng.random()).collect();
         let token = hex::encode(bytes);
 

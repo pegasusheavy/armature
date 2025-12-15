@@ -27,6 +27,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// Default page size
 pub const DEFAULT_PAGE_SIZE: usize = 20;
@@ -299,20 +300,23 @@ pub enum SortDirection {
 }
 
 impl SortDirection {
-    /// Parse from string
-    pub fn from_str(s: &str) -> Self {
-        match s.to_lowercase().as_str() {
-            "desc" | "descending" | "-" => SortDirection::Desc,
-            _ => SortDirection::Asc,
-        }
-    }
-
     /// Convert to SQL ORDER BY string
     pub fn to_sql(&self) -> &'static str {
         match self {
             SortDirection::Asc => "ASC",
             SortDirection::Desc => "DESC",
         }
+    }
+}
+
+impl FromStr for SortDirection {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.to_lowercase().as_str() {
+            "desc" | "descending" | "-" => SortDirection::Desc,
+            _ => SortDirection::Asc,
+        })
     }
 }
 
@@ -345,20 +349,24 @@ impl SortField {
         Self::new(field, SortDirection::Desc)
     }
 
+    /// Convert to SQL ORDER BY clause
+    pub fn to_sql(&self) -> String {
+        format!("{} {}", self.field, self.direction.to_sql())
+    }
+}
+
+impl FromStr for SortField {
+    type Err = std::convert::Infallible;
+
     /// Parse from string (e.g., "name", "-created_at", "+email")
-    pub fn from_str(s: &str) -> Self {
-        if let Some(field) = s.strip_prefix('-') {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(if let Some(field) = s.strip_prefix('-') {
             Self::desc(field)
         } else if let Some(field) = s.strip_prefix('+') {
             Self::asc(field)
         } else {
             Self::asc(s)
-        }
-    }
-
-    /// Convert to SQL ORDER BY clause
-    pub fn to_sql(&self) -> String {
-        format!("{} {}", self.field, self.direction.to_sql())
+        })
     }
 }
 
@@ -407,7 +415,7 @@ impl SortParams {
             .split(',')
             .map(|s| s.trim())
             .filter(|s| !s.is_empty())
-            .map(SortField::from_str)
+            .map(|s| s.parse::<SortField>().unwrap())
             .collect();
 
         Self::new(fields)
@@ -586,8 +594,8 @@ impl FilterParams {
             }
 
             // Parse field__operator format
-            if let Some((field, op_str)) = key.split_once("__") {
-                if let Some(operator) = FilterOperator::from_suffix(op_str) {
+            if let Some((field, op_str)) = key.split_once("__")
+                && let Some(operator) = FilterOperator::from_suffix(op_str) {
                     conditions.push(FilterCondition::new(
                         field,
                         operator,
@@ -595,7 +603,6 @@ impl FilterParams {
                     ));
                     continue;
                 }
-            }
 
             // Default to equality
             conditions.push(FilterCondition::new(
@@ -763,18 +770,16 @@ impl FieldSelection {
     /// Check if a field should be included
     pub fn should_include(&self, field: &str) -> bool {
         // If include is specified, field must be in it
-        if let Some(ref include) = self.include {
-            if !include.contains(&field.to_string()) {
+        if let Some(ref include) = self.include
+            && !include.contains(&field.to_string()) {
                 return false;
             }
-        }
 
         // If exclude is specified, field must not be in it
-        if let Some(ref exclude) = self.exclude {
-            if exclude.contains(&field.to_string()) {
+        if let Some(ref exclude) = self.exclude
+            && exclude.contains(&field.to_string()) {
                 return false;
             }
-        }
 
         true
     }
@@ -868,15 +873,15 @@ mod tests {
 
     #[test]
     fn test_sort_field_from_str() {
-        let f = SortField::from_str("name");
+        let f: SortField = "name".parse().unwrap();
         assert_eq!(f.field, "name");
         assert_eq!(f.direction, SortDirection::Asc);
 
-        let f = SortField::from_str("-created_at");
+        let f: SortField = "-created_at".parse().unwrap();
         assert_eq!(f.field, "created_at");
         assert_eq!(f.direction, SortDirection::Desc);
 
-        let f = SortField::from_str("+email");
+        let f: SortField = "+email".parse().unwrap();
         assert_eq!(f.field, "email");
         assert_eq!(f.direction, SortDirection::Asc);
     }

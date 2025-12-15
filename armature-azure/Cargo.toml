@@ -1,0 +1,64 @@
+[package]
+name = "armature-azure"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Microsoft Azure services integration for Armature - dynamically loadable and DI-ready"
+keywords = ["azure", "cloud", "blob", "cosmos", "servicebus"]
+categories = ["web-programming", "asynchronous"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["sync"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Azure SDK core
+azure_core = { version = "0.21", optional = true }
+azure_identity = { version = "0.21", optional = true }
+
+# Azure services (all optional)
+azure_storage = { version = "0.21", optional = true }
+azure_storage_blobs = { version = "0.21", optional = true }
+azure_storage_queues = { version = "0.21", optional = true }
+azure_data_cosmos = { version = "0.21", optional = true }
+azure_messaging_servicebus = { version = "0.21", optional = true }
+azure_security_keyvault = { version = "0.21", optional = true }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+tracing = "0.1"
+parking_lot = "0.12"
+url = "2.5"
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+
+[features]
+default = []
+# Core auth
+auth = ["azure_identity", "azure_core"]
+# Individual services
+blob = ["azure_storage", "azure_storage_blobs", "auth"]
+queue = ["azure_storage", "azure_storage_queues", "auth"]
+cosmos = ["azure_data_cosmos", "auth"]
+servicebus = ["azure_messaging_servicebus", "auth"]
+keyvault = ["azure_security_keyvault", "auth"]
+# Service groups
+storage = ["blob", "queue"]
+messaging = ["servicebus"]
+data = ["cosmos"]
+security = ["keyvault"]
+# All services
+all = ["storage", "messaging", "data", "security"]
+

@@ -95,8 +95,8 @@ async fn test_multi_backend() {
     let backend2_clone = backend2.clone();
 
     let multi = MultiBackend::new()
-        .add(Box::new(backend1))
-        .add(Box::new(backend2));
+        .with_backend(Box::new(backend1))
+        .with_backend(Box::new(backend2));
 
     let event = AuditEvent::new("test");
     multi.write(&event).await.unwrap();

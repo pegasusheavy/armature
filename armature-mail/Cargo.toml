@@ -1,0 +1,73 @@
+[package]
+name = "armature-mail"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Email sending with SMTP, templates, and provider integrations for Armature"
+keywords = ["email", "smtp", "mail", "sendgrid", "ses"]
+categories = ["email", "web-programming"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["sync", "time"] }
+async-trait = "0.1"
+
+# Email
+lettre = { version = "0.11", default-features = false, features = ["tokio1-rustls-tls", "smtp-transport", "builder", "hostname"] }
+mail-builder = "0.3"
+
+# Templates
+handlebars = { version = "6.3", optional = true }
+tera = { version = "1.19", optional = true }
+minijinja = { version = "2.5", optional = true }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+tracing = "0.1"
+url = "2.5"
+mime = "0.3"
+mime_guess = "2.0"
+uuid = { version = "1.11", features = ["v4"] }
+
+# HTTP client for API providers
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"], optional = true }
+
+# AWS SES
+aws-sdk-sesv2 = { version = "1.60", optional = true }
+aws-config = { version = "1.5", optional = true }
+
+# Redis for email queue
+armature-redis = { path = "../armature-redis", optional = true }
+redis = { version = "1.0", features = ["tokio-comp"], optional = true }
+
+# Async channels
+chrono = { version = "0.4", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
+tokio-test = "0.4"
+
+[features]
+default = ["handlebars"]
+handlebars = ["dep:handlebars"]
+tera = ["dep:tera"]
+minijinja = ["dep:minijinja"]
+sendgrid = ["reqwest"]
+mailgun = ["reqwest"]
+ses = ["aws-sdk-sesv2", "aws-config"]
+queue = ["chrono"]
+redis = ["queue", "armature-redis", "dep:redis"]
+all-providers = ["sendgrid", "mailgun", "ses"]
+all-templates = ["handlebars", "tera", "minijinja"]
+full = ["all-providers", "all-templates", "redis"]
+

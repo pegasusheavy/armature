@@ -1,0 +1,76 @@
+# =============================================================================
+# Armature - NetworkPolicy Template
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.name | default "armature-api" }}
+  namespace: {{ .Values.namespace | default "armature" }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+    app.kubernetes.io/managed-by: armature-cli
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+    # Allow traffic from same namespace
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 3000
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow database connections (adjust as needed)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: databases
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis connections
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow HTTPS egress (for external APIs)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+

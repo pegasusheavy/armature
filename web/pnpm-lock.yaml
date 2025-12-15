@@ -38,6 +38,9 @@ importers:
       '@fortawesome/free-solid-svg-icons':
         specifier: ^7.1.0
         version: 7.1.0
+      '@pegasusheavy/tailswatch':
+        specifier: ^1.1.0
+        version: 1.1.0(tailwindcss@4.1.18)
       marked:
         specifier: ^17.0.1
         version: 17.0.1
@@ -1421,6 +1424,12 @@ packages:
   '@parcel/watcher@2.5.1':
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
+
+  '@pegasusheavy/tailswatch@1.1.0':
+    resolution: {integrity: sha512-9isqXI8xRfP+T5tvjOge4rrar6Ntcab1o26hr0g18pEF6y+U+M+m1dGkVhgsURFP74JRiXQTQYweBL5EayZNlQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      tailwindcss: ^4.0.0
 
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
@@ -4959,6 +4968,10 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.1
       '@parcel/watcher-win32-x64': 2.5.1
     optional: true
+
+  '@pegasusheavy/tailswatch@1.1.0(tailwindcss@4.1.18)':
+    dependencies:
+      tailwindcss: 4.1.18
 
   '@pkgr/core@0.2.9': {}
 

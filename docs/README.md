@@ -1,133 +1,251 @@
 # Armature Documentation
 
-Welcome to the Armature framework documentation! This directory contains comprehensive guides and references for building applications with Armature.
+Welcome to the Armature framework documentation! Armature is a batteries-included, enterprise-grade web framework for Rust, inspired by NestJS and Angular.
+
+## Framework Overview
+
+Armature provides everything you need to build production-ready APIs:
+
+- ✅ **98% Feature Complete** - Enterprise-ready with 150+ features implemented
+- 🚀 **High Performance** - Built on Tokio, 8-15x faster than Node.js
+- 🔒 **Type-Safe** - Catch errors at compile time
+- 💉 **Dependency Injection** - Automatic service injection
+- 📦 **Modular Architecture** - Organize code into reusable modules
+- 🔐 **Built-in Security** - JWT, OAuth2, SAML, 2FA, rate limiting
+- 📊 **Observability** - OpenTelemetry, Prometheus, structured logging
+- ☁️ **Cloud Native** - AWS, GCP, Azure SDKs with serverless support
 
 ## Getting Started
 
 Start with the main [README](../README.md) in the project root for a quick introduction and setup guide.
 
+```bash
+# Install the CLI
+cargo install armature-cli
+
+# Create a new project
+armature new my-api
+cd my-api
+
+# Start the dev server
+armature dev
+```
+
 ## Documentation Index
 
 ### Core Guides
 
-- **[di-guide.md](di-guide.md)** - Complete guide to dependency injection
-  - Service injection
-  - Module system
-  - Best practices
-  - Testing strategies
+| Guide | Description |
+|-------|-------------|
+| [Dependency Injection](di-guide.md) | Service injection, module system, best practices |
+| [Configuration](config-guide.md) | Environment variables, type-safe config, validation |
+| [Lifecycle Hooks](lifecycle-hooks.md) | OnInit, OnDestroy, module lifecycle |
+| [Project Templates](project-templates.md) | Starter templates and scaffolding |
+| [Macros Overview](macro-overview.md) | Decorator macros and code generation |
 
-- **[auth-guide.md](auth-guide.md)** - Authentication and authorization
-  - Password hashing (Bcrypt, Argon2)
-  - JWT integration
-  - Guards and RBAC
-  - Authentication strategies
+### Authentication & Security
 
-- **[oauth2-providers-guide.md](oauth2-providers-guide.md)** - OAuth2/OIDC providers
-  - Google, Microsoft, AWS, Okta, Auth0
-  - Setup and configuration
-  - OAuth2 flow
-  - Best practices
+| Guide | Description |
+|-------|-------------|
+| [Authentication](auth-guide.md) | Password hashing, JWT, guards, RBAC |
+| [OAuth2 Providers](oauth2-providers-guide.md) | Google, Microsoft, GitHub, Discord, and more |
+| [Security Best Practices](security-guide.md) | CORS, CSP, HSTS, request signing |
+| [Advanced Security](security-advanced-guide.md) | 2FA, WebAuthn, API keys |
+| [Session Management](session-guide.md) | Redis-backed sessions, cookies |
+| [Rate Limiting](rate-limiting-guide.md) | Token bucket, sliding window algorithms |
 
-- **[config-guide.md](config-guide.md)** - Configuration management
-  - Environment variables and .env files
-  - Multiple configuration formats
-  - Type-safe configuration
-  - Validation
+### Routing & Controllers
 
-### API & Data
+| Guide | Description |
+|-------|-------------|
+| [Route Groups](route-groups-guide.md) | Organizing routes with shared middleware |
+| [Route Constraints](route-constraints-guide.md) | Parameter validation at route level |
+| [Guards](use-guard-guide.md) | Authorization and access control |
+| [Middleware](use-middleware-guide.md) | Request/response middleware |
+| [Guards & Interceptors](guards-interceptors.md) | Cross-cutting concerns |
+| [Request Extractors](request-extractors.md) | Body, Query, Path, Header extractors |
 
-- **[graphql-guide.md](graphql-guide.md)** - GraphQL API development
-- **[graphql-configuration.md](graphql-configuration.md)** - GraphQL configuration options
-- **[openapi-guide.md](openapi-guide.md)** - OpenAPI/Swagger documentation
-- **[request-extractors.md](request-extractors.md)** - Request data extraction
-- **[api-versioning-guide.md](api-versioning-guide.md)** - API versioning strategies
-- **[content-negotiation-guide.md](content-negotiation-guide.md)** - Content type negotiation
+### API Features
 
-### Real-Time & Communication
+| Guide | Description |
+|-------|-------------|
+| [API Versioning](api-versioning-guide.md) | URL, header, and query-based versioning |
+| [Content Negotiation](content-negotiation-guide.md) | Accept header handling |
+| [Pagination & Filtering](pagination-filtering-guide.md) | Offset/cursor pagination, sorting |
+| [Response Caching](response-caching-guide.md) | Cache-Control, ETags |
+| [ETags & Conditional Requests](etag-conditional-requests-guide.md) | If-Match, If-None-Match |
+| [Request Timeouts](request-timeouts-guide.md) | Configurable timeouts |
+| [Streaming Responses](streaming-responses-guide.md) | Chunked transfer, large files |
 
-- **[websocket-sse-guide.md](websocket-sse-guide.md)** - WebSocket & SSE guide
-- **[webhooks.md](webhooks.md)** - Webhook handling
-- **[streaming-responses-guide.md](streaming-responses-guide.md)** - Streaming responses
+### GraphQL & OpenAPI
 
-### Security
+| Guide | Description |
+|-------|-------------|
+| [GraphQL Guide](graphql-guide.md) | Schema-first and code-first GraphQL |
+| [GraphQL Configuration](graphql-configuration.md) | Advanced GraphQL options |
+| [OpenAPI/Swagger](openapi-guide.md) | Auto-generated API documentation |
 
-- **[security-guide.md](security-guide.md)** - Security best practices
-- **[https-guide.md](https-guide.md)** - HTTPS configuration
-- **[acme-certificates.md](acme-certificates.md)** - Let's Encrypt/ACME certificates
-- **[session-guide.md](session-guide.md)** - Session management
-- **[use-guard-guide.md](use-guard-guide.md)** - Using guards for authorization
-- **[guards-interceptors.md](guards-interceptors.md)** - Guards and interceptors
+### Real-Time Communication
 
-### Performance & Caching
+| Guide | Description |
+|-------|-------------|
+| [WebSocket & SSE](websocket-sse-guide.md) | Real-time bidirectional communication |
+| [Webhooks](webhooks.md) | Webhook sending and receiving |
 
-- **[queue-guide.md](queue-guide.md)** - Job queue system
-- **[cron-guide.md](cron-guide.md)** - Scheduled tasks/cron jobs
-- **[rate-limiting-guide.md](rate-limiting-guide.md)** - Rate limiting
-- **[response-caching-guide.md](response-caching-guide.md)** - Response caching
-- **[compression.md](compression.md)** - Response compression
-- **[request-timeouts-guide.md](request-timeouts-guide.md)** - Request timeouts
-- **[etag-conditional-requests-guide.md](etag-conditional-requests-guide.md)** - ETag and conditional requests
+### Background Processing
+
+| Guide | Description |
+|-------|-------------|
+| [Job Queues](queue-guide.md) | Redis-backed background jobs |
+| [Cron Jobs](cron-guide.md) | Scheduled tasks |
+| [Graceful Shutdown](graceful-shutdown-guide.md) | Connection draining, cleanup hooks |
+
+### Caching
+
+| Guide | Description |
+|-------|-------------|
+| [Caching Strategies](cache-improvements-guide.md) | Multi-tier caching, tag invalidation |
+| [Redis Integration](redis-guide.md) | Centralized Redis client |
 
 ### Observability
 
-- **[opentelemetry-guide.md](opentelemetry-guide.md)** - OpenTelemetry integration
-- **[logging-guide.md](logging-guide.md)** - Logging configuration
-- **[debug-logging-guide.md](debug-logging-guide.md)** - Debug logging
-- **[health-check-guide.md](health-check-guide.md)** - Health checks
-- **[error-correlation-guide.md](error-correlation-guide.md)** - Error correlation
+| Guide | Description |
+|-------|-------------|
+| [Structured Logging](logging-guide.md) | JSON logging with tracing |
+| [Debug Logging](debug-logging-guide.md) | Development logging |
+| [OpenTelemetry](opentelemetry-guide.md) | Distributed tracing and metrics |
+| [Prometheus Metrics](metrics-guide.md) | Custom metrics, /metrics endpoint |
+| [Health Checks](health-check-guide.md) | Liveness, readiness, startup probes |
+| [Error Correlation](error-correlation-guide.md) | Request ID tracking |
+| [Audit Logging](audit-guide.md) | Who did what, when |
+
+### Cloud Providers
+
+| Guide | Description |
+|-------|-------------|
+| [Cloud Providers](cloud-providers-guide.md) | AWS, GCP, Azure SDK integration |
+
+Armature provides first-class integrations with major cloud providers:
+
+| Crate | Provider | Services |
+|-------|----------|----------|
+| **armature-aws** | Amazon Web Services | S3, DynamoDB, SQS, SNS, SES, Lambda, KMS, Cognito |
+| **armature-gcp** | Google Cloud Platform | Storage, Pub/Sub, Firestore, Spanner, BigQuery |
+| **armature-azure** | Microsoft Azure | Blob, Queue, Cosmos, Service Bus, Key Vault |
+
+**Key Features:**
+- 🔌 **Dynamic Loading** - Only compile services you need via feature flags
+- 💉 **DI Integration** - Register once, inject everywhere
+- ⚡ **Lazy Initialization** - Services created on first access
+- 🔧 **Environment Config** - Reads from standard cloud environment variables
+- 🧪 **Emulator Support** - LocalStack, GCP emulators, Azurite
+
+### Networking & HTTP
+
+| Guide | Description |
+|-------|-------------|
+| [HTTPS & TLS](https-guide.md) | TLS configuration |
+| [ACME Certificates](acme-certificates.md) | Let's Encrypt auto-renewal |
+| [Compression](compression.md) | Gzip, Brotli compression |
+| [HTTP Status & Errors](http-status-errors.md) | Error handling |
+| [Error Transformation](error-transformation-guide.md) | Custom error formatting |
+
+### Testing
+
+| Guide | Description |
+|-------|-------------|
+| [Testing Guide](testing-guide.md) | Unit, integration, e2e testing |
+| [Test Coverage](testing-coverage.md) | Coverage reporting |
+| [Testing Best Practices](testing-documentation.md) | Testing patterns |
+| [Documentation Testing](documentation-testing.md) | Doc example testing |
 
 ### Architecture
 
-- **[lifecycle-hooks.md](lifecycle-hooks.md)** - Lifecycle hooks
-- **[use-middleware-guide.md](use-middleware-guide.md)** - Middleware usage
-- **[stateless-architecture.md](stateless-architecture.md)** - Stateless design patterns
-- **[server-integration.md](server-integration.md)** - Server integration
-- **[http-status-errors.md](http-status-errors.md)** - HTTP status and error handling
-- **[error-transformation-guide.md](error-transformation-guide.md)** - Error transformation
-
-### Macros & Code Generation
-
-- **[macro-overview.md](macro-overview.md)** - Overview of Armature macros
-- **[project-templates.md](project-templates.md)** - Project templates
-
-### Testing & Quality
-
-- **[testing-documentation.md](testing-documentation.md)** - Testing guide
-- **[testing-coverage.md](testing-coverage.md)** - Test coverage
-- **[documentation-testing.md](documentation-testing.md)** - Documentation testing
-
-### Feature Guides (in guides/)
-
-- **[guides/route-groups-guide.md](guides/route-groups-guide.md)** - Route groups
-- **[guides/route-constraints-guide.md](guides/route-constraints-guide.md)** - Route constraints
-- **[guides/metrics-guide.md](guides/metrics-guide.md)** - Prometheus metrics
-- **[guides/audit-guide.md](guides/audit-guide.md)** - Audit logging
-- **[guides/graceful-shutdown-guide.md](guides/graceful-shutdown-guide.md)** - Graceful shutdown
-- **[guides/pagination-filtering-guide.md](guides/pagination-filtering-guide.md)** - Pagination & filtering
-- **[guides/security-advanced-guide.md](guides/security-advanced-guide.md)** - Advanced security
-- **[guides/cache-improvements-guide.md](guides/cache-improvements-guide.md)** - Cache improvements
-- **[guides/macros-guide.md](guides/macros-guide.md)** - Macros in depth
-- **[guides/testing-guide.md](guides/testing-guide.md)** - Testing utilities
+| Guide | Description |
+|-------|-------------|
+| [Stateless Architecture](stateless-architecture.md) | Building scalable services |
+| [Server Integration](server-integration.md) | Hyper, custom servers |
+| [Macros Deep Dive](macros-guide.md) | Understanding Armature macros |
 
 ### Benchmarks
 
-- **[guides/armature-vs-nodejs-benchmark.md](guides/armature-vs-nodejs-benchmark.md)** - Armature vs Node.js frameworks
-- **[guides/armature-vs-nextjs-benchmark.md](guides/armature-vs-nextjs-benchmark.md)** - Armature vs Next.js
+| Guide | Description |
+|-------|-------------|
+| [vs Node.js](armature-vs-nodejs-benchmark.md) | Performance comparison with Express, NestJS |
+| [vs Next.js](armature-vs-nextjs-benchmark.md) | Performance comparison with Next.js |
 
-## Quick Links
+## Quick Example
 
-### Examples
+```rust
+use armature::prelude::*;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct User { id: u32, name: String }
+
+// Injectable service
+#[injectable]
+#[derive(Default, Clone)]
+struct UserService;
+
+impl UserService {
+    fn find_by_id(&self, id: u32) -> Option<User> {
+        Some(User { id, name: "Alice".into() })
+    }
+}
+
+// Controller with routes
+#[controller("/api/users")]
+#[derive(Default, Clone)]
+struct UserController;
+
+impl UserController {
+    #[get("")]
+    async fn list() -> Result<Json<Vec<User>>, Error> {
+        Ok(Json(vec![User { id: 1, name: "Alice".into() }]))
+    }
+
+    #[get("/:id")]
+    async fn get_user(req: HttpRequest) -> Result<Json<User>, Error> {
+        let id: u32 = req.param("id").unwrap().parse().unwrap();
+        Ok(Json(User { id, name: "Alice".into() }))
+    }
+}
+
+// Module wires everything together
+#[module(
+    providers: [UserService],
+    controllers: [UserController]
+)]
+#[derive(Default)]
+struct AppModule;
+
+#[tokio::main]
+async fn main() {
+    let app = Application::create::<AppModule>().await;
+    app.listen(3000).await.unwrap();
+}
+```
+
+## Examples
 
 See the [examples directory](../examples/) for working code samples:
-- `full_example.rs` - Complete CRUD application
-- `dependency_injection.rs` - DI patterns
-- `websocket_chat.rs` - WebSocket chat room
-- `server_sent_events.rs` - SSE streaming
 
-### Key Concepts
+| Example | Description |
+|---------|-------------|
+| `crud_api.rs` | Complete REST API with CRUD operations |
+| `auth_api.rs` | JWT authentication flow |
+| `realtime_api.rs` | WebSocket/SSE real-time communication |
+| `dependency_injection.rs` | DI patterns and best practices |
+| `websocket_chat.rs` | WebSocket chat room |
+| `server_sent_events.rs` | SSE streaming |
 
-#### Dependency Injection
+## Key Concepts
+
+### Dependency Injection
+
 Armature provides automatic service injection based on field types:
+
 ```rust
 #[injectable]
 #[derive(Default, Clone)]
@@ -140,63 +258,43 @@ struct UserController {
 }
 ```
 
-#### Module System
+### Module System
+
 Organize your application into modules:
+
 ```rust
 #[module(
-    providers: [UserService],
-    controllers: [UserController]
+    providers: [UserService, EmailService],
+    controllers: [UserController],
+    imports: [AuthModule, CacheModule]
 )]
 #[derive(Default)]
 struct AppModule;
 ```
 
-#### WebSocket & SSE
-Built-in real-time communication:
+### Cloud Integration
+
+Multi-cloud support with DI:
+
 ```rust
-// WebSocket broadcasting
-let room = WebSocketRoom::new("chat".to_string());
-room.broadcast_json(&message).await?;
+#[module_impl]
+impl CloudModule {
+    #[provider(singleton)]
+    async fn aws() -> Arc<AwsServices> {
+        AwsServices::new(AwsConfig::from_env().enable_s3().build()).await.unwrap()
+    }
 
-// Server-Sent Events
-let broadcaster = SseBroadcaster::new();
-broadcaster.broadcast_message("Update".to_string()).await?;
+    #[provider(singleton)]
+    async fn redis() -> Arc<RedisService> {
+        Arc::new(RedisService::new(RedisConfig::from_env().build()).await.unwrap())
+    }
+}
 ```
 
-## Documentation Structure
+## Documentation Conventions
 
-```
-docs/
-├── README.md                         # This file (index)
-├── guides/                           # Feature-specific guides
-│   ├── route-groups-guide.md
-│   ├── route-constraints-guide.md
-│   ├── metrics-guide.md
-│   ├── audit-guide.md
-│   ├── graceful-shutdown-guide.md
-│   ├── pagination-filtering-guide.md
-│   ├── security-advanced-guide.md
-│   ├── cache-improvements-guide.md
-│   ├── macros-guide.md
-│   ├── testing-guide.md
-│   ├── armature-vs-nodejs-benchmark.md
-│   └── armature-vs-nextjs-benchmark.md
-├── auth-guide.md                     # Authentication
-├── config-guide.md                   # Configuration
-├── di-guide.md                       # Dependency injection
-├── graphql-guide.md                  # GraphQL
-├── openapi-guide.md                  # OpenAPI/Swagger
-├── queue-guide.md                    # Job queues
-├── security-guide.md                 # Security
-├── websocket-sse-guide.md            # Real-time
-└── ...                               # Other guides
-```
-
-## Naming Conventions
-
-All documentation files follow these conventions:
-- **lowercase with hyphens**: `my-feature-guide.md`
-- **descriptive names**: `oauth2-providers-guide.md` not `oauth.md`
+- **Lowercase with hyphens**: `my-feature-guide.md`
+- **Descriptive names**: `oauth2-providers-guide.md` not `oauth.md`
 - **.md extension** for all Markdown files
 
 ## Version
@@ -205,4 +303,4 @@ This documentation is for Armature version 0.1.0.
 
 ---
 
-For the latest updates and more information, visit the main [README](../README.md).
+For the latest updates, visit the [GitHub repository](https://github.com/pegasusheavy/armature).

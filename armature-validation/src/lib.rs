@@ -155,6 +155,22 @@ pub use rules::*;
 pub use traits::*;
 pub use validators::*;
 
+/// Prelude for common imports.
+///
+/// ```
+/// use armature_validation::prelude::*;
+/// ```
+pub mod prelude {
+    pub use crate::errors::ValidationError;
+    pub use crate::pipe::ValidationPipe;
+    pub use crate::rules::ValidationRules;
+    pub use crate::traits::{Validate, Validator};
+    pub use crate::validators::{
+        InRange, IsAlpha, IsAlphanumeric, IsEmail, IsPositive, IsUrl, Matches, Max, MaxLength, Min,
+        MinLength, NotEmpty,
+    };
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

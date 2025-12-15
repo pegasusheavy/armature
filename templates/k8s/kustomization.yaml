@@ -1,0 +1,43 @@
+# =============================================================================
+# Armature - Kustomize Base
+# =============================================================================
+# Usage:
+#   kubectl apply -k templates/k8s/
+#
+# Or use as a base for overlays:
+#   resources:
+#     - github.com/armature-rs/armature/templates/k8s
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: armature
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - pdb.yaml
+  # Uncomment as needed:
+  # - ingress.yaml
+  # - networkpolicy.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/part-of: armature
+
+# Override these in your overlay
+# images:
+#   - name: ghcr.io/armature-rs/armature-api
+#     newTag: v1.0.0
+
+# configMapGenerator:
+#   - name: armature-api-config
+#     behavior: merge
+#     literals:
+#       - ENVIRONMENT=production
+

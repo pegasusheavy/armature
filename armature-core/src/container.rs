@@ -189,6 +189,94 @@ impl Container {
     pub fn inner(&self) -> &DiContainer {
         &self.inner
     }
+
+    // ============================================================================
+    // Convenience Methods
+    // ============================================================================
+
+    /// Get a service or panic if not found.
+    ///
+    /// This is useful in tests or startup code where a missing service
+    /// is a fatal error.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the service is not registered.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_core::Container;
+    ///
+    /// #[derive(Clone)]
+    /// struct MyService;
+    ///
+    /// let container = Container::new();
+    /// container.register(MyService);
+    ///
+    /// let service = container.require::<MyService>(); // Won't panic
+    /// ```
+    #[inline]
+    pub fn require<T: Injectable>(&self) -> Arc<T> {
+        self.resolve::<T>()
+            .unwrap_or_else(|_| panic!("Required service {} not found in container", std::any::type_name::<T>()))
+    }
+
+    /// Get a service or register a default value if not found.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_core::Container;
+    ///
+    /// #[derive(Clone, Default)]
+    /// struct Config {
+    ///     debug: bool,
+    /// }
+    ///
+    /// let container = Container::new();
+    /// let config = container.get_or_default::<Config>();
+    /// ```
+    #[inline]
+    pub fn get_or_default<T: Injectable + Default>(&self) -> Arc<T> {
+        self.try_get::<T>().unwrap_or_else(|| {
+            self.register(T::default());
+            self.resolve::<T>().unwrap()
+        })
+    }
+
+    /// Register a service only if it's not already registered.
+    ///
+    /// Returns true if the service was registered, false if it already existed.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use armature_core::Container;
+    ///
+    /// #[derive(Clone)]
+    /// struct Config { value: i32 }
+    ///
+    /// let container = Container::new();
+    ///
+    /// // First registration succeeds
+    /// assert!(container.register_if_missing(Config { value: 1 }));
+    ///
+    /// // Second registration is skipped
+    /// assert!(!container.register_if_missing(Config { value: 2 }));
+    ///
+    /// // Original value is preserved
+    /// assert_eq!(container.require::<Config>().value, 1);
+    /// ```
+    #[inline]
+    pub fn register_if_missing<T: Injectable>(&self, instance: T) -> bool {
+        if self.has::<T>() {
+            false
+        } else {
+            self.register(instance);
+            true
+        }
+    }
 }
 
 impl std::fmt::Debug for Container {

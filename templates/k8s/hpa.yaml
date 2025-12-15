@@ -1,0 +1,51 @@
+# =============================================================================
+# Armature - Horizontal Pod Autoscaler Template
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.name | default "armature-api" }}
+  namespace: {{ .Values.namespace | default "armature" }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.name | default "armature-api" }}
+    app.kubernetes.io/managed-by: armature-cli
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.name | default "armature-api" }}
+  minReplicas: {{ .Values.autoscaling.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas | default 10 }}
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPU | default 70 }}
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetMemory | default 80 }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+

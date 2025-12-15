@@ -1,38 +1,69 @@
 [package]
 name = "armature-storage"
-version = "0.1.0"
-edition = "2024"
-description = "File storage and upload handling for Armature"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/armature-rs/armature"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Multipart file upload and storage handling for Armature"
+keywords = ["multipart", "upload", "storage", "s3", "file"]
+categories = ["web-programming", "asynchronous"]
 
 [dependencies]
-armature-core = { path = "../armature-core" }
-tokio = { version = "1.35", features = ["full"] }
+# Async runtime
+tokio = { version = "1.35", features = ["fs", "io-util", "sync"] }
+tokio-util = { version = "0.7", features = ["io"] }
+futures = "0.3"
 async-trait = "0.1"
+
+# Multipart parsing
+multer = "3.1"
+
+# Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+# HTTP types
 bytes = "1.5"
+http = "1.1"
 mime = "0.3"
 mime_guess = "2.0"
-thiserror = "1.0"
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
 tracing = "0.1"
 uuid = { version = "1.11", features = ["v4"] }
+sha2 = "0.10"
+hex = "0.4"
+pin-project-lite = "0.2"
+tempfile = "3.8"
 
 # Cloud storage clients (optional features)
-aws-sdk-s3 = { version = "1.0", optional = true }
-google-cloud-storage = { version = "0.16", optional = true }
-azure_storage = { version = "0.20", optional = true }
-azure_storage_blobs = { version = "0.20", optional = true }
+# AWS S3
+aws-sdk-s3 = { version = "1.61", optional = true }
+aws-config = { version = "1.5", optional = true }
+
+# Google Cloud Storage
+armature-gcp = { path = "../armature-gcp", optional = true, features = ["storage"] }
+google-cloud-storage = { version = "0.22", optional = true }
+
+# Azure Blob Storage
+armature-azure = { path = "../armature-azure", optional = true, features = ["blob"] }
+azure_storage_blobs = { version = "0.21", optional = true }
+azure_storage = { version = "0.21", optional = true }
 
 [dev-dependencies]
+tokio = { version = "1.35", features = ["full", "test-util"] }
 tokio-test = "0.4"
-tempfile = "3.8"
 
 [features]
 default = []
-s3 = ["aws-sdk-s3"]
-gcs = ["google-cloud-storage"]
-azure = ["azure_storage", "azure_storage_blobs"]
-all-providers = ["s3", "gcs", "azure"]
+s3 = ["aws-sdk-s3", "aws-config"]
+gcs = ["armature-gcp", "google-cloud-storage"]
+azure = ["armature-azure", "azure_storage_blobs", "azure_storage"]
+all-clouds = ["s3", "gcs", "azure"]
 

@@ -1,0 +1,65 @@
+# =============================================================================
+# Armature AWS Lambda - ARM64 (Graviton2) Container Image
+# =============================================================================
+# Features:
+# - Optimized for AWS Graviton2 processors
+# - Up to 34% better price/performance vs x86_64
+# - Multi-stage build for minimal size
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Builder - Build for ARM64
+# -----------------------------------------------------------------------------
+FROM --platform=linux/arm64 rust:1.85-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache \
+    musl-dev \
+    openssl-dev \
+    openssl-libs-static \
+    pkgconfig \
+    curl \
+    gcc
+
+# Install cargo-lambda for ARM64
+RUN curl -sSL https://github.com/cargo-lambda/cargo-lambda/releases/latest/download/cargo-lambda-aarch64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin
+
+# Copy dependency files first (for caching)
+COPY Cargo.toml Cargo.lock* ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo lambda build --release --arm64 || true
+
+# Copy source and build
+COPY src ./src
+RUN cargo lambda build --release --arm64
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime - AWS Lambda ARM64 base image
+# -----------------------------------------------------------------------------
+FROM --platform=linux/arm64 public.ecr.aws/lambda/provided:al2023-arm64 AS runtime
+
+# Copy the bootstrap binary
+COPY --from=builder /app/target/lambda/*/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
+
+# Set the handler
+CMD ["bootstrap"]
+
+# =============================================================================
+# Deployment Instructions
+# =============================================================================
+# 1. Build the image (requires ARM64 host or Docker buildx):
+#    docker buildx build --platform linux/arm64 -t my-lambda-app-arm64 -f Dockerfile.arm64 .
+#
+# 2. Tag and push to ECR (same as x86_64)
+#
+# 3. Create Lambda with ARM64 architecture:
+#    aws lambda create-function \
+#      --function-name my-function \
+#      --package-type Image \
+#      --architectures arm64 \
+#      --code ImageUri=123456789.dkr.ecr.us-east-1.amazonaws.com/my-lambda-app-arm64:latest \
+#      --role arn:aws:iam::123456789:role/lambda-role
+# =============================================================================
+

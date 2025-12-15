@@ -32,8 +32,10 @@
       <div class="error">
         <h2>Error</h2>
         <p>{{ error() }}</p>
-        <a routerLink="/docs/readme" class="btn-primary">Go to Getting Started</a>
+        <a routerLink="/docs/readme" class="btn-primary">Go to Overview</a>
       </div>
+    } @else if (isOverview()) {
+      <app-docs-overview></app-docs-overview>
     } @else {
       <article class="markdown-content" [innerHTML]="content()"></article>
     }

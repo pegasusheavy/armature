@@ -122,6 +122,240 @@ impl HttpResponse {
         self.headers.insert(key, value);
         self
     }
+
+    // ============================================================================
+    // Convenience Methods for Common Response Types
+    // ============================================================================
+
+    /// Create an accepted response (202).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::accepted();
+    /// assert_eq!(response.status, 202);
+    /// ```
+    pub fn accepted() -> Self {
+        Self::new(202)
+    }
+
+    /// Create an unauthorized response (401).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::unauthorized();
+    /// assert_eq!(response.status, 401);
+    /// ```
+    pub fn unauthorized() -> Self {
+        Self::new(401)
+    }
+
+    /// Create a forbidden response (403).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::forbidden();
+    /// assert_eq!(response.status, 403);
+    /// ```
+    pub fn forbidden() -> Self {
+        Self::new(403)
+    }
+
+    /// Create a conflict response (409).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::conflict();
+    /// assert_eq!(response.status, 409);
+    /// ```
+    pub fn conflict() -> Self {
+        Self::new(409)
+    }
+
+    /// Create a service unavailable response (503).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::service_unavailable();
+    /// assert_eq!(response.status, 503);
+    /// ```
+    pub fn service_unavailable() -> Self {
+        Self::new(503)
+    }
+
+    /// Shorthand for creating a JSON response with 200 OK status.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// use serde_json::json;
+    ///
+    /// let response = HttpResponse::json(&json!({"message": "Hello"})).unwrap();
+    /// assert_eq!(response.status, 200);
+    /// ```
+    pub fn json<T: Serialize>(value: &T) -> Result<Self, crate::Error> {
+        Self::ok().with_json(value)
+    }
+
+    /// Create an HTML response with 200 OK status.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::html("<h1>Hello</h1>");
+    /// assert_eq!(response.status, 200);
+    /// assert_eq!(response.headers.get("Content-Type"), Some(&"text/html; charset=utf-8".to_string()));
+    /// ```
+    pub fn html(content: impl Into<String>) -> Self {
+        Self::ok()
+            .with_header(
+                "Content-Type".to_string(),
+                "text/html; charset=utf-8".to_string(),
+            )
+            .with_body(content.into().into_bytes())
+    }
+
+    /// Create a plain text response with 200 OK status.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::text("Hello, World!");
+    /// assert_eq!(response.status, 200);
+    /// assert_eq!(response.headers.get("Content-Type"), Some(&"text/plain; charset=utf-8".to_string()));
+    /// ```
+    pub fn text(content: impl Into<String>) -> Self {
+        Self::ok()
+            .with_header(
+                "Content-Type".to_string(),
+                "text/plain; charset=utf-8".to_string(),
+            )
+            .with_body(content.into().into_bytes())
+    }
+
+    /// Create a redirect response (302 Found).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::redirect("https://example.com");
+    /// assert_eq!(response.status, 302);
+    /// assert_eq!(response.headers.get("Location"), Some(&"https://example.com".to_string()));
+    /// ```
+    pub fn redirect(url: impl Into<String>) -> Self {
+        Self::new(302).with_header("Location".to_string(), url.into())
+    }
+
+    /// Create a permanent redirect response (301 Moved Permanently).
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::redirect_permanent("https://example.com");
+    /// assert_eq!(response.status, 301);
+    /// ```
+    pub fn redirect_permanent(url: impl Into<String>) -> Self {
+        Self::new(301).with_header("Location".to_string(), url.into())
+    }
+
+    /// Create a see other redirect response (303 See Other).
+    /// Useful after a POST request to redirect to a GET.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::see_other("/success");
+    /// assert_eq!(response.status, 303);
+    /// ```
+    pub fn see_other(url: impl Into<String>) -> Self {
+        Self::new(303).with_header("Location".to_string(), url.into())
+    }
+
+    /// Alias for no_content() - returns 204 with empty body.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::empty();
+    /// assert_eq!(response.status, 204);
+    /// ```
+    pub fn empty() -> Self {
+        Self::no_content()
+    }
+
+    /// Set the Content-Type header.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::ok().content_type("application/xml");
+    /// assert_eq!(response.headers.get("Content-Type"), Some(&"application/xml".to_string()));
+    /// ```
+    pub fn content_type(self, content_type: impl Into<String>) -> Self {
+        self.with_header("Content-Type".to_string(), content_type.into())
+    }
+
+    /// Set the Cache-Control header.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::ok().cache_control("max-age=3600");
+    /// ```
+    pub fn cache_control(self, directive: impl Into<String>) -> Self {
+        self.with_header("Cache-Control".to_string(), directive.into())
+    }
+
+    /// Mark the response as not cacheable.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::ok().no_cache();
+    /// ```
+    pub fn no_cache(self) -> Self {
+        self.cache_control("no-store, no-cache, must-revalidate")
+    }
+
+    /// Set a cookie on the response.
+    ///
+    /// # Example
+    /// ```
+    /// use armature_core::HttpResponse;
+    /// let response = HttpResponse::ok().cookie("session", "abc123; HttpOnly; Secure");
+    /// ```
+    pub fn cookie(self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.with_header("Set-Cookie".to_string(), format!("{}={}", name.into(), value.into()))
+    }
+
+    /// Get the response body as a string (lossy UTF-8 conversion).
+    pub fn body_string(&self) -> String {
+        String::from_utf8_lossy(&self.body).to_string()
+    }
+
+    /// Check if the response is successful (2xx status code).
+    pub fn is_success(&self) -> bool {
+        (200..300).contains(&self.status)
+    }
+
+    /// Check if the response is a redirect (3xx status code).
+    pub fn is_redirect(&self) -> bool {
+        (300..400).contains(&self.status)
+    }
+
+    /// Check if the response is a client error (4xx status code).
+    pub fn is_client_error(&self) -> bool {
+        (400..500).contains(&self.status)
+    }
+
+    /// Check if the response is a server error (5xx status code).
+    pub fn is_server_error(&self) -> bool {
+        (500..600).contains(&self.status)
+    }
 }
 
 /// JSON response helper

@@ -18,7 +18,7 @@ pub use resolver::*;
 pub use schema_builder::*;
 pub use schema_docs::*;
 
-use armature_core::{Error as ArmatureError, Provider};
+use armature_core::Error as ArmatureError;
 use std::sync::Arc;
 
 /// GraphQL schema wrapper

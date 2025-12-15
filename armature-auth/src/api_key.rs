@@ -49,6 +49,7 @@
 //! ```
 
 use async_trait::async_trait;
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::{DateTime, Duration, Utc};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -251,11 +252,10 @@ impl ApiKeyManager {
         }
 
         // Check if expired
-        if let Some(expires_at) = api_key.expires_at {
-            if Utc::now() > expires_at {
+        if let Some(expires_at) = api_key.expires_at
+            && Utc::now() > expires_at {
                 return Err(ApiKeyError::Expired);
             }
-        }
 
         // Update last used timestamp
         self.store.update_last_used(&api_key.id, Utc::now()).await?;
@@ -293,12 +293,9 @@ impl ApiKeyManager {
 
     /// Generate random key string
     fn generate_random_key(&self) -> String {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let bytes: Vec<u8> = (0..32).map(|_| rng.random()).collect();
-        base64::encode(bytes)
-            .trim_end_matches('=')
-            .replace('+', "-")
-            .replace('/', "_")
+        URL_SAFE_NO_PAD.encode(bytes)
     }
 
     /// Hash an API key (for storage)
