@@ -1,7 +1,7 @@
 # Armature Framework Security Policy
 # https://securitytxt.org/
 
-Contact: mailto:quinnjr@linux.com
+Contact: mailto:pegasusheavyindustries@gmail.com
 Contact: https://github.com/pegasusheavy/armature/security/advisories/new
 Expires: 2026-12-31T23:59:59.000Z
 Encryption: https://github.com/quinnjr.gpg
