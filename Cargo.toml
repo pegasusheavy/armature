@@ -44,6 +44,7 @@ members = [
     "armature-lambda",
     "armature-cloudrun",
     "armature-azure-functions",
+    "armature-ferron",
 ]
 exclude = [
     "templates/*",
@@ -201,6 +202,19 @@ criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 regex = "1.10"
 cargo-husky = { version = "1.5", default-features = false, features = ["user-hooks"] }
 rand = "0.9"
+pprof = { version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] }
+inferno = "0.12"
+reqwest = { version = "0.12", features = ["json"] }
+ctrlc = "3.4"
+
+# Profiling configuration
+[profile.profiling]
+inherits = "release"
+debug = true  # Enable debug symbols for better stack traces
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
 
 # Armature crates for benchmarks
 armature-validation = { path = "armature-validation" }
@@ -223,6 +237,7 @@ armature-features = { path = "armature-features" }
 armature-auth = { path = "armature-auth" }
 armature-storage = { path = "armature-storage" }
 armature-http-client = { path = "armature-http-client" }
+armature-ferron = { path = "armature-ferron" }
 jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
 handlebars = "6.3"
 bytes = "1.5"
@@ -361,6 +376,18 @@ required-features = ["webhooks"]
 [[example]]
 name = "extractors_example"
 path = "examples/extractors_example.rs"
+
+[[example]]
+name = "ferron_proxy"
+path = "examples/ferron_proxy.rs"
+
+[[example]]
+name = "ferron_integration"
+path = "examples/ferron_integration.rs"
+
+[[example]]
+name = "profiling_server"
+path = "examples/profiling_server.rs"
 
 # Benchmarks
 [[bench]]
