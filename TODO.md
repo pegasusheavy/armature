@@ -20,6 +20,43 @@ Only features that are **not yet completed**.
 
 ---
 
+## Performance Optimizations
+
+Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`):
+
+### Routing & Request Handling (~28% CPU)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Route Matching Cache | Cache compiled routes to avoid repeated trie traversal | `armature-core/routing.rs` |
+| 🟠 | Static Route Fast Path | Bypass trie for exact-match static routes using HashMap | `armature-core/routing.rs` |
+| 🟡 | Header Map Optimization | Use `smallvec` or pre-allocated headers for common cases | `armature-core` |
+
+### HTTP Parsing (~7% CPU)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟡 | SIMD HTTP Parser | Integrate `httparse` SIMD features or `picohttpparser` | `armature-core` |
+| 🟡 | Header Interning | Intern common header names to avoid allocations | `armature-core` |
+
+### Serialization
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | SIMD JSON | Add optional `simd-json` or `sonic-rs` for faster JSON | `armature-core` |
+| 🟡 | Zero-Copy Responses | Use `Bytes` for zero-copy response bodies | `armature-core` |
+| 🟡 | Pre-allocated Buffers | Buffer pool for response serialization | `armature-core` |
+
+### Connection Handling
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟡 | HTTP/2 Priority | Optimize HTTP/2 stream prioritization | `armature-core` |
+| 🟡 | TCP_NODELAY Tuning | Fine-tune TCP settings for low latency | `armature-core` |
+| 🟡 | Connection Keep-Alive | Optimize keep-alive timeout handling | `armature-core` |
+
+---
+
 ## Observability & Operations
 
 ### Metrics & Monitoring
@@ -47,9 +84,13 @@ Only features that are **not yet completed**.
 
 | Category | Remaining | Priority |
 |----------|-----------|----------|
+| Performance - Routing | 3 | 🟠/🟡 |
+| Performance - HTTP Parsing | 2 | 🟡 |
+| Performance - Serialization | 3 | 🟠/🟡 |
+| Performance - Connections | 3 | 🟡 |
 | Grafana Dashboards | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **5** | |
+| **Total Remaining** | **16** | |
 | **Recently Completed** | **3** | ✅ |
 
 ---
