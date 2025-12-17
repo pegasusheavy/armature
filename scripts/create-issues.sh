@@ -12,6 +12,23 @@ echo "Repository: $REPO"
 echo ""
 
 # =============================================================================
+# CREATE LABELS (if they don't exist)
+# =============================================================================
+
+echo "Creating labels (if they don't exist)..."
+
+# Create labels - ignore errors if they already exist
+gh label create "enhancement" --repo "$REPO" --color "a2eeef" --description "New feature or request" 2>/dev/null || true
+gh label create "performance" --repo "$REPO" --color "d4c5f9" --description "Performance improvement" 2>/dev/null || true
+gh label create "priority: critical" --repo "$REPO" --color "b60205" --description "Critical priority - blocks release" 2>/dev/null || true
+gh label create "priority: high" --repo "$REPO" --color "d93f0b" --description "High priority" 2>/dev/null || true
+gh label create "benchmarks" --repo "$REPO" --color "0e8a16" --description "Benchmark related" 2>/dev/null || true
+gh label create "ci" --repo "$REPO" --color "1d76db" --description "CI/CD related" 2>/dev/null || true
+
+echo "Labels ready."
+echo ""
+
+# =============================================================================
 # CRITICAL (🔴) - Axum Competitive
 # =============================================================================
 
@@ -569,7 +586,7 @@ Benchmark suite should include:
 \`\`\`
 benches/comparison/
 ├── actix_server/      # Actix-web implementation
-├── armature_server/   # Our implementation  
+├── armature_server/   # Our implementation
 ├── run_benchmarks.sh  # Automated runner
 └── results/           # Output data
 \`\`\`
@@ -881,7 +898,7 @@ Automatically detect user's preferred language from the \`Accept-Language\` HTTP
 ### Implementation
 1. Parse Accept-Language header
 2. Match against supported locales
-3. Provide extractor: \`Locale\` 
+3. Provide extractor: \`Locale\`
 4. Fallback to default locale
 
 ## Priority
