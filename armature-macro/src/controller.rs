@@ -2,11 +2,18 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Fields, ItemStruct, LitStr, parse_macro_input};
 
+use crate::route_validation::validate_controller_path;
+
 pub fn controller_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemStruct);
     let struct_name = &input.ident;
     let base_path = parse_macro_input!(attr as LitStr);
     let base_path_value = base_path.value();
+
+    // Validate controller base path at compile time
+    if let Err(e) = validate_controller_path(&base_path_value, base_path.span()) {
+        return e.to_compile_error().into();
+    }
 
     // Extract field types for dependency injection
     let field_types: Vec<_> = match &input.fields {
