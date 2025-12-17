@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 inventory = "0.3"
 dependency-injector = "0.1"
+matchit = "0.8"  # High-performance router (same as Axum)
 tokio = { version = "1.35", features = ["full"] }
 hyper = { version = "1.1", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full", "tokio"] }
