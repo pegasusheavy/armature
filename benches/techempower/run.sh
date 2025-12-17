@@ -48,17 +48,17 @@ run_benchmark() {
     local name="$1"
     local endpoint="$2"
     local extra_args="${3:-}"
-    
+
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "📊 $name"
     echo "   Endpoint: $endpoint"
     echo ""
-    
+
     echo "=== $name ===" >> "$RESULTS_FILE"
     wrk -t"$THREADS" -c"$CONNECTIONS" -d"$DURATION" $extra_args "http://$HOST$endpoint" | tee -a "$RESULTS_FILE"
     echo "" >> "$RESULTS_FILE"
     echo ""
-    
+
     # Brief pause between tests
     sleep 2
 }

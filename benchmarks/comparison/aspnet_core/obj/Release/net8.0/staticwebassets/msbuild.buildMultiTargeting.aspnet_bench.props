@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/aspnet_bench.props" />
+</Project>

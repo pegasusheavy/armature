@@ -84,7 +84,7 @@ run_test() {
     local name="$1"
     local port="$2"
     local endpoint="$3"
-    
+
     if curl -s "http://127.0.0.1:$port$endpoint" > /dev/null 2>&1; then
         local output=$(wrk -t"$THREADS" -c"$CONNECTIONS" -d"$DURATION" "http://127.0.0.1:$port$endpoint" 2>&1)
         local metrics=$(extract_metrics "$output")

@@ -136,7 +136,7 @@ fn parse_queries(queries: Option<&str>) -> usize {
 fn render_fortunes_html(fortunes: &[Fortune]) -> String {
     let mut html = String::with_capacity(2048);
     html.push_str("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>");
-    
+
     for fortune in fortunes {
         html.push_str("<tr><td>");
         html.push_str(&fortune.id.to_string());
@@ -145,7 +145,7 @@ fn render_fortunes_html(fortunes: &[Fortune]) -> String {
         html.push_str(&html_escape(&fortune.message));
         html.push_str("</td></tr>");
     }
-    
+
     html.push_str("</table></body></html>");
     html
 }
@@ -170,7 +170,7 @@ struct TechEmpowerController;
 #[routes]
 impl TechEmpowerController {
     /// GET /json - JSON serialization test
-    /// 
+    ///
     /// Returns: {"message":"Hello, World!"}
     #[get("/json")]
     async fn json_handler() -> Result<HttpResponse, Error> {
@@ -180,7 +180,7 @@ impl TechEmpowerController {
     }
 
     /// GET /plaintext - Plaintext test
-    /// 
+    ///
     /// Returns: Hello, World!
     #[get("/plaintext")]
     async fn plaintext_handler() -> Result<HttpResponse, Error> {
@@ -190,7 +190,7 @@ impl TechEmpowerController {
     }
 
     /// GET /db - Single database query test
-    /// 
+    ///
     /// Fetches a single random row from the World table
     #[get("/db")]
     async fn db_handler() -> Result<HttpResponse, Error> {
@@ -200,53 +200,53 @@ impl TechEmpowerController {
     }
 
     /// GET /queries - Multiple database queries test
-    /// 
+    ///
     /// Fetches N random rows from the World table (1-500, default 1)
     #[get("/queries")]
     async fn queries_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
         let state = get_state();
         let count = parse_queries(req.query_params.get("queries").map(|s| s.as_str()));
-        
+
         let worlds: Vec<World> = (0..count)
             .map(|_| state.db.get_random_world())
             .collect();
-        
+
         HttpResponse::json(&worlds)
     }
 
     /// GET /fortunes - Fortunes template test
-    /// 
+    ///
     /// Fetches all Fortune rows, adds a new one, sorts by message, renders HTML
     #[get("/fortunes")]
     async fn fortunes_handler() -> Result<HttpResponse, Error> {
         let state = get_state();
         let mut fortunes = state.db.get_fortunes();
-        
+
         // Add the additional fortune as per TFB spec
         fortunes.push(Fortune {
             id: 0,
             message: "Additional fortune added at request time.".to_string(),
         });
-        
+
         // Sort by message
         fortunes.sort_by(|a, b| a.message.cmp(&b.message));
-        
+
         // Render HTML
         let html = render_fortunes_html(&fortunes);
-        
+
         Ok(HttpResponse::ok()
             .with_header("Content-Type".to_string(), "text/html; charset=utf-8".to_string())
             .with_body(html.into_bytes()))
     }
 
     /// GET /updates - Database updates test
-    /// 
+    ///
     /// Fetches N random rows, updates each with a new random number, persists
     #[get("/updates")]
     async fn updates_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
         let state = get_state();
         let count = parse_queries(req.query_params.get("queries").map(|s| s.as_str()));
-        
+
         let worlds: Vec<World> = (0..count)
             .map(|_| {
                 let mut world = state.db.get_random_world();
@@ -254,12 +254,12 @@ impl TechEmpowerController {
                 world
             })
             .collect();
-        
+
         HttpResponse::json(&worlds)
     }
 
     /// GET /cached-queries - Cached queries test
-    /// 
+    ///
     /// Like /queries but results should be cached
     #[get("/cached-queries")]
     async fn cached_queries_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -267,11 +267,11 @@ impl TechEmpowerController {
         // A real implementation would use armature-cache with Redis/Memcached
         let state = get_state();
         let count = parse_queries(req.query_params.get("queries").map(|s| s.as_str()));
-        
+
         let worlds: Vec<World> = (0..count)
             .map(|_| state.db.get_random_world())
             .collect();
-        
+
         HttpResponse::json(&worlds)
     }
 }
@@ -312,9 +312,9 @@ async fn main() {
     println!();
 
     let app = Application::create::<AppModule>().await;
-    
+
     println!("🚀 Server starting on http://127.0.0.1:8080");
     println!("   Press Ctrl+C to stop\n");
-    
+
     app.listen(8080).await.unwrap();
 }
