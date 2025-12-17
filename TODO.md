@@ -4,6 +4,7 @@ Only features that are **not yet completed**.
 
 ## Legend
 
+- 🔴 **Critical Priority** - Required for Axum-competitive performance
 - 🟠 **High Priority** - Important for enterprise adoption
 - 🟡 **Medium Priority** - Nice to have, improves DX
 - ✅ **Completed** - Recently finished
@@ -57,6 +58,76 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 
 ---
 
+## Axum-Competitive Benchmarking
+
+Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower, wrk, hey).
+
+### Router Optimization (Critical - Axum uses `matchit`)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | Replace Trie with `matchit` | Use `matchit` crate (same as Axum) for route matching | `armature-core/routing.rs` |
+| 🔴 | Compile-time Route Validation | Validate routes at compile time, not runtime | `armature-macro` |
+| 🟠 | Route Parameter Extraction | Zero-allocation parameter extraction like Axum | `armature-core/routing.rs` |
+| 🟠 | Wildcard/Catch-all Optimization | Optimize `*path` and `/*rest` patterns | `armature-core/routing.rs` |
+
+### Zero-Cost Abstractions (Critical - Axum's strength)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | Inline Handler Dispatch | Ensure handlers are inlined via monomorphization | `armature-core` |
+| 🔴 | Remove Runtime Type Checks | Eliminate `Any` downcasting in hot paths | `armature-core/di.rs` |
+| 🟠 | Const Generic Extractors | Use const generics for zero-cost extractor chains | `armature-core/extractors.rs` |
+| 🟠 | Static Dispatch Middleware | Replace `Box<dyn>` with static dispatch where possible | `armature-core/middleware.rs` |
+
+### Memory & Allocation (Axum minimizes allocations)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | Arena Allocator for Requests | Per-request arena to batch deallocations | `armature-core` |
+| 🟠 | `SmallVec` for Headers | Use `SmallVec<[_; 16]>` for typical header counts | `armature-core` |
+| 🟠 | `CompactString` for Paths | Use `compact_str` for short route paths | `armature-core/routing.rs` |
+| 🟠 | Pre-sized Response Buffers | Avoid reallocations during response building | `armature-core/response.rs` |
+| 🟡 | Object Pool for Requests | Reuse request/response objects across connections | `armature-core` |
+
+### Hyper Integration (Axum is thin layer over Hyper)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | Direct Hyper Body Passthrough | Avoid wrapping/unwrapping `hyper::Body` | `armature-core` |
+| 🟠 | Native `http` Crate Types | Use `http::Request`/`Response` directly | `armature-core` |
+| 🟠 | Tower Service Compatibility | Implement `tower::Service` for composability | `armature-core` |
+| 🟡 | Hyper 1.0 Full Support | Ensure all Hyper 1.0 features are utilized | `armature-core` |
+
+### Async Runtime Optimization
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Reduce Task Spawning | Inline simple handlers instead of spawning tasks | `armature-core` |
+| 🟠 | `tokio::task::LocalSet` Option | Single-threaded mode for maximum cache locality | `armature-core` |
+| 🟡 | Custom Executor Tuning | Expose tokio runtime configuration | `armature-core` |
+| 🟡 | Work-Stealing Optimization | Tune work-stealing for HTTP workloads | `armature-core` |
+
+### Benchmark Infrastructure
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | TechEmpower Benchmark Suite | Implement all TechEmpower tests (JSON, DB, Fortune) | `benches/techempower/` |
+| 🟠 | Automated Regression Tests | CI pipeline to catch performance regressions | `.github/workflows/` |
+| 🟠 | Axum Comparison Benchmark | Side-by-side benchmark vs Axum with same routes | `benches/comparison/` |
+| 🟡 | Flame Graph CI Integration | Auto-generate flamegraphs on benchmark runs | `.github/workflows/` |
+
+### Compiler Optimizations
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Profile-Guided Optimization | Add PGO build profile | `Cargo.toml` |
+| 🟠 | LTO Thin/Fat Modes | Benchmark LTO impact on binary size vs speed | `Cargo.toml` |
+| 🟡 | Target-specific Tuning | Enable `-C target-cpu=native` for benchmarks | `Cargo.toml` |
+| 🟡 | Codegen Units = 1 | Single codegen unit for maximum optimization | `Cargo.toml` |
+
+---
+
 ## Observability & Operations
 
 ### Metrics & Monitoring
@@ -88,9 +159,17 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 | Performance - HTTP Parsing | 2 | 🟡 |
 | Performance - Serialization | 3 | 🟠/🟡 |
 | Performance - Connections | 3 | 🟡 |
+| **Axum-Competitive** | | |
+| ↳ Router Optimization | 4 | 🔴/🟠 |
+| ↳ Zero-Cost Abstractions | 4 | 🔴/🟠 |
+| ↳ Memory & Allocation | 5 | 🔴/🟠/🟡 |
+| ↳ Hyper Integration | 4 | 🔴/🟠/🟡 |
+| ↳ Async Runtime | 4 | 🟠/🟡 |
+| ↳ Benchmark Infrastructure | 4 | 🔴/🟠/🟡 |
+| ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | Grafana Dashboards | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **16** | |
+| **Total Remaining** | **45** | |
 | **Recently Completed** | **3** | ✅ |
 
 ---
