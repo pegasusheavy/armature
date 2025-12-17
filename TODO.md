@@ -129,6 +129,86 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 ---
 
+## Actix-web Competitive Performance
+
+Goal: Match Actix-web's TechEmpower-leading performance through low-level optimizations.
+
+**Profiling baseline**: Run Actix-web comparison benchmarks to identify specific gaps.
+
+### HTTP/1.1 Optimizations (Actix excels here)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | HTTP/1.1 Pipelining | Process multiple requests per connection without waiting | `armature-core/http.rs` |
+| 🔴 | Request Batching | Batch-read multiple requests from socket buffer | `armature-core/http.rs` |
+| 🟠 | Response Pipelining | Queue responses for batch-write to socket | `armature-core/http.rs` |
+| 🟠 | Vectored I/O (writev) | Use `writev()` to send headers+body in single syscall | `armature-core/http.rs` |
+
+### Buffer Management (Actix's key advantage)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | `BytesMut` Buffer Pool | Thread-local pool of pre-allocated `BytesMut` buffers | `armature-core/buffer.rs` |
+| 🔴 | Zero-Copy Request Body | Parse directly into pooled buffers without copying | `armature-core/request.rs` |
+| 🟠 | Read Buffer Sizing | Tune read buffer sizes based on typical payload | `armature-core/config.rs` |
+| 🟠 | Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/response.rs` |
+| 🟡 | Buffer Size Auto-Tuning | Dynamically adjust buffer sizes based on traffic | `armature-core/buffer.rs` |
+
+### Worker Architecture (Actix's Arbiter pattern)
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/worker.rs` |
+| 🟠 | CPU Core Affinity | Pin worker threads to CPU cores for cache locality | `armature-core/runtime.rs` |
+| 🟠 | NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/runtime.rs` |
+| 🟡 | Worker Load Balancing | Round-robin or least-connections distribution | `armature-core/worker.rs` |
+
+### Connection State Machine
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Optimized State Transitions | Minimize branching in connection FSM | `armature-core/connection.rs` |
+| 🟠 | Connection Recycling | Reset and reuse connection objects | `armature-core/connection.rs` |
+| 🟡 | Adaptive Keep-Alive | Adjust keep-alive based on server load | `armature-core/connection.rs` |
+| 🟡 | Idle Connection Culling | Efficiently drop idle connections under pressure | `armature-core/connection.rs` |
+
+### Streaming & Chunked Transfer
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Streaming Response Body | Send response while still generating body | `armature-core/response.rs` |
+| 🟠 | Chunk Size Optimization | Optimal chunk sizes for chunked encoding | `armature-core/response.rs` |
+| 🟡 | Backpressure Handling | Flow control when client reads slowly | `armature-core/response.rs` |
+| 🟡 | Streaming Compression | Compress chunks as they're generated | `armature-compression` |
+
+### Application State Optimization
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🟠 | Copy-on-Write State | Use `Arc<T>` patterns that avoid cloning | `armature-core/state.rs` |
+| 🟠 | State Locality | Keep frequently-accessed state in cache | `armature-core/state.rs` |
+| 🟡 | Read-Optimized State | Use `parking_lot::RwLock` for read-heavy state | `armature-core/state.rs` |
+
+### Syscall Optimization
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | `io_uring` Support | Use io_uring for async I/O on Linux 5.1+ | `armature-core/io.rs` |
+| 🟠 | `epoll` Tuning | Optimize epoll flags and batch sizes | `armature-core/io.rs` |
+| 🟠 | Reduce `recv`/`send` Calls | Batch socket operations where possible | `armature-core/io.rs` |
+| 🟡 | `TCP_CORK` Usage | Cork TCP for header+body combining | `armature-core/io.rs` |
+
+### Actix-specific Benchmark Comparison
+
+| Priority | Feature | Description | Module |
+|----------|---------|-------------|--------|
+| 🔴 | Actix Comparison Benchmark | Direct A/B benchmark against Actix-web | `benches/comparison/actix/` |
+| 🟠 | JSON Serialization Benchmark | Compare JSON endpoint performance | `benches/json/` |
+| 🟠 | Plaintext Benchmark | Raw "Hello World" throughput test | `benches/plaintext/` |
+| 🟡 | Database Query Benchmark | Single/multiple query performance | `benches/database/` |
+
+---
+
 ## Multi-tenancy & Enterprise
 
 ### Internationalization
@@ -158,8 +238,17 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 | ↳ Async Runtime | 4 | 🟠/🟡 |
 | ↳ Benchmark Infrastructure | 4 | 🔴/🟠/🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
+| **Actix-web Competitive** | | |
+| ↳ HTTP/1.1 Optimizations | 4 | 🔴/🟠 |
+| ↳ Buffer Management | 5 | 🔴/🟠/🟡 |
+| ↳ Worker Architecture | 4 | 🟠/🟡 |
+| ↳ Connection State Machine | 4 | 🟠/🟡 |
+| ↳ Streaming & Chunked | 4 | 🟠/🟡 |
+| ↳ State Optimization | 3 | 🟠/🟡 |
+| ↳ Syscall Optimization | 4 | 🔴/🟠/🟡 |
+| ↳ Actix Benchmarks | 4 | 🔴/🟠/🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **44** | |
+| **Total Remaining** | **76** | |
 | **Recently Completed** | **4** | ✅ |
 
 ---
