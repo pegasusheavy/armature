@@ -86,6 +86,146 @@
     </div>
   </section>
 
+  <!-- Performance Roadmap -->
+  <section class="py-12 bg-gradient-to-br from-red-950/20 to-orange-950/20 border-y border-red-900/30">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">🔥</span>
+        <h2 class="text-3xl font-bold text-white">Performance Roadmap</h2>
+      </div>
+      <p class="text-stone-400 mb-8 max-w-3xl">
+        Based on CPU profiling analysis. Goal: Achieve Axum and Actix-web competitive performance on TechEmpower benchmarks.
+      </p>
+
+      <!-- Performance Stats -->
+      <div class="grid md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-stone-900/80 rounded-xl p-6 border border-stone-700">
+          <div class="text-sm text-stone-400 mb-1">Profiling & Setup</div>
+          <div class="text-2xl font-bold text-emerald-400">{{ getPerformanceCompletedCount() }}/{{ getPerformanceTotalCount() }}</div>
+          <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
+            <div class="bg-emerald-500 h-2 rounded-full" [style.width.%]="(getPerformanceCompletedCount() / getPerformanceTotalCount()) * 100"></div>
+          </div>
+        </div>
+        <div class="bg-stone-900/80 rounded-xl p-6 border border-stone-700">
+          <div class="text-sm text-stone-400 mb-1">Axum-Competitive</div>
+          <div class="text-2xl font-bold text-orange-400">{{ getAxumCompletedCount() }}/{{ getAxumTotalCount() }}</div>
+          <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
+            <div class="bg-orange-500 h-2 rounded-full" [style.width.%]="(getAxumCompletedCount() / getAxumTotalCount()) * 100"></div>
+          </div>
+        </div>
+        <div class="bg-stone-900/80 rounded-xl p-6 border border-stone-700">
+          <div class="text-sm text-stone-400 mb-1">Actix-web Competitive</div>
+          <div class="text-2xl font-bold text-red-400">{{ getActixCompletedCount() }}/{{ getActixTotalCount() }}</div>
+          <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
+            <div class="bg-red-500 h-2 rounded-full" [style.width.%]="(getActixCompletedCount() / getActixTotalCount()) * 100"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Optimizations -->
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span>📊</span> CPU Profiling Results
+      </h3>
+      <div class="space-y-6 mb-12">
+        @for (category of performanceCategories; track category.name) {
+          <div class="bg-stone-900/80 rounded-xl border border-stone-700 overflow-hidden">
+            <div class="bg-stone-800/50 px-6 py-4 border-b border-stone-700 flex justify-between items-center">
+              <h4 class="font-semibold text-white">{{ category.name }}</h4>
+              <span class="text-sm text-stone-400">{{ getCompletedCount(category.items) }}/{{ category.items.length }}</span>
+            </div>
+            <div class="p-4 grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              @for (item of category.items; track item.feature) {
+                <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                  <span [class]="'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)">
+                    {{ getStatusIcon(item.status) }}
+                  </span>
+                  <div class="min-w-0">
+                    <div class="font-medium text-white text-sm">{{ item.feature }}</div>
+                    <div class="text-xs text-stone-500 truncate">{{ item.description }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Axum-Competitive -->
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span>⚡</span> Axum-Competitive Optimizations
+      </h3>
+      <p class="text-stone-400 text-sm mb-4">Goal: Match Axum's zero-cost abstractions and TechEmpower performance.</p>
+      <div class="space-y-6 mb-12">
+        @for (category of axumCategories; track category.name) {
+          <div class="bg-stone-900/80 rounded-xl border border-orange-900/30 overflow-hidden">
+            <div class="bg-orange-950/30 px-6 py-4 border-b border-orange-900/30 flex justify-between items-center">
+              <h4 class="font-semibold text-white">{{ category.name }}</h4>
+              <div class="flex gap-2 text-xs">
+                @if (getCriticalCount(category.items) > 0) {
+                  <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">🔴 {{ getCriticalCount(category.items) }}</span>
+                }
+                @if (getHighCount(category.items) > 0) {
+                  <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">🟠 {{ getHighCount(category.items) }}</span>
+                }
+              </div>
+            </div>
+            <div class="p-4 grid md:grid-cols-2 gap-3">
+              @for (item of category.items; track item.feature) {
+                <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                  <span [class]="'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)">
+                    {{ getStatusIcon(item.status) }}
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-medium text-white text-sm">{{ item.feature }}</div>
+                    <div class="text-xs text-stone-500">{{ item.description }}</div>
+                    <code class="text-xs text-stone-600 mt-1 block">{{ item.module }}</code>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Actix-web Competitive -->
+      <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+        <span>🚀</span> Actix-web Competitive Optimizations
+      </h3>
+      <p class="text-stone-400 text-sm mb-4">Goal: Match Actix-web's TechEmpower-leading performance through low-level optimizations.</p>
+      <div class="space-y-6">
+        @for (category of actixCategories; track category.name) {
+          <div class="bg-stone-900/80 rounded-xl border border-red-900/30 overflow-hidden">
+            <div class="bg-red-950/30 px-6 py-4 border-b border-red-900/30 flex justify-between items-center">
+              <h4 class="font-semibold text-white">{{ category.name }}</h4>
+              <div class="flex gap-2 text-xs">
+                @if (getCriticalCount(category.items) > 0) {
+                  <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">🔴 {{ getCriticalCount(category.items) }}</span>
+                }
+                @if (getHighCount(category.items) > 0) {
+                  <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">🟠 {{ getHighCount(category.items) }}</span>
+                }
+              </div>
+            </div>
+            <div class="p-4 grid md:grid-cols-2 gap-3">
+              @for (item of category.items; track item.feature) {
+                <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                  <span [class]="'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)">
+                    {{ getStatusIcon(item.status) }}
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="font-medium text-white text-sm">{{ item.feature }}</div>
+                    <div class="text-xs text-stone-500">{{ item.description }}</div>
+                    <code class="text-xs text-stone-600 mt-1 block">{{ item.module }}</code>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
   <!-- Already Completed -->
   <section class="py-12 bg-emerald-950/30 border-y border-emerald-900/50">
     <div class="max-w-7xl mx-auto px-6">
