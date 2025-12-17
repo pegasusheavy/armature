@@ -18,6 +18,7 @@ Only features that are **not yet completed**.
 | ✅ CPU Profiling | Flamegraph generation with pprof | `examples/profiling_server.rs` |
 | ✅ Profiling Script | Automated profiling workflow | `scripts/profile.sh` |
 | ✅ Profiling Docs | Documentation website guide | `web/src/app/pages/docs/pages/profiling-guide/` |
+| ✅ Grafana Dashboards | Pre-built dashboard templates | `templates/grafana/` |
 
 ---
 
@@ -128,16 +129,6 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 ---
 
-## Observability & Operations
-
-### Metrics & Monitoring
-
-| Priority | Feature | Description | Module |
-|----------|---------|-------------|--------|
-| 🟡 | Grafana Dashboards | Pre-built dashboard templates | `templates/grafana/` |
-
----
-
 ## Multi-tenancy & Enterprise
 
 ### Internationalization
@@ -167,10 +158,9 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 | ↳ Async Runtime | 4 | 🟠/🟡 |
 | ↳ Benchmark Infrastructure | 4 | 🔴/🟠/🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
-| Grafana Dashboards | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **45** | |
-| **Recently Completed** | **3** | ✅ |
+| **Total Remaining** | **44** | |
+| **Recently Completed** | **4** | ✅ |
 
 ---
 
