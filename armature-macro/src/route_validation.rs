@@ -23,7 +23,7 @@ pub struct ValidatedRoute {
 }
 
 /// Validate a controller base path at compile time
-/// 
+///
 /// Controller paths have slightly different rules:
 /// - Can be empty (no prefix)
 /// - Must start with "/" if non-empty
