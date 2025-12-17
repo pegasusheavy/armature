@@ -1,7 +1,9 @@
 // HTTP request and response types
 
+use crate::extensions::Extensions;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// HTTP request wrapper
 #[derive(Debug, Clone)]
@@ -12,6 +14,11 @@ pub struct HttpRequest {
     pub body: Vec<u8>,
     pub path_params: HashMap<String, String>,
     pub query_params: HashMap<String, String>,
+    /// Type-safe extensions for storing application state.
+    /// 
+    /// Use this to pass typed data to handlers without DI container lookups.
+    /// Access via the `State<T>` extractor for zero-cost state retrieval.
+    pub extensions: Extensions,
 }
 
 impl HttpRequest {
@@ -23,7 +30,59 @@ impl HttpRequest {
             body: Vec::new(),
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: Extensions::new(),
         }
+    }
+
+    /// Create a new request with pre-allocated extensions capacity.
+    #[inline]
+    pub fn with_extensions_capacity(method: String, path: String, capacity: usize) -> Self {
+        Self {
+            method,
+            path,
+            headers: HashMap::new(),
+            body: Vec::new(),
+            path_params: HashMap::new(),
+            query_params: HashMap::new(),
+            extensions: Extensions::with_capacity(capacity),
+        }
+    }
+
+    /// Insert a typed value into request extensions.
+    ///
+    /// Use this to pass application state to handlers.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let mut request = HttpRequest::new("GET".into(), "/".into());
+    /// request.insert_extension(app_state);
+    /// ```
+    #[inline]
+    pub fn insert_extension<T: Send + Sync + 'static>(&mut self, value: T) {
+        self.extensions.insert(value);
+    }
+
+    /// Insert an Arc-wrapped value into request extensions.
+    ///
+    /// This is more efficient when you already have an Arc.
+    #[inline]
+    pub fn insert_extension_arc<T: Send + Sync + 'static>(&mut self, value: Arc<T>) {
+        self.extensions.insert_arc(value);
+    }
+
+    /// Get a reference to a typed extension.
+    ///
+    /// Returns `None` if no value of this type exists.
+    #[inline]
+    pub fn extension<T: Send + Sync + 'static>(&self) -> Option<&T> {
+        self.extensions.get::<T>()
+    }
+
+    /// Get an Arc reference to a typed extension.
+    #[inline]
+    pub fn extension_arc<T: Send + Sync + 'static>(&self) -> Option<Arc<T>> {
+        self.extensions.get_arc::<T>()
     }
 
     /// Parse the request body as JSON

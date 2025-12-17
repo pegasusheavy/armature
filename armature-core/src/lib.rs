@@ -129,6 +129,7 @@ pub mod application;
 pub mod body_limits;
 pub mod container;
 pub mod error;
+pub mod extensions;
 pub mod extractors;
 pub mod form;
 pub mod guard;
@@ -160,9 +161,10 @@ pub use application::*;
 pub use body_limits::*;
 pub use container::*;
 pub use error::*;
+pub use extensions::Extensions;
 pub use extractors::{
     Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
-    PathParams, Query, RawBody,
+    PathParams, Query, RawBody, State,
 };
 pub use form::*;
 pub use guard::*;
