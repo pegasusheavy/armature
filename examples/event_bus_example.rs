@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Event Bus Example
 //!
 //! Demonstrates in-process event publishing and handling.

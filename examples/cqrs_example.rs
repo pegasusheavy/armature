@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! CQRS Example
 //!
 //! Demonstrates Command Query Responsibility Segregation with commands,

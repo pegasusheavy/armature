@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! Profiling Server Example
 //!
 //! This example runs an Armature server with CPU profiling enabled.

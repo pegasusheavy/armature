@@ -1,3 +1,7 @@
+#![allow(clippy::all)]
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! Resilience Pattern Benchmarks
 //!
 //! Benchmarks for circuit breakers, retry strategies, bulkheads, timeouts, and fallbacks.

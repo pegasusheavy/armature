@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! HTTP Client benchmarks for armature-http-client
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};

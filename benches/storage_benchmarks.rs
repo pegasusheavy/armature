@@ -1,3 +1,8 @@
+#![allow(clippy::all)]
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+#![allow(unused_imports)]
+
 //! Storage benchmarks for armature-storage
 
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};

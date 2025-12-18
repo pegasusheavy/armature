@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Graceful Shutdown Example
 //!
 //! Demonstrates advanced shutdown features:

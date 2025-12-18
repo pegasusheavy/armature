@@ -1,5 +1,7 @@
 //! Request and response interceptors.
 
+#![allow(dead_code)]
+
 use crate::{Response, Result};
 use async_trait::async_trait;
 use reqwest::Request;

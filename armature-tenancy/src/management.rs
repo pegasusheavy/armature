@@ -8,6 +8,10 @@
 //! - 📝 **CRUD Operations** - Create, read, update, delete tenants
 //! - 🚀 **Provisioning** - Automated resource setup for new tenants
 //! - 🔄 **Lifecycle Management** - Activate, suspend, terminate tenants
+
+#![allow(dead_code)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::collapsible_if)]
 //! - 📊 **Usage Tracking** - Monitor tenant resource usage
 //! - ⚙️ **Configuration** - Per-tenant settings and limits
 //!

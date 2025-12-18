@@ -191,6 +191,7 @@ impl TenantResolver for SubdomainTenantResolver {
 /// JWT claim-based tenant resolver
 ///
 /// Resolves tenant from JWT token claims.
+#[allow(dead_code)]
 pub struct JwtTenantResolver {
     store: Arc<dyn TenantStore>,
     claim_name: String,

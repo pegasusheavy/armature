@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Security Example
 //!
 //! Demonstrates advanced security features:

@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Route Groups and Constraints Combined Example
 //!
 //! This example demonstrates using Route Groups and Route Constraints

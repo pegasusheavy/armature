@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! Real-time Communication API Example
 //!
 //! This example demonstrates real-time communication patterns with Armature:

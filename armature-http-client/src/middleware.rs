@@ -1,5 +1,7 @@
 //! Middleware chain for HTTP client.
 
+#![allow(dead_code)]
+
 use crate::{Response, Result};
 use async_trait::async_trait;
 use reqwest::Request;

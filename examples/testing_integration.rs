@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Integration Testing Example
 //!
 //! Demonstrates database setup/teardown for integration tests.

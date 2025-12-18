@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(clippy::needless_question_mark)]
 //! Contract Testing Example
 //!
 //! Demonstrates Pact-style consumer-driven contract testing.

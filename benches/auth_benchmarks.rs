@@ -1,5 +1,7 @@
 //! Authentication benchmarks for armature-auth
 
+#![allow(deprecated)]
+
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 use armature_auth::{AuthService, PasswordHasher};

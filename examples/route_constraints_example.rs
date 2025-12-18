@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Route Constraints Example
 //!
 //! This example demonstrates parameter validation at the route level

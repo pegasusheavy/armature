@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(clippy::needless_question_mark)]
 //! Load Testing Example
 //!
 //! Demonstrates performance testing and load generation.

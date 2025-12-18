@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! HTTP Benchmark Runner
 //!
 //! A comprehensive HTTP benchmark tool that can compare Armature with other

@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Audit Example
 //!
 //! Demonstrates advanced audit features including:

@@ -2,6 +2,9 @@
 //!
 //! These tests verify that the most common use cases work correctly.
 
+#![allow(clippy::get_first)]
+#![allow(clippy::unnecessary_get_then_check)]
+
 use armature_core::*;
 
 // =============================================================================

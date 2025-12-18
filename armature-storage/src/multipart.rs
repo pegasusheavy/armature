@@ -1,5 +1,7 @@
 //! Multipart form data parsing.
 
+#![allow(dead_code)]
+
 use bytes::Bytes;
 use futures::Stream;
 

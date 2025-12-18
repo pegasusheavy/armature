@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(clippy::needless_question_mark)]
 //! Pagination & Filtering Example
 //!
 //! This example demonstrates:

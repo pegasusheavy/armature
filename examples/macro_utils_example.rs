@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Macro Utilities Example
 //!
 //! Demonstrates the various utility macros available in Armature.

@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Docker Test Containers Example
 //!
 //! Demonstrates Docker-based testing with automatic container lifecycle.

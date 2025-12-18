@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! Complete CRUD API Example
 //!
 //! This example demonstrates how to build a complete REST API with Armature

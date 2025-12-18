@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! Framework Comparison Benchmarks
 //!
 //! This benchmark suite measures Armature's performance characteristics

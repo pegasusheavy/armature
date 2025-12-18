@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Metrics Example
 //!
 //! This example demonstrates advanced metric features including:

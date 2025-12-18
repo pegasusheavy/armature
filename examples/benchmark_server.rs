@@ -27,11 +27,12 @@
 //! oha -z 10s -c 50 http://localhost:3000/json
 //! ```
 
+#![allow(clippy::needless_question_mark)]
+
 use armature_core::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::Level;
-use tracing_subscriber;
 
 // Response structures
 #[derive(Serialize)]

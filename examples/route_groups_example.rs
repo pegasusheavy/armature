@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Route Groups Example
 //!
 //! This example demonstrates how to use Route Groups to organize routes

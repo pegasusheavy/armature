@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Cache Improvements Example
 //!
 //! Demonstrates tag-based invalidation and multi-tier caching.

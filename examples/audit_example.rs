@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Audit Logging Example
 //!
 //! This example demonstrates audit logging with sensitive data masking.

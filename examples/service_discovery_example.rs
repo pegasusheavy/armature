@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Service Discovery Example
 //!
 //! Demonstrates service registration and discovery with load balancing.

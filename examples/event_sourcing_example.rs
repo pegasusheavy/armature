@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Event Sourcing Example
 //!
 //! Demonstrates event-sourced aggregates with event store and snapshots.

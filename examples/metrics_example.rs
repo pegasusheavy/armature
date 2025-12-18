@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Prometheus Metrics Example
 //!
 //! This example demonstrates how to use Armature's metrics module
