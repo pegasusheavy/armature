@@ -35,7 +35,7 @@ chrono = { version = "0.4", features = ["serde"] }
 lapin = { version = "3.7", optional = true }
 
 # Kafka
-rdkafka = { version = "0.36", features = ["cmake-build"], optional = true }
+rdkafka = { version = "0.38", features = ["cmake-build"], optional = true }
 
 # NATS
 async-nats = { version = "0.45", optional = true }
