@@ -51,11 +51,14 @@ use prometheus::{Encoder, Registry, TextEncoder};
 static DEFAULT_REGISTRY: Lazy<Registry> = Lazy::new(|| {
     let registry = Registry::new();
 
-    // Register default process metrics
-    if let Err(e) = prometheus::default_registry().register(Box::new(
-        prometheus::process_collector::ProcessCollector::for_self(),
-    )) {
-        tracing::warn!("Failed to register process collector: {}", e);
+    // Register default process metrics (Linux only - process_collector requires procfs)
+    #[cfg(target_os = "linux")]
+    {
+        if let Err(e) = prometheus::default_registry().register(Box::new(
+            prometheus::process_collector::ProcessCollector::for_self(),
+        )) {
+            tracing::warn!("Failed to register process collector: {}", e);
+        }
     }
 
     registry

@@ -29,4 +29,3 @@ mod tests {
         assert!(port < 65535);
     }
 }
-
