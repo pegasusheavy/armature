@@ -12,7 +12,7 @@ keywords = ["redis", "cache", "pubsub", "pool", "async"]
 categories = ["database", "asynchronous", "caching"]
 
 [dependencies]
-# Redis client - aligned with other armature crates
+# Redis client - aligned with other armature crates (redis 1.0, bb8-redis 0.26)
 redis = { version = "1.0", features = ["tokio-comp", "connection-manager", "cluster-async"] }
 
 # Connection pooling

@@ -27,7 +27,7 @@ jobs:
     name: Format Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -38,7 +38,7 @@ jobs:
     name: Clippy (without SAML)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -50,7 +50,7 @@ jobs:
     name: Clippy (with SAML)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -80,7 +80,7 @@ jobs:
           - os: ubuntu-latest
             rust: nightly
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -100,7 +100,7 @@ jobs:
     name: Test SAML (Linux)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -118,7 +118,7 @@ jobs:
     name: Documentation Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -141,7 +141,7 @@ jobs:
     name: Build Examples
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -160,7 +160,7 @@ jobs:
     name: Code Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -187,7 +187,7 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked
@@ -199,7 +199,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # Note: We test minimal versions WITHOUT SAML and WITHOUT memcached because:
       # 1. SAML requires system libraries (openssl, xmlsec1) which have version-specific issues
       # 2. The core framework should work with minimal versions of pure Rust dependencies
@@ -220,12 +220,12 @@ jobs:
     name: MSRV Check (1.88)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl libssl-dev pkg-config
-      - uses: dtolnay/rust-toolchain@1.88
+      - uses: dtolnay/rust-toolchain@1.100
       - uses: Swatinem/rust-cache@v2
       - name: Check MSRV
         run: |
@@ -242,7 +242,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
@@ -264,7 +264,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install SAML system dependencies
         run: |
           sudo apt-get update
