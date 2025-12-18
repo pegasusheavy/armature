@@ -153,7 +153,11 @@ pub struct AuthenticationService {
 }
 
 impl AuthenticationService {
-    pub fn new(repository: UserRepository, jwt_manager: JwtManager, token_expiry_secs: u64) -> Self {
+    pub fn new(
+        repository: UserRepository,
+        jwt_manager: JwtManager,
+        token_expiry_secs: u64,
+    ) -> Self {
         Self {
             repository,
             jwt_manager,

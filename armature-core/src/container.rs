@@ -218,8 +218,12 @@ impl Container {
     /// ```
     #[inline]
     pub fn require<T: Injectable>(&self) -> Arc<T> {
-        self.resolve::<T>()
-            .unwrap_or_else(|_| panic!("Required service {} not found in container", std::any::type_name::<T>()))
+        self.resolve::<T>().unwrap_or_else(|_| {
+            panic!(
+                "Required service {} not found in container",
+                std::any::type_name::<T>()
+            )
+        })
     }
 
     /// Get a service or register a default value if not found.

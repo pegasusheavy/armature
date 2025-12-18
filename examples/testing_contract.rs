@@ -28,12 +28,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }));
 
     builder.add_interaction(
-        ContractInteraction::new(
-            "get user by ID",
-            get_user_request,
-            get_user_response,
-        )
-        .with_provider_state("user with ID 1 exists"),
+        ContractInteraction::new("get user by ID", get_user_request, get_user_response)
+            .with_provider_state("user with ID 1 exists"),
     );
 
     // Interaction 2: Create user
@@ -75,12 +71,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }));
 
     builder.add_interaction(
-        ContractInteraction::new(
-            "update user",
-            update_user_request,
-            update_user_response,
-        )
-        .with_provider_state("user with ID 1 exists"),
+        ContractInteraction::new("update user", update_user_request, update_user_response)
+            .with_provider_state("user with ID 1 exists"),
     );
 
     // Interaction 4: Delete user
@@ -88,18 +80,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let delete_user_response = ContractResponse::new(204);
 
     builder.add_interaction(
-        ContractInteraction::new(
-            "delete user",
-            delete_user_request,
-            delete_user_response,
-        )
-        .with_provider_state("user with ID 1 exists"),
+        ContractInteraction::new("delete user", delete_user_request, delete_user_response)
+            .with_provider_state("user with ID 1 exists"),
     );
 
     // Build the contract
     let contract = builder.build();
 
-    println!("   ✅ Contract created with {} interactions", contract.interactions.len());
+    println!(
+        "   ✅ Contract created with {} interactions",
+        contract.interactions.len()
+    );
     println!();
 
     // 2. Save the contract
@@ -192,8 +183,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ContractResponse::new(200).with_body(serde_json::json!({"id": 999})),
     );
 
-    let actual_failing_response = ContractResponse::new(404)
-        .with_body(serde_json::json!({"error": "Not found"}));
+    let actual_failing_response =
+        ContractResponse::new(404).with_body(serde_json::json!({"error": "Not found"}));
 
     print!("   Verifying failing interaction: ");
     match ContractVerifier::verify_interaction(&failing_interaction, &actual_failing_response) {
@@ -238,4 +229,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

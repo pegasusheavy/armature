@@ -44,7 +44,7 @@ members = [
     "armature-lambda",
     "armature-cloudrun",
     "armature-azure-functions",
-    "armature-ferron",
+    # "armature-ferron",  # TODO: Add when ferron integration crate is created
 ]
 exclude = [
     "templates/*",
@@ -237,7 +237,7 @@ armature-features = { path = "armature-features" }
 armature-auth = { path = "armature-auth" }
 armature-storage = { path = "armature-storage" }
 armature-http-client = { path = "armature-http-client" }
-armature-ferron = { path = "armature-ferron" }
+# armature-ferron = { path = "armature-ferron" }  # TODO: Add when ferron integration crate is created
 jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
 handlebars = "6.3"
 bytes = "1.5"
@@ -377,13 +377,14 @@ required-features = ["webhooks"]
 name = "extractors_example"
 path = "examples/extractors_example.rs"
 
-[[example]]
-name = "ferron_proxy"
-path = "examples/ferron_proxy.rs"
+# ferron examples - TODO: Add when ferron integration crate is created
+# [[example]]
+# name = "ferron_proxy"
+# path = "examples/ferron_proxy.rs"
 
-[[example]]
-name = "ferron_integration"
-path = "examples/ferron_integration.rs"
+# [[example]]
+# name = "ferron_integration"
+# path = "examples/ferron_integration.rs"
 
 [[example]]
 name = "profiling_server"

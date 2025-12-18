@@ -3,8 +3,8 @@
 //! Demonstrates performance testing and load generation.
 
 use armature_testing::load::*;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 #[tokio::main]
@@ -15,8 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("1. Basic Load Test (10 concurrent, 100 requests):");
     println!("   Starting load test...");
 
-    let basic_config = LoadTestConfig::new(10, 100)
-        .with_timeout(Duration::from_secs(5));
+    let basic_config = LoadTestConfig::new(10, 100).with_timeout(Duration::from_secs(5));
 
     let basic_runner = LoadTestRunner::new(basic_config, || async {
         // Simulate API call
@@ -48,8 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   Starting load test with 20% failure rate...");
 
     let failure_count = Arc::new(AtomicU32::new(0));
-    let failure_config = LoadTestConfig::new(5, 50)
-        .with_timeout(Duration::from_secs(5));
+    let failure_config = LoadTestConfig::new(5, 50).with_timeout(Duration::from_secs(5));
 
     let failure_count_clone = failure_count.clone();
     let failure_runner = LoadTestRunner::new(failure_config, move || {
@@ -75,10 +73,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   Starting stress test...");
 
     let stress_runner = StressTestRunner::new(
-        1,                             // Initial concurrency
-        20,                            // Max concurrency
-        5,                             // Step size
-        Duration::from_secs(2),        // Duration per step
+        1,                      // Initial concurrency
+        20,                     // Max concurrency
+        5,                      // Step size
+        Duration::from_secs(2), // Duration per step
         || async {
             tokio::time::sleep(Duration::from_millis(30)).await;
             Ok(())
@@ -107,8 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n5. Real-World Example: API Endpoint Load Test");
     println!("   (Simulated - replace with actual HTTP client)");
 
-    let api_config = LoadTestConfig::new(20, 200)
-        .with_timeout(Duration::from_secs(10));
+    let api_config = LoadTestConfig::new(20, 200).with_timeout(Duration::from_secs(10));
 
     let api_runner = LoadTestRunner::new(api_config, || async {
         // In a real scenario, you would use reqwest or similar:

@@ -20,8 +20,8 @@
 //! ```
 
 use std::future::Future;
-use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 use tokio::sync::Semaphore;
 use tracing::{debug, warn};
@@ -162,41 +162,40 @@ impl Bulkhead {
 
         // Check queue size limit
         if let Some(queue_size) = self.config.queue_size
-            && self.waiting_count.load(Ordering::SeqCst) >= queue_size {
-                self.total_rejections.fetch_add(1, Ordering::Relaxed);
-                debug!(name = %self.config.name, "Bulkhead queue full, rejecting request");
-                return Err(BulkheadError::Full);
-            }
+            && self.waiting_count.load(Ordering::SeqCst) >= queue_size
+        {
+            self.total_rejections.fetch_add(1, Ordering::Relaxed);
+            debug!(name = %self.config.name, "Bulkhead queue full, rejecting request");
+            return Err(BulkheadError::Full);
+        }
 
         self.waiting_count.fetch_add(1, Ordering::SeqCst);
 
         // Try to acquire permit with timeout
-        let permit = match tokio::time::timeout(
-            self.config.max_wait,
-            self.semaphore.acquire(),
-        ).await {
-            Ok(Ok(permit)) => {
-                self.waiting_count.fetch_sub(1, Ordering::SeqCst);
-                permit
-            }
-            Ok(Err(_)) => {
-                // Semaphore closed (shouldn't happen)
-                self.waiting_count.fetch_sub(1, Ordering::SeqCst);
-                self.total_rejections.fetch_add(1, Ordering::Relaxed);
-                return Err(BulkheadError::Full);
-            }
-            Err(_) => {
-                // Timeout
-                self.waiting_count.fetch_sub(1, Ordering::SeqCst);
-                self.total_timeouts.fetch_add(1, Ordering::Relaxed);
-                warn!(
-                    name = %self.config.name,
-                    max_wait = ?self.config.max_wait,
-                    "Bulkhead timeout waiting for permit"
-                );
-                return Err(BulkheadError::Timeout);
-            }
-        };
+        let permit =
+            match tokio::time::timeout(self.config.max_wait, self.semaphore.acquire()).await {
+                Ok(Ok(permit)) => {
+                    self.waiting_count.fetch_sub(1, Ordering::SeqCst);
+                    permit
+                }
+                Ok(Err(_)) => {
+                    // Semaphore closed (shouldn't happen)
+                    self.waiting_count.fetch_sub(1, Ordering::SeqCst);
+                    self.total_rejections.fetch_add(1, Ordering::Relaxed);
+                    return Err(BulkheadError::Full);
+                }
+                Err(_) => {
+                    // Timeout
+                    self.waiting_count.fetch_sub(1, Ordering::SeqCst);
+                    self.total_timeouts.fetch_add(1, Ordering::Relaxed);
+                    warn!(
+                        name = %self.config.name,
+                        max_wait = ?self.config.max_wait,
+                        "Bulkhead timeout waiting for permit"
+                    );
+                    return Err(BulkheadError::Timeout);
+                }
+            };
 
         self.active_count.fetch_add(1, Ordering::SeqCst);
 
@@ -287,9 +286,7 @@ mod tests {
     async fn test_bulkhead_allows_concurrent() {
         let bulkhead = Bulkhead::new(BulkheadConfig::new("test", 2));
 
-        let result: Result<i32, BulkheadError<&str>> = bulkhead.call(|| async {
-            Ok(42)
-        }).await;
+        let result: Result<i32, BulkheadError<&str>> = bulkhead.call(|| async { Ok(42) }).await;
 
         assert_eq!(result.unwrap(), 42);
     }
@@ -307,11 +304,8 @@ mod tests {
         let _permit = bulkhead.semaphore.acquire().await.unwrap();
 
         // Try to execute - should be rejected
-        let result: Result<i32, BulkheadError<&str>> = bulkhead.try_call(|| async {
-            Ok(42)
-        }).await;
+        let result: Result<i32, BulkheadError<&str>> = bulkhead.try_call(|| async { Ok(42) }).await;
 
         assert!(matches!(result, Err(BulkheadError::Full)));
     }
 }
-

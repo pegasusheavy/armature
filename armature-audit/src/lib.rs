@@ -57,4 +57,3 @@ mod tests {
         let _ = AuditEvent::new("test");
     }
 }
-

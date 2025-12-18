@@ -52,4 +52,3 @@ impl AwsError {
         Self::ServiceNotConfigured(service)
     }
 }
-

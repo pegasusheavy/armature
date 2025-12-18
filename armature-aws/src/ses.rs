@@ -1,0 +1,1 @@
+//! AWS ses integration placeholder

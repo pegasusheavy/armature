@@ -36,11 +36,11 @@
 //! }
 //! ```
 
-use std::future::Future;
-use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
-use std::sync::Arc;
-use std::time::{Duration, Instant};
 use parking_lot::RwLock;
+use std::future::Future;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 use tracing::{debug, info, warn};
 
 /// Circuit breaker state.
@@ -410,17 +410,18 @@ impl CircuitBreaker {
         }
 
         if let Some(opened_at) = inner.opened_at
-            && opened_at.elapsed() >= self.config.reset_timeout {
-                drop(inner); // Release read lock before acquiring write lock
+            && opened_at.elapsed() >= self.config.reset_timeout
+        {
+            drop(inner); // Release read lock before acquiring write lock
 
-                let mut inner = self.inner.write();
-                if inner.state == CircuitState::Open {
-                    debug!(name = %self.config.name, "Circuit breaker transitioning to HALF-OPEN");
-                    inner.state = CircuitState::HalfOpen;
-                    self.half_open_count.store(0, Ordering::SeqCst);
-                    self.success_count.store(0, Ordering::SeqCst);
-                }
+            let mut inner = self.inner.write();
+            if inner.state == CircuitState::Open {
+                debug!(name = %self.config.name, "Circuit breaker transitioning to HALF-OPEN");
+                inner.state = CircuitState::HalfOpen;
+                self.half_open_count.store(0, Ordering::SeqCst);
+                self.success_count.store(0, Ordering::SeqCst);
             }
+        }
     }
 
     /// Manually reset the circuit breaker to closed state.
@@ -557,9 +558,7 @@ mod tests {
 
         // Record failures
         for _ in 0..3 {
-            let _: Result<(), CircuitBreakerError<&str>> = cb.call(|| async {
-                Err("error")
-            }).await;
+            let _: Result<(), CircuitBreakerError<&str>> = cb.call(|| async { Err("error") }).await;
         }
 
         assert_eq!(cb.state(), CircuitState::Open);
@@ -577,9 +576,7 @@ mod tests {
         let _: Result<(), _> = cb.call(|| async { Err::<(), _>("error") }).await;
 
         // Next call should be rejected
-        let result: Result<(), CircuitBreakerError<&str>> = cb.call(|| async {
-            Ok(())
-        }).await;
+        let result: Result<(), CircuitBreakerError<&str>> = cb.call(|| async { Ok(()) }).await;
 
         assert!(matches!(result, Err(CircuitBreakerError::Open)));
     }
@@ -629,4 +626,3 @@ mod tests {
         assert_eq!(cb.state(), CircuitState::Closed);
     }
 }
-

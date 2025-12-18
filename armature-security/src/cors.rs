@@ -113,12 +113,10 @@ impl CorsConfig {
             allowed_origins: None,
             allow_any_origin: true,
             origin_patterns: Vec::new(),
-            allowed_methods: [
-                "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS",
-            ]
-            .iter()
-            .map(|s| s.to_string())
-            .collect(),
+            allowed_methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
             allowed_headers: None,
             allow_any_header: true,
             exposed_headers: Vec::new(),
@@ -183,7 +181,10 @@ impl CorsConfig {
     ///     .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
     /// ```
     pub fn allow_methods(mut self, methods: Vec<impl Into<String>>) -> Self {
-        self.allowed_methods = methods.into_iter().map(|m| m.into().to_uppercase()).collect();
+        self.allowed_methods = methods
+            .into_iter()
+            .map(|m| m.into().to_uppercase())
+            .collect();
         self
     }
 
@@ -205,7 +206,10 @@ impl CorsConfig {
     /// ```
     pub fn allow_headers(mut self, headers: Vec<impl Into<String>>) -> Self {
         self.allowed_headers = Some(
-            headers.into_iter().map(|h| h.into().to_lowercase()).collect()
+            headers
+                .into_iter()
+                .map(|h| h.into().to_lowercase())
+                .collect(),
         );
         self.allow_any_header = false;
         self
@@ -290,9 +294,10 @@ impl CorsConfig {
 
         // Check exact match
         if let Some(ref origins) = self.allowed_origins
-            && origins.contains(origin) {
-                return true;
-            }
+            && origins.contains(origin)
+        {
+            return true;
+        }
 
         // Check regex patterns
         for pattern in &self.origin_patterns {
@@ -326,7 +331,9 @@ impl CorsConfig {
     ///
     /// Returns a response with appropriate CORS headers.
     pub fn handle_preflight(&self, request: &HttpRequest) -> Result<HttpResponse, Error> {
-        let origin = request.headers.get("origin")
+        let origin = request
+            .headers
+            .get("origin")
             .ok_or_else(|| Error::BadRequest("Missing Origin header".to_string()))?;
 
         // Check if origin is allowed
@@ -341,12 +348,17 @@ impl CorsConfig {
 
         // Add preflight-specific headers
         if let Some(method) = request.headers.get("access-control-request-method")
-            && self.is_method_allowed(method) {
-                response.headers.insert(
-                    "Access-Control-Allow-Methods".to_string(),
-                    self.allowed_methods.iter().cloned().collect::<Vec<_>>().join(", ")
-                );
-            }
+            && self.is_method_allowed(method)
+        {
+            response.headers.insert(
+                "Access-Control-Allow-Methods".to_string(),
+                self.allowed_methods
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            );
+        }
 
         if let Some(headers) = request.headers.get("access-control-request-headers") {
             let requested: Vec<&str> = headers.split(',').map(|h| h.trim()).collect();
@@ -363,16 +375,15 @@ impl CorsConfig {
                         headers.clone()
                     } else {
                         allowed.join(", ")
-                    }
+                    },
                 );
             }
         }
 
         if let Some(max_age) = self.max_age {
-            response.headers.insert(
-                "Access-Control-Max-Age".to_string(),
-                max_age.to_string()
-            );
+            response
+                .headers
+                .insert("Access-Control-Max-Age".to_string(), max_age.to_string());
         }
 
         Ok(response)
@@ -382,28 +393,26 @@ impl CorsConfig {
     pub fn add_cors_headers(&self, response: &mut HttpResponse, origin: &str) {
         // Origin
         if self.allow_any_origin && !self.allow_credentials {
-            response.headers.insert(
-                "Access-Control-Allow-Origin".to_string(),
-                "*".to_string()
-            );
+            response
+                .headers
+                .insert("Access-Control-Allow-Origin".to_string(), "*".to_string());
         } else if self.is_origin_allowed(origin) {
             response.headers.insert(
                 "Access-Control-Allow-Origin".to_string(),
-                origin.to_string()
+                origin.to_string(),
             );
 
             // Vary header for caching
-            response.headers.insert(
-                "Vary".to_string(),
-                "Origin".to_string()
-            );
+            response
+                .headers
+                .insert("Vary".to_string(), "Origin".to_string());
         }
 
         // Credentials
         if self.allow_credentials {
             response.headers.insert(
                 "Access-Control-Allow-Credentials".to_string(),
-                "true".to_string()
+                "true".to_string(),
             );
         }
 
@@ -411,7 +420,7 @@ impl CorsConfig {
         if !self.exposed_headers.is_empty() {
             response.headers.insert(
                 "Access-Control-Expose-Headers".to_string(),
-                self.exposed_headers.join(", ")
+                self.exposed_headers.join(", "),
             );
         }
     }
@@ -451,8 +460,7 @@ mod tests {
 
     #[test]
     fn test_allow_origin() {
-        let cors = CorsConfig::new()
-            .allow_origin("https://example.com");
+        let cors = CorsConfig::new().allow_origin("https://example.com");
 
         assert!(cors.is_origin_allowed("https://example.com"));
         assert!(!cors.is_origin_allowed("https://evil.com"));
@@ -461,7 +469,8 @@ mod tests {
     #[test]
     fn test_allow_origin_regex() {
         let cors = CorsConfig::new()
-            .allow_origin_regex(r"https://.*\.example\.com").unwrap();
+            .allow_origin_regex(r"https://.*\.example\.com")
+            .unwrap();
 
         assert!(cors.is_origin_allowed("https://app.example.com"));
         assert!(cors.is_origin_allowed("https://api.example.com"));
@@ -471,8 +480,7 @@ mod tests {
 
     #[test]
     fn test_allow_methods() {
-        let cors = CorsConfig::new()
-            .allow_methods(vec!["GET", "POST", "put"]);
+        let cors = CorsConfig::new().allow_methods(vec!["GET", "POST", "put"]);
 
         assert!(cors.is_method_allowed("GET"));
         assert!(cors.is_method_allowed("POST"));
@@ -482,8 +490,7 @@ mod tests {
 
     #[test]
     fn test_allow_headers() {
-        let cors = CorsConfig::new()
-            .allow_headers(vec!["Content-Type", "Authorization"]);
+        let cors = CorsConfig::new().allow_headers(vec!["Content-Type", "Authorization"]);
 
         assert!(cors.is_header_allowed("content-type"));
         assert!(cors.is_header_allowed("authorization"));
@@ -523,4 +530,3 @@ mod tests {
         );
     }
 }
-

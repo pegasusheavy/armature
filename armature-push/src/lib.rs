@@ -49,8 +49,8 @@
 
 mod error;
 mod notification;
-mod subscription;
 mod provider;
+mod subscription;
 
 #[cfg(feature = "web-push")]
 mod web_push;
@@ -63,17 +63,17 @@ mod apns;
 
 pub use error::{PushError, Result};
 pub use notification::{Notification, NotificationBuilder, Priority, Urgency};
-pub use subscription::{Subscription, DeviceToken, Platform};
 pub use provider::{PushProvider, PushService};
+pub use subscription::{DeviceToken, Platform, Subscription};
 
 #[cfg(feature = "web-push")]
-pub use web_push::{WebPushProvider, WebPushConfig, WebPushSubscription};
+pub use web_push::{WebPushConfig, WebPushProvider, WebPushSubscription};
 
 #[cfg(feature = "fcm")]
-pub use fcm::{FcmProvider, FcmConfig};
+pub use fcm::{FcmConfig, FcmProvider};
 
 #[cfg(feature = "apns")]
-pub use apns::{ApnsProvider, ApnsConfig, ApnsEnvironment};
+pub use apns::{ApnsConfig, ApnsEnvironment, ApnsProvider};
 
 /// Prelude for common imports.
 ///
@@ -95,4 +95,3 @@ pub mod prelude {
     #[cfg(feature = "apns")]
     pub use crate::apns::{ApnsConfig, ApnsEnvironment, ApnsProvider};
 }
-

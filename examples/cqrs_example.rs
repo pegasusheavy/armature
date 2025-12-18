@@ -66,7 +66,9 @@ impl CommandHandler<CreateUserCommand> for CreateUserHandler {
     async fn handle(&self, command: CreateUserCommand) -> Result<String, CommandError> {
         // Validate
         if command.email.is_empty() {
-            return Err(CommandError::ValidationError("Email is required".to_string()));
+            return Err(CommandError::ValidationError(
+                "Email is required".to_string(),
+            ));
         }
 
         // Create user
@@ -388,4 +390,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

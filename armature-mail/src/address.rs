@@ -37,16 +37,17 @@ impl Address {
 
         // Check for "Name <email>" format
         if let Some(start) = s.find('<')
-            && let Some(end) = s.find('>') {
-                let name = s[..start].trim().trim_matches('"');
-                let email = s[start + 1..end].trim();
+            && let Some(end) = s.find('>')
+        {
+            let name = s[..start].trim().trim_matches('"');
+            let email = s[start + 1..end].trim();
 
-                if name.is_empty() {
-                    return Self::new(email);
-                } else {
-                    return Self::with_name(email, name);
-                }
+            if name.is_empty() {
+                return Self::new(email);
+            } else {
+                return Self::with_name(email, name);
             }
+        }
 
         // Just an email address
         Self::new(s)
@@ -163,7 +164,9 @@ fn validate_email(email: &str) -> Result<()> {
     let email = email.trim();
 
     if email.is_empty() {
-        return Err(MailError::InvalidAddress("Email cannot be empty".to_string()));
+        return Err(MailError::InvalidAddress(
+            "Email cannot be empty".to_string(),
+        ));
     }
 
     if !email.contains('@') {
@@ -232,4 +235,3 @@ mod tests {
         assert!(Address::new("test@").is_err());
     }
 }
-

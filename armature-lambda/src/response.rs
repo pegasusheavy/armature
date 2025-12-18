@@ -104,4 +104,3 @@ impl Default for LambdaResponse {
         Self::new(200, Bytes::new())
     }
 }
-

@@ -12,7 +12,13 @@ pub const DEFAULT_LATENCY_BUCKETS: &[f64] = &[
 
 /// Default histogram buckets for sizes (in bytes)
 pub const DEFAULT_SIZE_BUCKETS: &[f64] = &[
-    100.0, 1_000.0, 10_000.0, 100_000.0, 1_000_000.0, 10_000_000.0, 100_000_000.0,
+    100.0,
+    1_000.0,
+    10_000.0,
+    100_000.0,
+    1_000_000.0,
+    10_000_000.0,
+    100_000_000.0,
 ];
 
 /// Histogram metric builder
@@ -140,4 +146,3 @@ impl HistogramVecBuilder {
         }
     }
 }
-

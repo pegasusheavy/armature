@@ -4,8 +4,7 @@ use std::sync::Arc;
 use tracing::debug;
 
 use crate::{
-    Address, Email, MailError, Result, SmtpConfig, SmtpTransport,
-    TemplateEngine, Transport,
+    Address, Email, MailError, Result, SmtpConfig, SmtpTransport, TemplateEngine, Transport,
 };
 
 /// Mailer configuration.
@@ -142,31 +141,15 @@ impl Mailer {
     }
 
     /// Send a simple text email.
-    pub async fn send_text(
-        &self,
-        to: &str,
-        subject: &str,
-        body: &str,
-    ) -> Result<()> {
-        let email = Email::new()
-            .to(to)
-            .subject(subject)
-            .text(body);
+    pub async fn send_text(&self, to: &str, subject: &str, body: &str) -> Result<()> {
+        let email = Email::new().to(to).subject(subject).text(body);
 
         self.send(email).await
     }
 
     /// Send a simple HTML email.
-    pub async fn send_html(
-        &self,
-        to: &str,
-        subject: &str,
-        html: &str,
-    ) -> Result<()> {
-        let email = Email::new()
-            .to(to)
-            .subject(subject)
-            .html(html);
+    pub async fn send_html(&self, to: &str, subject: &str, html: &str) -> Result<()> {
+        let email = Email::new().to(to).subject(subject).html(html);
 
         self.send(email).await
     }
@@ -219,20 +202,15 @@ impl Mailer {
             }
         }
 
-        Err(last_error.unwrap_or_else(|| {
-            MailError::Smtp("Unknown error after retries".to_string())
-        }))
+        Err(last_error
+            .unwrap_or_else(|| MailError::Smtp("Unknown error after retries".to_string())))
     }
 }
 
 /// Convenience functions for quick email sending.
 impl Mailer {
     /// Create a welcome email.
-    pub fn welcome_email(
-        to: &str,
-        name: &str,
-        activation_link: &str,
-    ) -> Email {
+    pub fn welcome_email(to: &str, name: &str, activation_link: &str) -> Email {
         Email::new()
             .to(to)
             .subject("Welcome! Please activate your account")
@@ -251,11 +229,7 @@ impl Mailer {
     }
 
     /// Create a password reset email.
-    pub fn password_reset_email(
-        to: &str,
-        reset_link: &str,
-        expires_in: &str,
-    ) -> Email {
+    pub fn password_reset_email(to: &str, reset_link: &str, expires_in: &str) -> Email {
         Email::new()
             .to(to)
             .subject("Password Reset Request")
@@ -276,11 +250,7 @@ impl Mailer {
     }
 
     /// Create a notification email.
-    pub fn notification_email(
-        to: &str,
-        title: &str,
-        message: &str,
-    ) -> Email {
+    pub fn notification_email(to: &str, title: &str, message: &str) -> Email {
         Email::new()
             .to(to)
             .subject(title)
@@ -288,4 +258,3 @@ impl Mailer {
             .html(format!("<h2>{}</h2><p>{}</p>", title, message))
     }
 }
-

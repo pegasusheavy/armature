@@ -1,7 +1,7 @@
 //! Request and response interceptors.
 
+use crate::{Response, Result};
 use async_trait::async_trait;
-use crate::{Result, Response};
 use reqwest::Request;
 
 /// Interceptor trait for modifying requests and responses.
@@ -189,14 +189,14 @@ impl ResponseInterceptor for RateLimitInterceptor {
     async fn intercept(&self, response: Response) -> Result<Response> {
         if response.status() == http::StatusCode::TOO_MANY_REQUESTS
             && let Some(retry_after) = response.headers().get(http::header::RETRY_AFTER)
-                && let Ok(seconds) = retry_after.to_str().unwrap_or("0").parse::<u64>() {
-                    tracing::warn!(
-                        retry_after_seconds = seconds,
-                        "Rate limited, should retry after {} seconds",
-                        seconds
-                    );
-                }
+            && let Ok(seconds) = retry_after.to_str().unwrap_or("0").parse::<u64>()
+        {
+            tracing::warn!(
+                retry_after_seconds = seconds,
+                "Rate limited, should retry after {} seconds",
+                seconds
+            );
+        }
         Ok(response)
     }
 }
-

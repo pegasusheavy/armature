@@ -56,7 +56,10 @@ pub enum GraphQLError {
 impl GraphQLError {
     /// Check if this is a network error.
     pub fn is_network_error(&self) -> bool {
-        matches!(self, Self::Http(_) | Self::Connection(_) | Self::WebSocket(_))
+        matches!(
+            self,
+            Self::Http(_) | Self::Connection(_) | Self::WebSocket(_)
+        )
     }
 
     /// Check if this is a GraphQL error (server-side).
@@ -77,4 +80,3 @@ impl GraphQLError {
         }
     }
 }
-

@@ -109,7 +109,8 @@ pub fn export_metrics_from_registry(registry: &Registry) -> String {
         return String::from("# Error encoding metrics\n");
     }
 
-    String::from_utf8(buffer).unwrap_or_else(|_| String::from("# Error converting metrics to UTF-8\n"))
+    String::from_utf8(buffer)
+        .unwrap_or_else(|_| String::from("# Error converting metrics to UTF-8\n"))
 }
 
 #[cfg(test)]
@@ -130,4 +131,3 @@ mod tests {
         assert!(metrics.contains("# HELP") || metrics.is_empty());
     }
 }
-

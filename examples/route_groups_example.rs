@@ -39,23 +39,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Created base /api group with logging");
 
     // Public API group - no authentication required
-    let public = RouteGroup::new()
-        .prefix("/public")
-        .with_parent(&api);
+    let public = RouteGroup::new().prefix("/public").with_parent(&api);
 
     info!("Created /api/public group (no auth)");
 
     // Authenticated API group (v1)
-    let v1 = RouteGroup::new()
-        .prefix("/v1")
-        .with_parent(&api);
+    let v1 = RouteGroup::new().prefix("/v1").with_parent(&api);
 
     info!("Created /api/v1 group");
 
     // Admin API group - requires authentication + admin role
-    let admin = RouteGroup::new()
-        .prefix("/admin")
-        .with_parent(&v1);
+    let admin = RouteGroup::new().prefix("/admin").with_parent(&v1);
 
     info!("Created /api/v1/admin group");
 
@@ -75,9 +69,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show middleware inheritance
     info!("\nMiddleware Configuration:");
     info!("------------------------");
-    info!("Public group middleware count: {}", public.get_middleware().len());
+    info!(
+        "Public group middleware count: {}",
+        public.get_middleware().len()
+    );
     info!("V1 group middleware count: {}", v1.get_middleware().len());
-    info!("Admin group middleware count: {}", admin.get_middleware().len());
+    info!(
+        "Admin group middleware count: {}",
+        admin.get_middleware().len()
+    );
 
     // Create application with route groups
     info!("\nStarting server on http://localhost:3000");
@@ -200,4 +200,3 @@ impl Middleware for LoggerMiddleware {
         Ok(response)
     }
 }
-

@@ -50,7 +50,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let instances = discovery.discover("api").await?;
     println!("   Found {} instances of 'api' service:", instances.len());
     for instance in &instances {
-        println!("     - {} at {} (tags: {:?})",
+        println!(
+            "     - {} at {} (tags: {:?})",
             instance.id,
             instance.url(),
             instance.tags
@@ -78,10 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 5. Service resolver with round-robin
     println!("5. Service Resolver (Round-Robin):");
-    let resolver = ServiceResolver::new(
-        discovery.clone(),
-        LoadBalancingStrategy::RoundRobin,
-    );
+    let resolver = ServiceResolver::new(discovery.clone(), LoadBalancingStrategy::RoundRobin);
 
     for i in 1..=6 {
         let instance = resolver.resolve("api").await?;
@@ -91,10 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 6. Service resolver with random
     println!("6. Service Resolver (Random):");
-    let random_resolver = ServiceResolver::new(
-        discovery.clone(),
-        LoadBalancingStrategy::Random,
-    );
+    let random_resolver = ServiceResolver::new(discovery.clone(), LoadBalancingStrategy::Random);
 
     for i in 1..=5 {
         let instance = random_resolver.resolve("api").await?;
@@ -155,4 +150,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

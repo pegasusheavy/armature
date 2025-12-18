@@ -1,6 +1,6 @@
 //! HTTP Client benchmarks for armature-http-client
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use std::time::Duration;
 
 use armature_http_client::{
@@ -262,4 +262,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

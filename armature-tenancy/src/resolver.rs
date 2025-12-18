@@ -93,7 +93,9 @@ impl TenantResolver for HeaderTenantResolver {
         let tenant_id = request
             .headers
             .get(&self.header_name.to_lowercase())
-            .ok_or_else(|| TenantError::NotFound(format!("Missing header: {}", self.header_name)))?;
+            .ok_or_else(|| {
+                TenantError::NotFound(format!("Missing header: {}", self.header_name))
+            })?;
 
         let tenant = self
             .store
@@ -150,9 +152,11 @@ impl SubdomainTenantResolver {
 
         // Remove base domain
         if let Some(subdomain) = host.strip_suffix(&format!(".{}", self.base_domain))
-            && !subdomain.is_empty() && !subdomain.contains('.') {
-                return Some(subdomain.to_string());
-            }
+            && !subdomain.is_empty()
+            && !subdomain.contains('.')
+        {
+            return Some(subdomain.to_string());
+        }
 
         None
     }
@@ -223,10 +227,9 @@ impl JwtTenantResolver {
 impl TenantResolver for JwtTenantResolver {
     async fn resolve(&self, request: &HttpRequest) -> Result<Tenant, TenantError> {
         // Extract JWT from Authorization header
-        let auth_header = request
-            .headers
-            .get("authorization")
-            .ok_or_else(|| TenantError::ResolutionFailed("Missing Authorization header".to_string()))?;
+        let auth_header = request.headers.get("authorization").ok_or_else(|| {
+            TenantError::ResolutionFailed("Missing Authorization header".to_string())
+        })?;
 
         // Extract token (assumes "Bearer <token>")
         let token = auth_header
@@ -422,4 +425,3 @@ mod tests {
         assert_eq!(tenant.name, "acme");
     }
 }
-

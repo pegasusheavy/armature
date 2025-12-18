@@ -47,7 +47,10 @@ impl AuditLogger {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn log(&self, mut event: AuditEvent) -> Result<(), crate::backend::AuditBackendError> {
+    pub async fn log(
+        &self,
+        mut event: AuditEvent,
+    ) -> Result<(), crate::backend::AuditBackendError> {
         if !self.enabled {
             return Ok(());
         }
@@ -134,16 +137,14 @@ impl Default for AuditLoggerBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{MemoryBackend, AuditStatus};
+    use crate::{AuditStatus, MemoryBackend};
 
     #[tokio::test]
     async fn test_audit_logger() {
         let backend = MemoryBackend::new();
         let backend_clone = backend.clone();
 
-        let logger = AuditLogger::builder()
-            .backend(backend)
-            .build();
+        let logger = AuditLogger::builder().backend(backend).build();
 
         let event = AuditEvent::new("test.event")
             .user("alice")
@@ -161,9 +162,7 @@ mod tests {
         let backend = MemoryBackend::new();
         let backend_clone = backend.clone();
 
-        let logger = AuditLogger::builder()
-            .backend(backend)
-            .build();
+        let logger = AuditLogger::builder().backend(backend).build();
 
         let event = AuditEvent::new("test.event")
             .request_body(r#"{"username":"alice","password":"secret123"}"#);
@@ -195,4 +194,3 @@ mod tests {
         assert_eq!(events.len(), 0);
     }
 }
-

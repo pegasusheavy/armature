@@ -34,11 +34,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create custom business metrics
     info!("\nCreating custom metrics...");
 
-    let page_views = CounterBuilder::new("page_views_total", "Total page views")
-        .register()?;
+    let page_views = CounterBuilder::new("page_views_total", "Total page views").register()?;
 
-    let active_users = GaugeBuilder::new("active_users", "Number of active users")
-        .register()?;
+    let active_users = GaugeBuilder::new("active_users", "Number of active users").register()?;
 
     let api_latency = HistogramBuilder::new("api_latency_seconds", "API call latency")
         .latency_buckets()
@@ -166,4 +164,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

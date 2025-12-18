@@ -1,7 +1,7 @@
 //! Data masking for sensitive information
 
-use regex::Regex;
 use once_cell::sync::Lazy;
+use regex::Regex;
 use serde_json::Value;
 
 /// Fields to mask by default
@@ -30,21 +30,16 @@ pub const DEFAULT_MASKED_FIELDS: &[&str] = &[
 ];
 
 /// Regular expressions for masking patterns
-static EMAIL_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b").unwrap()
-});
+static EMAIL_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b").unwrap());
 
-static PHONE_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b").unwrap()
-});
+static PHONE_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b").unwrap());
 
-static SSN_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\b\d{3}-\d{2}-\d{4}\b").unwrap()
-});
+static SSN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\b\d{3}-\d{2}-\d{4}\b").unwrap());
 
-static CREDIT_CARD_REGEX: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b").unwrap()
-});
+static CREDIT_CARD_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b").unwrap());
 
 /// Data masking configuration
 #[derive(Debug, Clone)]
@@ -74,7 +69,10 @@ pub struct MaskingConfig {
 impl Default for MaskingConfig {
     fn default() -> Self {
         Self {
-            masked_fields: DEFAULT_MASKED_FIELDS.iter().map(|s| s.to_string()).collect(),
+            masked_fields: DEFAULT_MASKED_FIELDS
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
             mask_emails: true,
             mask_phones: true,
             mask_ssn: true,
@@ -207,14 +205,16 @@ pub fn mask_json(value: &Value, config: &MaskingConfig) -> Value {
                 let key_lower = key.to_lowercase();
 
                 // Check if this field should be masked
-                let should_mask = config.masked_fields.iter()
+                let should_mask = config
+                    .masked_fields
+                    .iter()
                     .any(|field| key_lower.contains(field));
 
                 if should_mask {
                     if let Value::String(s) = val {
                         masked_map.insert(
                             key.clone(),
-                            Value::String(mask_value(s, config.mask_char, config.show_last_chars))
+                            Value::String(mask_value(s, config.mask_char, config.show_last_chars)),
                         );
                     } else {
                         masked_map.insert(key.clone(), Value::String("[REDACTED]".to_string()));
@@ -227,12 +227,8 @@ pub fn mask_json(value: &Value, config: &MaskingConfig) -> Value {
 
             Value::Object(masked_map)
         }
-        Value::Array(arr) => {
-            Value::Array(arr.iter().map(|v| mask_json(v, config)).collect())
-        }
-        Value::String(s) => {
-            Value::String(mask_string(s, config))
-        }
+        Value::Array(arr) => Value::Array(arr.iter().map(|v| mask_json(v, config)).collect()),
+        Value::String(s) => Value::String(mask_string(s, config)),
         _ => value.clone(),
     }
 }
@@ -336,4 +332,3 @@ mod tests {
         assert!(masked.contains("[PHONE]"));
     }
 }
-

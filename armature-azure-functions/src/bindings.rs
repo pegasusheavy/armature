@@ -298,4 +298,3 @@ impl OutputBinding for SignalROutput {
         "signalR"
     }
 }
-

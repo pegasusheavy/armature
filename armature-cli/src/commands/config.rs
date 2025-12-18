@@ -71,7 +71,9 @@ pub fn execute(project_dir: Option<&str>) -> Result<(), CliError> {
         println!("✅ All configuration files are valid!");
         Ok(())
     } else {
-        Err(CliError::Validation("Configuration validation failed".to_string()))
+        Err(CliError::Validation(
+            "Configuration validation failed".to_string(),
+        ))
     }
 }
 
@@ -102,8 +104,7 @@ fn validate_config_file(file: &str) -> Result<ValidationResult, CliError> {
     let mut warnings = Vec::new();
 
     // Read file
-    let content = fs::read_to_string(file)
-        .map_err(CliError::Io)?;
+    let content = fs::read_to_string(file).map_err(CliError::Io)?;
 
     // Determine file type and validate
     if file.ends_with(".toml") {
@@ -136,9 +137,11 @@ fn validate_toml(content: &str, errors: &mut Vec<String>, warnings: &mut Vec<Str
                 // Check for database config
                 if table.contains_key("database")
                     && let Some(db) = table.get("database").and_then(|v| v.as_table())
-                        && !db.contains_key("url") && !db.contains_key("host") {
-                            warnings.push("Database config missing 'url' or 'host'".to_string());
-                        }
+                    && !db.contains_key("url")
+                    && !db.contains_key("host")
+                {
+                    warnings.push("Database config missing 'url' or 'host'".to_string());
+                }
             }
         }
         Err(e) => {
@@ -158,7 +161,10 @@ fn validate_env(content: &str, errors: &mut Vec<String>, warnings: &mut Vec<Stri
 
         // Check format (KEY=VALUE)
         if !line.contains('=') {
-            errors.push(format!("Line {}: Invalid format (expected KEY=VALUE)", line_num + 1));
+            errors.push(format!(
+                "Line {}: Invalid format (expected KEY=VALUE)",
+                line_num + 1
+            ));
             continue;
         }
 
@@ -172,8 +178,15 @@ fn validate_env(content: &str, errors: &mut Vec<String>, warnings: &mut Vec<Stri
         let value = parts[1].trim();
 
         // Validate key format
-        if !key.chars().all(|c| c.is_ascii_uppercase() || c == '_' || c.is_ascii_digit()) {
-            warnings.push(format!("Line {}: Key '{}' should be uppercase", line_num + 1, key));
+        if !key
+            .chars()
+            .all(|c| c.is_ascii_uppercase() || c == '_' || c.is_ascii_digit())
+        {
+            warnings.push(format!(
+                "Line {}: Key '{}' should be uppercase",
+                line_num + 1,
+                key
+            ));
         }
 
         // Check for empty values
@@ -183,7 +196,10 @@ fn validate_env(content: &str, errors: &mut Vec<String>, warnings: &mut Vec<Stri
 
         // Check for unquoted values with spaces
         if value.contains(' ') && !value.starts_with('"') && !value.starts_with('\'') {
-            warnings.push(format!("Line {}: Value with spaces should be quoted", line_num + 1));
+            warnings.push(format!(
+                "Line {}: Value with spaces should be quoted",
+                line_num + 1
+            ));
         }
     }
 }
@@ -282,4 +298,3 @@ PORT=3000
         assert!(!errors.is_empty());
     }
 }
-

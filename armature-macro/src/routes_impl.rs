@@ -22,9 +22,11 @@ fn extract_route_info(method: &ImplItemFn) -> Option<RouteInfo> {
     let is_async = method.sig.asyncness.is_some();
 
     // Check if method has &self receiver
-    let has_self = method.sig.inputs.iter().any(|arg| {
-        matches!(arg, FnArg::Receiver(_))
-    });
+    let has_self = method
+        .sig
+        .inputs
+        .iter()
+        .any(|arg| matches!(arg, FnArg::Receiver(_)));
 
     // Check if method has HttpRequest parameter
     let has_request_param = method.sig.inputs.iter().any(|arg| {
@@ -106,7 +108,11 @@ pub fn routes_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
 
                 // Generate the route handler registration based on method signature
                 // Four cases: (has_self, has_request_param)
-                let handler = match (route_info.has_self, route_info.has_request_param, route_info.is_async) {
+                let handler = match (
+                    route_info.has_self,
+                    route_info.has_request_param,
+                    route_info.is_async,
+                ) {
                     // Instance method with request: controller.method(req)
                     (true, true, true) => quote! {
                         (

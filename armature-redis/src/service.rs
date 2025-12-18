@@ -1,13 +1,13 @@
 //! Redis service for dependency injection.
 
-use redis::aio::MultiplexedConnection;
 use redis::AsyncCommands;
+use redis::aio::MultiplexedConnection;
 use std::time::Duration;
 
 use crate::{
+    RedisConfig, RedisError, Result,
     pool::{RedisConnection, RedisPool, RedisPoolBuilder},
     pubsub::PubSub,
-    RedisConfig, RedisError, Result,
 };
 
 /// Redis service providing connection pool and convenience methods.
@@ -249,11 +249,7 @@ impl RedisService {
     ) -> Result<T> {
         let mut conn = self.get().await?;
         let script = redis::Script::new(script);
-        let result: T = script
-            .key(keys)
-            .arg(args)
-            .invoke_async(&mut *conn)
-            .await?;
+        let result: T = script.key(keys).arg(args).invoke_async(&mut *conn).await?;
         Ok(result)
     }
 }
@@ -274,9 +270,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "requires Redis"]
     async fn test_basic_operations() {
-        let config = RedisConfig::builder()
-            .url("redis://localhost:6379")
-            .build();
+        let config = RedisConfig::builder().url("redis://localhost:6379").build();
 
         let redis = RedisService::new(config).await.unwrap();
 
@@ -289,4 +283,3 @@ mod tests {
         redis.delete("test_key").await.unwrap();
     }
 }
-

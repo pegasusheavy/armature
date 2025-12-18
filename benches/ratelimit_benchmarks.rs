@@ -1,6 +1,6 @@
 //! Rate limiting benchmarks for armature-ratelimit
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use std::time::Duration;
 
 use armature_ratelimit::{Algorithm, RateLimiter};

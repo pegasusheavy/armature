@@ -148,7 +148,11 @@ struct AuditHandler;
 #[async_trait]
 impl EventHandler<UserCreatedEvent> for AuditHandler {
     async fn handle(&self, event: &UserCreatedEvent) -> Result<(), EventHandlerError> {
-        println!("📝 Audit log: User {} created at {}", event.user_id, event.timestamp());
+        println!(
+            "📝 Audit log: User {} created at {}",
+            event.user_id,
+            event.timestamp()
+        );
         Ok(())
     }
 }
@@ -156,7 +160,11 @@ impl EventHandler<UserCreatedEvent> for AuditHandler {
 #[async_trait]
 impl EventHandler<UserDeletedEvent> for AuditHandler {
     async fn handle(&self, event: &UserDeletedEvent) -> Result<(), EventHandlerError> {
-        println!("📝 Audit log: User {} deleted at {}", event.user_id, event.timestamp());
+        println!(
+            "📝 Audit log: User {} deleted at {}",
+            event.user_id,
+            event.timestamp()
+        );
         Ok(())
     }
 }
@@ -168,9 +176,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Create event bus
     println!("1. Creating Event Bus:");
     let bus = EventBusBuilder::new()
-        .async_handling(true)           // Handle events concurrently
-        .continue_on_error(true)        // Don't stop on handler errors
-        .enable_logging(true)           // Log events
+        .async_handling(true) // Handle events concurrently
+        .continue_on_error(true) // Don't stop on handler errors
+        .enable_logging(true) // Log events
         .build();
     println!("   ✅ Event bus created\n");
 
@@ -183,16 +191,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let email_clone = email_handler.clone();
     let analytics_clone = analytics_handler.clone();
 
-    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(email_handler));
-    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(analytics_handler));
-    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(audit_handler.clone()));
-    bus.subscribe::<UserDeletedEvent, _>(TypedEventHandler::<UserDeletedEvent, _>::new(audit_handler));
+    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(
+        email_handler,
+    ));
+    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(
+        analytics_handler,
+    ));
+    bus.subscribe::<UserCreatedEvent, _>(TypedEventHandler::<UserCreatedEvent, _>::new(
+        audit_handler.clone(),
+    ));
+    bus.subscribe::<UserDeletedEvent, _>(TypedEventHandler::<UserDeletedEvent, _>::new(
+        audit_handler,
+    ));
 
     println!("   📧 EmailHandler registered");
     println!("   📊 AnalyticsHandler registered");
     println!("   📝 AuditHandler registered (for both events)");
-    println!("   Handlers for UserCreatedEvent: {}", bus.handler_count::<UserCreatedEvent>());
-    println!("   Handlers for UserDeletedEvent: {}", bus.handler_count::<UserDeletedEvent>());
+    println!(
+        "   Handlers for UserCreatedEvent: {}",
+        bus.handler_count::<UserCreatedEvent>()
+    );
+    println!(
+        "   Handlers for UserDeletedEvent: {}",
+        bus.handler_count::<UserDeletedEvent>()
+    );
     println!();
 
     // 3. Publish events
@@ -200,10 +222,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     println!("   Publishing UserCreatedEvent...");
-    let event = UserCreatedEvent::new(
-        "user-123".to_string(),
-        "alice@example.com".to_string(),
-    );
+    let event = UserCreatedEvent::new("user-123".to_string(), "alice@example.com".to_string());
     bus.publish(event).await?;
 
     // Wait for async handlers to complete
@@ -211,10 +230,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     println!("   Publishing another UserCreatedEvent...");
-    let event2 = UserCreatedEvent::new(
-        "user-456".to_string(),
-        "bob@example.com".to_string(),
-    );
+    let event2 = UserCreatedEvent::new("user-456".to_string(), "bob@example.com".to_string());
     bus.publish(event2).await?;
 
     tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
@@ -230,14 +246,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 4. Check handler statistics
     println!("4. Handler Statistics:");
     println!("   📧 Emails sent: {}", email_clone.count());
-    println!("   📊 Analytics events recorded: {}", analytics_clone.count());
+    println!(
+        "   📊 Analytics events recorded: {}",
+        analytics_clone.count()
+    );
     println!();
 
     // 5. Demonstrate event with correlation ID
     println!("5. Event with Correlation ID:");
     let correlation_id = Uuid::new_v4();
-    let metadata = EventMetadata::new("user_created")
-        .with_correlation_id(correlation_id);
+    let metadata = EventMetadata::new("user_created").with_correlation_id(correlation_id);
 
     let correlated_event = UserCreatedEvent {
         metadata,
@@ -245,7 +263,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         email: "charlie@example.com".to_string(),
     };
 
-    println!("   Publishing event with correlation ID: {}", correlation_id);
+    println!(
+        "   Publishing event with correlation ID: {}",
+        correlation_id
+    );
     bus.publish(correlated_event).await?;
 
     tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;

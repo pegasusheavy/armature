@@ -27,8 +27,8 @@
 //! ```
 
 use armature_core::*;
-use armature_security::cors::CorsConfig;
 use armature_security::content_security_policy::CspConfig;
+use armature_security::cors::CorsConfig;
 use armature_security::hsts::HstsConfig;
 use armature_security::request_signing::RequestSigner;
 use std::sync::Arc;
@@ -61,11 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "X-Custom-Header",
         ])
         // Exposed headers (visible to browser)
-        .expose_headers(vec![
-            "X-Total-Count",
-            "X-Page-Number",
-            "X-Request-Id",
-        ])
+        .expose_headers(vec!["X-Total-Count", "X-Page-Number", "X-Request-Id"])
         // Allow credentials (cookies, auth headers)
         .allow_credentials(true)
         // Preflight cache for 2 hours
@@ -136,9 +132,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         path: "/api/users".to_string(),
         handler: Arc::new(move |req| {
             let cors = cors_clone.clone();
-            Box::pin(async move {
-                cors.handle_preflight(&req)
-            })
+            Box::pin(async move { cors.handle_preflight(&req) })
         }),
         constraints: None,
     });

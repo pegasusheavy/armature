@@ -27,7 +27,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match postgres.start().await {
         Ok(()) => {
             println!("   ✅ Postgres container started");
-            println!("   Container ID: {}", postgres.container_id().unwrap_or("unknown"));
+            println!(
+                "   Container ID: {}",
+                postgres.container_id().unwrap_or("unknown")
+            );
             println!("   Connection: postgres://testuser:testpass@localhost:5432/testdb");
 
             // Simulate some work
@@ -41,7 +44,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(e) => {
             println!("   ⚠️  Could not start Postgres container: {}", e);
-            println!("       This is expected if Docker is not running or the image cannot be pulled.");
+            println!(
+                "       This is expected if Docker is not running or the image cannot be pulled."
+            );
         }
     }
 
@@ -57,7 +62,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match redis.start().await {
         Ok(()) => {
             println!("   ✅ Redis container started");
-            println!("   Container ID: {}", redis.container_id().unwrap_or("unknown"));
+            println!(
+                "   Container ID: {}",
+                redis.container_id().unwrap_or("unknown")
+            );
             println!("   Connection: redis://localhost:6379");
 
             // Simulate some work
@@ -85,7 +93,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match mongo.start().await {
         Ok(()) => {
             println!("   ✅ MongoDB container started");
-            println!("   Container ID: {}", mongo.container_id().unwrap_or("unknown"));
+            println!(
+                "   Container ID: {}",
+                mongo.container_id().unwrap_or("unknown")
+            );
             println!("   Connection: mongodb://localhost:27017/testdb");
 
             // Check if running
@@ -120,4 +131,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

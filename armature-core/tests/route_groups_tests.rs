@@ -39,8 +39,7 @@ fn test_route_group_empty_prefix() {
 
 #[test]
 fn test_route_group_with_middleware() {
-    let group = RouteGroup::new()
-        .middleware(Arc::new(TestMiddleware));
+    let group = RouteGroup::new().middleware(Arc::new(TestMiddleware));
 
     assert_eq!(group.get_middleware().len(), 1);
 }
@@ -52,16 +51,14 @@ fn test_route_group_with_multiple_middleware() {
         Arc::new(TestMiddleware) as Arc<dyn Middleware>,
     ];
 
-    let group = RouteGroup::new()
-        .with_middleware(middleware_stack);
+    let group = RouteGroup::new().with_middleware(middleware_stack);
 
     assert_eq!(group.get_middleware().len(), 2);
 }
 
 #[test]
 fn test_route_group_with_guards() {
-    let group = RouteGroup::new()
-        .guard(Box::new(TestGuard));
+    let group = RouteGroup::new().guard(Box::new(TestGuard));
 
     assert_eq!(group.get_guards().len(), 1);
 }
@@ -73,8 +70,7 @@ fn test_route_group_with_multiple_guards() {
         Box::new(TestGuard) as Box<dyn Guard>,
     ];
 
-    let group = RouteGroup::new()
-        .with_guards(guards);
+    let group = RouteGroup::new().with_guards(guards);
 
     assert_eq!(group.get_guards().len(), 2);
 }
@@ -85,9 +81,7 @@ fn test_route_group_with_parent() {
         .prefix("/api")
         .middleware(Arc::new(TestMiddleware));
 
-    let child = RouteGroup::new()
-        .prefix("/v1")
-        .with_parent(&parent);
+    let child = RouteGroup::new().prefix("/v1").with_parent(&parent);
 
     // Prefix should be combined
     assert_eq!(child.get_prefix(), "/api/v1");
@@ -98,16 +92,11 @@ fn test_route_group_with_parent() {
 
 #[test]
 fn test_route_group_nested_parents() {
-    let root = RouteGroup::new()
-        .prefix("/api");
+    let root = RouteGroup::new().prefix("/api");
 
-    let v1 = RouteGroup::new()
-        .prefix("/v1")
-        .with_parent(&root);
+    let v1 = RouteGroup::new().prefix("/v1").with_parent(&root);
 
-    let admin = RouteGroup::new()
-        .prefix("/admin")
-        .with_parent(&v1);
+    let admin = RouteGroup::new().prefix("/admin").with_parent(&v1);
 
     assert_eq!(root.get_prefix(), "/api");
     assert_eq!(v1.get_prefix(), "/api/v1");
@@ -131,7 +120,10 @@ fn test_route_group_apply_prefix_variations() {
     assert_eq!(group.apply_prefix("/"), "/api/v1");
 
     // Nested path
-    assert_eq!(group.apply_prefix("/users/123/posts"), "/api/v1/users/123/posts");
+    assert_eq!(
+        group.apply_prefix("/users/123/posts"),
+        "/api/v1/users/123/posts"
+    );
 }
 
 #[test]
@@ -215,4 +207,3 @@ impl Guard for TestGuard {
         Ok(true)
     }
 }
-
