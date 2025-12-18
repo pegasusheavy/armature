@@ -15,6 +15,7 @@ pub fn find_available_port() -> u16 {
 }
 
 /// Default port to use if find_available_port fails or for documentation.
+#[allow(dead_code)]
 pub const DEFAULT_PORT: u16 = 3000;
 
 #[cfg(test)]
