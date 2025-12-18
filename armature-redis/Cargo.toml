@@ -13,7 +13,7 @@ categories = ["database", "asynchronous", "caching"]
 
 [dependencies]
 # Redis client - use version compatible with bb8-redis
-redis = { version = "0.27", features = ["tokio-comp", "connection-manager", "cluster-async"] }
+redis = { version = "1.0", features = ["tokio-comp", "connection-manager", "cluster-async"] }
 
 # Connection pooling
 bb8 = "0.9"
