@@ -174,8 +174,7 @@ impl<D: ServiceDiscovery> ServiceResolver<D> {
                 &instances[index % instances.len()]
             }
             LoadBalancingStrategy::Random => {
-                use rand::Rng;
-                let index = rand::thread_rng().gen_range(0..instances.len());
+                let index = rand::random_range(0..instances.len());
                 &instances[index]
             }
             LoadBalancingStrategy::First => &instances[0],
