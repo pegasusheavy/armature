@@ -27,12 +27,14 @@ impl<'a> Deref for RedisConnection<'a> {
     type Target = MultiplexedConnection;
 
     fn deref(&self) -> &Self::Target {
+        // Auto-deref through bb8's PooledConnection to the underlying MultiplexedConnection
         &self.conn
     }
 }
 
 impl<'a> DerefMut for RedisConnection<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
+        // Auto-deref through bb8's PooledConnection to the underlying MultiplexedConnection
         &mut self.conn
     }
 }

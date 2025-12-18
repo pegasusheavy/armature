@@ -97,7 +97,12 @@ impl RedisService {
         value: T,
     ) -> Result<()> {
         let mut conn = self.get().await?;
-        let _: () = conn.set(key, value).await?;
+        // Use redis::cmd to avoid ToSingleRedisArg requirement
+        let _: () = redis::cmd("SET")
+            .arg(key)
+            .arg(value)
+            .query_async(&mut *conn)
+            .await?;
         Ok(())
     }
 
@@ -109,7 +114,14 @@ impl RedisService {
         ttl: Duration,
     ) -> Result<()> {
         let mut conn = self.get().await?;
-        let _: () = conn.set_ex(key, value, ttl.as_secs()).await?;
+        // Use set with EX option instead of set_ex which requires ToSingleRedisArg
+        let _: () = redis::cmd("SET")
+            .arg(key)
+            .arg(value)
+            .arg("EX")
+            .arg(ttl.as_secs())
+            .query_async(&mut *conn)
+            .await?;
         Ok(())
     }
 
@@ -171,7 +183,13 @@ impl RedisService {
         value: T,
     ) -> Result<()> {
         let mut conn = self.get().await?;
-        let _: () = conn.hset(key, field, value).await?;
+        // Use redis::cmd to avoid ToSingleRedisArg requirement
+        let _: () = redis::cmd("HSET")
+            .arg(key)
+            .arg(field)
+            .arg(value)
+            .query_async(&mut *conn)
+            .await?;
         Ok(())
     }
 
@@ -236,7 +254,12 @@ impl RedisService {
         member: T,
     ) -> Result<bool> {
         let mut conn = self.get().await?;
-        let is_member: bool = conn.sismember(key, member).await?;
+        // Use redis::cmd to avoid ToSingleRedisArg requirement
+        let is_member: bool = redis::cmd("SISMEMBER")
+            .arg(key)
+            .arg(member)
+            .query_async(&mut *conn)
+            .await?;
         Ok(is_member)
     }
 
