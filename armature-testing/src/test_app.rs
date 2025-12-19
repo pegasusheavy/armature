@@ -128,18 +128,14 @@ impl TestAppBuilder {
     /// ```
     pub fn with_route<F, Fut>(mut self, path: &str, handler: F) -> Self
     where
-        F: Fn(armature_core::HttpRequest) -> Fut + Send + Sync + 'static,
+        F: Fn(armature_core::HttpRequest) -> Fut + Send + Sync + Clone + 'static,
         Fut: std::future::Future<Output = Result<armature_core::HttpResponse, armature_core::Error>>
             + Send
             + 'static,
     {
         use armature_core::{HttpMethod, Route};
-        self.router.add_route(Route {
-            method: HttpMethod::GET,
-            path: path.to_string(),
-            handler: Arc::new(move |req| Box::pin(handler(req))),
-            constraints: None,
-        });
+        // Use the optimized Route::new which enables handler monomorphization
+        self.router.add_route(Route::new(HttpMethod::GET, path, handler));
         self
     }
 

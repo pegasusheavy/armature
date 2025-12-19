@@ -133,6 +133,7 @@ pub mod extensions;
 pub mod extractors;
 pub mod form;
 pub mod guard;
+pub mod handler;
 pub mod health;
 pub mod hmr;
 pub mod http;
@@ -168,6 +169,7 @@ pub use extractors::{
 };
 pub use form::*;
 pub use guard::*;
+pub use handler::{BoxedHandler, Handler, IntoHandler, OptimizedHandlerFn};
 pub use health::*;
 pub use hmr::*;
 pub use http::*;
@@ -185,7 +187,8 @@ pub use resilience::{
 };
 pub use route_constraint::*;
 pub use route_group::*;
-pub use routing::{Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
+pub use route_registry::{OptimizedRouteHandler, RouteEntry, RouteHandlerFn};
+pub use routing::{OptimizedHandler, Route, Router}; // Explicit exports to avoid ambiguous HandlerFn
 pub use shutdown::*;
 pub use sse::*;
 pub use static_assets::*;

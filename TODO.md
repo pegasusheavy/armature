@@ -26,6 +26,7 @@ Only features that are **not yet completed**.
 | ✅ Framework Comparison Benchmarks | Side-by-side benchmarks vs Axum, Actix, Express, etc. | `benchmarks/comparison/` |
 | ✅ Ferron Integration | Reverse proxy integration with Ferron | `armature-ferron/` |
 | ✅ CI Pipeline Fixes | All 16 CI jobs passing (format, clippy, tests, benchmarks) | `.github/workflows/` |
+| ✅ Inline Handler Dispatch | Handler trait with monomorphization and `#[inline]` hints | `armature-core/src/handler.rs` |
 
 ---
 
@@ -83,7 +84,7 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Inline Handler Dispatch | Ensure handlers are inlined via monomorphization | `armature-core` |
+| ✅ | Inline Handler Dispatch | Handler trait with monomorphization and `#[inline]` hints | `armature-core/src/handler.rs` |
 | ✅ | Remove Runtime Type Checks | Zero-cost `State<T>` extractor with `Extensions` | `armature-core/src/extractors.rs` |
 | 🟠 | Const Generic Extractors | Use const generics for zero-cost extractor chains | `armature-core/extractors.rs` |
 | 🟠 | Static Dispatch Middleware | Replace `Box<dyn>` with static dispatch where possible | `armature-core/middleware.rs` |
@@ -239,7 +240,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Performance - Connections | 3 | 🟡 |
 | **Axum-Competitive** | | |
 | ↳ Router Optimization | 2 | 🟠 |
-| ↳ Zero-Cost Abstractions | 3 | 🔴/🟠 |
+| ↳ Zero-Cost Abstractions | 2 | 🟠 |
 | ↳ Memory & Allocation | 5 | 🔴/🟠/🟡 |
 | ↳ Hyper Integration | 4 | 🔴/🟠/🟡 |
 | ↳ Async Runtime | 4 | 🟠/🟡 |
@@ -255,8 +256,8 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Syscall Optimization | 4 | 🔴/🟠/🟡 |
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **68** | |
-| **Recently Completed** | **11** | ✅ |
+| **Total Remaining** | **67** | |
+| **Recently Completed** | **12** | ✅ |
 
 ---
 
