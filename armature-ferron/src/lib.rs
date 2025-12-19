@@ -1,3 +1,10 @@
+// Allow clippy warnings while crate is under development
+#![allow(dead_code)]
+#![allow(clippy::type_complexity)]
+#![allow(clippy::new_without_default)]
+#![allow(clippy::manual_clamp)]
+#![allow(clippy::derivable_impls)]
+
 //! # Armature Ferron Integration
 //!
 //! This crate provides integration between Armature web applications and the

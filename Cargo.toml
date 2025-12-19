@@ -44,7 +44,7 @@ members = [
     "armature-lambda",
     "armature-cloudrun",
     "armature-azure-functions",
-    # "armature-ferron",  # TODO: Add when ferron integration is merged
+    "armature-ferron",
 ]
 exclude = [
     "templates/*",
@@ -281,6 +281,12 @@ path = "armature-storage"
 
 [dev-dependencies.armature-http-client]
 path = "armature-http-client"
+
+[dev-dependencies.armature-ferron]
+path = "armature-ferron"
+
+[dev-dependencies.fastrand]
+version = "2.3"
 
 [dev-dependencies.jsonwebtoken]
 version = "10.2"
