@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::Duration;
 
-use crate::{GraphQLClient, GraphQLResponse, GraphQLError, Result};
+use crate::{GraphQLClient, GraphQLError, GraphQLResponse, Result};
 
 /// GraphQL request payload.
 #[derive(Debug, Clone, Serialize)]
@@ -85,7 +85,10 @@ impl<'a> QueryBuilder<'a> {
 
     /// Set a single variable.
     pub fn variable(mut self, name: impl Into<String>, value: impl Serialize) -> Self {
-        let vars = self.request.variables.get_or_insert_with(|| Value::Object(Default::default()));
+        let vars = self
+            .request
+            .variables
+            .get_or_insert_with(|| Value::Object(Default::default()));
         if let Value::Object(map) = vars {
             map.insert(name.into(), serde_json::to_value(value).unwrap_or_default());
         }
@@ -112,7 +115,9 @@ impl<'a> QueryBuilder<'a> {
 
     /// Execute the query and return the raw response.
     pub async fn send_raw(self) -> Result<GraphQLResponse<Value>> {
-        self.client.execute_request(self.request, self.headers, self.timeout).await
+        self.client
+            .execute_request(self.request, self.headers, self.timeout)
+            .await
     }
 
     /// Execute the query and deserialize the response.
@@ -215,7 +220,8 @@ impl<'a> SubscriptionBuilder<'a> {
 
     /// Start the subscription.
     pub async fn send(self) -> Result<crate::SubscriptionStream<Value>> {
-        self.client.execute_subscription(self.request, self.headers).await
+        self.client
+            .execute_subscription(self.request, self.headers)
+            .await
     }
 }
-

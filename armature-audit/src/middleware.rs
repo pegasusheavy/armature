@@ -60,21 +60,27 @@ impl AuditMiddleware {
     /// Extract user ID from request (can be customized)
     fn extract_user_id(&self, request: &HttpRequest) -> Option<String> {
         // Try to get from Authorization header
-        request.headers.get("authorization")
-            .and_then(|auth| {
-                if auth.starts_with("Bearer ") {
-                    Some("authenticated_user".to_string())
-                } else {
-                    None
-                }
-            })
+        request.headers.get("authorization").and_then(|auth| {
+            if auth.starts_with("Bearer ") {
+                Some("authenticated_user".to_string())
+            } else {
+                None
+            }
+        })
     }
 
     /// Extract IP address from request
     fn extract_ip(&self, request: &HttpRequest) -> Option<String> {
         // Try X-Forwarded-For first
         if let Some(forwarded) = request.headers.get("x-forwarded-for") {
-            return Some(forwarded.split(',').next().unwrap_or(forwarded).trim().to_string());
+            return Some(
+                forwarded
+                    .split(',')
+                    .next()
+                    .unwrap_or(forwarded)
+                    .trim()
+                    .to_string(),
+            );
         }
 
         // Try X-Real-IP
@@ -235,9 +241,7 @@ mod tests {
 
     #[test]
     fn test_audit_middleware_creation() {
-        let logger = Arc::new(AuditLogger::builder()
-            .backend(MemoryBackend::new())
-            .build());
+        let logger = Arc::new(AuditLogger::builder().backend(MemoryBackend::new()).build());
 
         let middleware = AuditMiddleware::new(logger);
         assert!(middleware.log_request_body);
@@ -246,9 +250,7 @@ mod tests {
 
     #[test]
     fn test_audit_middleware_configuration() {
-        let logger = Arc::new(AuditLogger::builder()
-            .backend(MemoryBackend::new())
-            .build());
+        let logger = Arc::new(AuditLogger::builder().backend(MemoryBackend::new()).build());
 
         let middleware = AuditMiddleware::new(logger)
             .log_request_body(false)
@@ -262,12 +264,9 @@ mod tests {
 
     #[test]
     fn test_truncate_body() {
-        let logger = Arc::new(AuditLogger::builder()
-            .backend(MemoryBackend::new())
-            .build());
+        let logger = Arc::new(AuditLogger::builder().backend(MemoryBackend::new()).build());
 
-        let middleware = AuditMiddleware::new(logger)
-            .max_body_size(10);
+        let middleware = AuditMiddleware::new(logger).max_body_size(10);
 
         let body = b"This is a very long body that should be truncated";
         let truncated = middleware.truncate_body(body).unwrap();
@@ -276,4 +275,3 @@ mod tests {
         assert!(truncated.contains("[TRUNCATED]"));
     }
 }
-

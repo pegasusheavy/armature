@@ -74,35 +74,24 @@ impl AzureServices {
         use azure_identity::*;
 
         match &config.credentials {
-            CredentialsSource::DefaultCredential => {
-                Ok(Arc::new(DefaultAzureCredential::default()))
-            }
-            CredentialsSource::Environment => {
-                Ok(Arc::new(EnvironmentCredential::default()))
-            }
+            CredentialsSource::DefaultCredential => Ok(Arc::new(DefaultAzureCredential::default())),
+            CredentialsSource::Environment => Ok(Arc::new(EnvironmentCredential::default())),
             CredentialsSource::ManagedIdentity => {
-                Ok(Arc::new(
-                    ImdsManagedIdentityCredential::default(),
-                ))
+                Ok(Arc::new(ImdsManagedIdentityCredential::default()))
             }
-            CredentialsSource::AzureCli => {
-                Ok(Arc::new(AzureCliCredential::new()))
-            }
+            CredentialsSource::AzureCli => Ok(Arc::new(AzureCliCredential::new())),
             CredentialsSource::ServicePrincipal {
                 tenant_id,
                 client_id,
                 client_secret,
-            } => {
-                Ok(Arc::new(
-                    ClientSecretCredential::new(
-                        azure_identity::TokenCredentialOptions::default(),
-                        tenant_id.clone(),
-                        client_id.clone(),
-                        client_secret.clone(),
-                    ),
-                ))
-            }
-            CredentialsSource::ConnectionString(_) | CredentialsSource::StorageAccountKey { .. } => {
+            } => Ok(Arc::new(ClientSecretCredential::new(
+                azure_identity::TokenCredentialOptions::default(),
+                tenant_id.clone(),
+                client_id.clone(),
+                client_secret.clone(),
+            ))),
+            CredentialsSource::ConnectionString(_)
+            | CredentialsSource::StorageAccountKey { .. } => {
                 // For storage-specific auth, we'll handle it at the client level
                 Ok(Arc::new(DefaultAzureCredential::default()))
             }
@@ -144,12 +133,15 @@ impl AzureServices {
 
     #[cfg(feature = "blob")]
     fn init_blob(&self) -> Result<()> {
-        use azure_storage_blobs::prelude::*;
         use azure_storage::prelude::*;
+        use azure_storage_blobs::prelude::*;
 
         let mut client = self.blob_service.write();
         if client.is_none() {
-            let account = self.config.storage_account.as_ref()
+            let account = self
+                .config
+                .storage_account
+                .as_ref()
                 .ok_or(AzureError::StorageAccountNotSpecified)?;
 
             let storage_credentials = match &self.config.credentials {
@@ -157,9 +149,10 @@ impl AzureServices {
                     StorageCredentials::connection_string(conn_str)
                         .map_err(|e| AzureError::Config(e.to_string()))?
                 }
-                CredentialsSource::StorageAccountKey { account_name: _, account_key } => {
-                    StorageCredentials::access_key(account.clone(), account_key.clone())
-                }
+                CredentialsSource::StorageAccountKey {
+                    account_name: _,
+                    account_key,
+                } => StorageCredentials::access_key(account.clone(), account_key.clone()),
                 _ => {
                     // Use token credential
                     StorageCredentials::token_credential(self.credential.clone())
@@ -183,12 +176,15 @@ impl AzureServices {
 
     #[cfg(feature = "queue")]
     fn init_queue(&self) -> Result<()> {
-        use azure_storage_queues::*;
         use azure_storage::prelude::*;
+        use azure_storage_queues::*;
 
         let mut client = self.queue_service.write();
         if client.is_none() {
-            let account = self.config.storage_account.as_ref()
+            let account = self
+                .config
+                .storage_account
+                .as_ref()
                 .ok_or(AzureError::StorageAccountNotSpecified)?;
 
             let storage_credentials = match &self.config.credentials {
@@ -196,12 +192,11 @@ impl AzureServices {
                     StorageCredentials::connection_string(conn_str)
                         .map_err(|e| AzureError::Config(e.to_string()))?
                 }
-                CredentialsSource::StorageAccountKey { account_name: _, account_key } => {
-                    StorageCredentials::access_key(account.clone(), account_key.clone())
-                }
-                _ => {
-                    StorageCredentials::token_credential(self.credential.clone())
-                }
+                CredentialsSource::StorageAccountKey {
+                    account_name: _,
+                    account_key,
+                } => StorageCredentials::access_key(account.clone(), account_key.clone()),
+                _ => StorageCredentials::token_credential(self.credential.clone()),
             };
 
             let queue_client = QueueServiceClient::new(account, storage_credentials);
@@ -217,14 +212,12 @@ impl AzureServices {
 
         let mut client = self.cosmos.write();
         if client.is_none() {
-            let endpoint = self.config.cosmos_endpoint.as_ref()
-                .ok_or_else(|| AzureError::Config("Cosmos DB endpoint not specified".to_string()))?;
+            let endpoint = self.config.cosmos_endpoint.as_ref().ok_or_else(|| {
+                AzureError::Config("Cosmos DB endpoint not specified".to_string())
+            })?;
 
-            let cosmos_client = CosmosClient::new(
-                endpoint,
-                self.credential.clone(),
-                CosmosOptions::default(),
-            );
+            let cosmos_client =
+                CosmosClient::new(endpoint, self.credential.clone(), CosmosOptions::default());
 
             *client = Some(cosmos_client);
             info!(endpoint = %endpoint, "Cosmos DB client initialized");
@@ -238,7 +231,10 @@ impl AzureServices {
 
         let mut client = self.keyvault.write();
         if client.is_none() {
-            let vault_url = self.config.keyvault_url.as_ref()
+            let vault_url = self
+                .config
+                .keyvault_url
+                .as_ref()
                 .ok_or_else(|| AzureError::Config("Key Vault URL not specified".to_string()))?;
 
             let kv_client = SecretClient::new(vault_url, self.credential.clone())
@@ -324,4 +320,3 @@ impl AzureServices {
         Err(AzureError::not_enabled("keyvault"))
     }
 }
-

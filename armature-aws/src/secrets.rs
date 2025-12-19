@@ -1,0 +1,1 @@
+//! AWS secrets integration placeholder

@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Expr};
+use syn::{Expr, parse_macro_input};
 
 pub fn test_request_impl(input: TokenStream) -> TokenStream {
     let _expr = parse_macro_input!(input as Expr);
@@ -42,4 +42,3 @@ pub fn assert_status_impl(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
-

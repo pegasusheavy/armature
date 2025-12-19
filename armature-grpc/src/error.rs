@@ -68,4 +68,3 @@ impl From<GrpcError> for Status {
         err.to_status()
     }
 }
-

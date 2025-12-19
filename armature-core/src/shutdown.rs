@@ -38,8 +38,8 @@
 //! ```
 
 use crate::Error;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::timeout;
@@ -48,7 +48,11 @@ use tracing::{error, info, warn};
 /// Shutdown hook function type
 ///
 /// Async function that performs cleanup during shutdown.
-pub type ShutdownHook = Box<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), Error>> + Send>> + Send + Sync>;
+pub type ShutdownHook = Box<
+    dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), Error>> + Send>>
+        + Send
+        + Sync,
+>;
 
 /// Connection tracker for draining in-flight requests
 #[derive(Debug, Clone)]
@@ -230,7 +234,6 @@ impl ShutdownManager {
         hooks.push(hook);
     }
 
-
     /// Check if shutdown has been initiated
     pub fn is_shutting_down(&self) -> bool {
         self.shutdown_initiated.load(Ordering::Acquire)
@@ -275,7 +278,10 @@ impl ShutdownManager {
         self.tracker.stop_accepting();
 
         // Phase 3: Drain existing connections
-        info!("Draining {} active connections", self.tracker.active_count());
+        info!(
+            "Draining {} active connections",
+            self.tracker.active_count()
+        );
 
         let drain_timeout = timeout_duration / 2; // Use half timeout for draining
         if !self.tracker.drain(drain_timeout).await {
@@ -312,9 +318,7 @@ impl ShutdownManager {
     ///
     /// For advanced use cases where you need fine-grained control.
     pub async fn shutdown_with_phases(&self) -> ShutdownPhases<'_> {
-        ShutdownPhases {
-            manager: self,
-        }
+        ShutdownPhases { manager: self }
     }
 }
 
@@ -338,7 +342,10 @@ impl<'a> ShutdownPhases<'a> {
 
     /// Drain connections with timeout
     pub async fn drain_connections(&self, timeout_duration: Duration) -> bool {
-        info!("Draining {} active connections", self.manager.tracker.active_count());
+        info!(
+            "Draining {} active connections",
+            self.manager.tracker.active_count()
+        );
         self.manager.tracker.drain(timeout_duration).await
     }
 
@@ -356,7 +363,6 @@ impl<'a> ShutdownPhases<'a> {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -428,9 +434,9 @@ mod tests {
     async fn test_shutdown_manager_add_hook() {
         let manager = ShutdownManager::new();
 
-        manager.add_hook(Box::new(|| {
-            Box::pin(async { Ok(()) })
-        })).await;
+        manager
+            .add_hook(Box::new(|| Box::pin(async { Ok(()) })))
+            .await;
 
         assert_eq!(manager.hooks.read().await.len(), 1);
     }
@@ -444,4 +450,3 @@ mod tests {
         assert_eq!(*manager.timeout.read().await, Duration::from_secs(60));
     }
 }
-

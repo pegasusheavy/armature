@@ -135,8 +135,9 @@ impl RouteConstraint for UuidConstraint {
     fn validate(&self, value: &str) -> Result<(), String> {
         // Simple UUID validation (8-4-4-4-12 format)
         let uuid_regex = Regex::new(
-            r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-        ).unwrap();
+            r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        )
+        .unwrap();
 
         if uuid_regex.is_match(value) {
             Ok(())
@@ -201,7 +202,10 @@ impl RouteConstraint for RegexConstraint {
         if self.regex.is_match(value) {
             Ok(())
         } else {
-            Err(format!("'{}' must match pattern: {}", value, self.description))
+            Err(format!(
+                "'{}' must match pattern: {}",
+                value, self.description
+            ))
         }
     }
 
@@ -268,14 +272,16 @@ impl RouteConstraint for LengthConstraint {
         let len = value.len();
 
         if let Some(min) = self.min
-            && len < min {
-                return Err(format!("'{}' must be at least {} characters", value, min));
-            }
+            && len < min
+        {
+            return Err(format!("'{}' must be at least {} characters", value, min));
+        }
 
         if let Some(max) = self.max
-            && len > max {
-                return Err(format!("'{}' must be at most {} characters", value, max));
-            }
+            && len > max
+        {
+            return Err(format!("'{}' must be at most {} characters", value, max));
+        }
 
         Ok(())
     }
@@ -343,14 +349,16 @@ impl RouteConstraint for RangeConstraint {
             .map_err(|_| format!("'{}' is not a valid number", value))?;
 
         if let Some(min) = self.min
-            && num < min {
-                return Err(format!("'{}' must be at least {}", value, min));
-            }
+            && num < min
+        {
+            return Err(format!("'{}' must be at least {}", value, min));
+        }
 
         if let Some(max) = self.max
-            && num > max {
-                return Err(format!("'{}' must be at most {}", value, max));
-            }
+            && num > max
+        {
+            return Err(format!("'{}' must be at most {}", value, max));
+        }
 
         Ok(())
     }
@@ -434,15 +442,13 @@ impl RouteConstraints {
     ///     .add("uuid", Box::new(UuidConstraint));
     /// ```
     pub fn add(mut self, param: impl Into<String>, constraint: Box<dyn RouteConstraint>) -> Self {
-        self.constraints
-            .insert(param.into(), Arc::from(constraint));
+        self.constraints.insert(param.into(), Arc::from(constraint));
         self
     }
 
     /// Add a constraint for a parameter (mutable version)
     pub fn add_mut(&mut self, param: impl Into<String>, constraint: Box<dyn RouteConstraint>) {
-        self.constraints
-            .insert(param.into(), Arc::from(constraint));
+        self.constraints.insert(param.into(), Arc::from(constraint));
     }
 
     /// Validate all parameters against their constraints
@@ -451,14 +457,9 @@ impl RouteConstraints {
     pub fn validate(&self, params: &HashMap<String, String>) -> Result<(), Error> {
         for (param_name, constraint) in &self.constraints {
             if let Some(param_value) = params.get(param_name) {
-                constraint
-                    .validate(param_value)
-                    .map_err(|msg| {
-                        Error::BadRequest(format!(
-                            "Invalid route parameter '{}': {}",
-                            param_name, msg
-                        ))
-                    })?;
+                constraint.validate(param_value).map_err(|msg| {
+                    Error::BadRequest(format!("Invalid route parameter '{}': {}", param_name, msg))
+                })?;
             }
         }
         Ok(())
@@ -527,9 +528,11 @@ mod tests {
     #[test]
     fn test_uuid_constraint() {
         let constraint = UuidConstraint;
-        assert!(constraint
-            .validate("550e8400-e29b-41d4-a716-446655440000")
-            .is_ok());
+        assert!(
+            constraint
+                .validate("550e8400-e29b-41d4-a716-446655440000")
+                .is_ok()
+        );
         assert!(constraint.validate("not-a-uuid").is_err());
         assert!(constraint.validate("12345").is_err());
     }
@@ -617,4 +620,3 @@ mod tests {
         assert!(constraints.validate(&bad_params).is_err());
     }
 }
-

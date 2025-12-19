@@ -1,13 +1,13 @@
 //! HTTP client implementation.
 
-use std::sync::Arc;
 use http::Method;
 use reqwest::Request;
+use std::sync::Arc;
 use tracing::debug;
 
 use crate::{
-    HttpClientConfig, HttpClientError, Result, Response,
-    RetryStrategy, CircuitBreaker, RequestBuilder,
+    CircuitBreaker, HttpClientConfig, HttpClientError, RequestBuilder, Response, Result,
+    RetryStrategy,
 };
 
 /// HTTP client with retry, circuit breaker, and timeout support.
@@ -42,9 +42,10 @@ impl HttpClient {
 
         let inner = builder.build().expect("Failed to build HTTP client");
 
-        let circuit_breaker = config.circuit_breaker.as_ref().map(|cb_config| {
-            Arc::new(CircuitBreaker::new(cb_config.clone()))
-        });
+        let circuit_breaker = config
+            .circuit_breaker
+            .as_ref()
+            .map(|cb_config| Arc::new(CircuitBreaker::new(cb_config.clone())));
 
         Self {
             inner,
@@ -107,9 +108,10 @@ impl HttpClient {
     pub(crate) async fn execute(&self, request: Request) -> Result<Response> {
         // Check circuit breaker
         if let Some(cb) = &self.circuit_breaker
-            && !cb.is_allowed() {
-                return Err(HttpClientError::CircuitOpen);
-            }
+            && !cb.is_allowed()
+        {
+            return Err(HttpClientError::CircuitOpen);
+        }
 
         // Execute with retry if configured
         if let Some(retry_config) = &self.config.retry {
@@ -132,9 +134,10 @@ impl HttpClient {
         loop {
             // Check max retry time
             if let Some(max_time) = retry_config.max_retry_time
-                && start.elapsed() > max_time {
-                    break;
-                }
+                && start.elapsed() > max_time
+            {
+                break;
+            }
 
             // Clone request for retry (reqwest requests can't be reused)
             let request_clone = clone_request(&request);
@@ -148,21 +151,22 @@ impl HttpClient {
 
                     // Check if response status should trigger retry
                     if retry_config.should_retry_status(response.status().as_u16())
-                        && attempt < retry_config.max_attempts - 1 {
-                            debug!(
-                                attempt = attempt + 1,
-                                status = %response.status(),
-                                "Retrying request due to status code"
-                            );
-                            last_error = Some(HttpClientError::Response {
-                                status: response.status().as_u16(),
-                                message: "Retriable status code".to_string(),
-                            });
-                            attempt += 1;
-                            let delay = retry_config.delay_for_attempt(attempt);
-                            tokio::time::sleep(delay).await;
-                            continue;
-                        }
+                        && attempt < retry_config.max_attempts - 1
+                    {
+                        debug!(
+                            attempt = attempt + 1,
+                            status = %response.status(),
+                            "Retrying request due to status code"
+                        );
+                        last_error = Some(HttpClientError::Response {
+                            status: response.status().as_u16(),
+                            message: "Retriable status code".to_string(),
+                        });
+                        attempt += 1;
+                        let delay = retry_config.delay_for_attempt(attempt);
+                        tokio::time::sleep(delay).await;
+                        continue;
+                    }
 
                     return Ok(response);
                 }
@@ -173,7 +177,9 @@ impl HttpClient {
                     }
 
                     // Check if error is retryable
-                    if retry_config.should_retry(attempt, &e) && attempt < retry_config.max_attempts - 1 {
+                    if retry_config.should_retry(attempt, &e)
+                        && attempt < retry_config.max_attempts - 1
+                    {
                         debug!(
                             attempt = attempt + 1,
                             error = %e,
@@ -208,10 +214,7 @@ impl HttpClient {
 
 /// Clone a request (best effort - body may be empty).
 fn clone_request(request: &Request) -> Request {
-    let mut builder = reqwest::Request::new(
-        request.method().clone(),
-        request.url().clone(),
-    );
+    let mut builder = reqwest::Request::new(request.method().clone(), request.url().clone());
     *builder.headers_mut() = request.headers().clone();
     builder
 }
@@ -243,7 +246,9 @@ mod tests {
 
         let client = HttpClient::new(config);
         assert_eq!(client.config().timeout, Duration::from_secs(60));
-        assert_eq!(client.config().base_url.as_deref(), Some("https://api.example.com"));
+        assert_eq!(
+            client.config().base_url.as_deref(),
+            Some("https://api.example.com")
+        );
     }
 }
-

@@ -132,7 +132,7 @@ impl FcmProvider {
 
     /// Refresh the access token.
     async fn refresh_token(&self) -> Result<String> {
-        use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+        use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -269,7 +269,10 @@ impl PushProvider for FcmProvider {
             Err(PushError::RateLimited(60))
         } else {
             let body = response.text().await.unwrap_or_default();
-            Err(PushError::Provider(format!("FCM error {}: {}", status, body)))
+            Err(PushError::Provider(format!(
+                "FCM error {}: {}",
+                status, body
+            )))
         }
     }
 
@@ -334,4 +337,3 @@ struct FcmAndroidNotification {
     #[serde(skip_serializing_if = "Option::is_none")]
     click_action: Option<String>,
 }
-

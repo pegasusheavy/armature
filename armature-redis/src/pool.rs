@@ -27,12 +27,14 @@ impl<'a> Deref for RedisConnection<'a> {
     type Target = MultiplexedConnection;
 
     fn deref(&self) -> &Self::Target {
+        // Auto-deref through bb8's PooledConnection to the underlying MultiplexedConnection
         &self.conn
     }
 }
 
 impl<'a> DerefMut for RedisConnection<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
+        // Auto-deref through bb8's PooledConnection to the underlying MultiplexedConnection
         &mut self.conn
     }
 }
@@ -65,7 +67,10 @@ impl RedisPoolBuilder {
 
         // Test the connection in a scope so the connection is dropped before returning pool
         {
-            let mut conn = pool.get().await.map_err(|e| RedisError::Pool(e.to_string()))?;
+            let mut conn = pool
+                .get()
+                .await
+                .map_err(|e| RedisError::Pool(e.to_string()))?;
             let _: String = redis::cmd("PING")
                 .query_async(&mut *conn)
                 .await
@@ -81,4 +86,3 @@ impl RedisPoolBuilder {
         Ok(pool)
     }
 }
-

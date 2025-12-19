@@ -7,13 +7,11 @@ struct ServiceA {
     value: String,
 }
 
-
 #[derive(Clone)]
 struct ServiceB {
     service_a: ServiceA,
     name: String,
 }
-
 
 #[test]
 fn test_register_and_resolve_service() {

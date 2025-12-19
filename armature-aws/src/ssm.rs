@@ -1,0 +1,1 @@
+//! AWS ssm integration placeholder

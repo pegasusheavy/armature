@@ -1,9 +1,9 @@
 //! HTTP response wrapper.
 
+use crate::{HttpClientError, Result};
 use bytes::Bytes;
 use http::{HeaderMap, StatusCode};
 use serde::de::DeserializeOwned;
-use crate::{HttpClientError, Result};
 
 /// HTTP response wrapper.
 #[derive(Debug)]
@@ -79,8 +79,7 @@ impl Response {
 
     /// Get the response body as text.
     pub fn text(&self) -> Result<String> {
-        String::from_utf8(self.body.to_vec())
-            .map_err(|e| HttpClientError::Json(e.to_string()))
+        String::from_utf8(self.body.to_vec()).map_err(|e| HttpClientError::Json(e.to_string()))
     }
 
     /// Consume the response and return the body as text.
@@ -90,8 +89,7 @@ impl Response {
 
     /// Parse the response body as JSON.
     pub fn json<T: DeserializeOwned>(&self) -> Result<T> {
-        serde_json::from_slice(&self.body)
-            .map_err(|e| HttpClientError::Json(e.to_string()))
+        serde_json::from_slice(&self.body).map_err(|e| HttpClientError::Json(e.to_string()))
     }
 
     /// Consume the response and parse as JSON.
@@ -125,4 +123,3 @@ impl Response {
         }
     }
 }
-

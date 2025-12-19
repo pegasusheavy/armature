@@ -271,4 +271,3 @@ mod tests {
         assert!(AuditSeverity::Error < AuditSeverity::Critical);
     }
 }
-

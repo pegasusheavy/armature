@@ -84,35 +84,32 @@ where
     pub async fn get(&self, key: &str) -> CacheResult<Option<String>> {
         // Try L1 first
         if self.config.enable_l1
-            && let Some(value) = self.l1.get_json(key).await? {
-                return Ok(Some(value));
-            }
+            && let Some(value) = self.l1.get_json(key).await?
+        {
+            return Ok(Some(value));
+        }
 
         // Try L2
         if self.config.enable_l2
-            && let Some(value) = self.l2.get_json(key).await? {
-                // Promote to L1 if configured
-                if self.config.enable_l1 && self.config.promote_to_l1 {
-                    // Use shorter TTL for L1
-                    let l2_ttl = self.l2.ttl(key).await?;
-                    let l1_ttl = l2_ttl.map(|ttl| {
-                        Duration::from_secs_f64(ttl.as_secs_f64() * self.config.l1_ttl_fraction)
-                    });
-                    let _ = self.l1.set_json(key, value.clone(), l1_ttl).await;
-                }
-                return Ok(Some(value));
+            && let Some(value) = self.l2.get_json(key).await?
+        {
+            // Promote to L1 if configured
+            if self.config.enable_l1 && self.config.promote_to_l1 {
+                // Use shorter TTL for L1
+                let l2_ttl = self.l2.ttl(key).await?;
+                let l1_ttl = l2_ttl.map(|ttl| {
+                    Duration::from_secs_f64(ttl.as_secs_f64() * self.config.l1_ttl_fraction)
+                });
+                let _ = self.l1.set_json(key, value.clone(), l1_ttl).await;
             }
+            return Ok(Some(value));
+        }
 
         Ok(None)
     }
 
     /// Set value in cache (writes to both L1 and L2)
-    pub async fn set(
-        &self,
-        key: &str,
-        value: String,
-        ttl: Option<Duration>,
-    ) -> CacheResult<()> {
+    pub async fn set(&self, key: &str, value: String, ttl: Option<Duration>) -> CacheResult<()> {
         // Write to L2 first (source of truth)
         if self.config.enable_l2 {
             self.l2.set_json(key, value.clone(), ttl).await?;
@@ -220,9 +217,7 @@ impl InMemoryCache {
     async fn cleanup_expired(&self) {
         let mut data = self.data.write().await;
         let now = tokio::time::Instant::now();
-        data.retain(|_, entry| {
-            entry.expires_at.is_none_or(|exp| exp > now)
-        });
+        data.retain(|_, entry| entry.expires_at.is_none_or(|exp| exp > now));
     }
 }
 
@@ -238,9 +233,10 @@ impl CacheStore for InMemoryCache {
         let data = self.data.read().await;
         if let Some(entry) = data.get(key) {
             if let Some(expires_at) = entry.expires_at
-                && tokio::time::Instant::now() > expires_at {
-                    return Ok(None); // Expired
-                }
+                && tokio::time::Instant::now() > expires_at
+            {
+                return Ok(None); // Expired
+            }
             Ok(Some(entry.value.clone()))
         } else {
             Ok(None)
@@ -358,4 +354,3 @@ mod tests_tiered {
         assert!(l1_value.is_some());
     }
 }
-

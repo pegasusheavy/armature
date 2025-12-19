@@ -114,15 +114,20 @@ impl From<web_push::WebPushError> for PushError {
         let err_string = err.to_string();
         if err_string.contains("endpoint") || err_string.contains("invalid") {
             Self::InvalidSubscription(err_string)
-        } else if err_string.contains("expired") || err_string.contains("unsubscribed") || err_string.contains("gone") {
+        } else if err_string.contains("expired")
+            || err_string.contains("unsubscribed")
+            || err_string.contains("gone")
+        {
             Self::Unregistered(err_string)
         } else if err_string.contains("rate") || err_string.contains("429") {
             Self::RateLimited(60)
         } else if err_string.contains("payload") || err_string.contains("too large") {
-            Self::PayloadTooLarge { size: 0, limit: 4096 }
+            Self::PayloadTooLarge {
+                size: 0,
+                limit: 4096,
+            }
         } else {
             Self::Provider(err_string)
         }
     }
 }
-

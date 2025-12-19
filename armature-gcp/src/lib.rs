@@ -57,7 +57,7 @@ mod config;
 mod error;
 mod services;
 
-pub use config::{GcpConfig, GcpConfigBuilder, CredentialsSource};
+pub use config::{CredentialsSource, GcpConfig, GcpConfigBuilder};
 pub use error::{GcpError, Result};
 pub use services::GcpServices;
 
@@ -73,4 +73,3 @@ pub use google_cloud_spanner;
 
 #[cfg(feature = "bigquery")]
 pub use google_cloud_bigquery;
-

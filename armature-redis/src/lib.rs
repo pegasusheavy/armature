@@ -87,8 +87,8 @@ mod service;
 
 pub use config::{RedisConfig, RedisConfigBuilder};
 pub use error::{RedisError, Result};
-pub use pool::{RedisPool, RedisConnection};
-pub use pubsub::{PubSub, Subscription, Message};
+pub use pool::{RedisConnection, RedisPool};
+pub use pubsub::{Message, PubSub, Subscription};
 pub use service::RedisService;
 
 // Re-export redis crate for convenience
@@ -108,4 +108,3 @@ pub mod prelude {
     pub use crate::service::RedisService;
     pub use redis::{AsyncCommands, Commands};
 }
-

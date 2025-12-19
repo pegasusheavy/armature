@@ -18,8 +18,8 @@
 //! let conn = db_manager.get_connection(&tenant).await?;
 //! ```
 
-use crate::tenant::Tenant;
 use crate::TenantError;
+use crate::tenant::Tenant;
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -209,7 +209,10 @@ mod tests {
     impl DatabaseProvider for MockDatabaseProvider {
         type Connection = String; // Mock connection
 
-        async fn get_connection(&self, database_name: &str) -> Result<Self::Connection, TenantError> {
+        async fn get_connection(
+            &self,
+            database_name: &str,
+        ) -> Result<Self::Connection, TenantError> {
             Ok(format!("Connection to {}", database_name))
         }
 
@@ -272,4 +275,3 @@ mod tests {
         assert!(exists);
     }
 }
-

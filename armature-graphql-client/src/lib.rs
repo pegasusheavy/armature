@@ -73,22 +73,21 @@
 //! }
 //! ```
 
+mod batch;
 mod client;
 mod config;
 mod error;
 mod request;
 mod response;
 mod subscription;
-mod batch;
 
+pub use batch::{BatchRequest, BatchResponse};
 pub use client::GraphQLClient;
 pub use config::{GraphQLClientConfig, GraphQLClientConfigBuilder};
 pub use error::{GraphQLError, Result};
-pub use request::{QueryBuilder, MutationBuilder, SubscriptionBuilder};
+pub use request::{MutationBuilder, QueryBuilder, SubscriptionBuilder};
 pub use response::{GraphQLResponse, GraphQLResponseError};
 pub use subscription::{Subscription, SubscriptionStream};
-pub use batch::{BatchRequest, BatchResponse};
 
 // Re-export common types
 pub use serde_json::Value as JsonValue;
-

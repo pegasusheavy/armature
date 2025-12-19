@@ -94,9 +94,8 @@ impl PushService {
             }
         }
 
-        Err(last_error.unwrap_or_else(|| {
-            PushError::Config("No push providers configured".to_string())
-        }))
+        Err(last_error
+            .unwrap_or_else(|| PushError::Config("No push providers configured".to_string())))
     }
 
     /// Send to a device token with platform hint.
@@ -128,7 +127,9 @@ impl PushService {
             .find(|p| p.platform() == Platform::Web)
             .ok_or_else(|| PushError::Config("No Web Push provider configured".to_string()))?;
 
-        provider.send_to_subscription(subscription, &notification).await
+        provider
+            .send_to_subscription(subscription, &notification)
+            .await
     }
 
     /// Send to multiple devices.

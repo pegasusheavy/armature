@@ -58,12 +58,12 @@
 //! ).await?;
 //! ```
 
-mod error;
-mod email;
 mod address;
 mod attachment;
-mod transport;
+mod email;
+mod error;
 mod mailer;
+mod transport;
 
 #[cfg(feature = "handlebars")]
 mod template_handlebars;
@@ -86,12 +86,12 @@ mod mailgun;
 #[cfg(feature = "queue")]
 mod queue;
 
-pub use error::{MailError, Result};
-pub use email::{Email, EmailBuilder};
-pub use address::{Address, Mailbox, IntoAddress};
+pub use address::{Address, IntoAddress, Mailbox};
 pub use attachment::{Attachment, ContentDisposition};
-pub use transport::{Transport, SmtpTransport, SmtpConfig, SmtpSecurity};
+pub use email::{Email, EmailBuilder};
+pub use error::{MailError, Result};
 pub use mailer::{Mailer, MailerConfig};
+pub use transport::{SmtpConfig, SmtpSecurity, SmtpTransport, Transport};
 
 #[cfg(feature = "handlebars")]
 pub use template_handlebars::HandlebarsEngine;
@@ -103,18 +103,18 @@ pub use template_tera::TeraEngine;
 pub use template_minijinja::MiniJinjaEngine;
 
 #[cfg(feature = "sendgrid")]
-pub use sendgrid::{SendGridTransport, SendGridConfig};
+pub use sendgrid::{SendGridConfig, SendGridTransport};
 
 #[cfg(feature = "ses")]
-pub use ses::{SesTransport, SesConfig};
+pub use ses::{SesConfig, SesTransport};
 
 #[cfg(feature = "mailgun")]
-pub use mailgun::{MailgunTransport, MailgunConfig};
+pub use mailgun::{MailgunConfig, MailgunTransport};
 
 #[cfg(feature = "queue")]
 pub use queue::{
-    EmailQueue, EmailQueueConfig, EmailQueueBackend, EmailQueueWorker,
-    EmailJob, QueueStats, InMemoryBackend, MailerQueueExt,
+    EmailJob, EmailQueue, EmailQueueBackend, EmailQueueConfig, EmailQueueWorker, InMemoryBackend,
+    MailerQueueExt, QueueStats,
 };
 
 #[cfg(feature = "redis")]
@@ -207,4 +207,3 @@ pub mod prelude {
     #[cfg(feature = "queue")]
     pub use crate::queue::{EmailJob, EmailQueue, EmailQueueBackend, EmailQueueConfig};
 }
-

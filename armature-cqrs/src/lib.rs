@@ -139,12 +139,12 @@
 //! ```
 
 pub mod command;
-pub mod query;
 pub mod projection;
+pub mod query;
 
 pub use command::{Command, CommandBus, CommandError, CommandHandler};
-pub use query::{Query, QueryBus, QueryError, QueryHandler};
 pub use projection::{Projection, ProjectionError, ProjectionEventHandler, ProjectionManager};
+pub use query::{Query, QueryBus, QueryError, QueryHandler};
 
 #[cfg(test)]
 mod tests {
@@ -153,4 +153,3 @@ mod tests {
         // Ensure module compiles
     }
 }
-

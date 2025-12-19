@@ -84,16 +84,17 @@ where
 
         // Strip base path if configured
         if let Some(base_path) = &self.config.function.base_path
-            && request.path.starts_with(base_path) {
-                request.path = request
-                    .path
-                    .strip_prefix(base_path)
-                    .unwrap_or(&request.path)
-                    .to_string();
-                if request.path.is_empty() {
-                    request.path = "/".to_string();
-                }
+            && request.path.starts_with(base_path)
+        {
+            request.path = request
+                .path
+                .strip_prefix(base_path)
+                .unwrap_or(&request.path)
+                .to_string();
+            if request.path.is_empty() {
+                request.path = "/".to_string();
             }
+        }
 
         // Log request if enabled
         if self.config.log_requests {
@@ -110,10 +111,7 @@ where
 
         // Log response if enabled
         if self.config.log_responses {
-            debug!(
-                status = response.status_code,
-                "Azure Function response"
-            );
+            debug!(status = response.status_code, "Azure Function response");
         }
 
         response
@@ -166,15 +164,10 @@ where
                 let service = service_fn(move |req| {
                     let app = app.clone();
                     let config = config.clone();
-                    async move {
-                        handle_http_request(app, config, req).await
-                    }
+                    async move { handle_http_request(app, config, req).await }
                 });
 
-                if let Err(e) = http1::Builder::new()
-                    .serve_connection(io, service)
-                    .await
-                {
+                if let Err(e) = http1::Builder::new().serve_connection(io, service).await {
                     error!("Connection error: {}", e);
                 }
             });
@@ -235,10 +228,7 @@ async fn handle_http_request<App: RequestHandler + 'static>(
     };
 
     // Handle request
-    let runtime = AzureFunctionsRuntime {
-        app,
-        config,
-    };
+    let runtime = AzureFunctionsRuntime { app, config };
     let response = runtime.handle(function_request).await;
 
     // Convert FunctionResponse to hyper response
@@ -296,16 +286,9 @@ macro_rules! impl_request_handler {
     ($app_type:ty) => {
         #[async_trait::async_trait]
         impl $crate::runtime::RequestHandler for $app_type {
-            async fn handle(
-                &self,
-                request: $crate::FunctionRequest,
-            ) -> $crate::FunctionResponse {
+            async fn handle(&self, request: $crate::FunctionRequest) -> $crate::FunctionResponse {
                 match self
-                    .handle_request(
-                        request.http_method(),
-                        &request.path,
-                        request.body,
-                    )
+                    .handle_request(request.http_method(), &request.path, request.body)
                     .await
                 {
                     Ok(response) => {
@@ -322,4 +305,3 @@ macro_rules! impl_request_handler {
         }
     };
 }
-

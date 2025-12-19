@@ -1,7 +1,7 @@
 //! Email message types.
 
-use serde::{Deserialize, Serialize};
 use crate::{Address, Attachment, IntoAddress, MailError, Result};
+use serde::{Deserialize, Serialize};
 
 /// Email message.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -361,4 +361,3 @@ mod tests {
         assert!(email.validate().is_err());
     }
 }
-

@@ -2,8 +2,8 @@
 
 use async_trait::async_trait;
 use lettre::{
-    transport::smtp::authentication::Credentials,
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
+    transport::smtp::authentication::Credentials,
 };
 use std::time::Duration;
 use tracing::{debug, info};
@@ -23,8 +23,7 @@ pub trait Transport: Send + Sync {
 }
 
 /// SMTP security mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SmtpSecurity {
     /// No encryption (port 25, not recommended).
     None,
@@ -34,7 +33,6 @@ pub enum SmtpSecurity {
     /// Implicit TLS (port 465).
     Tls,
 }
-
 
 /// SMTP configuration.
 #[derive(Debug, Clone)]
@@ -185,14 +183,10 @@ impl SmtpTransport {
             SmtpSecurity::StartTls => {
                 AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.host)?
             }
-            SmtpSecurity::Tls => {
-                AsyncSmtpTransport::<Tokio1Executor>::relay(&config.host)?
-            }
+            SmtpSecurity::Tls => AsyncSmtpTransport::<Tokio1Executor>::relay(&config.host)?,
         };
 
-        builder = builder
-            .port(config.port)
-            .timeout(Some(config.timeout));
+        builder = builder.port(config.port).timeout(Some(config.timeout));
 
         if let (Some(username), Some(password)) = (&config.username, &config.password) {
             builder = builder.credentials(Credentials::new(username.clone(), password.clone()));
@@ -273,4 +267,3 @@ mod tests {
         assert_eq!(sendgrid.username.as_deref(), Some("apikey"));
     }
 }
-

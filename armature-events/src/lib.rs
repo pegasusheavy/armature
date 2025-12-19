@@ -102,14 +102,14 @@
 //! }
 //! ```
 
-pub mod event;
 pub mod bus;
+pub mod event;
 
+pub use bus::{EventBus, EventBusBuilder, EventBusConfig, EventBusError};
 pub use event::{
     DomainEvent, DynEventHandler, Event, EventHandler, EventHandlerError, EventMetadata,
     TypedEventHandler,
 };
-pub use bus::{EventBus, EventBusBuilder, EventBusConfig, EventBusError};
 
 #[cfg(test)]
 mod tests {
@@ -118,4 +118,3 @@ mod tests {
         // Ensure module compiles
     }
 }
-

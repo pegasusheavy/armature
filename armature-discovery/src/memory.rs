@@ -40,12 +40,18 @@ impl Default for InMemoryDiscovery {
 #[async_trait]
 impl ServiceDiscovery for InMemoryDiscovery {
     async fn register(&self, service: &ServiceInstance) -> Result<(), DiscoveryError> {
-        self.services.write().await.insert(service.id.clone(), service.clone());
+        self.services
+            .write()
+            .await
+            .insert(service.id.clone(), service.clone());
         Ok(())
     }
 
     async fn deregister(&self, service_id: &str) -> Result<(), DiscoveryError> {
-        self.services.write().await.remove(service_id)
+        self.services
+            .write()
+            .await
+            .remove(service_id)
             .ok_or_else(|| DiscoveryError::ServiceNotFound(service_id.to_string()))?;
         Ok(())
     }
@@ -76,10 +82,7 @@ impl ServiceDiscovery for InMemoryDiscovery {
 
     async fn list_services(&self) -> Result<Vec<String>, DiscoveryError> {
         let services = self.services.read().await;
-        let mut service_names: Vec<String> = services
-            .values()
-            .map(|s| s.name.clone())
-            .collect();
+        let mut service_names: Vec<String> = services.values().map(|s| s.name.clone()).collect();
 
         service_names.sort();
         service_names.dedup();
@@ -124,4 +127,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-

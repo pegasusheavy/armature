@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Graceful Shutdown Example
 //!
 //! This example demonstrates graceful shutdown with:
@@ -45,32 +46,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Register shutdown hooks
     info!("\nRegistering shutdown hooks...");
 
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("Hook 1: Closing database connections");
-            tokio::time::sleep(Duration::from_millis(500)).await;
-            info!("Hook 1: Database connections closed");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("Hook 1: Closing database connections");
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                info!("Hook 1: Database connections closed");
+                Ok(())
+            })
+        }))
+        .await;
 
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("Hook 2: Flushing cache");
-            tokio::time::sleep(Duration::from_millis(300)).await;
-            info!("Hook 2: Cache flushed");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("Hook 2: Flushing cache");
+                tokio::time::sleep(Duration::from_millis(300)).await;
+                info!("Hook 2: Cache flushed");
+                Ok(())
+            })
+        }))
+        .await;
 
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("Hook 3: Cleaning up temporary files");
-            tokio::time::sleep(Duration::from_millis(200)).await;
-            info!("Hook 3: Temporary files cleaned");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("Hook 3: Cleaning up temporary files");
+                tokio::time::sleep(Duration::from_millis(200)).await;
+                info!("Hook 3: Temporary files cleaned");
+                Ok(())
+            })
+        }))
+        .await;
 
     info!("✓ 3 shutdown hooks registered");
 
@@ -91,7 +98,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Track this connection
                 let _guard = tracker.increment();
 
-                info!("Processing fast request (active: {})", tracker.active_count());
+                info!(
+                    "Processing fast request (active: {})",
+                    tracker.active_count()
+                );
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Fast response",
@@ -113,7 +123,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Track this connection
                 let _guard = tracker.increment();
 
-                info!("Processing slow request (active: {})", tracker.active_count());
+                info!(
+                    "Processing slow request (active: {})",
+                    tracker.active_count()
+                );
                 info!("This will take 5 seconds...");
 
                 // Simulate long processing

@@ -23,7 +23,10 @@ impl EtcdDiscovery {
     ///
     /// let etcd = EtcdDiscovery::new("http://localhost:2379", "/services")?;
     /// ```
-    pub fn new(base_url: impl Into<String>, prefix: impl Into<String>) -> Result<Self, DiscoveryError> {
+    pub fn new(
+        base_url: impl Into<String>,
+        prefix: impl Into<String>,
+    ) -> Result<Self, DiscoveryError> {
         Ok(Self {
             base_url: base_url.into(),
             prefix: prefix.into(),
@@ -63,7 +66,10 @@ impl ServiceDiscovery for EtcdDiscovery {
             info!("Registered service {} with etcd", service.id);
             Ok(())
         } else {
-            let error = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            let error = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
             Err(DiscoveryError::RegistrationFailed(error))
         }
     }
@@ -84,7 +90,10 @@ impl ServiceDiscovery for EtcdDiscovery {
             info!("Deregistered service {} from etcd", service_id);
             Ok(())
         } else {
-            let error = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            let error = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
             Err(DiscoveryError::DeregistrationFailed(error))
         }
     }
@@ -123,7 +132,8 @@ impl ServiceDiscovery for EtcdDiscovery {
             .unwrap_or_default()
             .into_iter()
             .map(|kv| {
-                let value_bytes = general_purpose::STANDARD.decode(&kv.value)
+                let value_bytes = general_purpose::STANDARD
+                    .decode(&kv.value)
                     .map_err(|e| DiscoveryError::InvalidConfiguration(e.to_string()))?;
                 let value_str = String::from_utf8(value_bytes)
                     .map_err(|e| DiscoveryError::InvalidConfiguration(e.to_string()))?;
@@ -137,7 +147,11 @@ impl ServiceDiscovery for EtcdDiscovery {
         if instances.is_empty() {
             Err(DiscoveryError::ServiceNotFound(service_name.to_string()))
         } else {
-            debug!("Discovered {} instances of service {}", instances.len(), service_name);
+            debug!(
+                "Discovered {} instances of service {}",
+                instances.len(),
+                service_name
+            );
             Ok(instances)
         }
     }
@@ -175,8 +189,9 @@ impl ServiceDiscovery for EtcdDiscovery {
             .and_then(|mut kvs| kvs.pop())
             .ok_or_else(|| DiscoveryError::ServiceNotFound(service_id.to_string()))?;
 
-        let value_bytes = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &kv.value)
-            .map_err(|e| DiscoveryError::InvalidConfiguration(e.to_string()))?;
+        let value_bytes =
+            base64::Engine::decode(&base64::engine::general_purpose::STANDARD, &kv.value)
+                .map_err(|e| DiscoveryError::InvalidConfiguration(e.to_string()))?;
         let value_str = String::from_utf8(value_bytes)
             .map_err(|e| DiscoveryError::InvalidConfiguration(e.to_string()))?;
         let instance: ServiceInstance = serde_json::from_str(&value_str)
@@ -192,7 +207,6 @@ impl ServiceDiscovery for EtcdDiscovery {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,4 +217,3 @@ mod tests {
         assert!(etcd.is_ok());
     }
 }
-
