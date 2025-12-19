@@ -514,6 +514,10 @@ harness = false
 name = "json_benchmarks"
 harness = false
 
+[[bench]]
+name = "arena_benchmarks"
+harness = false
+
 # Benchmark Examples
 [[example]]
 name = "benchmark_server"
