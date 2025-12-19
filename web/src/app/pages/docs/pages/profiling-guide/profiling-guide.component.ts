@@ -1,149 +1,98 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DocPageComponent, DocPage } from '../../shared/doc-page.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-profiling-guide',
   standalone: true,
-  imports: [CommonModule, DocPageComponent],
-  template: `<app-doc-page [page]="page"></app-doc-page>`
-})
-export class ProfilingGuideComponent {
-  page: DocPage = {
-    title: 'CPU Profiling',
-    subtitle: 'Profile your Armature application to identify performance bottlenecks and generate interactive flamegraphs.',
-    icon: '🔬',
-    badge: 'Performance',
-    features: [
-      { icon: '🔥', title: 'Flamegraphs', description: 'Interactive CPU visualization' },
-      { icon: '📊', title: 'Sampling Profiler', description: '1000 Hz CPU sampling' },
-      { icon: '🎯', title: 'Hotspot Detection', description: 'Find slow functions' },
-      { icon: '📈', title: 'Performance Analysis', description: 'Optimize critical paths' }
-    ],
-    sections: [
-      {
-        id: 'overview',
-        title: 'Overview',
-        content: `<p>CPU profiling helps you understand where your application spends time. Armature includes built-in profiling support using <code>pprof</code> that generates interactive flamegraphs.</p>
+  imports: [CommonModule, RouterModule],
+  template: `
+    <article class="doc-page">
+      <header class="doc-header">
+        <div class="doc-badge">Performance</div>
+        <h1><span class="doc-icon">🔬</span> CPU Profiling</h1>
+        <p class="doc-subtitle">Profile your Armature application to identify performance bottlenecks and generate interactive flamegraphs.</p>
+      </header>
+
+      <section class="doc-features">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="feature-icon">🔥</span>
+            <h3>Flamegraphs</h3>
+            <p>Interactive CPU visualization</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <h3>Sampling Profiler</h3>
+            <p>1000 Hz CPU sampling</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🎯</span>
+            <h3>Hotspot Detection</h3>
+            <p>Find slow functions</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">📈</span>
+            <h3>Performance Analysis</h3>
+            <p>Optimize critical paths</p>
+          </div>
+        </div>
+      </section>
+
+      <nav class="doc-toc">
+        <h2>Contents</h2>
+        <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#quick-start">Quick Start</a></li>
+          <li><a href="#setup">Adding Profiling</a></li>
+          <li><a href="#reading">Reading Flamegraphs</a></li>
+          <li><a href="#tips">Optimization Tips</a></li>
+        </ul>
+      </nav>
+
+      <section id="overview" class="doc-section">
+        <h2>Overview</h2>
+        <p>CPU profiling helps you understand where your application spends time. Armature includes built-in profiling support using <code>pprof</code> that generates interactive flamegraphs.</p>
         <p>A <strong>flamegraph</strong> is a visualization where:</p>
         <ul>
           <li>Each box represents a function in the call stack</li>
           <li>The width of a box shows how much CPU time was spent in that function</li>
           <li>Boxes are stacked to show the call hierarchy</li>
           <li>Wider boxes = more time = potential optimization targets</li>
-        </ul>`
-      },
-      {
-        id: 'quick-start',
-        title: 'Quick Start',
-        content: `<p>Run the built-in profiling server example:</p>`,
-        codeBlocks: [
-          {
-            language: 'bash',
-            code: `# Run the profiling server in release mode
+        </ul>
+      </section>
+
+      <section id="quick-start" class="doc-section">
+        <h2>Quick Start</h2>
+        <p>Run the built-in profiling server example:</p>
+        <pre><code class="language-bash"># Run the profiling server in release mode
 cargo run --example profiling_server --release
 
 # In another terminal, generate load
-for i in {1..1000}; do
+for i in &#123;&#123;1..1000&#125;&#125;; do
   curl -s http://localhost:PORT/tasks > /dev/null
 done
 
 # Press Ctrl+C to stop and generate flamegraph
-# Open flamegraph-profile.svg in your browser`
-          }
-        ]
-      },
-      {
-        id: 'setup',
-        title: 'Adding Profiling to Your App',
-        content: `<p>Add the profiling dependencies to your <code>Cargo.toml</code>:</p>`,
-        codeBlocks: [
-          {
-            language: 'toml',
-            filename: 'Cargo.toml',
-            code: `[dev-dependencies]
-pprof = { version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] }
+# Open flamegraph-profile.svg in your browser</code></pre>
+      </section>
+
+      <section id="setup" class="doc-section">
+        <h2>Adding Profiling to Your App</h2>
+        <p>Add the profiling dependencies to your <code>Cargo.toml</code>:</p>
+        <pre><code class="language-toml">[dev-dependencies]
+pprof = &#123; version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] &#125;
 ctrlc = "3.4"
 
 # Enable debug symbols in release for better stack traces
 [profile.profiling]
 inherits = "release"
-debug = true`
-          }
-        ]
-      },
-      {
-        id: 'integration',
-        title: 'Integrating the Profiler',
-        content: `<p>Wrap your application with the profiler:</p>`,
-        codeBlocks: [
-          {
-            language: 'rust',
-            code: `use pprof::ProfilerGuardBuilder;
-use std::fs::File;
+debug = true</code></pre>
+      </section>
 
-#[tokio::main]
-async fn main() {
-    // Start the CPU profiler
-    let guard = ProfilerGuardBuilder::default()
-        .frequency(1000)  // Sample 1000 times per second
-        .blocklist(&["libc", "libgcc", "pthread", "vdso"])
-        .build()
-        .expect("Failed to create profiler");
-
-    println!("Profiler started (1000 Hz sampling)");
-
-    // Set up Ctrl+C handler to generate flamegraph on exit
-    let guard = std::sync::Arc::new(std::sync::Mutex::new(Some(guard)));
-    let guard_clone = guard.clone();
-
-    ctrlc::set_handler(move || {
-        if let Some(guard) = guard_clone.lock().unwrap().take() {
-            println!("Generating flamegraph...");
-
-            if let Ok(report) = guard.report().build() {
-                let file = File::create("flamegraph.svg").unwrap();
-                report.flamegraph(file).unwrap();
-                println!("Saved to flamegraph.svg");
-            }
-        }
-        std::process::exit(0);
-    }).unwrap();
-
-    // Run your application
-    let app = Application::create::<AppModule>().await;
-    app.listen(3000).await.unwrap();
-}`
-          }
-        ]
-      },
-      {
-        id: 'load-testing',
-        title: 'Generating Load',
-        content: `<p>To get meaningful profiling data, you need to generate realistic load:</p>`,
-        codeBlocks: [
-          {
-            language: 'bash',
-            code: `# Simple load with curl
-for i in {1..1000}; do
-  curl -s http://localhost:3000/api/users > /dev/null
-done
-
-# Using wrk (recommended for high load)
-wrk -t4 -c100 -d30s http://localhost:3000/api/users
-
-# Using hey
-hey -n 10000 -c 100 http://localhost:3000/api/users
-
-# Using ab (Apache Bench)
-ab -n 10000 -c 100 http://localhost:3000/api/users`
-          }
-        ]
-      },
-      {
-        id: 'reading-flamegraphs',
-        title: 'Reading Flamegraphs',
-        content: `<p>Understanding the flamegraph output:</p>
+      <section id="reading" class="doc-section">
+        <h2>Reading Flamegraphs</h2>
+        <p>Understanding the flamegraph output:</p>
         <ul>
           <li><strong>X-axis:</strong> Stack frames sorted alphabetically (not time order)</li>
           <li><strong>Y-axis:</strong> Stack depth (callers below, callees above)</li>
@@ -156,77 +105,11 @@ ab -n 10000 -c 100 http://localhost:3000/api/users`
           <li><strong>Deep stacks</strong> — Complex call chains</li>
           <li><strong>Your code</strong> — Search for your module names</li>
         </ul>
-        <p>Common hotspots in web servers:</p>
-        <ul>
-          <li><code>serde_json::*</code> — JSON serialization/deserialization</li>
-          <li><code>httparse::*</code> — HTTP request parsing</li>
-          <li><code>tokio::*</code> — Async runtime overhead</li>
-          <li><code>hyper::*</code> — HTTP protocol handling</li>
-        </ul>`
-      },
-      {
-        id: 'profile-script',
-        title: 'Automated Profiling Script',
-        content: `<p>Use the included profiling script for convenience:</p>`,
-        codeBlocks: [
-          {
-            language: 'bash',
-            code: `# Run profiling for 30 seconds (default)
-./scripts/profile.sh
+      </section>
 
-# Run profiling for 60 seconds
-./scripts/profile.sh 60
-
-# The script will:
-# 1. Build in release mode with debug symbols
-# 2. Start the profiling server
-# 3. Generate load for the specified duration
-# 4. Stop the server and generate flamegraph
-# 5. Output the path to the SVG file`
-          }
-        ]
-      },
-      {
-        id: 'criterion-integration',
-        title: 'Profiling Benchmarks',
-        content: `<p>Integrate profiling with Criterion benchmarks:</p>`,
-        codeBlocks: [
-          {
-            language: 'rust',
-            filename: 'benches/my_benchmark.rs',
-            code: `use criterion::{criterion_group, criterion_main, Criterion};
-use pprof::criterion::{PProfProfiler, Output};
-
-fn my_benchmark(c: &mut Criterion) {
-    c.bench_function("my_function", |b| {
-        b.iter(|| {
-            // Your code to benchmark
-        })
-    });
-}
-
-criterion_group! {
-    name = benches;
-    config = Criterion::default()
-        .with_profiler(PProfProfiler::new(100, Output::Flamegraph(None)));
-    targets = my_benchmark
-}
-criterion_main!(benches);`
-          },
-          {
-            language: 'bash',
-            code: `# Run benchmark with profiling
-cargo bench --bench my_benchmark
-
-# Flamegraphs are saved in target/criterion/*/profile/`
-          }
-        ]
-      },
-      {
-        id: 'optimization-tips',
-        title: 'Optimization Tips',
-        content: `<p>Common optimizations based on profiling results:</p>
-        <table>
+      <section id="tips" class="doc-section">
+        <h2>Optimization Tips</h2>
+        <table class="doc-table">
           <thead>
             <tr>
               <th>Hotspot</th>
@@ -250,39 +133,343 @@ cargo bench --bench my_benchmark
               <td><code>HashMap</code></td>
               <td>Use <code>hashbrown</code> or <code>indexmap</code></td>
             </tr>
-            <tr>
-              <td>Regex compilation</td>
-              <td>Compile once with <code>lazy_static</code> or <code>once_cell</code></td>
-            </tr>
-            <tr>
-              <td>Database queries</td>
-              <td>Add indexes, use connection pooling</td>
-            </tr>
           </tbody>
-        </table>`
-      },
-      {
-        id: 'best-practices',
-        title: 'Best Practices',
-        content: `<ul>
+        </table>
+      </section>
+
+      <section class="doc-best-practices">
+        <h2>Best Practices</h2>
+        <ul>
           <li><strong>Profile in release mode</strong> — Debug builds are not representative</li>
           <li><strong>Enable debug symbols</strong> — Use <code>[profile.profiling]</code> for readable stack traces</li>
           <li><strong>Generate realistic load</strong> — Use production-like request patterns</li>
           <li><strong>Profile for adequate duration</strong> — At least 30 seconds for stable results</li>
           <li><strong>Compare before/after</strong> — Save flamegraphs to track improvements</li>
-          <li><strong>Focus on the biggest wins</strong> — Optimize the widest bars first</li>
-          <li><strong>Profile regularly</strong> — Catch regressions early</li>
-        </ul>`
-      }
-    ],
-    relatedDocs: [
-      { id: 'metrics-guide', title: 'Metrics', description: 'Runtime performance metrics' },
-      { id: 'testing-guide', title: 'Testing', description: 'Benchmark testing' }
-    ],
-    seeAlso: [
-      { title: 'Grafana Dashboards', id: 'grafana-dashboards' },
-      { title: 'OpenTelemetry', id: 'opentelemetry-guide' }
-    ]
-  };
-}
+        </ul>
+      </section>
 
+      <footer class="doc-footer">
+        <h3>Related Documentation</h3>
+        <div class="related-links">
+          <a routerLink="/docs/metrics-guide" class="related-link">
+            <span class="related-icon">📊</span>
+            <div>
+              <strong>Metrics</strong>
+              <span>Runtime performance metrics</span>
+            </div>
+          </a>
+          <a routerLink="/docs/testing-guide" class="related-link">
+            <span class="related-icon">🧪</span>
+            <div>
+              <strong>Testing</strong>
+              <span>Benchmark testing</span>
+            </div>
+          </a>
+        </div>
+      </footer>
+    </article>
+  `,
+  styles: [`
+    .doc-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .doc-header {
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .doc-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.25rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .doc-header h1 {
+      font-size: 2.5rem;
+      color: #1a1a2e;
+      margin-bottom: 1rem;
+    }
+
+    .doc-icon {
+      margin-right: 0.5rem;
+    }
+
+    .doc-subtitle {
+      font-size: 1.25rem;
+      color: #64748b;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .doc-features {
+      margin-bottom: 3rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: #f8fafc;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.75rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.125rem;
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .doc-toc {
+      background: #f1f5f9;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .doc-toc h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 1rem;
+    }
+
+    .doc-toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+    }
+
+    .doc-toc a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .doc-toc a:hover {
+      text-decoration: underline;
+    }
+
+    .doc-section {
+      margin-bottom: 3rem;
+    }
+
+    .doc-section h2 {
+      font-size: 1.75rem;
+      color: #1a1a2e;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .doc-section p {
+      color: #334155;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+
+    .doc-section ul {
+      color: #334155;
+      line-height: 1.75;
+      padding-left: 1.5rem;
+    }
+
+    .doc-section li {
+      margin-bottom: 0.5rem;
+    }
+
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.875rem;
+    }
+
+    :not(pre) > code {
+      background: #f1f5f9;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      color: #e11d48;
+    }
+
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+
+    .doc-table th,
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .doc-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .doc-table td {
+      color: #334155;
+    }
+
+    .doc-best-practices {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .doc-best-practices h2 {
+      color: #065f46;
+      border-bottom-color: #a7f3d0;
+    }
+
+    .doc-best-practices ul {
+      color: #065f46;
+    }
+
+    .doc-footer {
+      border-top: 2px solid #e2e8f0;
+      padding-top: 2rem;
+    }
+
+    .doc-footer h3 {
+      font-size: 1.25rem;
+      color: #1a1a2e;
+      margin-bottom: 1.5rem;
+    }
+
+    .related-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .related-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+
+    .related-link:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .related-icon {
+      font-size: 1.5rem;
+    }
+
+    .related-link strong {
+      display: block;
+      color: #1a1a2e;
+    }
+
+    .related-link span {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .doc-page {
+        color: #e2e8f0;
+      }
+
+      .doc-header h1,
+      .feature-card h3,
+      .doc-section h2,
+      .doc-table th,
+      .doc-footer h3,
+      .related-link strong {
+        color: #f1f5f9;
+      }
+
+      .doc-subtitle,
+      .feature-card p,
+      .doc-toc h2 {
+        color: #94a3b8;
+      }
+
+      .doc-section p,
+      .doc-section ul,
+      .doc-table td,
+      .related-link span {
+        color: #cbd5e1;
+      }
+
+      .feature-card,
+      .doc-toc,
+      .doc-table th,
+      .related-link {
+        background: #1e293b;
+        border-color: #334155;
+      }
+
+      :not(pre) > code {
+        background: #334155;
+      }
+
+      .doc-best-practices {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+      }
+
+      .doc-best-practices h2 {
+        color: #6ee7b7;
+        border-bottom-color: #047857;
+      }
+
+      .doc-best-practices ul {
+        color: #a7f3d0;
+      }
+
+      .doc-footer {
+        border-top-color: #334155;
+      }
+    }
+  `]
+})
+export class ProfilingGuideComponent {}
