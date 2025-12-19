@@ -154,6 +154,7 @@ pub mod module;
 pub mod pipeline;
 pub mod pagination;
 pub mod resilience;
+pub mod response_buffer;
 pub mod route_constraint;
 pub mod route_group;
 pub mod route_registry;
@@ -195,6 +196,10 @@ pub use resilience::{
     CircuitBreakerConfig, CircuitBreakerError, CircuitBreakerStats, CircuitState, Fallback,
     FallbackBuilder, FallbackChain, Retry, RetryConfig, RetryError, Timeout as ResilienceTimeout,
     TimeoutConfig, TimeoutError, fallback_default, fallback_value,
+};
+pub use response_buffer::{
+    ResponseBuffer, ResponseBuilder, DEFAULT_RESPONSE_CAPACITY,
+    MEDIUM_RESPONSE_CAPACITY, LARGE_RESPONSE_CAPACITY,
 };
 pub use route_constraint::*;
 pub use route_group::*;
