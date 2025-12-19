@@ -139,6 +139,7 @@ pub mod extractors;
 pub mod form;
 pub mod guard;
 pub mod handler;
+pub mod headers;
 pub mod health;
 pub mod json;
 pub mod simd_parser;
@@ -179,6 +180,7 @@ pub use extractors::{
 pub use form::*;
 pub use guard::*;
 pub use handler::{BoxedHandler, Handler, IntoHandler, OptimizedHandlerFn};
+pub use headers::{Header as HeaderEntry, HeaderMap, INLINE_HEADERS};
 pub use health::*;
 pub use hmr::*;
 pub use http::*;

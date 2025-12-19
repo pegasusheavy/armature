@@ -37,6 +37,7 @@ Only features that are **not yet completed**.
 | ✅ `io_uring` Backend | Linux io_uring support for reduced syscall overhead | `armature-core/src/io_uring.rs` |
 | ✅ Thread-local `BytesMut` Pool | Buffer pool for reduced allocation overhead | `armature-core/src/buffer_pool.rs` |
 | ✅ Zero-Copy Body Parsing | Lazy body, streaming, pooled buffer integration | `armature-core/src/body_parser.rs` |
+| ✅ SmallVec Headers | Stack-allocated headers (12 inline, no heap for typical requests) | `armature-core/src/headers.rs` |
 
 ---
 
@@ -207,7 +208,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Task | Estimated Impact | Effort |
 |----------|------|------------------|--------|
 | ✅ | Use `matchit` crate for O(log n) routing | +8-10% | Low |
-| 🔴 | Replace HashMap with `SmallVec<[_; 8]>` for headers | +3-5% | Medium |
+| ✅ | Replace HashMap with `SmallVec<[_; 12]>` for headers | +3-5% | Medium |
 | ✅ | Add `simd-json` feature flag for JSON | +2-3% | Low |
 | 🔴 | Pre-allocate response buffer (512 bytes default) | +1-2% | Low |
 
@@ -352,7 +353,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **24** | ✅ |
+| **Recently Completed** | **25** | ✅ |
 
 ### Performance Target
 
