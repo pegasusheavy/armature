@@ -206,9 +206,9 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Task | Estimated Impact | Effort |
 |----------|------|------------------|--------|
-| 🔴 | Use `matchit` crate for O(log n) routing | +8-10% | Low |
+| ✅ | Use `matchit` crate for O(log n) routing | +8-10% | Low |
 | 🔴 | Replace HashMap with `SmallVec<[_; 8]>` for headers | +3-5% | Medium |
-| 🔴 | Add `simd-json` feature flag for JSON | +2-3% | Low |
+| ✅ | Add `simd-json` feature flag for JSON | +2-3% | Low |
 | 🔴 | Pre-allocate response buffer (512 bytes default) | +1-2% | Low |
 
 **Phase 2: Buffer Management (Expected: +10% throughput)**
