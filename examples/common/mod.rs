@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 //! Common utilities for Armature examples.
 //!
 //! This module provides shared functionality used across multiple examples.
