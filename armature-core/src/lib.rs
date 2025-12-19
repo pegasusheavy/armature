@@ -154,6 +154,7 @@ pub mod module;
 pub mod pipeline;
 pub mod pagination;
 pub mod resilience;
+pub mod read_buffer;
 pub mod response_buffer;
 pub mod route_constraint;
 pub mod route_group;
@@ -199,6 +200,12 @@ pub use resilience::{
     CircuitBreakerConfig, CircuitBreakerError, CircuitBreakerStats, CircuitState, Fallback,
     FallbackBuilder, FallbackChain, Retry, RetryConfig, RetryError, Timeout as ResilienceTimeout,
     TimeoutConfig, TimeoutError, fallback_default, fallback_value,
+};
+pub use read_buffer::{
+    AdaptiveBufferSizer, BufferSizingStats, ContentCategory, PayloadTracker,
+    ReadBufferConfig, buffer_sizing_stats,
+    DEFAULT_INITIAL_BUFFER, HUGE_BUFFER, LARGE_BUFFER, MAX_BUFFER,
+    MEDIUM_BUFFER, MIN_BUFFER, SMALL_BUFFER, TINY_BUFFER,
 };
 pub use response_buffer::{
     ResponseBuffer, ResponseBuilder, DEFAULT_RESPONSE_CAPACITY,
