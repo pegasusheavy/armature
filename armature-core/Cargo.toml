@@ -21,6 +21,9 @@ memchr = "2.7"  # SIMD-optimized byte search
 
 # Optional SIMD JSON - significantly faster on x86_64 with AVX2
 simd-json = { version = "0.14", optional = true }
+
+# Arena allocator for per-request batch allocations
+bumpalo = { version = "3.16", features = ["collections"] }
 serde_urlencoded = "0.7"
 httpdate = "1.0"
 async-trait = "0.1"
