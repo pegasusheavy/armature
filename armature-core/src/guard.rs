@@ -333,7 +333,7 @@ mod tests {
                 body: vec![],
                 path_params: HashMap::new(),
                 query_params: HashMap::new(),
-            extensions: crate::Extensions::new(),
+                extensions: crate::Extensions::new(),
             };
             let context = GuardContext::new(request);
 

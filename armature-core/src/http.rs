@@ -15,7 +15,7 @@ pub struct HttpRequest {
     pub path_params: HashMap<String, String>,
     pub query_params: HashMap<String, String>,
     /// Type-safe extensions for storing application state.
-    /// 
+    ///
     /// Use this to pass typed data to handlers without DI container lookups.
     /// Access via the `State<T>` extractor for zero-cost state retrieval.
     pub extensions: Extensions,

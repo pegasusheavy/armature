@@ -1,3 +1,6 @@
+// Allow dead_code while CLI is under development
+#![allow(dead_code)]
+
 //! Armature CLI - Code generation and development tools for Armature framework.
 //!
 //! # Commands
@@ -1131,7 +1134,7 @@ fn run_add_command(args: AddArgs) -> CliResult<()> {
     }
 
     // Read current Cargo.toml
-    let cargo_toml = std::fs::read_to_string("Cargo.toml").map_err(|e| CliError::Io(e))?;
+    let cargo_toml = std::fs::read_to_string("Cargo.toml").map_err(CliError::Io)?;
 
     // Check if feature is already added
     if cargo_toml.contains(crate_name) {

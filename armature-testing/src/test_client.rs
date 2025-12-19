@@ -1,6 +1,6 @@
 // Test HTTP Client
 
-use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router};
+use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -54,6 +54,7 @@ impl TestClient {
             body: body.unwrap_or_default(),
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: Extensions::new(),
         };
 
         // Route the request
@@ -139,6 +140,7 @@ impl TestRequestBuilder {
             body: self.body,
             path_params: HashMap::new(),
             query_params: self.query_params,
+            extensions: Extensions::new(),
         }
     }
 }

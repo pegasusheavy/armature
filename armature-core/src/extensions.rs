@@ -192,10 +192,10 @@ mod tests {
     #[test]
     fn test_insert_and_get() {
         let mut ext = Extensions::new();
-        
+
         ext.insert(42i32);
         ext.insert("hello".to_string());
-        
+
         assert_eq!(ext.get::<i32>(), Some(&42));
         assert_eq!(ext.get::<String>(), Some(&"hello".to_string()));
         assert_eq!(ext.get::<f64>(), None);
@@ -204,17 +204,17 @@ mod tests {
     #[test]
     fn test_insert_replaces() {
         let mut ext = Extensions::new();
-        
+
         ext.insert(42i32);
         ext.insert(100i32);
-        
+
         assert_eq!(ext.get::<i32>(), Some(&100));
     }
 
     #[test]
     fn test_contains() {
         let mut ext = Extensions::new();
-        
+
         assert!(!ext.contains::<i32>());
         ext.insert(42i32);
         assert!(ext.contains::<i32>());
@@ -224,7 +224,7 @@ mod tests {
     fn test_remove() {
         let mut ext = Extensions::new();
         ext.insert(42i32);
-        
+
         let removed = ext.remove::<i32>();
         assert!(removed);
         assert!(!ext.contains::<i32>());
@@ -234,9 +234,9 @@ mod tests {
     fn test_arc_insert() {
         let mut ext = Extensions::new();
         let arc = Arc::new(42i32);
-        
+
         ext.insert_arc(arc.clone());
-        
+
         let retrieved = ext.get_arc::<i32>().unwrap();
         assert_eq!(*retrieved, 42);
     }
@@ -245,9 +245,8 @@ mod tests {
     fn test_clone() {
         let mut ext = Extensions::new();
         ext.insert(42i32);
-        
+
         let cloned = ext.clone();
         assert_eq!(cloned.get::<i32>(), Some(&42));
     }
 }
-

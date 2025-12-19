@@ -376,14 +376,7 @@ mod tests {
     }
 
     fn create_request(method: &str, path: &str) -> HttpRequest {
-        HttpRequest {
-            method: method.to_string(),
-            path: path.to_string(),
-            headers: HashMap::new(),
-            query_params: HashMap::new(),
-            body: Vec::new(),
-            path_params: HashMap::new(),
-        }
+        HttpRequest::new(method.to_string(), path.to_string())
     }
 
     #[tokio::test]
