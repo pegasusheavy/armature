@@ -1037,6 +1037,143 @@ mod tests {
         let limiter = StreamRateLimiter::new(1024); // 1KB/s
         assert_eq!(limiter.bytes_per_sec, 1024);
     }
+
+    // Advanced chunk optimization tests
+
+    #[test]
+    fn test_chunk_content_type_detection() {
+        assert_eq!(
+            ChunkContentType::from_mime("application/json"),
+            ChunkContentType::Json
+        );
+        assert_eq!(
+            ChunkContentType::from_mime("text/html"),
+            ChunkContentType::Html
+        );
+        assert_eq!(
+            ChunkContentType::from_mime("text/event-stream"),
+            ChunkContentType::RealTime
+        );
+        assert_eq!(
+            ChunkContentType::from_mime("video/mp4"),
+            ChunkContentType::Media
+        );
+        assert_eq!(
+            ChunkContentType::from_mime("application/octet-stream"),
+            ChunkContentType::Binary
+        );
+    }
+
+    #[test]
+    fn test_chunk_content_type_recommendations() {
+        let realtime = ChunkContentType::RealTime;
+        assert!(realtime.recommended_chunk_size() < CHUNK_SMALL);
+
+        let media = ChunkContentType::Media;
+        assert!(media.recommended_chunk_size() >= CHUNK_TCP_OPTIMAL);
+
+        let binary = ChunkContentType::Binary;
+        assert!(binary.recommended_chunk_size() >= CHUNK_LARGE);
+    }
+
+    #[test]
+    fn test_network_condition_from_rtt() {
+        assert_eq!(NetworkCondition::from_rtt_ms(5), NetworkCondition::Excellent);
+        assert_eq!(NetworkCondition::from_rtt_ms(30), NetworkCondition::Good);
+        assert_eq!(NetworkCondition::from_rtt_ms(80), NetworkCondition::Fair);
+        assert_eq!(NetworkCondition::from_rtt_ms(300), NetworkCondition::Poor);
+        assert_eq!(NetworkCondition::from_rtt_ms(1000), NetworkCondition::Terrible);
+    }
+
+    #[test]
+    fn test_network_condition_multipliers() {
+        assert!(NetworkCondition::Excellent.chunk_multiplier() > 1.0);
+        assert!((NetworkCondition::Good.chunk_multiplier() - 1.0).abs() < 0.01);
+        assert!(NetworkCondition::Poor.chunk_multiplier() < 1.0);
+    }
+
+    #[test]
+    fn test_adaptive_chunk_optimizer() {
+        let optimizer = AdaptiveChunkOptimizer::new(ChunkContentType::Json);
+        
+        // Default conditions
+        let size = optimizer.optimal_size();
+        assert!(size >= optimizer.min_chunk);
+        assert!(size <= optimizer.max_chunk);
+    }
+
+    #[test]
+    fn test_adaptive_optimizer_rtt_adaptation() {
+        let optimizer = AdaptiveChunkOptimizer::new(ChunkContentType::Binary);
+        
+        // Record poor network conditions
+        for _ in 0..5 {
+            optimizer.record_rtt(300);
+        }
+        
+        let poor_size = optimizer.optimal_size();
+        
+        // Record excellent conditions
+        for _ in 0..10 {
+            optimizer.record_rtt(5);
+        }
+        
+        let good_size = optimizer.optimal_size();
+        
+        // Good conditions should allow larger chunks
+        assert!(good_size >= poor_size);
+    }
+
+    #[test]
+    fn test_chunked_encoding_optimizer() {
+        let optimizer = ChunkedEncodingOptimizer::new();
+        
+        // Small data - single chunk
+        let plan = optimizer.optimal_for_data(500);
+        assert_eq!(plan.num_chunks, 1);
+        assert_eq!(plan.chunk_size, 500);
+        
+        // Data larger than max_chunk - multiple chunks
+        let large_data = optimizer.max_chunk * 3;
+        let plan = optimizer.optimal_for_data(large_data);
+        assert!(plan.num_chunks > 1);
+        assert!(plan.efficiency > 0.99);
+    }
+
+    #[test]
+    fn test_chunked_encoding_efficiency() {
+        // Small chunks have lower efficiency
+        let small_eff = ChunkedEncodingOptimizer::chunk_efficiency(100);
+        let large_eff = ChunkedEncodingOptimizer::chunk_efficiency(16384);
+        
+        assert!(large_eff > small_eff);
+        assert!(large_eff > 0.99); // Large chunks very efficient
+    }
+
+    #[test]
+    fn test_chunked_encoding_create_chunks() {
+        let optimizer = ChunkedEncodingOptimizer::new()
+            .target_chunk(100);
+        
+        let data = vec![0u8; 350];
+        let chunks = optimizer.create_chunks(&data);
+        
+        // Should create multiple chunks
+        assert!(chunks.len() >= 3);
+        
+        // Total size should match
+        let total: usize = chunks.iter().map(|c| c.len()).sum();
+        assert_eq!(total, 350);
+    }
+
+    #[test]
+    fn test_chunk_stats() {
+        let stats = chunk_stats();
+        let _ = stats.chunks_created();
+        let _ = stats.bytes_chunked();
+        let _ = stats.average_chunk_size();
+        let _ = stats.average_rtt();
+    }
 }
 
 // ============================================================================
@@ -1205,6 +1342,639 @@ impl Default for ChunkOptimizer {
     fn default() -> Self {
         Self::new(DEFAULT_MIN_CHUNK, DEFAULT_MAX_CHUNK)
     }
+}
+
+// ============================================================================
+// Advanced Chunk Size Optimization
+// ============================================================================
+
+/// Chunk size presets for different content types.
+pub const CHUNK_TINY: usize = 512;
+/// Small chunk for real-time data (1KB)
+pub const CHUNK_SMALL: usize = 1024;
+/// Medium chunk for mixed content (8KB)
+pub const CHUNK_MEDIUM: usize = 8 * 1024;
+/// Large chunk for bulk transfers (32KB)
+pub const CHUNK_LARGE: usize = 32 * 1024;
+/// Extra large chunk for static files (128KB)
+pub const CHUNK_XLARGE: usize = 128 * 1024;
+/// Optimal for TCP window (64KB - typical MSS multiple)
+pub const CHUNK_TCP_OPTIMAL: usize = 64 * 1024;
+
+/// Content type categories for chunk optimization.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChunkContentType {
+    /// Real-time event streams (SSE, WebSocket-like)
+    RealTime,
+    /// JSON data
+    Json,
+    /// HTML content
+    Html,
+    /// Plain text
+    Text,
+    /// Binary data (images, files)
+    Binary,
+    /// Streaming media (video, audio)
+    Media,
+    /// Unknown/generic
+    Unknown,
+}
+
+impl ChunkContentType {
+    /// Detect content type from MIME type string.
+    pub fn from_mime(mime: &str) -> Self {
+        let mime_lower = mime.to_lowercase();
+        if mime_lower.contains("text/event-stream") || mime_lower.contains("x-ndjson") {
+            Self::RealTime
+        } else if mime_lower.contains("json") {
+            Self::Json
+        } else if mime_lower.contains("html") {
+            Self::Html
+        } else if mime_lower.contains("text/") {
+            Self::Text
+        } else if mime_lower.contains("application/octet-stream")
+            || mime_lower.contains("image/")
+            || mime_lower.contains("font/")
+        {
+            Self::Binary
+        } else if mime_lower.contains("video/")
+            || mime_lower.contains("audio/")
+        {
+            Self::Media
+        } else {
+            Self::Unknown
+        }
+    }
+
+    /// Get recommended chunk size for this content type.
+    pub fn recommended_chunk_size(&self) -> usize {
+        match self {
+            Self::RealTime => CHUNK_TINY,    // 512B - minimize latency
+            Self::Json => CHUNK_MEDIUM,      // 8KB - balance latency/throughput
+            Self::Html => CHUNK_MEDIUM,      // 8KB - good for progressive rendering
+            Self::Text => CHUNK_SMALL,       // 1KB - line-oriented
+            Self::Binary => CHUNK_LARGE,     // 32KB - maximize throughput
+            Self::Media => CHUNK_TCP_OPTIMAL, // 64KB - optimal for streaming
+            Self::Unknown => DEFAULT_CHUNK_SIZE, // 16KB - safe default
+        }
+    }
+
+    /// Get minimum chunk size for this content type.
+    pub fn min_chunk_size(&self) -> usize {
+        match self {
+            Self::RealTime => 64,             // Can send very small updates
+            Self::Json => CHUNK_SMALL,       // At least one object
+            Self::Html => CHUNK_SMALL,       // At least one tag
+            Self::Text => 128,               // At least one line
+            Self::Binary => CHUNK_MEDIUM,    // Worth the overhead
+            Self::Media => CHUNK_MEDIUM,     // Minimize fragmentation
+            Self::Unknown => CHUNK_SMALL,    // Conservative
+        }
+    }
+
+    /// Get maximum chunk size for this content type.
+    pub fn max_chunk_size(&self) -> usize {
+        match self {
+            Self::RealTime => CHUNK_SMALL,   // Keep latency low
+            Self::Json => CHUNK_LARGE,       // Single objects can be large
+            Self::Html => CHUNK_LARGE,       // Full pages
+            Self::Text => CHUNK_MEDIUM,      // Not too large
+            Self::Binary => CHUNK_XLARGE,    // Large files
+            Self::Media => CHUNK_XLARGE,     // Video frames
+            Self::Unknown => CHUNK_LARGE,    // Safe default
+        }
+    }
+}
+
+/// Network condition estimate for adaptive chunking.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NetworkCondition {
+    /// Excellent (< 10ms RTT, > 100 Mbps)
+    Excellent,
+    /// Good (< 50ms RTT, > 10 Mbps)
+    Good,
+    /// Fair (< 100ms RTT, > 1 Mbps)
+    Fair,
+    /// Poor (< 500ms RTT, > 100 Kbps)
+    Poor,
+    /// Terrible (> 500ms RTT)
+    Terrible,
+    /// Unknown conditions
+    Unknown,
+}
+
+impl NetworkCondition {
+    /// Estimate condition from RTT in milliseconds.
+    pub fn from_rtt_ms(rtt_ms: u64) -> Self {
+        match rtt_ms {
+            0..=10 => Self::Excellent,
+            11..=50 => Self::Good,
+            51..=100 => Self::Fair,
+            101..=500 => Self::Poor,
+            _ => Self::Terrible,
+        }
+    }
+
+    /// Estimate condition from throughput in bytes/sec.
+    pub fn from_throughput(bytes_per_sec: u64) -> Self {
+        match bytes_per_sec {
+            x if x > 12_500_000 => Self::Excellent, // > 100 Mbps
+            x if x > 1_250_000 => Self::Good,       // > 10 Mbps
+            x if x > 125_000 => Self::Fair,         // > 1 Mbps
+            x if x > 12_500 => Self::Poor,          // > 100 Kbps
+            _ => Self::Terrible,
+        }
+    }
+
+    /// Get recommended chunk size multiplier.
+    pub fn chunk_multiplier(&self) -> f32 {
+        match self {
+            Self::Excellent => 2.0,  // Larger chunks, fewer round trips
+            Self::Good => 1.0,       // Default sizes
+            Self::Fair => 0.75,      // Slightly smaller
+            Self::Poor => 0.5,       // Smaller chunks, faster feedback
+            Self::Terrible => 0.25,  // Very small, prevent timeouts
+            Self::Unknown => 1.0,    // Default
+        }
+    }
+}
+
+/// Advanced chunk size optimizer with adaptive sizing.
+#[derive(Debug)]
+pub struct AdaptiveChunkOptimizer {
+    /// Content type for optimization
+    content_type: ChunkContentType,
+    /// Current network condition estimate
+    network_condition: std::sync::atomic::AtomicU8,
+    /// Base chunk size
+    base_chunk: usize,
+    /// Minimum allowed chunk
+    min_chunk: usize,
+    /// Maximum allowed chunk
+    max_chunk: usize,
+    /// RTT samples (circular buffer of last 16)
+    rtt_samples: std::sync::Mutex<RttTracker>,
+    /// Throughput tracker
+    throughput_tracker: ThroughputTracker,
+    /// Bytes sent
+    bytes_sent: AtomicU64,
+    /// Chunks sent
+    chunks_sent: AtomicU64,
+}
+
+impl AdaptiveChunkOptimizer {
+    /// Create a new adaptive optimizer.
+    pub fn new(content_type: ChunkContentType) -> Self {
+        Self {
+            min_chunk: content_type.min_chunk_size(),
+            max_chunk: content_type.max_chunk_size(),
+            base_chunk: content_type.recommended_chunk_size(),
+            content_type,
+            network_condition: std::sync::atomic::AtomicU8::new(NetworkCondition::Unknown as u8),
+            rtt_samples: std::sync::Mutex::new(RttTracker::new()),
+            throughput_tracker: ThroughputTracker::new(),
+            bytes_sent: AtomicU64::new(0),
+            chunks_sent: AtomicU64::new(0),
+        }
+    }
+
+    /// Create from MIME type.
+    pub fn from_mime(mime: &str) -> Self {
+        Self::new(ChunkContentType::from_mime(mime))
+    }
+
+    /// Create with custom bounds.
+    pub fn with_bounds(mut self, min: usize, max: usize) -> Self {
+        self.min_chunk = min;
+        self.max_chunk = max;
+        self
+    }
+
+    /// Set base chunk size.
+    pub fn with_base_chunk(mut self, base: usize) -> Self {
+        self.base_chunk = base;
+        self
+    }
+
+    /// Calculate optimal chunk size.
+    #[inline]
+    pub fn optimal_size(&self) -> usize {
+        let condition = self.current_condition();
+        let multiplier = condition.chunk_multiplier();
+        let optimal = (self.base_chunk as f32 * multiplier) as usize;
+        optimal.clamp(self.min_chunk, self.max_chunk)
+    }
+
+    /// Calculate optimal chunk size for given data.
+    #[inline]
+    pub fn optimal_for_data(&self, data_len: usize) -> usize {
+        let optimal = self.optimal_size();
+        // Don't create tiny final chunks
+        if data_len <= optimal * 3 / 2 {
+            data_len // Send all at once
+        } else {
+            optimal
+        }
+    }
+
+    /// Record RTT sample for adaptive sizing.
+    pub fn record_rtt(&self, rtt_ms: u64) {
+        let mut tracker = self.rtt_samples.lock().unwrap();
+        tracker.add_sample(rtt_ms);
+        let avg_rtt = tracker.average();
+        let condition = NetworkCondition::from_rtt_ms(avg_rtt);
+        self.network_condition
+            .store(condition as u8, Ordering::Relaxed);
+        CHUNK_STATS.record_rtt_sample(rtt_ms);
+    }
+
+    /// Record throughput sample.
+    pub fn record_throughput(&self, bytes: usize, duration_ms: u64) {
+        if duration_ms > 0 {
+            let bytes_per_sec = (bytes as u64 * 1000) / duration_ms;
+            self.throughput_tracker.record(bytes_per_sec);
+            // Update condition based on throughput too
+            let throughput_condition = NetworkCondition::from_throughput(bytes_per_sec);
+            let rtt_condition = self.current_condition();
+            // Use worse of the two estimates
+            let combined = if (throughput_condition as u8) > (rtt_condition as u8) {
+                throughput_condition
+            } else {
+                rtt_condition
+            };
+            self.network_condition
+                .store(combined as u8, Ordering::Relaxed);
+        }
+    }
+
+    /// Record a chunk being sent.
+    pub fn record_chunk(&self, size: usize) {
+        self.bytes_sent.fetch_add(size as u64, Ordering::Relaxed);
+        self.chunks_sent.fetch_add(1, Ordering::Relaxed);
+        CHUNK_STATS.record_chunk(size);
+    }
+
+    /// Get current network condition estimate.
+    pub fn current_condition(&self) -> NetworkCondition {
+        let val = self.network_condition.load(Ordering::Relaxed);
+        match val {
+            0 => NetworkCondition::Excellent,
+            1 => NetworkCondition::Good,
+            2 => NetworkCondition::Fair,
+            3 => NetworkCondition::Poor,
+            4 => NetworkCondition::Terrible,
+            _ => NetworkCondition::Unknown,
+        }
+    }
+
+    /// Get average RTT.
+    pub fn average_rtt(&self) -> u64 {
+        self.rtt_samples.lock().unwrap().average()
+    }
+
+    /// Get estimated throughput (bytes/sec).
+    pub fn estimated_throughput(&self) -> u64 {
+        self.throughput_tracker.average()
+    }
+
+    /// Get total bytes sent.
+    pub fn bytes_sent(&self) -> u64 {
+        self.bytes_sent.load(Ordering::Relaxed)
+    }
+
+    /// Get total chunks sent.
+    pub fn chunks_sent(&self) -> u64 {
+        self.chunks_sent.load(Ordering::Relaxed)
+    }
+
+    /// Get average chunk size.
+    pub fn average_chunk_size(&self) -> usize {
+        let chunks = self.chunks_sent();
+        if chunks > 0 {
+            (self.bytes_sent() / chunks) as usize
+        } else {
+            self.base_chunk
+        }
+    }
+
+    /// Get content type.
+    pub fn content_type(&self) -> ChunkContentType {
+        self.content_type
+    }
+}
+
+/// Circular buffer for RTT tracking.
+#[derive(Debug)]
+struct RttTracker {
+    samples: [u64; 16],
+    index: usize,
+    count: usize,
+}
+
+impl RttTracker {
+    fn new() -> Self {
+        Self {
+            samples: [0; 16],
+            index: 0,
+            count: 0,
+        }
+    }
+
+    fn add_sample(&mut self, rtt_ms: u64) {
+        self.samples[self.index] = rtt_ms;
+        self.index = (self.index + 1) % 16;
+        if self.count < 16 {
+            self.count += 1;
+        }
+    }
+
+    fn average(&self) -> u64 {
+        if self.count == 0 {
+            return 50; // Default assumption
+        }
+        let sum: u64 = self.samples[..self.count].iter().sum();
+        sum / self.count as u64
+    }
+}
+
+/// Throughput tracking.
+#[derive(Debug)]
+struct ThroughputTracker {
+    samples: std::sync::Mutex<Vec<u64>>,
+    max_samples: usize,
+}
+
+impl ThroughputTracker {
+    fn new() -> Self {
+        Self {
+            samples: std::sync::Mutex::new(Vec::with_capacity(16)),
+            max_samples: 16,
+        }
+    }
+
+    fn record(&self, bytes_per_sec: u64) {
+        let mut samples = self.samples.lock().unwrap();
+        if samples.len() >= self.max_samples {
+            samples.remove(0);
+        }
+        samples.push(bytes_per_sec);
+    }
+
+    fn average(&self) -> u64 {
+        let samples = self.samples.lock().unwrap();
+        if samples.is_empty() {
+            return 0;
+        }
+        let sum: u64 = samples.iter().sum();
+        sum / samples.len() as u64
+    }
+}
+
+// ============================================================================
+// HTTP Chunked Encoding Optimizer
+// ============================================================================
+
+/// Optimizes chunks specifically for HTTP chunked transfer encoding.
+///
+/// HTTP chunked encoding has overhead per chunk:
+/// - Chunk size in hex + CRLF (variable, typically 1-8 bytes)
+/// - Chunk data
+/// - CRLF (2 bytes)
+///
+/// Total overhead per chunk: ~4-10 bytes
+#[derive(Debug, Clone)]
+pub struct ChunkedEncodingOptimizer {
+    /// Minimum chunk to justify encoding overhead
+    pub min_chunk: usize,
+    /// Target chunk size
+    pub target_chunk: usize,
+    /// Maximum chunk size
+    pub max_chunk: usize,
+    /// Overhead threshold (minimum efficiency %)
+    pub min_efficiency: f32,
+}
+
+impl ChunkedEncodingOptimizer {
+    /// Create a new optimizer.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set target chunk size.
+    pub fn target_chunk(mut self, size: usize) -> Self {
+        self.target_chunk = size;
+        self
+    }
+
+    /// Set minimum efficiency (0.0-1.0).
+    pub fn min_efficiency(mut self, efficiency: f32) -> Self {
+        self.min_efficiency = efficiency.clamp(0.5, 1.0);
+        self
+    }
+
+    /// Calculate overhead for a chunk size.
+    #[inline]
+    pub fn chunk_overhead(chunk_size: usize) -> usize {
+        // hex size + CRLF + data + CRLF
+        let hex_digits = if chunk_size == 0 {
+            1
+        } else {
+            (chunk_size as f64).log(16.0).floor() as usize + 1
+        };
+        hex_digits + 4 // hex + CRLF + CRLF
+    }
+
+    /// Calculate efficiency for a chunk size.
+    #[inline]
+    pub fn chunk_efficiency(chunk_size: usize) -> f32 {
+        if chunk_size == 0 {
+            return 0.0;
+        }
+        let overhead = Self::chunk_overhead(chunk_size);
+        chunk_size as f32 / (chunk_size + overhead) as f32
+    }
+
+    /// Calculate optimal chunk size for given data.
+    pub fn optimal_for_data(&self, data_len: usize) -> ChunkingPlan {
+        if data_len == 0 {
+            return ChunkingPlan {
+                chunk_size: 0,
+                num_chunks: 0,
+                final_chunk: 0,
+                efficiency: 1.0,
+            };
+        }
+
+        // If data fits in one chunk efficiently, send it all
+        if data_len <= self.max_chunk {
+            let eff = Self::chunk_efficiency(data_len);
+            if eff >= self.min_efficiency {
+                return ChunkingPlan {
+                    chunk_size: data_len,
+                    num_chunks: 1,
+                    final_chunk: 0,
+                    efficiency: eff,
+                };
+            }
+        }
+
+        // Calculate number of chunks at target size
+        let target = self.target_chunk.min(data_len);
+        let num_chunks = data_len / target;
+        let remainder = data_len % target;
+
+        // Avoid tiny final chunk
+        let (chunk_size, final_chunk) = if remainder > 0 && remainder < self.min_chunk {
+            // Redistribute to avoid tiny chunk
+            let adjusted_chunks = num_chunks;
+            let adjusted_size = data_len / adjusted_chunks;
+            let adjusted_remainder = data_len % adjusted_chunks;
+            (adjusted_size, adjusted_remainder)
+        } else {
+            (target, remainder)
+        };
+
+        let total_chunks = if final_chunk > 0 {
+            num_chunks + 1
+        } else {
+            num_chunks
+        };
+        let total_overhead = total_chunks * Self::chunk_overhead(chunk_size);
+        let efficiency = data_len as f32 / (data_len + total_overhead) as f32;
+
+        ChunkingPlan {
+            chunk_size,
+            num_chunks: total_chunks,
+            final_chunk,
+            efficiency,
+        }
+    }
+
+    /// Create chunks from data following the optimal plan.
+    pub fn create_chunks(&self, data: &[u8]) -> Vec<Bytes> {
+        let plan = self.optimal_for_data(data.len());
+        if plan.num_chunks == 0 {
+            return vec![];
+        }
+
+        let mut chunks = Vec::with_capacity(plan.num_chunks);
+        let mut offset = 0;
+
+        for i in 0..plan.num_chunks {
+            let size = if i == plan.num_chunks - 1 && plan.final_chunk > 0 {
+                plan.final_chunk
+            } else {
+                plan.chunk_size
+            };
+            chunks.push(Bytes::copy_from_slice(&data[offset..offset + size]));
+            offset += size;
+        }
+
+        chunks
+    }
+}
+
+impl Default for ChunkedEncodingOptimizer {
+    fn default() -> Self {
+        Self {
+            min_chunk: CHUNK_SMALL,                        // 1KB minimum
+            target_chunk: DEFAULT_CHUNK_SIZE,              // 16KB target
+            max_chunk: CHUNK_XLARGE,                       // 128KB max
+            min_efficiency: 0.99,                          // 99% efficiency
+        }
+    }
+}
+
+/// Plan for chunking data.
+#[derive(Debug, Clone, Copy)]
+pub struct ChunkingPlan {
+    /// Size of each chunk (except possibly final)
+    pub chunk_size: usize,
+    /// Total number of chunks
+    pub num_chunks: usize,
+    /// Size of final chunk (0 if evenly divisible)
+    pub final_chunk: usize,
+    /// Overall efficiency (data / total bytes)
+    pub efficiency: f32,
+}
+
+impl ChunkingPlan {
+    /// Get total overhead in bytes.
+    pub fn total_overhead(&self) -> usize {
+        self.num_chunks * ChunkedEncodingOptimizer::chunk_overhead(self.chunk_size)
+    }
+}
+
+// ============================================================================
+// Global Chunk Statistics
+// ============================================================================
+
+/// Global statistics for chunk optimization.
+#[derive(Debug, Default)]
+pub struct ChunkStats {
+    /// Total chunks created
+    chunks_created: AtomicU64,
+    /// Total bytes chunked
+    bytes_chunked: AtomicU64,
+    /// RTT samples recorded
+    rtt_samples: AtomicU64,
+    /// Total RTT sum (for averaging)
+    rtt_sum: AtomicU64,
+}
+
+impl ChunkStats {
+    fn record_chunk(&self, size: usize) {
+        self.chunks_created.fetch_add(1, Ordering::Relaxed);
+        self.bytes_chunked.fetch_add(size as u64, Ordering::Relaxed);
+    }
+
+    fn record_rtt_sample(&self, rtt_ms: u64) {
+        self.rtt_samples.fetch_add(1, Ordering::Relaxed);
+        self.rtt_sum.fetch_add(rtt_ms, Ordering::Relaxed);
+    }
+
+    /// Get total chunks created.
+    pub fn chunks_created(&self) -> u64 {
+        self.chunks_created.load(Ordering::Relaxed)
+    }
+
+    /// Get total bytes chunked.
+    pub fn bytes_chunked(&self) -> u64 {
+        self.bytes_chunked.load(Ordering::Relaxed)
+    }
+
+    /// Get average chunk size.
+    pub fn average_chunk_size(&self) -> usize {
+        let chunks = self.chunks_created();
+        if chunks > 0 {
+            (self.bytes_chunked() / chunks) as usize
+        } else {
+            0
+        }
+    }
+
+    /// Get average RTT.
+    pub fn average_rtt(&self) -> u64 {
+        let samples = self.rtt_samples.load(Ordering::Relaxed);
+        if samples > 0 {
+            self.rtt_sum.load(Ordering::Relaxed) / samples
+        } else {
+            0
+        }
+    }
+}
+
+/// Global chunk statistics.
+static CHUNK_STATS: ChunkStats = ChunkStats {
+    chunks_created: AtomicU64::new(0),
+    bytes_chunked: AtomicU64::new(0),
+    rtt_samples: AtomicU64::new(0),
+    rtt_sum: AtomicU64::new(0),
+};
+
+/// Get global chunk statistics.
+pub fn chunk_stats() -> &'static ChunkStats {
+    &CHUNK_STATS
 }
 
 // ============================================================================
