@@ -124,7 +124,10 @@ impl Backend {
     pub fn validate(&self) -> Result<()> {
         Url::parse(&self.url)?;
         if self.weight == 0 {
-            return Err(FerronError::invalid_config("weight", "must be greater than 0"));
+            return Err(FerronError::invalid_config(
+                "weight",
+                "must be greater than 0",
+            ));
         }
         Ok(())
     }
@@ -609,8 +612,7 @@ impl FerronConfig {
                 if let Some(threshold) = lb.health_check_threshold {
                     hc_line.push_str(&format!(" threshold={}", threshold));
                 }
-                writeln!(output, "{}", hc_line)
-                    .map_err(|e| FerronError::config(e.to_string()))?;
+                writeln!(output, "{}", hc_line).map_err(|e| FerronError::config(e.to_string()))?;
             }
         } else if let Some(ref backend) = self.backend {
             writeln!(output, "    proxy \"{}\"", backend)
@@ -624,8 +626,12 @@ impl FerronConfig {
                 loc_attrs.push_str(" remove_base=true");
             }
 
-            writeln!(output, "    location \"{}\"{}  {{", location.path, loc_attrs)
-                .map_err(|e| FerronError::config(e.to_string()))?;
+            writeln!(
+                output,
+                "    location \"{}\"{}  {{",
+                location.path, loc_attrs
+            )
+            .map_err(|e| FerronError::config(e.to_string()))?;
 
             if let Some(ref proxy) = location.proxy {
                 writeln!(output, "        proxy \"{}\"", proxy)
@@ -708,7 +714,9 @@ impl FerronConfigBuilder {
 
     /// Add multiple domains
     pub fn domains(mut self, domains: impl IntoIterator<Item = impl Into<String>>) -> Self {
-        self.config.domains.extend(domains.into_iter().map(Into::into));
+        self.config
+            .domains
+            .extend(domains.into_iter().map(Into::into));
         self
     }
 
@@ -903,4 +911,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-

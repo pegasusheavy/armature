@@ -261,16 +261,17 @@ impl FerronProcess {
                 while let Ok(Some(line)) = lines.next_line().await {
                     debug!("[ferron] {}", line);
                     if let Some(ref log_path) = stdout_log {
-                        if let Err(e) =
-                            tokio::fs::OpenOptions::new()
-                                .create(true)
-                                .append(true)
-                                .open(log_path)
-                                .await
-                                .and_then(|mut f| {
-                                    use tokio::io::AsyncWriteExt;
-                                    futures::executor::block_on(f.write_all(format!("{}\n", line).as_bytes()))
-                                })
+                        if let Err(e) = tokio::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(log_path)
+                            .await
+                            .and_then(|mut f| {
+                                use tokio::io::AsyncWriteExt;
+                                futures::executor::block_on(
+                                    f.write_all(format!("{}\n", line).as_bytes()),
+                                )
+                            })
                         {
                             warn!("Failed to write to stdout log: {}", e);
                         }
@@ -287,16 +288,17 @@ impl FerronProcess {
                 while let Ok(Some(line)) = lines.next_line().await {
                     warn!("[ferron] {}", line);
                     if let Some(ref log_path) = stderr_log {
-                        if let Err(e) =
-                            tokio::fs::OpenOptions::new()
-                                .create(true)
-                                .append(true)
-                                .open(log_path)
-                                .await
-                                .and_then(|mut f| {
-                                    use tokio::io::AsyncWriteExt;
-                                    futures::executor::block_on(f.write_all(format!("{}\n", line).as_bytes()))
-                                })
+                        if let Err(e) = tokio::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(log_path)
+                            .await
+                            .and_then(|mut f| {
+                                use tokio::io::AsyncWriteExt;
+                                futures::executor::block_on(
+                                    f.write_all(format!("{}\n", line).as_bytes()),
+                                )
+                            })
                         {
                             warn!("Failed to write to stderr log: {}", e);
                         }
@@ -335,11 +337,8 @@ impl FerronProcess {
             }
 
             // Wait for process to exit (with timeout)
-            let timeout = tokio::time::timeout(
-                std::time::Duration::from_secs(10),
-                child.wait(),
-            )
-            .await;
+            let timeout =
+                tokio::time::timeout(std::time::Duration::from_secs(10), child.wait()).await;
 
             match timeout {
                 Ok(Ok(_)) => {
@@ -507,7 +506,9 @@ impl FerronProcess {
 
 /// Check if Ferron is installed and available
 pub async fn check_ferron_installed(path: Option<&Path>) -> Result<String> {
-    let binary = path.map(|p| p.to_path_buf()).unwrap_or_else(|| PathBuf::from("ferron"));
+    let binary = path
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| PathBuf::from("ferron"));
 
     let output = Command::new(&binary)
         .arg("--version")
@@ -543,10 +544,7 @@ mod tests {
         assert_eq!(config.config_path, PathBuf::from("/etc/ferron/ferron.conf"));
         assert_eq!(config.working_dir, Some(PathBuf::from("/var/www")));
         assert_eq!(config.extra_args, vec!["--verbose".to_string()]);
-        assert_eq!(
-            config.env_vars.get("RUST_LOG"),
-            Some(&"debug".to_string())
-        );
+        assert_eq!(config.env_vars.get("RUST_LOG"), Some(&"debug".to_string()));
         assert!(config.auto_restart);
         assert_eq!(config.max_restarts, 5);
     }
@@ -560,4 +558,3 @@ mod tests {
         assert!(process.pid().await.is_none());
     }
 }
-

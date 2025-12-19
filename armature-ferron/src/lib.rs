@@ -115,4 +115,3 @@ pub mod prelude {
     pub use crate::process::{FerronProcess, ProcessConfig, ProcessStatus};
     pub use crate::registry::{ServiceInstance, ServiceRegistry};
 }
-

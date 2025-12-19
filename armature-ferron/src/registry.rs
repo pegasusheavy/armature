@@ -163,10 +163,7 @@ impl ServiceRegistry {
         if let Some(instances) = services.get_mut(service_name) {
             if let Some(instance) = instances.get_mut(instance_id) {
                 instance.heartbeat();
-                debug!(
-                    "Updated heartbeat for {}:{}",
-                    service_name, instance_id
-                );
+                debug!("Updated heartbeat for {}:{}", service_name, instance_id);
                 return Ok(());
             }
         }
@@ -365,7 +362,10 @@ mod tests {
     async fn test_register_and_get() {
         let registry = ServiceRegistry::new();
 
-        let id = registry.register("api", "http://localhost:3000").await.unwrap();
+        let id = registry
+            .register("api", "http://localhost:3000")
+            .await
+            .unwrap();
         assert!(!id.is_empty());
 
         let instances = registry.get_instances("api").await;
@@ -377,7 +377,10 @@ mod tests {
     async fn test_deregister() {
         let registry = ServiceRegistry::new();
 
-        let id = registry.register("api", "http://localhost:3000").await.unwrap();
+        let id = registry
+            .register("api", "http://localhost:3000")
+            .await
+            .unwrap();
         assert_eq!(registry.get_instances("api").await.len(), 1);
 
         registry.deregister("api", &id).await.unwrap();
@@ -388,7 +391,10 @@ mod tests {
     async fn test_health_marking() {
         let registry = ServiceRegistry::new();
 
-        let id = registry.register("api", "http://localhost:3000").await.unwrap();
+        let id = registry
+            .register("api", "http://localhost:3000")
+            .await
+            .unwrap();
 
         registry.mark_unhealthy("api", &id).await.unwrap();
         assert_eq!(registry.get_healthy_instances("api").await.len(), 0);
@@ -401,9 +407,18 @@ mod tests {
     async fn test_multiple_instances() {
         let registry = ServiceRegistry::new();
 
-        registry.register("api", "http://localhost:3001").await.unwrap();
-        registry.register("api", "http://localhost:3002").await.unwrap();
-        registry.register("api", "http://localhost:3003").await.unwrap();
+        registry
+            .register("api", "http://localhost:3001")
+            .await
+            .unwrap();
+        registry
+            .register("api", "http://localhost:3002")
+            .await
+            .unwrap();
+        registry
+            .register("api", "http://localhost:3003")
+            .await
+            .unwrap();
 
         assert_eq!(registry.get_instances("api").await.len(), 3);
 
@@ -417,9 +432,18 @@ mod tests {
     async fn test_stats() {
         let registry = ServiceRegistry::new();
 
-        let id1 = registry.register("api", "http://localhost:3001").await.unwrap();
-        registry.register("api", "http://localhost:3002").await.unwrap();
-        registry.register("web", "http://localhost:8080").await.unwrap();
+        let id1 = registry
+            .register("api", "http://localhost:3001")
+            .await
+            .unwrap();
+        registry
+            .register("api", "http://localhost:3002")
+            .await
+            .unwrap();
+        registry
+            .register("web", "http://localhost:8080")
+            .await
+            .unwrap();
 
         registry.mark_unhealthy("api", &id1).await.unwrap();
 
@@ -440,11 +464,7 @@ mod tests {
         assert_eq!(instance.service_name, "api");
         assert_eq!(instance.url, "http://localhost:3000");
         assert_eq!(instance.weight, 3);
-        assert_eq!(
-            instance.metadata.get("version"),
-            Some(&"1.0.0".to_string())
-        );
+        assert_eq!(instance.metadata.get("version"), Some(&"1.0.0".to_string()));
         assert!(instance.tags.contains(&"production".to_string()));
     }
 }
-
