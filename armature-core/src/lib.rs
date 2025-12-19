@@ -132,6 +132,7 @@ pub mod body;
 pub mod body_limits;
 pub mod body_parser;
 pub mod buffer_pool;
+pub mod connection;
 pub mod container;
 pub mod error;
 pub mod extensions;
@@ -177,6 +178,11 @@ pub mod write_coalesce;
 // Re-export commonly used types
 pub use application::*;
 pub use body_limits::*;
+pub use connection::{
+    Connection, ConnectionConfig, ConnectionEvent, ConnectionPool, ConnectionState,
+    ConnectionStats, StateMachineExecutor, TransitionAction, TransitionError,
+    connection_stats,
+};
 pub use container::*;
 pub use error::*;
 pub use extensions::Extensions;

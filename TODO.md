@@ -47,6 +47,7 @@ Only features that are **not yet completed**.
 | ✅ Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/src/write_coalesce.rs` |
 | ✅ Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/src/worker.rs` |
 | ✅ NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/src/numa.rs` |
+| ✅ Optimized State Transitions | Branchless connection FSM with lookup tables | `armature-core/src/connection.rs` |
 
 ---
 
@@ -279,7 +280,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Optimized State Transitions | Minimize branching in connection FSM | `armature-core/connection.rs` |
+| ✅ | Optimized State Transitions | Minimize branching in connection FSM | `armature-core/src/connection.rs` |
 | 🟠 | Connection Recycling | Reset and reuse connection objects | `armature-core/connection.rs` |
 | 🟡 | Adaptive Keep-Alive | Adjust keep-alive based on server load | `armature-core/connection.rs` |
 | 🟡 | Idle Connection Culling | Efficiently drop idle connections under pressure | `armature-core/connection.rs` |
@@ -362,7 +363,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **34** | ✅ |
+| **Recently Completed** | **35** | ✅ |
 
 ### Performance Target
 
