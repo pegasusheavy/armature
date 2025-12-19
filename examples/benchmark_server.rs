@@ -27,11 +27,12 @@
 //! oha -z 10s -c 50 http://localhost:3000/json
 //! ```
 
+#![allow(clippy::needless_question_mark)]
+
 use armature_core::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::Level;
-use tracing_subscriber;
 
 // Response structures
 #[derive(Serialize)]
@@ -136,9 +137,7 @@ fn generate_products(count: usize) -> Vec<Product> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Minimal logging for benchmarks
-    tracing_subscriber::fmt()
-        .with_max_level(Level::WARN)
-        .init();
+    tracing_subscriber::fmt().with_max_level(Level::WARN).init();
 
     println!("🚀 Armature Benchmark Server");
     println!("════════════════════════════");
@@ -207,7 +206,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(HttpResponse::created().with_json(&CreateUserResponse {
                     id: 12345,
                     name: payload.name,
-                    email: payload.email.unwrap_or_else(|| "default@example.com".to_string()),
+                    email: payload
+                        .email
+                        .unwrap_or_else(|| "default@example.com".to_string()),
                     created: true,
                 })?)
             })
@@ -236,7 +237,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         path: "/data".to_string(),
         handler: Arc::new(|req| {
             Box::pin(async move {
-                let size = req.query_params.get("size").map(|s| s.as_str()).unwrap_or("medium");
+                let size = req
+                    .query_params
+                    .get("size")
+                    .map(|s| s.as_str())
+                    .unwrap_or("medium");
                 let count = match size {
                     "small" => 10,
                     "large" => 100,
@@ -288,4 +293,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

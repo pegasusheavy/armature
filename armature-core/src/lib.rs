@@ -143,8 +143,8 @@ pub mod module;
 pub mod pagination;
 pub mod resilience;
 pub mod route_constraint;
-pub mod route_registry;
 pub mod route_group;
+pub mod route_registry;
 pub mod routing;
 pub mod shutdown;
 pub mod sse;
@@ -176,11 +176,10 @@ pub use middleware::*;
 pub use module::*;
 pub use pagination::*;
 pub use resilience::{
-    CircuitBreaker, CircuitBreakerConfig, CircuitBreakerError, CircuitState, CircuitBreakerStats,
-    Retry, RetryConfig, RetryError, BackoffStrategy,
-    Bulkhead, BulkheadConfig, BulkheadError, BulkheadStats,
-    Timeout as ResilienceTimeout, TimeoutConfig, TimeoutError,
-    Fallback, FallbackBuilder, FallbackChain, fallback_value, fallback_default,
+    BackoffStrategy, Bulkhead, BulkheadConfig, BulkheadError, BulkheadStats, CircuitBreaker,
+    CircuitBreakerConfig, CircuitBreakerError, CircuitBreakerStats, CircuitState, Fallback,
+    FallbackBuilder, FallbackChain, Retry, RetryConfig, RetryError, Timeout as ResilienceTimeout,
+    TimeoutConfig, TimeoutError, fallback_default, fallback_value,
 };
 pub use route_constraint::*;
 pub use route_group::*;

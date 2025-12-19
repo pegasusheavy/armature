@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 use armature_core::*;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::collections::HashMap;

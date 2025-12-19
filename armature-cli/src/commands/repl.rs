@@ -149,4 +149,3 @@ mod tests {
         let _ = is_evcxr_installed();
     }
 }
-

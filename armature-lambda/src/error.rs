@@ -34,4 +34,3 @@ impl From<lambda_runtime::Error> for LambdaError {
         Self::Runtime(err.to_string())
     }
 }
-

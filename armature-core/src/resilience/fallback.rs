@@ -24,7 +24,8 @@ use std::sync::Arc;
 use tracing::debug;
 
 /// Type alias for an async fallback function.
-pub type FallbackFn<T, E> = Arc<dyn Fn() -> Pin<Box<dyn Future<Output = Result<T, E>> + Send>> + Send + Sync>;
+pub type FallbackFn<T, E> =
+    Arc<dyn Fn() -> Pin<Box<dyn Future<Output = Result<T, E>> + Send>> + Send + Sync>;
 
 /// Fallback handler that provides alternative behavior.
 pub struct Fallback<T, E> {
@@ -250,9 +251,7 @@ mod tests {
     async fn test_fallback_success() {
         let fallback = fallback_value::<i32, &str>(0);
 
-        let result = fallback.call(|| async {
-            Ok::<i32, &str>(42)
-        }).await;
+        let result = fallback.call(|| async { Ok::<i32, &str>(42) }).await;
 
         assert_eq!(result.unwrap(), 42);
     }
@@ -261,9 +260,7 @@ mod tests {
     async fn test_fallback_on_failure() {
         let fallback = fallback_value::<i32, &str>(99);
 
-        let result = fallback.call(|| async {
-            Err::<i32, &str>("error")
-        }).await;
+        let result = fallback.call(|| async { Err::<i32, &str>("error") }).await;
 
         assert_eq!(result.unwrap(), 99);
     }
@@ -279,4 +276,3 @@ mod tests {
         assert_eq!(result.unwrap(), 42);
     }
 }
-

@@ -227,9 +227,7 @@ impl Notification {
 
     /// Get the payload size.
     pub fn payload_size(&self) -> usize {
-        serde_json::to_string(self)
-            .map(|s| s.len())
-            .unwrap_or(0)
+        serde_json::to_string(self).map(|s| s.len()).unwrap_or(0)
     }
 }
 
@@ -327,4 +325,3 @@ impl NotificationBuilder {
         self.notification
     }
 }
-

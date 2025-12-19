@@ -144,4 +144,3 @@ pub use aws_sdk_kms;
 
 #[cfg(feature = "cognito")]
 pub use aws_sdk_cognito_idp as aws_sdk_cognito;
-

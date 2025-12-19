@@ -11,8 +11,8 @@ use std::time::Duration;
 use tracing::{debug, info};
 
 use crate::{
-    Result, StorageError, Storage, StorageMetadata, StorageConfig,
-    UploadedFile, generate_unique_key, calculate_checksum,
+    Result, Storage, StorageConfig, StorageError, StorageMetadata, UploadedFile,
+    calculate_checksum, generate_unique_key,
 };
 
 /// S3 storage configuration.
@@ -179,7 +179,8 @@ impl S3Storage {
 #[async_trait]
 impl Storage for S3Storage {
     async fn put(&self, key: &str, data: Bytes) -> Result<StorageMetadata> {
-        self.put_with_content_type(key, data, "application/octet-stream").await
+        self.put_with_content_type(key, data, "application/octet-stream")
+            .await
     }
 
     async fn put_with_content_type(
@@ -209,7 +210,8 @@ impl Storage for S3Storage {
         };
 
         // Build put request
-        let mut request = self.client
+        let mut request = self
+            .client
             .put_object()
             .bucket(&self.config.bucket)
             .key(&full_key)
@@ -256,7 +258,9 @@ impl Storage for S3Storage {
             .content_type_str()
             .unwrap_or_else(|| "application/octet-stream".to_string());
 
-        let mut metadata = self.put_with_content_type(&key, file.data.clone(), &content_type).await?;
+        let mut metadata = self
+            .put_with_content_type(&key, file.data.clone(), &content_type)
+            .await?;
 
         if let Some(name) = file.name() {
             metadata = metadata.with_original_name(name);
@@ -268,7 +272,8 @@ impl Storage for S3Storage {
     async fn get(&self, key: &str) -> Result<Bytes> {
         let full_key = self.full_key(key);
 
-        let response = self.client
+        let response = self
+            .client
             .get_object()
             .bucket(&self.config.bucket)
             .key(&full_key)
@@ -295,7 +300,8 @@ impl Storage for S3Storage {
     async fn head(&self, key: &str) -> Result<StorageMetadata> {
         let full_key = self.full_key(key);
 
-        let response = self.client
+        let response = self
+            .client
             .head_object()
             .bucket(&self.config.bucket)
             .key(&full_key)
@@ -311,8 +317,7 @@ impl Storage for S3Storage {
             })?;
 
         let size = response.content_length().unwrap_or(0) as u64;
-        let mut metadata = StorageMetadata::new(key, size)
-            .with_url(self.public_url(key));
+        let mut metadata = StorageMetadata::new(key, size).with_url(self.public_url(key));
 
         if let Some(ct) = response.content_type() {
             metadata = metadata.with_content_type(ct);
@@ -358,9 +363,7 @@ impl Storage for S3Storage {
             full_prefix.push_str(p);
         }
 
-        let mut request = self.client
-            .list_objects_v2()
-            .bucket(&self.config.bucket);
+        let mut request = self.client.list_objects_v2().bucket(&self.config.bucket);
 
         if !full_prefix.is_empty() {
             request = request.prefix(&full_prefix);
@@ -429,7 +432,8 @@ impl Storage for S3Storage {
             .build()
             .map_err(|e| StorageError::Storage(e.to_string()))?;
 
-        let presigned = self.client
+        let presigned = self
+            .client
             .get_object()
             .bucket(&self.config.bucket)
             .key(&full_key)
@@ -440,4 +444,3 @@ impl Storage for S3Storage {
         Ok(Some(presigned.uri().to_string()))
     }
 }
-

@@ -85,14 +85,12 @@ impl HttpClientError {
 
     /// Check if this is a timeout error.
     pub fn is_timeout(&self) -> bool {
-        matches!(self, Self::Timeout(_)) ||
-        matches!(self, Self::Http(e) if e.is_timeout())
+        matches!(self, Self::Timeout(_)) || matches!(self, Self::Http(e) if e.is_timeout())
     }
 
     /// Check if this is a connection error.
     pub fn is_connection(&self) -> bool {
-        matches!(self, Self::Connection(_)) ||
-        matches!(self, Self::Http(e) if e.is_connect())
+        matches!(self, Self::Connection(_)) || matches!(self, Self::Http(e) if e.is_connect())
     }
 
     /// Get the HTTP status code if this is a response error.
@@ -104,4 +102,3 @@ impl HttpClientError {
         }
     }
 }
-

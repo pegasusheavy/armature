@@ -191,4 +191,3 @@ mod tests {
         assert_eq!(projection2.counter.load(Ordering::SeqCst), 1);
     }
 }
-

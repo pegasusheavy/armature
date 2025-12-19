@@ -1,9 +1,9 @@
 //! Request builder.
 
+use crate::{HttpClient, HttpClientError, Response, Result};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use serde::Serialize;
 use std::time::Duration;
-use crate::{HttpClient, Response, Result, HttpClientError};
 
 /// HTTP request builder.
 pub struct RequestBuilder<'a> {
@@ -131,7 +131,11 @@ impl<'a> RequestBuilder<'a> {
     }
 
     /// Set basic authentication.
-    pub fn basic_auth(self, username: impl Into<String>, password: Option<impl Into<String>>) -> Self {
+    pub fn basic_auth(
+        self,
+        username: impl Into<String>,
+        password: Option<impl Into<String>>,
+    ) -> Self {
         use base64::Engine;
         let credentials = match password {
             Some(p) => format!("{}:{}", username.into(), p.into()),
@@ -144,13 +148,12 @@ impl<'a> RequestBuilder<'a> {
     /// Build the URL with query parameters.
     fn build_url(&self) -> Result<url::Url> {
         let mut url = if let Some(base) = &self.client.config().base_url {
-            let base = url::Url::parse(base)
-                .map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?;
+            let base =
+                url::Url::parse(base).map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?;
             base.join(&self.url)
                 .map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?
         } else {
-            url::Url::parse(&self.url)
-                .map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?
+            url::Url::parse(&self.url).map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?
         };
 
         // Add query parameters
@@ -193,4 +196,3 @@ impl<'a> RequestBuilder<'a> {
         self.client.execute(request.build()?).await
     }
 }
-

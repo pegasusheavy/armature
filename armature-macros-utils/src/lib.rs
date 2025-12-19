@@ -38,11 +38,11 @@
 
 use proc_macro::TokenStream;
 
-mod response;
-mod validation;
-mod test_helpers;
-mod model;
 mod error_helpers;
+mod model;
+mod response;
+mod test_helpers;
+mod validation;
 
 // ============================================================================
 // Response Macros
@@ -282,4 +282,3 @@ pub fn derive_api_model(input: TokenStream) -> TokenStream {
 pub fn derive_resource(input: TokenStream) -> TokenStream {
     model::derive_resource_impl(input)
 }
-

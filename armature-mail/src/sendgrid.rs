@@ -146,10 +146,7 @@ impl SendGridPayload {
     fn from_email(email: &Email) -> Result<Self> {
         use base64::Engine;
 
-        let from = email
-            .from
-            .as_ref()
-            .ok_or(MailError::MissingField("from"))?;
+        let from = email.from.as_ref().ok_or(MailError::MissingField("from"))?;
 
         let mut content = Vec::new();
 
@@ -224,4 +221,3 @@ impl SendGridPayload {
         })
     }
 }
-

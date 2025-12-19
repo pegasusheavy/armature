@@ -54,28 +54,28 @@
 //! }
 //! ```
 
-mod server;
 mod client;
 mod config;
 mod error;
 mod interceptor;
 mod middleware;
+mod server;
 
-pub use server::{GrpcServer, GrpcServerBuilder};
-pub use client::{GrpcClient, GrpcChannel};
-pub use config::{GrpcServerConfig, GrpcClientConfig};
+pub use client::{GrpcChannel, GrpcClient};
+pub use config::{GrpcClientConfig, GrpcServerConfig};
 pub use error::{GrpcError, Result};
 pub use interceptor::{
-    Interceptor, RequestInterceptor, ResponseInterceptor,
-    AuthInterceptor, LoggingInterceptor, MetricsInterceptor,
+    AuthInterceptor, Interceptor, LoggingInterceptor, MetricsInterceptor, RequestInterceptor,
+    ResponseInterceptor,
 };
 pub use middleware::{GrpcMiddleware, MiddlewareLayer};
+pub use server::{GrpcServer, GrpcServerBuilder};
 
 // Re-export tonic types
 pub use tonic::{
-    Request, Response, Status, Code,
-    transport::{Channel, Server, Endpoint},
+    Code, Request, Response, Status,
     metadata::{MetadataMap, MetadataValue},
+    transport::{Channel, Endpoint, Server},
 };
 
 #[cfg(feature = "health")]
@@ -99,9 +99,8 @@ pub mod prelude {
     pub use crate::middleware::{GrpcMiddleware, MiddlewareLayer};
     pub use crate::server::{GrpcServer, GrpcServerBuilder};
     pub use tonic::{
+        Code, Request, Response, Status,
         metadata::{MetadataMap, MetadataValue},
         transport::{Channel, Endpoint, Server},
-        Code, Request, Response, Status,
     };
 }
-

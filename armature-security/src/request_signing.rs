@@ -208,13 +208,18 @@ impl RequestVerifier {
 
     /// Verify request from HttpRequest
     pub fn verify_request(&self, request: &HttpRequest) -> Result<bool, SigningError> {
-        let signature = request.headers.get("X-Signature")
+        let signature = request
+            .headers
+            .get("X-Signature")
             .ok_or(SigningError::MissingSignature)?;
 
-        let timestamp_str = request.headers.get("X-Timestamp")
+        let timestamp_str = request
+            .headers
+            .get("X-Timestamp")
             .ok_or(SigningError::MissingTimestamp)?;
 
-        let timestamp: u64 = timestamp_str.parse()
+        let timestamp: u64 = timestamp_str
+            .parse()
             .map_err(|_| SigningError::InvalidTimestamp)?;
 
         let body_str = String::from_utf8_lossy(&request.body);
@@ -313,7 +318,10 @@ impl Middleware for RequestSigningMiddleware {
                     return Err(Error::BadRequest("Missing X-Timestamp header".to_string()));
                 }
                 Err(e) => {
-                    return Err(Error::BadRequest(format!("Signature verification failed: {}", e)));
+                    return Err(Error::BadRequest(format!(
+                        "Signature verification failed: {}",
+                        e
+                    )));
                 }
             }
         }
@@ -347,7 +355,11 @@ mod tests {
 
         let signature = signer.sign("POST", "/api/test", "test body", timestamp);
 
-        assert!(verifier.verify("POST", "/api/test", "test body", timestamp, &signature).unwrap());
+        assert!(
+            verifier
+                .verify("POST", "/api/test", "test body", timestamp, &signature)
+                .unwrap()
+        );
     }
 
     #[test]
@@ -364,7 +376,7 @@ mod tests {
             "/api/test",
             "test body",
             timestamp,
-            "wrong-signature"
+            "wrong-signature",
         );
 
         assert!(result.is_ok());
@@ -379,15 +391,10 @@ mod tests {
         let old_timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .as_secs() - 3600;
+            .as_secs()
+            - 3600;
 
-        let result = verifier.verify(
-            "POST",
-            "/api/test",
-            "body",
-            old_timestamp,
-            "signature"
-        );
+        let result = verifier.verify("POST", "/api/test", "body", old_timestamp, "signature");
 
         assert!(matches!(result, Err(SigningError::RequestExpired)));
     }
@@ -399,4 +406,3 @@ mod tests {
         assert!(!constant_time_eq("abc", "abcd"));
     }
 }
-

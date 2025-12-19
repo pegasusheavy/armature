@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! Complete CRUD API Example
 //!
 //! This example demonstrates how to build a complete REST API with Armature
@@ -204,7 +205,11 @@ impl UserService {
         Ok(self.repository.create(req.name, req.email))
     }
 
-    pub fn update_user(&self, id: u64, req: UpdateUserRequest) -> std::result::Result<User, String> {
+    pub fn update_user(
+        &self,
+        id: u64,
+        req: UpdateUserRequest,
+    ) -> std::result::Result<User, String> {
         // Validate email if provided
         if let Some(ref email) = req.email {
             if !email.contains('@') {
@@ -250,10 +255,7 @@ impl UserController {
     /// GET /api/users - List all users with pagination
     #[get("")]
     async fn list_users(req: HttpRequest) -> Result<HttpResponse, Error> {
-        let page: usize = req
-            .query("page")
-            .and_then(|p| p.parse().ok())
-            .unwrap_or(1);
+        let page: usize = req.query("page").and_then(|p| p.parse().ok()).unwrap_or(1);
         let per_page: usize = req
             .query("per_page")
             .and_then(|p| p.parse().ok())
@@ -348,7 +350,9 @@ async fn main() {
     // Create and register services
     let repository = UserRepository::with_seed_data();
     let service = UserService::new(repository);
-    USER_SERVICE.set(service).expect("Failed to set user service");
+    USER_SERVICE
+        .set(service)
+        .expect("Failed to set user service");
 
     println!("Server running at http://127.0.0.1:3000");
     println!("Try these endpoints:");

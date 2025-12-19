@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Macro Utilities Example
 //!
 //! Demonstrates the various utility macros available in Armature.
@@ -22,7 +23,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match success_response {
         Ok(resp) => {
-            println!("   ✅ ok_json! created response with status {}", resp.status);
+            println!(
+                "   ✅ ok_json! created response with status {}",
+                resp.status
+            );
             let body_str = String::from_utf8_lossy(&resp.body);
             println!("      Body: {}", body_str);
         }
@@ -38,7 +42,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match created_response {
         Ok(resp) => {
-            println!("   ✅ created_json! created response with status {}", resp.status);
+            println!(
+                "   ✅ created_json! created response with status {}",
+                resp.status
+            );
         }
         Err(e) => println!("   ❌ Error: {}", e),
     }
@@ -51,7 +58,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match custom_response {
         Ok(resp) => {
-            println!("   ✅ json_response! created response with status {}", resp.status);
+            println!(
+                "   ✅ json_response! created response with status {}",
+                resp.status
+            );
         }
         Err(e) => println!("   ❌ Error: {}", e),
     }
@@ -66,7 +76,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }));
     match error1 {
         Ok(resp) => {
-            println!("   ✅ bad_request! created error with status {}", resp.status);
+            println!(
+                "   ✅ bad_request! created error with status {}",
+                resp.status
+            );
             let body_str = String::from_utf8_lossy(&resp.body);
             println!("      Body: {}", body_str);
         }
@@ -171,4 +184,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

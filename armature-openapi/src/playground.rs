@@ -101,7 +101,8 @@ pub fn generate_html(config: &PlaygroundConfig) -> String {
         ""
     };
 
-    format!(r#"<!DOCTYPE html>
+    format!(
+        r#"<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -548,12 +549,17 @@ pub fn generate_html(config: &PlaygroundConfig) -> String {
 }
 
 /// Serve playground HTML
-pub fn serve_playground(config: &PlaygroundConfig) -> impl Fn(HttpRequest) -> Result<HttpResponse, Error> {
+pub fn serve_playground(
+    config: &PlaygroundConfig,
+) -> impl Fn(HttpRequest) -> Result<HttpResponse, Error> {
     let html = generate_html(config);
 
     move |_req: HttpRequest| {
         Ok(HttpResponse::ok()
-            .with_header("Content-Type".to_string(), "text/html; charset=utf-8".to_string())
+            .with_header(
+                "Content-Type".to_string(),
+                "text/html; charset=utf-8".to_string(),
+            )
             .with_body(html.clone().into_bytes()))
     }
 }
@@ -587,12 +593,10 @@ mod tests {
 
     #[test]
     fn test_generate_html_no_auth() {
-        let config = PlaygroundConfig::new("/api/spec.json")
-            .with_auth(false);
+        let config = PlaygroundConfig::new("/api/spec.json").with_auth(false);
         let html = generate_html(&config);
 
         assert!(!html.contains("<h3>Auth</h3>"));
         assert!(!html.contains("setAuth"));
     }
 }
-

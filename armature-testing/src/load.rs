@@ -4,8 +4,8 @@
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::Mutex;
 use thiserror::Error;
+use tokio::sync::Mutex;
 
 /// Load testing errors
 #[derive(Debug, Error)]
@@ -117,12 +117,30 @@ impl LoadTestStats {
         println!("Duration:           {:.2}s", self.duration.as_secs_f64());
         println!("Requests/sec:       {:.2}", self.rps);
         println!("\nResponse Times:");
-        println!("  Min:              {:.2}ms", self.min_response_time.as_millis());
-        println!("  Avg:              {:.2}ms", self.avg_response_time.as_millis());
-        println!("  Median (p50):     {:.2}ms", self.median_response_time.as_millis());
-        println!("  p95:              {:.2}ms", self.p95_response_time.as_millis());
-        println!("  p99:              {:.2}ms", self.p99_response_time.as_millis());
-        println!("  Max:              {:.2}ms", self.max_response_time.as_millis());
+        println!(
+            "  Min:              {:.2}ms",
+            self.min_response_time.as_millis()
+        );
+        println!(
+            "  Avg:              {:.2}ms",
+            self.avg_response_time.as_millis()
+        );
+        println!(
+            "  Median (p50):     {:.2}ms",
+            self.median_response_time.as_millis()
+        );
+        println!(
+            "  p95:              {:.2}ms",
+            self.p95_response_time.as_millis()
+        );
+        println!(
+            "  p99:              {:.2}ms",
+            self.p99_response_time.as_millis()
+        );
+        println!(
+            "  Max:              {:.2}ms",
+            self.max_response_time.as_millis()
+        );
         println!("=======================================\n");
     }
 }
@@ -261,9 +279,10 @@ where
                             break;
                         }
                     } else if let Some(max_requests) = requests_per_worker
-                        && request_count >= max_requests {
-                            break;
-                        }
+                        && request_count >= max_requests
+                    {
+                        break;
+                    }
 
                     // Execute test function
                     let req_start = Instant::now();
@@ -359,19 +378,23 @@ where
         println!("Initial Concurrency: {}", self.initial_concurrency);
         println!("Max Concurrency:     {}", self.max_concurrency);
         println!("Step Size:           {}", self.step_size);
-        println!("Step Duration:       {:.0}s", self.step_duration.as_secs_f64());
+        println!(
+            "Step Duration:       {:.0}s",
+            self.step_duration.as_secs_f64()
+        );
         println!("==========================================\n");
 
         while concurrency <= self.max_concurrency {
             println!("Testing with {} concurrent requests...", concurrency);
 
-            let config = LoadTestConfig::new(concurrency, u64::MAX)
-                .with_duration(self.step_duration);
+            let config =
+                LoadTestConfig::new(concurrency, u64::MAX).with_duration(self.step_duration);
 
             let runner = LoadTestRunner::new(config, self.test_fn.as_ref().clone());
             let stats = runner.run().await?;
 
-            println!("  RPS: {:.2}, Avg: {:.2}ms, p95: {:.2}ms",
+            println!(
+                "  RPS: {:.2}, Avg: {:.2}ms, p95: {:.2}ms",
                 stats.rps,
                 stats.avg_response_time.as_millis(),
                 stats.p95_response_time.as_millis()
@@ -412,11 +435,7 @@ mod tests {
             Duration::from_millis(250),
         ];
 
-        let stats = LoadTestStats::from_response_times(
-            &response_times,
-            0,
-            Duration::from_secs(1),
-        );
+        let stats = LoadTestStats::from_response_times(&response_times, 0, Duration::from_secs(1));
 
         assert_eq!(stats.total_requests, 5);
         assert_eq!(stats.successful, 5);
@@ -439,4 +458,3 @@ mod tests {
         assert_eq!(stats.successful, 10);
     }
 }
-

@@ -1,0 +1,1 @@
+//! AWS kinesis integration placeholder

@@ -1,16 +1,28 @@
 <div class="docs-container">
   <!-- Sidebar Navigation -->
   <aside class="docs-sidebar">
-    <div class="sidebar-content">
-      <h2>Documentation</h2>
+    <div class="sidebar-header">
+      <h2>
+        <span class="sidebar-icon">📚</span>
+        Documentation
+      </h2>
+    </div>
 
+    <nav class="sidebar-nav">
       @for (category of getCategories(); track category) {
-        <div class="doc-category">
-          <h3>{{ category }}</h3>
-          <ul>
+        <div class="nav-category">
+          <h3 class="category-title">{{ category }}</h3>
+          <ul class="category-links">
             @for (doc of docsByCategory()[category]; track doc.id) {
               <li>
-                <a [routerLink]="['/docs', doc.id]" [class.active]="currentDoc()?.id === doc.id">
+                <a
+                  [routerLink]="['/docs', doc.id]"
+                  [class.active]="isActiveDoc(doc.id)"
+                  [class.has-component]="doc.hasComponent"
+                >
+                  @if (doc.hasComponent) {
+                    <span class="doc-indicator">✨</span>
+                  }
                   {{ doc.title }}
                 </a>
               </li>
@@ -18,27 +30,138 @@
           </ul>
         </div>
       }
-    </div>
+    </nav>
   </aside>
 
   <!-- Main Content -->
   <main class="docs-content">
     @if (loading()) {
-      <div class="loading">
-        <div class="spinner"></div>
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
         <p>Loading documentation...</p>
       </div>
     } @else if (error()) {
-      <div class="error">
-        <h2>Error</h2>
+      <div class="error-state">
+        <span class="error-icon">⚠️</span>
+        <h2>Page Not Found</h2>
         <p>{{ error() }}</p>
-        <a routerLink="/docs/readme" class="btn-primary">Go to Overview</a>
+        <a routerLink="/docs/readme" class="btn-primary">
+          <span>←</span> Back to Overview
+        </a>
       </div>
-    } @else if (isOverview()) {
-      <app-docs-overview></app-docs-overview>
     } @else {
-      <article class="markdown-content" [innerHTML]="content()"></article>
+      @switch (activeComponent()) {
+        @case ('readme') {
+          <app-docs-overview></app-docs-overview>
+        }
+        @case ('auth-guide') {
+          <app-auth-guide></app-auth-guide>
+        }
+        @case ('di-guide') {
+          <app-di-guide></app-di-guide>
+        }
+        @case ('graphql-guide') {
+          <app-graphql-guide></app-graphql-guide>
+        }
+        @case ('websocket-sse') {
+          <app-websocket-sse-guide></app-websocket-sse-guide>
+        }
+        @case ('cache-improvements') {
+          <app-cache-guide></app-cache-guide>
+        }
+        @case ('logging-guide') {
+          <app-logging-guide></app-logging-guide>
+        }
+        @case ('health-check') {
+          <app-health-check-guide></app-health-check-guide>
+        }
+        @case ('grafana-dashboards') {
+          <app-grafana-dashboards></app-grafana-dashboards>
+        }
+        @case ('ferron-guide') {
+          <app-doc-ferron></app-doc-ferron>
+        }
+        @case ('project-templates') {
+          <app-project-templates></app-project-templates>
+        }
+        @case ('config-guide') {
+          <app-config-guide></app-config-guide>
+        }
+        @case ('lifecycle-hooks') {
+          <app-lifecycle-hooks></app-lifecycle-hooks>
+        }
+        @case ('route-groups') {
+          <app-route-groups></app-route-groups>
+        }
+        @case ('use-middleware') {
+          <app-middleware-guide></app-middleware-guide>
+        }
+        @case ('rate-limiting') {
+          <app-rate-limiting></app-rate-limiting>
+        }
+        @case ('api-versioning') {
+          <app-api-versioning></app-api-versioning>
+        }
+        @case ('redis-guide') {
+          <app-redis-guide></app-redis-guide>
+        }
+        @case ('queue-guide') {
+          <app-queue-guide></app-queue-guide>
+        }
+        @case ('cron-guide') {
+          <app-cron-guide></app-cron-guide>
+        }
+        @case ('graceful-shutdown') {
+          <app-graceful-shutdown></app-graceful-shutdown>
+        }
+        @case ('docker-guide') {
+          <app-docker-guide></app-docker-guide>
+        }
+        @case ('metrics-guide') {
+          <app-metrics-guide></app-metrics-guide>
+        }
+        @case ('testing-guide') {
+          <app-testing-guide></app-testing-guide>
+        }
+        @case ('kubernetes-guide') {
+          <app-kubernetes-guide></app-kubernetes-guide>
+        }
+        @case ('session-guide') {
+          <app-session-guide></app-session-guide>
+        }
+        @case ('webhooks') {
+          <app-webhooks-guide></app-webhooks-guide>
+        }
+        @case ('opentelemetry-guide') {
+          <app-opentelemetry-guide></app-opentelemetry-guide>
+        }
+        @case ('profiling-guide') {
+          <app-profiling-guide></app-profiling-guide>
+        }
+        @default {
+          <!-- Fallback: Coming Soon Page -->
+          <div class="coming-soon">
+            <div class="coming-soon-icon">🚧</div>
+            <h1>{{ currentDoc()?.title }}</h1>
+            <p class="coming-soon-subtitle">This documentation page is being enhanced with beautiful visuals.</p>
+
+            <div class="coming-soon-info">
+              <p>In the meantime, you can:</p>
+              <ul>
+                <li>Check out the <a routerLink="/docs/readme">Overview</a> for a quick start</li>
+                <li>Visit our <a href="https://github.com/pegasusheavy/armature" target="_blank">GitHub repository</a> for source code</li>
+                <li>See the <a href="https://docs.rs/armature" target="_blank">API documentation</a> on docs.rs</li>
+              </ul>
+            </div>
+
+            <div class="coming-soon-cta">
+              <a routerLink="/docs/readme" class="btn-secondary">
+                <span>←</span> Back to Overview
+              </a>
+            </div>
+          </div>
+        }
+      }
     }
   </main>
 </div>
-

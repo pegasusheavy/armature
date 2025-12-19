@@ -110,12 +110,12 @@
 //! ```
 
 pub mod aggregate;
-pub mod store;
 pub mod repository;
+pub mod store;
 
 pub use aggregate::{Aggregate, AggregateError, AggregateRoot, Snapshot};
-pub use store::{EventStore, EventStoreError, InMemoryEventStore};
 pub use repository::AggregateRepository;
+pub use store::{EventStore, EventStoreError, InMemoryEventStore};
 
 #[cfg(test)]
 mod tests {
@@ -124,4 +124,3 @@ mod tests {
         // Ensure module compiles
     }
 }
-

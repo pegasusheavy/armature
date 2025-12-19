@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Cache Improvements Example
 //!
 //! Demonstrates tag-based invalidation and multi-tier caching.
@@ -75,17 +76,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user2_after = tagged_cache.get("user:2").await?;
     let post1_after = tagged_cache.get("post:1").await?;
 
-    println!("   ✅ user:1 exists: {} (should be false)", user1_after.is_some());
-    println!("   ✅ user:2 exists: {} (should be false)", user2_after.is_some());
-    println!("   ✅ post:1 exists: {} (should be true)", post1_after.is_some());
+    println!(
+        "   ✅ user:1 exists: {} (should be false)",
+        user1_after.is_some()
+    );
+    println!(
+        "   ✅ user:2 exists: {} (should be false)",
+        user2_after.is_some()
+    );
+    println!(
+        "   ✅ post:1 exists: {} (should be true)",
+        post1_after.is_some()
+    );
     println!();
 
     // Invalidate multiple tags
     println!("\n   🔥 Invalidating 'posts' and 'user:1:posts' tags...");
-    tagged_cache.invalidate_tags(&["posts", "user:1:posts"]).await?;
+    tagged_cache
+        .invalidate_tags(&["posts", "user:1:posts"])
+        .await?;
 
     let post1_final = tagged_cache.get("post:1").await?;
-    println!("   ✅ post:1 exists: {} (should be false)", post1_final.is_some());
+    println!(
+        "   ✅ post:1 exists: {} (should be false)",
+        post1_final.is_some()
+    );
     println!();
 
     // 2. Multi-Tier Caching
@@ -199,7 +214,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("     • Automatic fallback and promotion");
     println!();
     println!("💡 Production Example:");
-    println!(r#"
+    println!(
+        r#"
    // L1: In-memory (per-instance)
    let l1 = Arc::new(InMemoryCache::new());
 
@@ -221,8 +237,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
    // Invalidate all user:123 related caches
    cache.invalidate_tag("user:123").await?;
-"#);
+"#
+    );
 
     Ok(())
 }
-

@@ -40,7 +40,10 @@ pub enum QueryError {
 /// Type-erased query handler
 #[async_trait]
 trait DynQueryHandler: Send + Sync {
-    async fn handle_dyn(&self, query: Box<dyn Any + Send>) -> Result<Box<dyn Any + Send>, QueryError>;
+    async fn handle_dyn(
+        &self,
+        query: Box<dyn Any + Send>,
+    ) -> Result<Box<dyn Any + Send>, QueryError>;
 }
 
 /// Wrapper for typed query handlers
@@ -60,7 +63,10 @@ impl<Q: Query, H: QueryHandler<Q>> TypedQueryHandler<Q, H> {
 
 #[async_trait]
 impl<Q: Query, H: QueryHandler<Q>> DynQueryHandler for TypedQueryHandler<Q, H> {
-    async fn handle_dyn(&self, query: Box<dyn Any + Send>) -> Result<Box<dyn Any + Send>, QueryError> {
+    async fn handle_dyn(
+        &self,
+        query: Box<dyn Any + Send>,
+    ) -> Result<Box<dyn Any + Send>, QueryError> {
         match query.downcast::<Q>() {
             Ok(qry) => {
                 let result = self.handler.handle(*qry).await?;
@@ -112,7 +118,9 @@ impl QueryBus {
 
         match result.downcast::<Q::Result>() {
             Ok(result) => Ok(*result),
-            Err(_) => Err(QueryError::ExecutionFailed("Result type mismatch".to_string())),
+            Err(_) => Err(QueryError::ExecutionFailed(
+                "Result type mismatch".to_string(),
+            )),
         }
     }
 }
@@ -169,4 +177,3 @@ mod tests {
         assert_eq!(result.email, "alice@example.com");
     }
 }
-

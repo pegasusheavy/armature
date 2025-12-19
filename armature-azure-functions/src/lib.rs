@@ -88,19 +88,19 @@
 //! - **Bindings**: Access Azure services through bindings
 //! - **Configuration**: Read from Azure App Configuration
 
+mod bindings;
+mod config;
 mod error;
-mod runtime;
 mod request;
 mod response;
-mod config;
-mod bindings;
+mod runtime;
 
+pub use bindings::{InputBinding, OutputBinding};
+pub use config::FunctionConfig;
 pub use error::{AzureFunctionsError, Result};
-pub use runtime::{AzureFunctionsRuntime, RuntimeConfig};
 pub use request::FunctionRequest;
 pub use response::FunctionResponse;
-pub use config::FunctionConfig;
-pub use bindings::{InputBinding, OutputBinding};
+pub use runtime::{AzureFunctionsRuntime, RuntimeConfig};
 
 /// Initialize tracing for Azure Application Insights.
 ///
@@ -149,4 +149,3 @@ pub fn function_name() -> Option<String> {
 pub fn invocation_id() -> Option<String> {
     std::env::var("AZURE_FUNCTIONS_INVOCATION_ID").ok()
 }
-

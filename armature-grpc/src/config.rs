@@ -1,7 +1,7 @@
 //! gRPC configuration types.
 
-use std::time::Duration;
 use std::net::SocketAddr;
+use std::time::Duration;
 
 /// gRPC server configuration.
 #[derive(Debug, Clone)]
@@ -263,4 +263,3 @@ impl GrpcClientConfigBuilder {
         self.config
     }
 }
-

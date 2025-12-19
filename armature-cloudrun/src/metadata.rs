@@ -26,7 +26,10 @@ impl InstanceMetadata {
 
         async fn get_metadata(client: &reqwest::Client, path: &str) -> Option<String> {
             client
-                .get(format!("http://metadata.google.internal/computeMetadata/v1/{}", path))
+                .get(format!(
+                    "http://metadata.google.internal/computeMetadata/v1/{}",
+                    path
+                ))
                 .header("Metadata-Flavor", "Google")
                 .send()
                 .await
@@ -40,8 +43,18 @@ impl InstanceMetadata {
         let region = zone.as_ref().map(|z| {
             // Zone is like "projects/123456789/zones/us-central1-a"
             // Extract region as "us-central1"
-            z.rsplit('/').next()
-                .and_then(|z| z.rsplit('-').skip(1).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join("-").into())
+            z.rsplit('/')
+                .next()
+                .and_then(|z| {
+                    z.rsplit('-')
+                        .skip(1)
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                        .rev()
+                        .collect::<Vec<_>>()
+                        .join("-")
+                        .into()
+                })
                 .unwrap_or_default()
         });
 
@@ -105,4 +118,3 @@ impl ServiceMetadata {
         std::env::var("K_SERVICE").is_ok()
     }
 }
-

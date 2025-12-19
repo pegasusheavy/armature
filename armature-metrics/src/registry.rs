@@ -38,10 +38,7 @@ pub fn register_counter_vec(
     help: &str,
     label_names: &[&str],
 ) -> Result<CounterVec, prometheus::Error> {
-    let counter = CounterVec::new(
-        prometheus::Opts::new(name, help),
-        label_names,
-    )?;
+    let counter = CounterVec::new(prometheus::Opts::new(name, help), label_names)?;
     crate::default_registry().register(Box::new(counter.clone()))?;
     Ok(counter)
 }
@@ -82,10 +79,7 @@ pub fn register_gauge_vec(
     help: &str,
     label_names: &[&str],
 ) -> Result<GaugeVec, prometheus::Error> {
-    let gauge = GaugeVec::new(
-        prometheus::Opts::new(name, help),
-        label_names,
-    )?;
+    let gauge = GaugeVec::new(prometheus::Opts::new(name, help), label_names)?;
     crate::default_registry().register(Box::new(gauge.clone()))?;
     Ok(gauge)
 }
@@ -156,10 +150,7 @@ pub fn register_histogram_vec(
     help: &str,
     label_names: &[&str],
 ) -> Result<HistogramVec, prometheus::Error> {
-    let histogram = HistogramVec::new(
-        prometheus::HistogramOpts::new(name, help),
-        label_names,
-    )?;
+    let histogram = HistogramVec::new(prometheus::HistogramOpts::new(name, help), label_names)?;
     crate::default_registry().register(Box::new(histogram.clone()))?;
     Ok(histogram)
 }
@@ -239,4 +230,3 @@ mod tests {
         assert!(result.is_ok());
     }
 }
-

@@ -1,9 +1,9 @@
 //! Circuit breaker pattern implementation.
 
+use parking_lot::RwLock;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
-use parking_lot::RwLock;
-use tracing::{debug, warn, info};
+use tracing::{debug, info, warn};
 
 /// Circuit breaker state.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -209,15 +209,16 @@ impl CircuitBreaker {
 
         let opened_at = *self.opened_at.read();
         if let Some(opened) = opened_at
-            && opened.elapsed() >= self.config.reset_timeout {
-                let mut state = self.state.write();
-                if *state == CircuitState::Open {
-                    debug!("Circuit breaker transitioning to half-open");
-                    *state = CircuitState::HalfOpen;
-                    self.half_open_count.store(0, Ordering::SeqCst);
-                    self.success_count.store(0, Ordering::SeqCst);
-                }
+            && opened.elapsed() >= self.config.reset_timeout
+        {
+            let mut state = self.state.write();
+            if *state == CircuitState::Open {
+                debug!("Circuit breaker transitioning to half-open");
+                *state = CircuitState::HalfOpen;
+                self.half_open_count.store(0, Ordering::SeqCst);
+                self.success_count.store(0, Ordering::SeqCst);
             }
+        }
     }
 
     /// Get failure count.
@@ -277,4 +278,3 @@ mod tests {
         assert_eq!(cb.state(), CircuitState::Closed);
     }
 }
-

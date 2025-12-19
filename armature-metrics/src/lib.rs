@@ -51,11 +51,14 @@ use prometheus::{Encoder, Registry, TextEncoder};
 static DEFAULT_REGISTRY: Lazy<Registry> = Lazy::new(|| {
     let registry = Registry::new();
 
-    // Register default process metrics
-    if let Err(e) = prometheus::default_registry().register(Box::new(
-        prometheus::process_collector::ProcessCollector::for_self(),
-    )) {
-        tracing::warn!("Failed to register process collector: {}", e);
+    // Register default process metrics (Linux only - process_collector requires procfs)
+    #[cfg(target_os = "linux")]
+    {
+        if let Err(e) = prometheus::default_registry().register(Box::new(
+            prometheus::process_collector::ProcessCollector::for_self(),
+        )) {
+            tracing::warn!("Failed to register process collector: {}", e);
+        }
     }
 
     registry
@@ -109,7 +112,8 @@ pub fn export_metrics_from_registry(registry: &Registry) -> String {
         return String::from("# Error encoding metrics\n");
     }
 
-    String::from_utf8(buffer).unwrap_or_else(|_| String::from("# Error converting metrics to UTF-8\n"))
+    String::from_utf8(buffer)
+        .unwrap_or_else(|_| String::from("# Error converting metrics to UTF-8\n"))
 }
 
 #[cfg(test)]
@@ -130,4 +134,3 @@ mod tests {
         assert!(metrics.contains("# HELP") || metrics.is_empty());
     }
 }
-

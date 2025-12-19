@@ -71,14 +71,12 @@ impl Middleware for TenantMiddleware {
 
                 // Store in request headers (temporary approach)
                 // In production, use proper request-local storage
-                request.headers.insert(
-                    "__tenant_id".to_string(),
-                    tenant.id.clone(),
-                );
-                request.headers.insert(
-                    "__tenant_name".to_string(),
-                    tenant.name.clone(),
-                );
+                request
+                    .headers
+                    .insert("__tenant_id".to_string(), tenant.id.clone());
+                request
+                    .headers
+                    .insert("__tenant_name".to_string(), tenant.name.clone());
 
                 // Continue with request
                 next(request).await
@@ -89,7 +87,10 @@ impl Middleware for TenantMiddleware {
                     next(request).await
                 } else {
                     // Return error
-                    Err(Error::Unauthorized(format!("Tenant resolution failed: {}", e)))
+                    Err(Error::Unauthorized(format!(
+                        "Tenant resolution failed: {}",
+                        e
+                    )))
                 }
             }
         }
@@ -111,8 +112,8 @@ pub fn get_tenant_name(request: &HttpRequest) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tenant::Tenant;
     use crate::TenantError;
+    use crate::tenant::Tenant;
     use std::collections::HashMap;
 
     struct MockResolver {
@@ -149,14 +150,19 @@ mod tests {
 
         let request = create_request();
 
-        let result = middleware.handle(request, Box::new(|req| {
-            Box::pin(async move {
-                // Check tenant was stored
-                assert_eq!(get_tenant_id(&req), Some("tenant-1".to_string()));
-                assert_eq!(get_tenant_name(&req), Some("acme".to_string()));
-                Ok(HttpResponse::ok())
-            })
-        })).await;
+        let result = middleware
+            .handle(
+                request,
+                Box::new(|req| {
+                    Box::pin(async move {
+                        // Check tenant was stored
+                        assert_eq!(get_tenant_id(&req), Some("tenant-1".to_string()));
+                        assert_eq!(get_tenant_name(&req), Some("acme".to_string()));
+                        Ok(HttpResponse::ok())
+                    })
+                }),
+            )
+            .await;
 
         assert!(result.is_ok());
     }
@@ -168,11 +174,12 @@ mod tests {
 
         let request = create_request();
 
-        let result = middleware.handle(request, Box::new(|_req| {
-            Box::pin(async move {
-                Ok(HttpResponse::ok())
-            })
-        })).await;
+        let result = middleware
+            .handle(
+                request,
+                Box::new(|_req| Box::pin(async move { Ok(HttpResponse::ok()) })),
+            )
+            .await;
 
         assert!(result.is_err());
     }
@@ -184,15 +191,19 @@ mod tests {
 
         let request = create_request();
 
-        let result = middleware.handle(request, Box::new(|req| {
-            Box::pin(async move {
-                // No tenant should be stored
-                assert_eq!(get_tenant_id(&req), None);
-                Ok(HttpResponse::ok())
-            })
-        })).await;
+        let result = middleware
+            .handle(
+                request,
+                Box::new(|req| {
+                    Box::pin(async move {
+                        // No tenant should be stored
+                        assert_eq!(get_tenant_id(&req), None);
+                        Ok(HttpResponse::ok())
+                    })
+                }),
+            )
+            .await;
 
         assert!(result.is_ok());
     }
 }
-

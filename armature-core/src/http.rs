@@ -329,7 +329,10 @@ impl HttpResponse {
     /// let response = HttpResponse::ok().cookie("session", "abc123; HttpOnly; Secure");
     /// ```
     pub fn cookie(self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.with_header("Set-Cookie".to_string(), format!("{}={}", name.into(), value.into()))
+        self.with_header(
+            "Set-Cookie".to_string(),
+            format!("{}={}", name.into(), value.into()),
+        )
     }
 
     /// Get the response body as a string (lossy UTF-8 conversion).

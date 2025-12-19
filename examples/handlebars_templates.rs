@@ -139,7 +139,6 @@ struct TemplateService {
     hbs: Arc<Handlebars<'static>>,
 }
 
-
 impl TemplateService {
     fn new() -> Self {
         let mut hbs = Handlebars::new();
@@ -190,7 +189,6 @@ struct User {
 
 #[derive(Clone)]
 struct UserService;
-
 
 impl UserService {
     fn new() -> Self {

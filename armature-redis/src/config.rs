@@ -85,14 +85,16 @@ impl RedisConfig {
         }
 
         if let Ok(pool_size) = std::env::var("REDIS_POOL_SIZE")
-            && let Ok(size) = pool_size.parse() {
-                builder = builder.pool_size(size);
-            }
+            && let Ok(size) = pool_size.parse()
+        {
+            builder = builder.pool_size(size);
+        }
 
         if let Ok(db) = std::env::var("REDIS_DATABASE")
-            && let Ok(db_num) = db.parse() {
-                builder = builder.database(db_num);
-            }
+            && let Ok(db_num) = db.parse()
+        {
+            builder = builder.database(db_num);
+        }
 
         if let Ok(username) = std::env::var("REDIS_USERNAME") {
             builder = builder.username(username);
@@ -126,8 +128,16 @@ impl RedisConfig {
         if let Some(password) = &self.password {
             if let Some(username) = &self.username {
                 // Redis 6+ ACL format: redis://username:password@host
-                url = url.replacen("redis://", &format!("redis://{}:{}@", username, password), 1);
-                url = url.replacen("rediss://", &format!("rediss://{}:{}@", username, password), 1);
+                url = url.replacen(
+                    "redis://",
+                    &format!("redis://{}:{}@", username, password),
+                    1,
+                );
+                url = url.replacen(
+                    "rediss://",
+                    &format!("rediss://{}:{}@", username, password),
+                    1,
+                );
             } else {
                 // Legacy format: redis://:password@host
                 url = url.replacen("redis://", &format!("redis://:{}@", password), 1);
@@ -137,9 +147,10 @@ impl RedisConfig {
 
         // Add database if provided
         if let Some(db) = self.database
-            && (!url.contains('/') || url.ends_with(':')) {
-                url = format!("{}/{}", url.trim_end_matches('/'), db);
-            }
+            && (!url.contains('/') || url.ends_with(':'))
+        {
+            url = format!("{}/{}", url.trim_end_matches('/'), db);
+        }
 
         url
     }
@@ -260,4 +271,3 @@ mod humantime_serde {
         Ok(Duration::from_secs(secs))
     }
 }
-

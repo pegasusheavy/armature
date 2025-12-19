@@ -49,41 +49,39 @@ impl HandlebarsEngine {
             let entry_path = entry.path();
 
             if entry_path.is_dir() {
-                let template_name = entry_path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .ok_or_else(|| {
-                        MailError::Config("Invalid template directory name".to_string())
-                    })?;
+                let template_name =
+                    entry_path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .ok_or_else(|| {
+                            MailError::Config("Invalid template directory name".to_string())
+                        })?;
 
                 // Load HTML template
                 let html_path = entry_path.join("html.hbs");
                 if html_path.exists() {
                     let content = std::fs::read_to_string(&html_path)?;
-                    engine.handlebars.register_template_string(
-                        &format!("{}/html", template_name),
-                        content,
-                    )?;
+                    engine
+                        .handlebars
+                        .register_template_string(&format!("{}/html", template_name), content)?;
                 }
 
                 // Load text template
                 let text_path = entry_path.join("text.hbs");
                 if text_path.exists() {
                     let content = std::fs::read_to_string(&text_path)?;
-                    engine.handlebars.register_template_string(
-                        &format!("{}/text", template_name),
-                        content,
-                    )?;
+                    engine
+                        .handlebars
+                        .register_template_string(&format!("{}/text", template_name), content)?;
                 }
 
                 // Load subject template
                 let subject_path = entry_path.join("subject.hbs");
                 if subject_path.exists() {
                     let content = std::fs::read_to_string(&subject_path)?;
-                    engine.handlebars.register_template_string(
-                        &format!("{}/subject", template_name),
-                        content,
-                    )?;
+                    engine
+                        .handlebars
+                        .register_template_string(&format!("{}/subject", template_name), content)?;
                 }
 
                 debug!(template = template_name, "Loaded email template");
@@ -192,4 +190,3 @@ mod tests {
         assert_eq!(result.subject.as_deref(), Some("Welcome World"));
     }
 }
-

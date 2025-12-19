@@ -92,7 +92,9 @@ impl GraphQLClientConfigBuilder {
 
     /// Add a default header.
     pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.config.default_headers.push((name.into(), value.into()));
+        self.config
+            .default_headers
+            .push((name.into(), value.into()));
         self
     }
 
@@ -158,4 +160,3 @@ impl GraphQLClientConfigBuilder {
         self.config
     }
 }
-

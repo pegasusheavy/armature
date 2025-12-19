@@ -77,4 +77,3 @@ pub mod flag;
 pub use flag::{
     Condition, EvaluationContext, FeatureFlag, Operator, Rollout, TargetingRule, Variation,
 };
-

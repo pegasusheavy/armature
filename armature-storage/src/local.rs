@@ -7,8 +7,8 @@ use tokio::fs;
 use tracing::{debug, info};
 
 use crate::{
-    Result, StorageError, Storage, StorageMetadata, StorageConfig,
-    UploadedFile, generate_unique_key, calculate_checksum, sanitize_filename,
+    Result, Storage, StorageConfig, StorageError, StorageMetadata, UploadedFile,
+    calculate_checksum, generate_unique_key, sanitize_filename,
 };
 
 /// Local filesystem storage configuration.
@@ -110,7 +110,8 @@ impl LocalStorage {
 #[async_trait]
 impl Storage for LocalStorage {
     async fn put(&self, key: &str, data: Bytes) -> Result<StorageMetadata> {
-        self.put_with_content_type(key, data, "application/octet-stream").await
+        self.put_with_content_type(key, data, "application/octet-stream")
+            .await
     }
 
     async fn put_with_content_type(
@@ -121,12 +122,13 @@ impl Storage for LocalStorage {
     ) -> Result<StorageMetadata> {
         // Check size limit
         if let Some(max_size) = self.config.storage.max_file_size
-            && data.len() as u64 > max_size {
-                return Err(StorageError::TooLarge {
-                    size: data.len() as u64,
-                    limit: max_size,
-                });
-            }
+            && data.len() as u64 > max_size
+        {
+            return Err(StorageError::TooLarge {
+                size: data.len() as u64,
+                limit: max_size,
+            });
+        }
 
         let path = self.full_path(key);
 
@@ -148,8 +150,8 @@ impl Storage for LocalStorage {
         debug!(key = %key, path = ?path, size = data.len(), "Stored file");
 
         // Build metadata
-        let mut metadata = StorageMetadata::new(key, data.len() as u64)
-            .with_content_type(content_type);
+        let mut metadata =
+            StorageMetadata::new(key, data.len() as u64).with_content_type(content_type);
 
         if let Some(checksum) = checksum {
             metadata = metadata.with_checksum(checksum);
@@ -168,7 +170,9 @@ impl Storage for LocalStorage {
             .content_type_str()
             .unwrap_or_else(|| "application/octet-stream".to_string());
 
-        let mut metadata = self.put_with_content_type(&key, file.data.clone(), &content_type).await?;
+        let mut metadata = self
+            .put_with_content_type(&key, file.data.clone(), &content_type)
+            .await?;
 
         if let Some(name) = file.name() {
             metadata = metadata.with_original_name(name);
@@ -210,7 +214,8 @@ impl Storage for LocalStorage {
 
         // Add URL if base_url is configured
         if let Some(base_url) = &self.config.base_url {
-            storage_metadata = storage_metadata.with_url(format!("{}/{}", base_url.trim_end_matches('/'), key));
+            storage_metadata =
+                storage_metadata.with_url(format!("{}/{}", base_url.trim_end_matches('/'), key));
         }
 
         Ok(storage_metadata)
@@ -320,4 +325,3 @@ mod tests {
         assert!(!storage.exists("test.txt").await.unwrap());
     }
 }
-

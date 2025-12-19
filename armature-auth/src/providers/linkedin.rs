@@ -7,7 +7,8 @@ use serde::{Deserialize, Serialize};
 const AUTH_URL: &str = "https://www.linkedin.com/oauth/v2/authorization";
 const TOKEN_URL: &str = "https://www.linkedin.com/oauth/v2/accessToken";
 const USER_INFO_URL: &str = "https://api.linkedin.com/v2/me";
-const EMAIL_URL: &str = "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))";
+const EMAIL_URL: &str =
+    "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinkedInUser {
@@ -31,7 +32,10 @@ impl LinkedInProvider {
             TOKEN_URL.to_string(),
             redirect_url,
         )
-        .with_scopes(vec!["r_liteprofile".to_string(), "r_emailaddress".to_string()])
+        .with_scopes(vec![
+            "r_liteprofile".to_string(),
+            "r_emailaddress".to_string(),
+        ])
         .with_user_info_url(USER_INFO_URL.to_string())
     }
 
@@ -71,9 +75,13 @@ impl LinkedInProvider {
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
             .await
-            && let Ok(email_data) = email_resp.json::<EmailResponse>().await {
-                user.email = email_data.elements.first().map(|e| e.handle.email_address.clone());
-            }
+            && let Ok(email_data) = email_resp.json::<EmailResponse>().await
+        {
+            user.email = email_data
+                .elements
+                .first()
+                .map(|e| e.handle.email_address.clone());
+        }
 
         Ok(user)
     }

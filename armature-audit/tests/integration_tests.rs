@@ -31,9 +31,7 @@ async fn test_audit_logger() {
     let backend = MemoryBackend::new();
     let backend_clone = backend.clone();
 
-    let logger = AuditLogger::builder()
-        .backend(backend)
-        .build();
+    let logger = AuditLogger::builder().backend(backend).build();
 
     let event = AuditEvent::new("test")
         .user("alice")
@@ -117,4 +115,3 @@ fn test_audit_severity_ordering() {
     assert!(AuditSeverity::Warning < AuditSeverity::Error);
     assert!(AuditSeverity::Error < AuditSeverity::Critical);
 }
-

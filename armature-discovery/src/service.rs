@@ -54,7 +54,12 @@ pub struct ServiceInstance {
 
 impl ServiceInstance {
     /// Create new service instance
-    pub fn new(id: impl Into<String>, name: impl Into<String>, address: impl Into<String>, port: u16) -> Self {
+    pub fn new(
+        id: impl Into<String>,
+        name: impl Into<String>,
+        address: impl Into<String>,
+        port: u16,
+    ) -> Self {
         Self {
             id: id.into(),
             name: name.into(),
@@ -163,12 +168,13 @@ impl<D: ServiceDiscovery> ServiceResolver<D> {
 
         let instance = match self.strategy {
             LoadBalancingStrategy::RoundRobin => {
-                let index = self.round_robin_index.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                let index = self
+                    .round_robin_index
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 &instances[index % instances.len()]
             }
             LoadBalancingStrategy::Random => {
-                use rand::Rng;
-                let index = rand::thread_rng().gen_range(0..instances.len());
+                let index = rand::random_range(0..instances.len());
                 &instances[index]
             }
             LoadBalancingStrategy::First => &instances[0],
@@ -195,4 +201,3 @@ mod tests {
         assert!(service.tags.contains(&"production".to_string()));
     }
 }
-

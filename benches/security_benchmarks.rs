@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 use armature_jwt::*;
 use criterion::{Criterion, criterion_group, criterion_main};
 use jsonwebtoken::Algorithm;

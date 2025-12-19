@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Audit Logging Example
 //!
 //! This example demonstrates audit logging with sensitive data masking.
@@ -35,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let audit_logger = Arc::new(
         AuditLogger::builder()
             .backend(FileBackend::new("audit.log"))
-            .build()
+            .build(),
     );
     info!("✓ Audit logger created (writing to audit.log)");
 
@@ -57,13 +58,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let _body_str = String::from_utf8_lossy(&req.body);
 
                 // Manual audit log for business event
-                logger.log(AuditEvent::new("user.login.attempt")
-                    .user("alice")
-                    .ip("127.0.0.1")
-                    .action("authenticate")
-                    .status(AuditStatus::Success)
-                    .resource("authentication")
-                    .metadata("method", serde_json::json!("password"))).await.ok();
+                logger
+                    .log(
+                        AuditEvent::new("user.login.attempt")
+                            .user("alice")
+                            .ip("127.0.0.1")
+                            .action("authenticate")
+                            .status(AuditStatus::Success)
+                            .resource("authentication")
+                            .metadata("method", serde_json::json!("password")),
+                    )
+                    .await
+                    .ok();
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Login successful",
@@ -101,14 +107,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let id = req.path_params.get("id").unwrap();
 
                 // Log critical action
-                logger.log(AuditEvent::new("resource.delete")
-                    .user("admin")
-                    .action("delete")
-                    .resource("user")
-                    .resource_id(id)
-                    .status(AuditStatus::Success)
-                    .severity(AuditSeverity::Critical)
-                    .metadata("reason", serde_json::json!("user request"))).await.ok();
+                logger
+                    .log(
+                        AuditEvent::new("resource.delete")
+                            .user("admin")
+                            .action("delete")
+                            .resource("user")
+                            .resource_id(id)
+                            .status(AuditStatus::Success)
+                            .severity(AuditSeverity::Critical)
+                            .metadata("reason", serde_json::json!("user request")),
+                    )
+                    .await
+                    .ok();
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": format!("Deleted resource {}", id)
@@ -150,7 +161,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("  - Severity levels (Info, Warning, Critical)");
     info!("\nAudit log location: audit.log");
     info!("\nTry these requests:");
-    info!("  curl -X POST http://localhost:3000/login -d '{{\"username\":\"alice\",\"password\":\"secret123\"}}'");
+    info!(
+        "  curl -X POST http://localhost:3000/login -d '{{\"username\":\"alice\",\"password\":\"secret123\"}}'"
+    );
     info!("  curl http://localhost:3000/api/users");
     info!("  curl -X DELETE http://localhost:3000/api/delete/123");
     info!("\nPress Ctrl+C to stop");

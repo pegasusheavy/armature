@@ -69,10 +69,7 @@ impl EventBus {
         let type_id = TypeId::of::<E>();
         let handler = Arc::new(handler);
 
-        self.handlers
-            .entry(type_id)
-            .or_default()
-            .push(handler);
+        self.handlers.entry(type_id).or_default().push(handler);
 
         if self.config.enable_logging {
             debug!("Subscribed handler for event type: {:?}", type_id);
@@ -93,7 +90,11 @@ impl EventBus {
         let type_id = TypeId::of::<E>();
 
         if self.config.enable_logging {
-            info!("Publishing event: {} (id: {})", event.event_name(), event.event_id());
+            info!(
+                "Publishing event: {} (id: {})",
+                event.event_name(),
+                event.event_id()
+            );
         }
 
         // Get handlers for this event type
@@ -118,9 +119,7 @@ impl EventBus {
             for handler in handlers.iter() {
                 let handler = handler.clone();
                 let event = event.clone();
-                let task = tokio::spawn(async move {
-                    handler.handle_dyn(event.as_ref()).await
-                });
+                let task = tokio::spawn(async move { handler.handle_dyn(event.as_ref()).await });
                 tasks.push(task);
             }
 
@@ -192,10 +191,7 @@ impl EventBus {
     /// Get handler count for an event type
     pub fn handler_count<E: Event + 'static>(&self) -> usize {
         let type_id = TypeId::of::<E>();
-        self.handlers
-            .get(&type_id)
-            .map(|h| h.len())
-            .unwrap_or(0)
+        self.handlers.get(&type_id).map(|h| h.len()).unwrap_or(0)
     }
 }
 
@@ -376,4 +372,3 @@ mod tests {
         assert_eq!(bus.handler_count::<TestEvent>(), 2);
     }
 }
-

@@ -6,11 +6,12 @@ use std::collections::HashMap;
 
 #[test]
 fn test_cors_strict_origin() {
-    let cors = CorsConfig::new()
-        .allow_origin("https://app.example.com");
+    let cors = CorsConfig::new().allow_origin("https://app.example.com");
 
     let mut request = create_request("GET", "/api/data");
-    request.headers.insert("origin".to_string(), "https://app.example.com".to_string());
+    request
+        .headers
+        .insert("origin".to_string(), "https://app.example.com".to_string());
 
     let mut response = HttpResponse::ok();
     cors.add_cors_headers(&mut response, "https://app.example.com");
@@ -47,8 +48,7 @@ fn test_cors_origin_regex() {
 
 #[test]
 fn test_cors_methods() {
-    let cors = CorsConfig::new()
-        .allow_methods(vec!["GET", "POST", "PUT"]);
+    let cors = CorsConfig::new().allow_methods(vec!["GET", "POST", "PUT"]);
 
     assert!(cors.is_method_allowed("GET"));
     assert!(cors.is_method_allowed("POST"));
@@ -59,8 +59,7 @@ fn test_cors_methods() {
 
 #[test]
 fn test_cors_headers() {
-    let cors = CorsConfig::new()
-        .allow_headers(vec!["Content-Type", "Authorization"]);
+    let cors = CorsConfig::new().allow_headers(vec!["Content-Type", "Authorization"]);
 
     assert!(cors.is_header_allowed("content-type"));
     assert!(cors.is_header_allowed("Content-Type"));
@@ -116,15 +115,31 @@ fn test_cors_preflight() {
         .max_age(3600);
 
     let mut request = create_request("OPTIONS", "/api/users");
-    request.headers.insert("origin".to_string(), "https://app.example.com".to_string());
-    request.headers.insert("access-control-request-method".to_string(), "POST".to_string());
-    request.headers.insert("access-control-request-headers".to_string(), "Content-Type, Authorization".to_string());
+    request
+        .headers
+        .insert("origin".to_string(), "https://app.example.com".to_string());
+    request.headers.insert(
+        "access-control-request-method".to_string(),
+        "POST".to_string(),
+    );
+    request.headers.insert(
+        "access-control-request-headers".to_string(),
+        "Content-Type, Authorization".to_string(),
+    );
 
     let response = cors.handle_preflight(&request).unwrap();
 
     assert_eq!(response.status, 204);
-    assert!(response.headers.contains_key("Access-Control-Allow-Methods"));
-    assert!(response.headers.contains_key("Access-Control-Allow-Headers"));
+    assert!(
+        response
+            .headers
+            .contains_key("Access-Control-Allow-Methods")
+    );
+    assert!(
+        response
+            .headers
+            .contains_key("Access-Control-Allow-Headers")
+    );
     assert_eq!(
         response.headers.get("Access-Control-Max-Age"),
         Some(&"3600".to_string())
@@ -159,26 +174,23 @@ fn test_cors_wildcard_without_credentials() {
 
 #[test]
 fn test_cors_vary_header() {
-    let cors = CorsConfig::new()
-        .allow_origin("https://app.example.com");
+    let cors = CorsConfig::new().allow_origin("https://app.example.com");
 
     let mut response = HttpResponse::ok();
     cors.add_cors_headers(&mut response, "https://app.example.com");
 
     // Vary header should be set for caching
-    assert_eq!(
-        response.headers.get("Vary"),
-        Some(&"Origin".to_string())
-    );
+    assert_eq!(response.headers.get("Vary"), Some(&"Origin".to_string()));
 }
 
 #[test]
 fn test_cors_apply() {
-    let cors = CorsConfig::new()
-        .allow_origin("https://app.example.com");
+    let cors = CorsConfig::new().allow_origin("https://app.example.com");
 
     let mut request = create_request("GET", "/api/data");
-    request.headers.insert("origin".to_string(), "https://app.example.com".to_string());
+    request
+        .headers
+        .insert("origin".to_string(), "https://app.example.com".to_string());
 
     let response = HttpResponse::ok();
     let response = cors.apply(&request, response);
@@ -197,4 +209,3 @@ fn create_request(method: &str, path: &str) -> HttpRequest {
         path_params: HashMap::new(),
     }
 }
-

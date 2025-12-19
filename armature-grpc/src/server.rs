@@ -2,9 +2,9 @@
 
 use std::future::Future;
 use tonic::transport::Server;
-use tracing::{info, error};
+use tracing::{error, info};
 
-use crate::{GrpcServerConfig, GrpcError, Result};
+use crate::{GrpcError, GrpcServerConfig, Result};
 
 /// Type alias for the body type used by tonic.
 type TonicBody = http_body_util::combinators::UnsyncBoxBody<bytes::Bytes, tonic::Status>;
@@ -38,8 +38,7 @@ impl GrpcServerBuilder {
 
         info!(address = %addr, "Starting gRPC server");
 
-        let mut builder = Server::builder()
-            .tcp_nodelay(self.config.tcp_nodelay);
+        let mut builder = Server::builder().tcp_nodelay(self.config.tcp_nodelay);
 
         if let Some(interval) = self.config.http2_keepalive_interval {
             builder = builder.http2_keepalive_interval(Some(interval));
@@ -68,13 +67,10 @@ impl GrpcServerBuilder {
             router
         };
 
-        router
-            .serve(addr)
-            .await
-            .map_err(|e| {
-                error!(error = %e, "gRPC server error");
-                GrpcError::Server(e.to_string())
-            })
+        router.serve(addr).await.map_err(|e| {
+            error!(error = %e, "gRPC server error");
+            GrpcError::Server(e.to_string())
+        })
     }
 
     /// Build and start the server with graceful shutdown.
@@ -96,8 +92,7 @@ impl GrpcServerBuilder {
 
         info!(address = %addr, "Starting gRPC server with graceful shutdown");
 
-        let mut builder = Server::builder()
-            .tcp_nodelay(self.config.tcp_nodelay);
+        let mut builder = Server::builder().tcp_nodelay(self.config.tcp_nodelay);
 
         if let Some(interval) = self.config.http2_keepalive_interval {
             builder = builder.http2_keepalive_interval(Some(interval));
@@ -108,13 +103,10 @@ impl GrpcServerBuilder {
 
         let router = builder.add_service(service);
 
-        router
-            .serve_with_shutdown(addr, signal)
-            .await
-            .map_err(|e| {
-                error!(error = %e, "gRPC server error");
-                GrpcError::Server(e.to_string())
-            })
+        router.serve_with_shutdown(addr, signal).await.map_err(|e| {
+            error!(error = %e, "gRPC server error");
+            GrpcError::Server(e.to_string())
+        })
     }
 }
 
@@ -134,9 +126,7 @@ impl GrpcServer {
 
     /// Create a server builder bound to the specified address.
     pub fn bind(addr: impl Into<String>) -> GrpcServerBuilder {
-        let config = GrpcServerConfig::builder()
-            .bind_address(addr)
-            .build();
+        let config = GrpcServerConfig::builder().bind_address(addr).build();
         GrpcServerBuilder::new(config)
     }
 }

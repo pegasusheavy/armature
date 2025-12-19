@@ -17,8 +17,9 @@ fn test_register_counter_vec() {
     let counter = register_counter_vec(
         "test_counter_vec_1",
         "Test counter vec",
-        &["label1", "label2"]
-    ).unwrap();
+        &["label1", "label2"],
+    )
+    .unwrap();
 
     counter.with_label_values(&["value1", "value2"]).inc();
     counter.with_label_values(&["value1", "value2"]).inc();
@@ -50,11 +51,7 @@ fn test_register_gauge() {
 
 #[test]
 fn test_register_gauge_vec() {
-    let gauge = register_gauge_vec(
-        "test_gauge_vec_1",
-        "Test gauge vec",
-        &["label1"]
-    ).unwrap();
+    let gauge = register_gauge_vec("test_gauge_vec_1", "Test gauge vec", &["label1"]).unwrap();
 
     gauge.with_label_values(&["value1"]).set(10.0);
     gauge.with_label_values(&["value2"]).set(20.0);
@@ -80,31 +77,33 @@ fn test_register_histogram_with_buckets() {
     let histogram = register_histogram_with_buckets(
         "test_histogram_buckets_1",
         "Test histogram with buckets",
-        vec![0.1, 0.5, 1.0, 5.0]
-    ).unwrap();
+        vec![0.1, 0.5, 1.0, 5.0],
+    )
+    .unwrap();
 
-    histogram.observe(0.05);  // < 0.1
-    histogram.observe(0.25);  // < 0.5
-    histogram.observe(0.75);  // < 1.0
-    histogram.observe(3.0);   // < 5.0
+    histogram.observe(0.05); // < 0.1
+    histogram.observe(0.25); // < 0.5
+    histogram.observe(0.75); // < 1.0
+    histogram.observe(3.0); // < 5.0
 
     assert_eq!(histogram.get_sample_count(), 4);
 }
 
 #[test]
 fn test_register_histogram_vec() {
-    let histogram = register_histogram_vec(
-        "test_histogram_vec_1",
-        "Test histogram vec",
-        &["operation"]
-    ).unwrap();
+    let histogram =
+        register_histogram_vec("test_histogram_vec_1", "Test histogram vec", &["operation"])
+            .unwrap();
 
     histogram.with_label_values(&["read"]).observe(0.1);
     histogram.with_label_values(&["read"]).observe(0.2);
     histogram.with_label_values(&["write"]).observe(0.5);
 
     assert_eq!(histogram.with_label_values(&["read"]).get_sample_count(), 2);
-    assert_eq!(histogram.with_label_values(&["write"]).get_sample_count(), 1);
+    assert_eq!(
+        histogram.with_label_values(&["write"]).get_sample_count(),
+        1
+    );
 }
 
 #[test]
@@ -161,10 +160,13 @@ fn test_histogram_builder() {
 
 #[test]
 fn test_histogram_builder_with_buckets() {
-    let histogram = HistogramBuilder::new("test_builder_histogram_buckets", "Test builder histogram buckets")
-        .buckets(vec![1.0, 5.0, 10.0])
-        .register()
-        .unwrap();
+    let histogram = HistogramBuilder::new(
+        "test_builder_histogram_buckets",
+        "Test builder histogram buckets",
+    )
+    .buckets(vec![1.0, 5.0, 10.0])
+    .register()
+    .unwrap();
 
     histogram.observe(2.0);
     assert_eq!(histogram.get_sample_count(), 1);
@@ -172,10 +174,13 @@ fn test_histogram_builder_with_buckets() {
 
 #[test]
 fn test_histogram_builder_latency_buckets() {
-    let histogram = HistogramBuilder::new("test_builder_histogram_latency", "Test builder histogram latency")
-        .latency_buckets()
-        .register()
-        .unwrap();
+    let histogram = HistogramBuilder::new(
+        "test_builder_histogram_latency",
+        "Test builder histogram latency",
+    )
+    .latency_buckets()
+    .register()
+    .unwrap();
 
     histogram.observe(0.05);
     assert_eq!(histogram.get_sample_count(), 1);
@@ -183,10 +188,11 @@ fn test_histogram_builder_latency_buckets() {
 
 #[test]
 fn test_histogram_builder_size_buckets() {
-    let histogram = HistogramBuilder::new("test_builder_histogram_size", "Test builder histogram size")
-        .size_buckets()
-        .register()
-        .unwrap();
+    let histogram =
+        HistogramBuilder::new("test_builder_histogram_size", "Test builder histogram size")
+            .size_buckets()
+            .register()
+            .unwrap();
 
     histogram.observe(5000.0);
     assert_eq!(histogram.get_sample_count(), 1);
@@ -194,13 +200,19 @@ fn test_histogram_builder_size_buckets() {
 
 #[test]
 fn test_histogram_vec_builder() {
-    let histogram = HistogramVecBuilder::new("test_builder_histogram_vec", "Test builder histogram vec")
-        .labels(&["endpoint"])
-        .register()
-        .unwrap();
+    let histogram =
+        HistogramVecBuilder::new("test_builder_histogram_vec", "Test builder histogram vec")
+            .labels(&["endpoint"])
+            .register()
+            .unwrap();
 
     histogram.with_label_values(&["/api/users"]).observe(0.1);
-    assert_eq!(histogram.with_label_values(&["/api/users"]).get_sample_count(), 1);
+    assert_eq!(
+        histogram
+            .with_label_values(&["/api/users"])
+            .get_sample_count(),
+        1
+    );
 }
 
 #[test]
@@ -220,7 +232,9 @@ fn test_export_metrics() {
     let _counter = register_counter("test_export_counter", "Test export counter").unwrap();
 
     let metrics = export_metrics();
-    assert!(metrics.contains("# HELP") || metrics.contains("test_export_counter") || metrics.len() > 0);
+    assert!(
+        metrics.contains("# HELP") || metrics.contains("test_export_counter") || metrics.len() > 0
+    );
 }
 
 #[test]
@@ -261,4 +275,3 @@ fn test_request_metrics_middleware_without_path() {
     // Just ensure it can be created
     drop(middleware);
 }
-

@@ -118,7 +118,10 @@ impl GcpServices {
 
         let mut client = self.pubsub.write();
         if client.is_none() {
-            let project_id = self.config.project_id.as_ref()
+            let project_id = self
+                .config
+                .project_id
+                .as_ref()
                 .ok_or(GcpError::ProjectNotSpecified)?;
 
             let config = ClientConfig::default()
@@ -126,7 +129,11 @@ impl GcpServices {
                 .await
                 .map_err(|e| GcpError::Auth(e.to_string()))?;
 
-            *client = Some(Client::new(config).await.map_err(|e| GcpError::Service(e.to_string()))?);
+            *client = Some(
+                Client::new(config)
+                    .await
+                    .map_err(|e| GcpError::Service(e.to_string()))?,
+            );
             info!(project = %project_id, "Pub/Sub client initialized");
         }
         Ok(())
@@ -138,7 +145,10 @@ impl GcpServices {
 
         let mut client = self.spanner.write();
         if client.is_none() {
-            let project_id = self.config.project_id.as_ref()
+            let project_id = self
+                .config
+                .project_id
+                .as_ref()
                 .ok_or(GcpError::ProjectNotSpecified)?;
 
             let config = ClientConfig::default()
@@ -146,7 +156,11 @@ impl GcpServices {
                 .await
                 .map_err(|e| GcpError::Auth(e.to_string()))?;
 
-            *client = Some(Client::new(project_id, config).await.map_err(|e| GcpError::Service(e.to_string()))?);
+            *client = Some(
+                Client::new(project_id, config)
+                    .await
+                    .map_err(|e| GcpError::Service(e.to_string()))?,
+            );
             info!(project = %project_id, "Spanner client initialized");
         }
         Ok(())
@@ -158,7 +172,10 @@ impl GcpServices {
 
         let mut client = self.bigquery.write();
         if client.is_none() {
-            let project_id = self.config.project_id.as_ref()
+            let project_id = self
+                .config
+                .project_id
+                .as_ref()
                 .ok_or(GcpError::ProjectNotSpecified)?;
 
             let config = ClientConfig::default()
@@ -166,7 +183,11 @@ impl GcpServices {
                 .await
                 .map_err(|e| GcpError::Auth(e.to_string()))?;
 
-            *client = Some(Client::new(config).await.map_err(|e| GcpError::Service(e.to_string()))?);
+            *client = Some(
+                Client::new(config)
+                    .await
+                    .map_err(|e| GcpError::Service(e.to_string()))?,
+            );
             info!(project = %project_id, "BigQuery client initialized");
         }
         Ok(())
@@ -246,4 +267,3 @@ impl GcpServices {
         Err(GcpError::not_enabled("bigquery"))
     }
 }
-

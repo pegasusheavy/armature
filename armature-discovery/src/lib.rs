@@ -68,17 +68,17 @@
 //! let instance = resolver.resolve("api").await?;
 //! ```
 
-pub mod service;
-pub mod memory;
 pub mod consul;
 pub mod etcd;
+pub mod memory;
+pub mod service;
 
+pub use consul::ConsulDiscovery;
+pub use etcd::EtcdDiscovery;
+pub use memory::InMemoryDiscovery;
 pub use service::{
     DiscoveryError, LoadBalancingStrategy, ServiceDiscovery, ServiceInstance, ServiceResolver,
 };
-pub use memory::InMemoryDiscovery;
-pub use consul::ConsulDiscovery;
-pub use etcd::EtcdDiscovery;
 
 #[cfg(test)]
 mod tests {
@@ -87,4 +87,3 @@ mod tests {
         // Ensure module compiles
     }
 }
-

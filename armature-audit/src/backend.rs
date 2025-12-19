@@ -21,7 +21,10 @@ pub trait AuditBackend: Send + Sync {
     }
 
     /// Delete old events (for retention)
-    async fn delete_before(&self, _timestamp: chrono::DateTime<chrono::Utc>) -> Result<usize, AuditBackendError> {
+    async fn delete_before(
+        &self,
+        _timestamp: chrono::DateTime<chrono::Utc>,
+    ) -> Result<usize, AuditBackendError> {
         Err(AuditBackendError::NotSupported)
     }
 }
@@ -60,9 +63,7 @@ impl FileBackend {
     /// let backend = FileBackend::new("audit.log");
     /// ```
     pub fn new(path: impl Into<PathBuf>) -> Self {
-        Self {
-            path: path.into(),
-        }
+        Self { path: path.into() }
     }
 }
 
@@ -140,7 +141,10 @@ impl AuditBackend for MemoryBackend {
         Ok(events.iter().rev().take(count).cloned().collect())
     }
 
-    async fn delete_before(&self, timestamp: chrono::DateTime<chrono::Utc>) -> Result<usize, AuditBackendError> {
+    async fn delete_before(
+        &self,
+        timestamp: chrono::DateTime<chrono::Utc>,
+    ) -> Result<usize, AuditBackendError> {
         let mut events = self.events.lock().await;
         let original_len = events.len();
         events.retain(|e| e.timestamp >= timestamp);
@@ -226,14 +230,12 @@ impl AuditBackend for MultiBackend {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{AuditStatus, AuditSeverity};
+    use crate::{AuditSeverity, AuditStatus};
 
     #[tokio::test]
     async fn test_memory_backend() {
         let backend = MemoryBackend::new();
-        let event = AuditEvent::new("test.event")
-            .user("alice")
-            .action("test");
+        let event = AuditEvent::new("test.event").user("alice").action("test");
 
         backend.write(&event).await.unwrap();
 
@@ -279,4 +281,3 @@ mod tests {
         assert_eq!(events[0].event_type, "new");
     }
 }
-

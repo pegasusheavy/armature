@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 use armature_cron::{CronExpression, expression::CronPresets};
 use armature_queue::{Job as QueueJob, JobPriority, QueueConfig};
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};

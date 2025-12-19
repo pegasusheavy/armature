@@ -40,7 +40,10 @@ pub enum CommandError {
 /// Type-erased command handler
 #[async_trait]
 trait DynCommandHandler: Send + Sync {
-    async fn handle_dyn(&self, command: Box<dyn Any + Send>) -> Result<Box<dyn Any + Send>, CommandError>;
+    async fn handle_dyn(
+        &self,
+        command: Box<dyn Any + Send>,
+    ) -> Result<Box<dyn Any + Send>, CommandError>;
 }
 
 /// Wrapper for typed command handlers
@@ -60,7 +63,10 @@ impl<C: Command, H: CommandHandler<C>> TypedCommandHandler<C, H> {
 
 #[async_trait]
 impl<C: Command, H: CommandHandler<C>> DynCommandHandler for TypedCommandHandler<C, H> {
-    async fn handle_dyn(&self, command: Box<dyn Any + Send>) -> Result<Box<dyn Any + Send>, CommandError> {
+    async fn handle_dyn(
+        &self,
+        command: Box<dyn Any + Send>,
+    ) -> Result<Box<dyn Any + Send>, CommandError> {
         match command.downcast::<C>() {
             Ok(cmd) => {
                 let result = self.handler.handle(*cmd).await?;
@@ -112,7 +118,9 @@ impl CommandBus {
 
         match result.downcast::<C::Result>() {
             Ok(result) => Ok(*result),
-            Err(_) => Err(CommandError::ExecutionFailed("Result type mismatch".to_string())),
+            Err(_) => Err(CommandError::ExecutionFailed(
+                "Result type mismatch".to_string(),
+            )),
         }
     }
 }
@@ -157,4 +165,3 @@ mod tests {
         assert_eq!(result, "user-alice@example.com");
     }
 }
-

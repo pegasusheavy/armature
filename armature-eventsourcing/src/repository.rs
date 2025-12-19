@@ -66,11 +66,7 @@ where
 
         // Save events with optimistic concurrency
         self.store
-            .save_events(
-                aggregate.aggregate_id(),
-                events,
-                Some(aggregate.version()),
-            )
+            .save_events(aggregate.aggregate_id(), events, Some(aggregate.version()))
             .await?;
 
         // Mark events as committed
@@ -94,7 +90,6 @@ where
         // Users should implement their own snapshot creation if needed.
         Ok(())
     }
-
 }
 
 impl<A, S> Clone for AggregateRepository<A, S>
@@ -114,10 +109,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use armature_events::DomainEvent;
-    use async_trait::async_trait;
     use crate::aggregate::AggregateRoot;
     use crate::store::InMemoryEventStore;
+    use armature_events::DomainEvent;
+    use async_trait::async_trait;
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -181,4 +176,3 @@ mod tests {
         assert_eq!(aggregate.uncommitted_events().len(), 0);
     }
 }
-

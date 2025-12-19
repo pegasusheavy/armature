@@ -1,19 +1,18 @@
 //! GraphQL client implementation.
 
-use std::sync::Arc;
-use std::time::Duration;
+use futures::StreamExt;
 use reqwest::Client;
 use serde_json::Value;
+use std::sync::Arc;
+use std::time::Duration;
 use tracing::{debug, info};
-use futures::StreamExt;
 
-use crate::{
-    GraphQLClientConfig, GraphQLError, Result,
-    GraphQLResponse, QueryBuilder, MutationBuilder, SubscriptionBuilder,
-    BatchRequest, BatchResponse, SubscriptionStream,
-};
 use crate::request::GraphQLRequest;
 use crate::subscription::protocol::{ClientMessage, ServerMessage, SubscribePayload};
+use crate::{
+    BatchRequest, BatchResponse, GraphQLClientConfig, GraphQLError, GraphQLResponse,
+    MutationBuilder, QueryBuilder, Result, SubscriptionBuilder, SubscriptionStream,
+};
 
 /// GraphQL client.
 #[derive(Clone)]
@@ -81,15 +80,10 @@ impl GraphQLClient {
 
         request = request.header("Content-Type", "application/json");
 
-        let response = request
-            .json(&batch.into_requests())
-            .send()
-            .await?;
+        let response = request.json(&batch.into_requests()).send().await?;
 
         if !response.status().is_success() {
-            return Err(GraphQLError::Http(
-                response.error_for_status().unwrap_err()
-            ));
+            return Err(GraphQLError::Http(response.error_for_status().unwrap_err()));
         }
 
         let responses: Vec<GraphQLResponse<Value>> = response.json().await?;
@@ -123,15 +117,10 @@ impl GraphQLClient {
             http_request = http_request.timeout(timeout);
         }
 
-        let response = http_request
-            .json(&request)
-            .send()
-            .await?;
+        let response = http_request.json(&request).send().await?;
 
         if !response.status().is_success() {
-            return Err(GraphQLError::Http(
-                response.error_for_status().unwrap_err()
-            ));
+            return Err(GraphQLError::Http(response.error_for_status().unwrap_err()));
         }
 
         let graphql_response: GraphQLResponse<Value> = response.json().await?;
@@ -144,8 +133,10 @@ impl GraphQLClient {
         request: GraphQLRequest,
         _extra_headers: Vec<(String, String)>,
     ) -> Result<SubscriptionStream<Value>> {
-        let ws_endpoint = self.config.ws_endpoint.as_ref()
-            .ok_or_else(|| GraphQLError::Config("WebSocket endpoint not configured".to_string()))?;
+        let ws_endpoint =
+            self.config.ws_endpoint.as_ref().ok_or_else(|| {
+                GraphQLError::Config("WebSocket endpoint not configured".to_string())
+            })?;
 
         info!(endpoint = %ws_endpoint, "Starting GraphQL subscription");
 
@@ -163,7 +154,8 @@ impl GraphQLClient {
         use futures::SinkExt;
         use tokio_tungstenite::tungstenite::Message;
 
-        write.send(Message::Text(init_msg.into()))
+        write
+            .send(Message::Text(init_msg.into()))
             .await
             .map_err(|e| GraphQLError::WebSocket(e.to_string()))?;
 
@@ -177,17 +169,22 @@ impl GraphQLClient {
                         debug!("WebSocket connection acknowledged");
                     }
                     _ => {
-                        return Err(GraphQLError::WebSocket("Expected connection_ack".to_string()));
+                        return Err(GraphQLError::WebSocket(
+                            "Expected connection_ack".to_string(),
+                        ));
                     }
                 }
             }
         }
 
         // Send subscribe message
-        let subscription_id = format!("{:x}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos());
+        let subscription_id = format!(
+            "{:x}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        );
 
         let subscribe_msg = serde_json::to_string(&ClientMessage::Subscribe {
             id: subscription_id.clone(),
@@ -199,7 +196,8 @@ impl GraphQLClient {
             },
         })?;
 
-        write.send(Message::Text(subscribe_msg.into()))
+        write
+            .send(Message::Text(subscribe_msg.into()))
             .await
             .map_err(|e| GraphQLError::WebSocket(e.to_string()))?;
 
@@ -282,4 +280,3 @@ mod tests {
         assert_eq!(client.config().timeout, Duration::from_secs(60));
     }
 }
-

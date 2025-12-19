@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! HTTP Benchmark Runner
 //!
 //! A comprehensive HTTP benchmark tool that can compare Armature with other
@@ -138,8 +141,8 @@ pub fn get_frameworks() -> Vec<FrameworkConfig> {
 pub struct Endpoint {
     pub name: &'static str,
     pub method: &'static str,
-    pub rust_path: &'static str,    // Path for Rust frameworks
-    pub nextjs_path: &'static str,  // Path for Next.js (with /api prefix)
+    pub rust_path: &'static str,   // Path for Rust frameworks
+    pub nextjs_path: &'static str, // Path for Next.js (with /api prefix)
 }
 
 pub fn get_endpoints() -> Vec<Endpoint> {
@@ -268,9 +271,7 @@ fn parse_oha_output(output: &str, url: &str) -> Result<BenchmarkResult, String> 
     Ok(BenchmarkResult {
         framework: "unknown".to_string(),
         endpoint: url.to_string(),
-        requests_per_second: summary["requestsPerSec"]
-            .as_f64()
-            .unwrap_or(0.0),
+        requests_per_second: summary["requestsPerSec"].as_f64().unwrap_or(0.0),
         latency_avg_ms: summary["average"]
             .as_f64()
             .map(|v| v * 1000.0)
@@ -460,10 +461,7 @@ pub fn print_comparison_summary(results: &[BenchmarkResult]) {
     // Group by endpoint
     let mut by_endpoint: HashMap<String, Vec<&BenchmarkResult>> = HashMap::new();
     for r in results {
-        by_endpoint
-            .entry(r.endpoint.clone())
-            .or_default()
-            .push(r);
+        by_endpoint.entry(r.endpoint.clone()).or_default().push(r);
     }
 
     println!("\n{:=<100}", "");
@@ -476,7 +474,11 @@ pub fn print_comparison_summary(results: &[BenchmarkResult]) {
 
         // Sort by requests per second (descending)
         let mut sorted: Vec<_> = endpoint_results.iter().collect();
-        sorted.sort_by(|a, b| b.requests_per_second.partial_cmp(&a.requests_per_second).unwrap());
+        sorted.sort_by(|a, b| {
+            b.requests_per_second
+                .partial_cmp(&a.requests_per_second)
+                .unwrap()
+        });
 
         if let Some(fastest) = sorted.first() {
             for (i, r) in sorted.iter().enumerate() {
@@ -512,10 +514,7 @@ pub fn generate_markdown_report(results: &[BenchmarkResult], config: &BenchmarkC
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    report.push_str(&format!(
-        "**Date:** {} (Unix timestamp)\n\n",
-        now
-    ));
+    report.push_str(&format!("**Date:** {} (Unix timestamp)\n\n", now));
     report.push_str("## Configuration\n\n");
     report.push_str(&format!("- Duration: {} seconds\n", config.duration_secs));
     report.push_str(&format!("- Connections: {}\n", config.connections));
@@ -523,7 +522,8 @@ pub fn generate_markdown_report(results: &[BenchmarkResult], config: &BenchmarkC
     report.push_str(&format!("- Warmup: {} seconds\n\n", config.warmup_secs));
 
     report.push_str("## Results\n\n");
-    report.push_str("| Framework | Endpoint | Req/s | Avg (ms) | p50 (ms) | p90 (ms) | p99 (ms) |\n");
+    report
+        .push_str("| Framework | Endpoint | Req/s | Avg (ms) | p50 (ms) | p90 (ms) | p99 (ms) |\n");
     report.push_str("|-----------|----------|------:|--------:|--------:|--------:|--------:|\n");
 
     for r in results {
@@ -545,7 +545,9 @@ pub fn generate_markdown_report(results: &[BenchmarkResult], config: &BenchmarkC
     report.push_str("2. **JSON** (`/json`) - Returns a small JSON object\n");
     report.push_str("3. **Path Parameter** (`/users/:id`) - Returns user data\n");
     report.push_str("4. **JSON POST** (`/api/users`) - Accepts and returns JSON\n\n");
-    report.push_str("Each test includes a warmup period to stabilize JIT compilation and connection pooling.\n");
+    report.push_str(
+        "Each test includes a warmup period to stabilize JIT compilation and connection pooling.\n",
+    );
 
     report
 }
@@ -570,11 +572,17 @@ pub fn run_benchmarks(
     let mut results = Vec::new();
 
     for framework in frameworks {
-        println!("\n📊 Benchmarking: {} (port {})", framework.name, framework.port);
+        println!(
+            "\n📊 Benchmarking: {} (port {})",
+            framework.name, framework.port
+        );
         println!("   {}", framework.description);
 
         if !check_server_running(framework.port) {
-            println!("   ⚠️  Server not running on port {}, skipping...", framework.port);
+            println!(
+                "   ⚠️  Server not running on port {}, skipping...",
+                framework.port
+            );
             continue;
         }
 
@@ -684,7 +692,10 @@ fn main() {
                 }
             }
             "--all" | "-a" => {
-                frameworks_to_test = get_frameworks().iter().map(|f| f.name.to_string()).collect();
+                frameworks_to_test = get_frameworks()
+                    .iter()
+                    .map(|f| f.name.to_string())
+                    .collect();
             }
             "--help" | "-h" => {
                 print_help();
@@ -761,4 +772,3 @@ fn print_help() {
     println!("  http-benchmark -f armature -f actix-web -d 30");
     println!("  http-benchmark --all -c 100 -t 8");
 }
-

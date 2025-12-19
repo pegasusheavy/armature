@@ -38,7 +38,7 @@ use data_encoding::BASE32_NOPAD;
 #[cfg(feature = "two-factor")]
 use qrcode::{QrCode, render::svg};
 #[cfg(feature = "two-factor")]
-use totp_lite::{totp_custom, Sha1, DEFAULT_STEP};
+use totp_lite::{DEFAULT_STEP, Sha1, totp_custom};
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -118,7 +118,8 @@ impl TotpSecret {
     /// ```
     #[cfg(feature = "two-factor")]
     pub fn generate(&self, time_step: u64) -> Result<String, TwoFactorError> {
-        let secret_bytes = BASE32_NOPAD.decode(self.secret.as_bytes())
+        let secret_bytes = BASE32_NOPAD
+            .decode(self.secret.as_bytes())
             .map_err(|_| TwoFactorError::InvalidSecret)?;
 
         let timestamp = std::time::SystemTime::now()
@@ -156,11 +157,11 @@ impl TotpSecret {
     /// ```
     #[cfg(feature = "two-factor")]
     pub fn verify(&self, code: &str, time_step: u64) -> Result<bool, TwoFactorError> {
-        let secret_bytes = BASE32_NOPAD.decode(self.secret.as_bytes())
+        let secret_bytes = BASE32_NOPAD
+            .decode(self.secret.as_bytes())
             .map_err(|_| TwoFactorError::InvalidSecret)?;
 
-        let user_code: u32 = code.parse()
-            .map_err(|_| TwoFactorError::InvalidCode)?;
+        let user_code: u32 = code.parse().map_err(|_| TwoFactorError::InvalidCode)?;
 
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -217,12 +218,10 @@ impl TotpSecret {
     pub fn to_qr_svg(&self, account: &str, issuer: &str) -> Result<String, TwoFactorError> {
         let url = self.to_qr_url(account, issuer)?;
 
-        let code = QrCode::new(url.as_bytes())
-            .map_err(|e| TwoFactorError::QrCodeError(e.to_string()))?;
+        let code =
+            QrCode::new(url.as_bytes()).map_err(|e| TwoFactorError::QrCodeError(e.to_string()))?;
 
-        let svg = code.render::<svg::Color>()
-            .min_dimensions(200, 200)
-            .build();
+        let svg = code.render::<svg::Color>().min_dimensions(200, 200).build();
 
         Ok(svg)
     }
@@ -334,4 +333,3 @@ mod tests {
         assert!(!codes.verify_and_consume(&first_code)); // Already used
     }
 }
-

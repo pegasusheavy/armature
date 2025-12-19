@@ -102,8 +102,14 @@ impl FunctionResponse {
     /// Add CORS headers.
     pub fn cors(self, origin: impl Into<String>) -> Self {
         self.header("access-control-allow-origin", origin)
-            .header("access-control-allow-methods", "GET, POST, PUT, DELETE, OPTIONS")
-            .header("access-control-allow-headers", "Content-Type, Authorization")
+            .header(
+                "access-control-allow-methods",
+                "GET, POST, PUT, DELETE, OPTIONS",
+            )
+            .header(
+                "access-control-allow-headers",
+                "Content-Type, Authorization",
+            )
     }
 
     /// Convert to JSON string for Azure Functions output.
@@ -139,4 +145,3 @@ impl From<Bytes> for FunctionResponse {
         }
     }
 }
-

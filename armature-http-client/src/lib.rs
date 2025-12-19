@@ -59,30 +59,30 @@
 //! }
 //! ```
 
+mod circuit_breaker;
 mod client;
 mod config;
 mod error;
-mod retry;
-mod circuit_breaker;
-mod request;
-mod response;
 mod interceptor;
 mod middleware;
+mod request;
+mod response;
+mod retry;
 
+pub use circuit_breaker::{CircuitBreaker, CircuitBreakerConfig, CircuitState};
 pub use client::HttpClient;
 pub use config::{HttpClientConfig, HttpClientConfigBuilder};
 pub use error::{HttpClientError, Result};
-pub use retry::{RetryConfig, RetryStrategy, BackoffStrategy};
-pub use circuit_breaker::{CircuitBreaker, CircuitBreakerConfig, CircuitState};
-pub use request::RequestBuilder;
-pub use response::Response;
 pub use interceptor::{Interceptor, RequestInterceptor, ResponseInterceptor};
 pub use middleware::{Middleware, MiddlewareChain};
+pub use request::RequestBuilder;
+pub use response::Response;
+pub use retry::{BackoffStrategy, RetryConfig, RetryStrategy};
 
 // Re-export common types
-pub use http::{Method, StatusCode, HeaderMap, HeaderValue, header};
-pub use url::Url;
 pub use bytes::Bytes;
+pub use http::{HeaderMap, HeaderValue, Method, StatusCode, header};
+pub use url::Url;
 
 /// Prelude for common imports.
 ///
@@ -99,6 +99,5 @@ pub mod prelude {
     pub use crate::request::RequestBuilder;
     pub use crate::response::Response;
     pub use crate::retry::{BackoffStrategy, RetryConfig, RetryStrategy};
-    pub use http::{header, HeaderMap, HeaderValue, Method, StatusCode};
+    pub use http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 }
-

@@ -182,10 +182,10 @@ mod test_client;
 mod test_container;
 
 // New modules
-pub mod integration;
-pub mod docker;
-pub mod load;
 pub mod contract;
+pub mod docker;
+pub mod integration;
+pub mod load;
 
 pub use assertions::{assert_header, assert_json, assert_status};
 pub use mock::{MockController, MockProvider, MockService};
@@ -212,15 +212,15 @@ pub mod prelude {
     pub use crate::integration::{DatabaseTestHelper, IntegrationTestError, TestFixture};
 
     // Docker testing
-    pub use crate::docker::{DockerContainer, ContainerConfig};
+    pub use crate::docker::{ContainerConfig, DockerContainer};
 
     // Load testing
     pub use crate::load::{LoadTestConfig, LoadTestRunner, LoadTestStats};
 
     // Contract testing
     pub use crate::contract::{
-        Contract, ContractBuilder, ContractInteraction, ContractManager,
-        ContractMethod, ContractRequest, ContractResponse,
+        Contract, ContractBuilder, ContractInteraction, ContractManager, ContractMethod,
+        ContractRequest, ContractResponse,
     };
 }
 

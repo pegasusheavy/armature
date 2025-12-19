@@ -32,4 +32,3 @@ pub enum AzureFunctionsError {
     #[error("Binding error: {0}")]
     Binding(String),
 }
-

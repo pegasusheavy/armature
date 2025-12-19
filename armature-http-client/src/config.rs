@@ -1,8 +1,8 @@
 //! HTTP client configuration.
 
-use std::time::Duration;
-use crate::retry::RetryConfig;
 use crate::circuit_breaker::CircuitBreakerConfig;
+use crate::retry::RetryConfig;
+use std::time::Duration;
 
 /// HTTP client configuration.
 #[derive(Debug, Clone)]
@@ -113,7 +113,9 @@ impl HttpClientConfigBuilder {
 
     /// Add a default header for all requests.
     pub fn default_header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.config.default_headers.push((name.into(), value.into()));
+        self.config
+            .default_headers
+            .push((name.into(), value.into()));
         self
     }
 
@@ -152,4 +154,3 @@ impl HttpClientConfigBuilder {
         self.config
     }
 }
-

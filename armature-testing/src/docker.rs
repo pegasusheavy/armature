@@ -165,7 +165,8 @@ impl DockerContainer {
 
         // Port mappings
         for (host_port, container_port) in &self.config.ports {
-            cmd.arg("-p").arg(format!("{}:{}", host_port, container_port));
+            cmd.arg("-p")
+                .arg(format!("{}:{}", host_port, container_port));
         }
 
         // Image
@@ -334,7 +335,10 @@ mod tests {
         assert_eq!(config.image, "postgres");
         assert_eq!(config.tag, "15");
         assert_eq!(config.name, Some("test-db".to_string()));
-        assert_eq!(config.env.get("POSTGRES_PASSWORD"), Some(&"test".to_string()));
+        assert_eq!(
+            config.env.get("POSTGRES_PASSWORD"),
+            Some(&"test".to_string())
+        );
         assert_eq!(config.ports.get(&5432), Some(&5432));
     }
 
@@ -358,4 +362,3 @@ mod tests {
         let _ = DockerContainer::is_docker_available();
     }
 }
-

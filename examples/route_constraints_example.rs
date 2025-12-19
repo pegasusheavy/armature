@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Route Constraints Example
 //!
 //! This example demonstrates parameter validation at the route level
@@ -40,8 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 1: Integer constraint - User by ID
     info!("\n1. Integer Constraint: /users/:id");
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(UIntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(UIntConstraint));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -63,8 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 2: UUID constraint - Resource by UUID
     info!("2. UUID Constraint: /resources/:uuid");
-    let uuid_constraints = RouteConstraints::new()
-        .add("uuid", Box::new(UuidConstraint));
+    let uuid_constraints = RouteConstraints::new().add("uuid", Box::new(UuidConstraint));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -86,8 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 3: Alphabetic constraint - User by name
     info!("3. Alphabetic Constraint: /users/:name/posts");
-    let alpha_constraints = RouteConstraints::new()
-        .add("name", Box::new(AlphaConstraint));
+    let alpha_constraints = RouteConstraints::new().add("name", Box::new(AlphaConstraint));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -112,8 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 4: Range constraint - Pagination
     info!("4. Range Constraint: /posts/:page/comments");
-    let range_constraints = RouteConstraints::new()
-        .add("page", Box::new(RangeConstraint::min(1)));
+    let range_constraints = RouteConstraints::new().add("page", Box::new(RangeConstraint::min(1)));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -135,13 +132,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 5: Enum constraint - Filter by status
     info!("5. Enum Constraint: /products/:status");
-    let enum_constraints = RouteConstraints::new()
-        .add("status", Box::new(EnumConstraint::new(vec![
+    let enum_constraints = RouteConstraints::new().add(
+        "status",
+        Box::new(EnumConstraint::new(vec![
             "active".to_string(),
             "inactive".to_string(),
             "pending".to_string(),
             "archived".to_string(),
-        ])));
+        ])),
+    );
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -192,8 +191,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 7: Email constraint
     info!("7. Email Constraint: /notify/:email");
-    let email_constraints = RouteConstraints::new()
-        .add("email", Box::new(EmailConstraint));
+    let email_constraints = RouteConstraints::new().add("email", Box::new(EmailConstraint));
 
     router.add_route(Route {
         method: HttpMethod::POST,
@@ -215,8 +213,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 8: Length constraint - Short codes
     info!("8. Length Constraint: /codes/:code");
-    let length_constraints = RouteConstraints::new()
-        .add("code", Box::new(LengthConstraint::new(Some(3), Some(10))));
+    let length_constraints =
+        RouteConstraints::new().add("code", Box::new(LengthConstraint::new(Some(3), Some(10))));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -238,8 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Example 9: Custom constraint - Postal codes
     info!("9. Custom Constraint: /shipping/:zip");
-    let zip_constraints = RouteConstraints::new()
-        .add("zip", Box::new(ZipCodeConstraint));
+    let zip_constraints = RouteConstraints::new().add("zip", Box::new(ZipCodeConstraint));
 
     router.add_route(Route {
         method: HttpMethod::GET,
@@ -324,4 +321,3 @@ impl RouteConstraint for ZipCodeConstraint {
         "5-digit ZIP code"
     }
 }
-

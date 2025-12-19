@@ -3,7 +3,7 @@
 use colored::Colorize;
 
 use crate::error::{CliError, CliResult};
-use crate::generators::{ensure_dir, get_src_dir, update_mod_file, write_file, NameCases};
+use crate::generators::{NameCases, ensure_dir, get_src_dir, update_mod_file, write_file};
 use crate::templates::{ComponentData, ControllerData, ModuleData, TemplateRegistry};
 
 /// Generate a controller.
@@ -217,7 +217,7 @@ async fn generate_component(component_type: &str, name: &str, skip_tests: bool) 
             return Err(CliError::InvalidArgument(format!(
                 "Unknown component type: {}",
                 component_type
-            )))
+            )));
         }
     };
 

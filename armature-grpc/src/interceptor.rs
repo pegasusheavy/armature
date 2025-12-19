@@ -1,12 +1,13 @@
 //! gRPC interceptors for request/response processing.
 
 use async_trait::async_trait;
+use std::sync::Arc;
 use tonic::{Request, Status};
 use tracing::debug;
-use std::sync::Arc;
 
 /// Type alias for custom auth validator function.
-pub type AuthValidatorFn = Arc<dyn Fn(&tonic::metadata::MetadataMap) -> Result<(), Status> + Send + Sync>;
+pub type AuthValidatorFn =
+    Arc<dyn Fn(&tonic::metadata::MetadataMap) -> Result<(), Status> + Send + Sync>;
 
 /// Type alias for metrics callback function.
 pub type MetricsCallbackFn = Arc<dyn Fn(&str, u64, bool) + Send + Sync>;
@@ -44,7 +45,9 @@ pub struct LoggingInterceptor {
 impl LoggingInterceptor {
     /// Create a new logging interceptor.
     pub fn new() -> Self {
-        Self { log_metadata: false }
+        Self {
+            log_metadata: false,
+        }
     }
 
     /// Enable logging of metadata.
@@ -263,10 +266,13 @@ impl RequestIdInterceptor {
 
     /// Generate a new request ID.
     pub fn generate_request_id() -> String {
-        format!("{:x}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos())
+        format!(
+            "{:x}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        )
     }
 }
 
@@ -283,7 +289,8 @@ impl Interceptor for RequestIdInterceptor {
         T: Send,
     {
         // Check if request already has an ID
-        let request_id = self.extract_request_id(request.metadata())
+        let request_id = self
+            .extract_request_id(request.metadata())
             .unwrap_or_else(Self::generate_request_id);
 
         // Ensure the ID is in the metadata

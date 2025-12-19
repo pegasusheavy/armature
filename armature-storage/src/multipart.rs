@@ -1,5 +1,7 @@
 //! Multipart form data parsing.
 
+#![allow(dead_code)]
+
 use bytes::Bytes;
 use futures::Stream;
 
@@ -57,10 +59,7 @@ impl Multipart {
 
     /// Get the next field from the multipart stream.
     pub async fn next_field(&mut self) -> Result<Option<multer::Field<'static>>> {
-        self.inner
-            .next_field()
-            .await
-            .map_err(StorageError::from)
+        self.inner.next_field().await.map_err(StorageError::from)
     }
 
     /// Convert into a stream of fields.
@@ -114,10 +113,7 @@ pub struct MultipartStream {
 impl MultipartStream {
     /// Get the next field.
     pub async fn next_field(&mut self) -> Result<Option<multer::Field<'static>>> {
-        self.inner
-            .next_field()
-            .await
-            .map_err(StorageError::from)
+        self.inner.next_field().await.map_err(StorageError::from)
     }
 }
 
@@ -233,10 +229,7 @@ impl MultipartConstraints {
 }
 
 /// Helper to create a Multipart from an HTTP request body.
-pub fn parse_multipart<S>(
-    content_type: &http::HeaderValue,
-    body: S,
-) -> Result<Multipart>
+pub fn parse_multipart<S>(content_type: &http::HeaderValue, body: S) -> Result<Multipart>
 where
     S: Stream<Item = std::result::Result<Bytes, std::io::Error>> + Send + 'static,
 {
@@ -246,4 +239,3 @@ where
 
     Multipart::from_request(content_type, body)
 }
-

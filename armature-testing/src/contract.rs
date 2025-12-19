@@ -208,7 +208,6 @@ pub struct ContractMetadata {
     pub pact_specification: PactSpecification,
 }
 
-
 /// Pact specification version
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PactSpecification {
@@ -321,19 +320,22 @@ impl ContractManager {
             .map_err(|e| ContractError::SerializationError(e.to_string()))?;
 
         // Write to file
-        std::fs::write(path, json)
-            .map_err(|e| ContractError::IoError(e.to_string()))?;
+        std::fs::write(path, json).map_err(|e| ContractError::IoError(e.to_string()))?;
 
         Ok(())
     }
 
     /// Load contract from file
     pub fn load(&self, consumer: &str, provider: &str) -> Result<Contract, ContractError> {
-        let filename = format!("{}-{}.json", consumer.to_lowercase(), provider.to_lowercase());
+        let filename = format!(
+            "{}-{}.json",
+            consumer.to_lowercase(),
+            provider.to_lowercase()
+        );
         let path = self.contracts_dir.join(filename);
 
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| ContractError::IoError(e.to_string()))?;
+        let content =
+            std::fs::read_to_string(path).map_err(|e| ContractError::IoError(e.to_string()))?;
 
         let contract: Contract = serde_json::from_str(&content)
             .map_err(|e| ContractError::SerializationError(e.to_string()))?;
@@ -353,12 +355,13 @@ impl ContractManager {
             let filename = entry.file_name().to_string_lossy().to_string();
 
             if filename.ends_with(".json")
-                && let Some(parts) = filename.strip_suffix(".json") {
-                    let parts: Vec<&str> = parts.split('-').collect();
-                    if parts.len() >= 2 {
-                        contracts.push((parts[0].to_string(), parts[1].to_string()));
-                    }
+                && let Some(parts) = filename.strip_suffix(".json")
+            {
+                let parts: Vec<&str> = parts.split('-').collect();
+                if parts.len() >= 2 {
+                    contracts.push((parts[0].to_string(), parts[1].to_string()));
                 }
+            }
         }
 
         Ok(contracts)
@@ -441,8 +444,8 @@ mod tests {
     #[test]
     fn test_contract_builder() {
         let request = ContractRequest::new(ContractMethod::Get, "/api/users/1");
-        let response = ContractResponse::new(200)
-            .with_body(serde_json::json!({"id": 1, "name": "Alice"}));
+        let response =
+            ContractResponse::new(200).with_body(serde_json::json!({"id": 1, "name": "Alice"}));
 
         let mut builder = ContractBuilder::new("Frontend", "Backend");
         builder.add_interaction(ContractInteraction::new(
@@ -497,4 +500,3 @@ mod tests {
         assert!(request.body.is_some());
     }
 }
-

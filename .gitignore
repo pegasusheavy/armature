@@ -151,3 +151,5 @@ benches/target/
 
 # Rust analyzer
 rust-project.json
+flamegraph-profile.svg
+profile.pb

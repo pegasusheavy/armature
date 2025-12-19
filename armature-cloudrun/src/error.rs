@@ -24,4 +24,3 @@ pub enum CloudRunError {
     #[error("Server error: {0}")]
     Server(String),
 }
-

@@ -8,6 +8,10 @@
 //! - 📝 **CRUD Operations** - Create, read, update, delete tenants
 //! - 🚀 **Provisioning** - Automated resource setup for new tenants
 //! - 🔄 **Lifecycle Management** - Activate, suspend, terminate tenants
+
+#![allow(dead_code)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::collapsible_if)]
 //! - 📊 **Usage Tracking** - Monitor tenant resource usage
 //! - ⚙️ **Configuration** - Per-tenant settings and limits
 //!
@@ -34,8 +38,8 @@
 //! let usage = manager.get_usage(&tenant.id).await?;
 //! ```
 
-use crate::tenant::Tenant;
 use crate::TenantError;
+use crate::tenant::Tenant;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -198,10 +202,7 @@ impl TenantUsage {
 
         if let Some(max) = limits.max_storage_bytes {
             if self.storage_bytes > max {
-                violations.push(format!(
-                    "Storage: {} / {} bytes",
-                    self.storage_bytes, max
-                ));
+                violations.push(format!("Storage: {} / {} bytes", self.storage_bytes, max));
             }
         }
 
@@ -393,7 +394,10 @@ impl ManagedTenant {
 
     /// Check if tenant can accept requests
     pub fn can_accept_requests(&self) -> bool {
-        matches!(self.status, TenantStatus::Active | TenantStatus::Provisioning)
+        matches!(
+            self.status,
+            TenantStatus::Active | TenantStatus::Provisioning
+        )
     }
 
     /// Get limit violations
@@ -671,7 +675,9 @@ impl TenantManager {
             .ok_or_else(|| TenantError::NotFound(id.to_string()))?;
 
         if managed.status == TenantStatus::Terminated {
-            return Err(TenantError::Invalid("Cannot suspend terminated tenant".to_string()));
+            return Err(TenantError::Invalid(
+                "Cannot suspend terminated tenant".to_string(),
+            ));
         }
 
         // Suspend resources
@@ -696,7 +702,9 @@ impl TenantManager {
             .ok_or_else(|| TenantError::NotFound(id.to_string()))?;
 
         if managed.status == TenantStatus::Terminated {
-            return Err(TenantError::Invalid("Cannot activate terminated tenant".to_string()));
+            return Err(TenantError::Invalid(
+                "Cannot activate terminated tenant".to_string(),
+            ));
         }
 
         // Resume resources
@@ -721,7 +729,9 @@ impl TenantManager {
             .ok_or_else(|| TenantError::NotFound(id.to_string()))?;
 
         if managed.status == TenantStatus::Terminated {
-            return Err(TenantError::Invalid("Tenant already terminated".to_string()));
+            return Err(TenantError::Invalid(
+                "Tenant already terminated".to_string(),
+            ));
         }
 
         // Mark as terminating
@@ -973,4 +983,3 @@ mod tests {
         assert_eq!(results[0].tenant.name, "pro-tenant");
     }
 }
-

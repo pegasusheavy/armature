@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Integration Testing Example
 //!
 //! Demonstrates database setup/teardown for integration tests.
@@ -73,20 +74,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let helper = Arc::new(PostgresTestHelper::new("postgres://localhost/test_db"));
     let fixture = TestFixture::new(helper.clone());
 
-    fixture.run_test(|| async {
-        println!("   Running test...");
-        // Your test code here
-        // Database is automatically set up and torn down
-        println!("   ✅ Test passed");
-        Ok(())
-    }).await?;
+    fixture
+        .run_test(|| async {
+            println!("   Running test...");
+            // Your test code here
+            // Database is automatically set up and torn down
+            println!("   ✅ Test passed");
+            Ok(())
+        })
+        .await?;
 
     println!();
 
     // 2. Manual setup/teardown control
     println!("2. Manual control:");
-    let fixture = TestFixture::new(helper.clone())
-        .without_auto_cleanup();
+    let fixture = TestFixture::new(helper.clone()).without_auto_cleanup();
 
     fixture.setup().await?;
     println!("   Running test with manual control...");
@@ -127,4 +129,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

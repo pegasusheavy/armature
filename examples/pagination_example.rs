@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(clippy::needless_question_mark)]
 //! Pagination & Filtering Example
 //!
 //! This example demonstrates:
@@ -156,11 +158,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     if let Some(ref value) = condition.value {
                                         if let Ok(age) = value.parse::<u32>() {
                                             match condition.operator {
-                                                FilterOperator::Eq => if user.age != age { return false; },
-                                                FilterOperator::Gte => if user.age < age { return false; },
-                                                FilterOperator::Lte => if user.age > age { return false; },
-                                                FilterOperator::Gt => if user.age <= age { return false; },
-                                                FilterOperator::Lt => if user.age >= age { return false; },
+                                                FilterOperator::Eq => {
+                                                    if user.age != age {
+                                                        return false;
+                                                    }
+                                                }
+                                                FilterOperator::Gte => {
+                                                    if user.age < age {
+                                                        return false;
+                                                    }
+                                                }
+                                                FilterOperator::Lte => {
+                                                    if user.age > age {
+                                                        return false;
+                                                    }
+                                                }
+                                                FilterOperator::Gt => {
+                                                    if user.age <= age {
+                                                        return false;
+                                                    }
+                                                }
+                                                FilterOperator::Lt => {
+                                                    if user.age >= age {
+                                                        return false;
+                                                    }
+                                                }
                                                 _ => {}
                                             }
                                         }
@@ -214,11 +236,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Apply pagination
                 let offset = query.pagination.offset();
                 let limit = query.pagination.limit();
-                let paginated_users: Vec<User> = users
-                    .into_iter()
-                    .skip(offset)
-                    .take(limit)
-                    .collect();
+                let paginated_users: Vec<User> =
+                    users.into_iter().skip(offset).take(limit).collect();
 
                 // Apply field selection
                 let response_json = if query.fields.is_active() {
@@ -248,18 +267,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         })
                         .collect();
 
-                    let response = PaginatedResponse::new(
-                        filtered,
-                        query.pagination,
-                        total
-                    );
+                    let response = PaginatedResponse::new(filtered, query.pagination, total);
                     serde_json::to_value(&response).map_err(|e| Error::Internal(e.to_string()))?
                 } else {
-                    let response = PaginatedResponse::new(
-                        paginated_users,
-                        query.pagination,
-                        total
-                    );
+                    let response = PaginatedResponse::new(paginated_users, query.pagination, total);
                     serde_json::to_value(&response).map_err(|e| Error::Internal(e.to_string()))?
                 };
 
@@ -282,7 +293,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 // In real app, cursor would be an actual database cursor
                 // For demo, we'll use simple offset
-                let cursor_offset = pagination.cursor
+                let cursor_offset = pagination
+                    .cursor
                     .as_ref()
                     .and_then(|c| c.parse::<usize>().ok())
                     .unwrap_or(0);
@@ -304,7 +316,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     paginated_users,
                     pagination.limit,
                     total,
-                    next_cursor
+                    next_cursor,
                 );
 
                 Ok(HttpResponse::ok().with_json(&response)?)

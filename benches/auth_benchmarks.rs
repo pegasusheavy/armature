@@ -1,6 +1,8 @@
 //! Authentication benchmarks for armature-auth
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+#![allow(deprecated)]
+
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 
 use armature_auth::{AuthService, PasswordHasher};
 use armature_jwt::{JwtConfig, JwtManager, StandardClaims};
@@ -12,19 +14,26 @@ fn password_hashing_benchmark(c: &mut Criterion) {
 
     group.bench_function("hash_password", |b| {
         b.iter(|| {
-            let hash = auth_service.hash_password(black_box("my_secure_password_123")).unwrap();
+            let hash = auth_service
+                .hash_password(black_box("my_secure_password_123"))
+                .unwrap();
             black_box(hash)
         });
     });
 
     // Pre-hash a password for verification benchmarks
-    let pre_hashed = auth_service.hash_password("my_secure_password_123").unwrap();
+    let pre_hashed = auth_service
+        .hash_password("my_secure_password_123")
+        .unwrap();
     let pre_hashed_clone = pre_hashed.clone();
 
     group.bench_function("verify_password_success", |b| {
         b.iter(|| {
             let result = auth_service
-                .verify_password(black_box("my_secure_password_123"), black_box(&pre_hashed_clone))
+                .verify_password(
+                    black_box("my_secure_password_123"),
+                    black_box(&pre_hashed_clone),
+                )
                 .unwrap();
             black_box(result)
         });
@@ -44,7 +53,8 @@ fn password_hashing_benchmark(c: &mut Criterion) {
 }
 
 fn jwt_benchmark(c: &mut Criterion) {
-    let jwt_config = JwtConfig::new("super_secret_key_for_benchmarking_purposes_only_12345".to_string());
+    let jwt_config =
+        JwtConfig::new("super_secret_key_for_benchmarking_purposes_only_12345".to_string());
     let jwt_manager = JwtManager::new(jwt_config).unwrap();
 
     let mut group = c.benchmark_group("jwt_operations");
@@ -67,9 +77,7 @@ fn jwt_benchmark(c: &mut Criterion) {
 
     group.bench_function("verify_token", |b| {
         b.iter(|| {
-            let result: StandardClaims = jwt_manager
-                .verify(black_box(&pre_created_token))
-                .unwrap();
+            let result: StandardClaims = jwt_manager.verify(black_box(&pre_created_token)).unwrap();
             black_box(result)
         });
     });
@@ -95,7 +103,10 @@ fn password_hasher_direct_benchmark(c: &mut Criterion) {
     let passwords = [
         ("short", "pass123"),
         ("medium", "my_medium_password_123"),
-        ("long", "this_is_a_very_long_password_that_someone_might_use_for_security_reasons_123456"),
+        (
+            "long",
+            "this_is_a_very_long_password_that_someone_might_use_for_security_reasons_123456",
+        ),
     ];
 
     for (name, password) in passwords {
@@ -118,4 +129,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

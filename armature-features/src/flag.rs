@@ -50,17 +50,17 @@ impl FeatureFlag {
             enabled: true, // Flag is enabled by default
             targeting: Vec::new(),
             default_variation: Variation::boolean(default_value),
-            variations: vec![
-                Variation::boolean(false),
-                Variation::boolean(true),
-            ],
+            variations: vec![Variation::boolean(false), Variation::boolean(true)],
             rollout: None,
         }
     }
 
     /// Create a new multivariate feature flag
     pub fn multivariate(key: impl Into<String>, variations: Vec<Variation>) -> Self {
-        let default_variation = variations.first().cloned().unwrap_or(Variation::Boolean(false));
+        let default_variation = variations
+            .first()
+            .cloned()
+            .unwrap_or(Variation::Boolean(false));
 
         Self {
             key: key.into(),
@@ -95,7 +95,9 @@ impl FeatureFlag {
     pub fn evaluate(&self, context: &EvaluationContext) -> Variation {
         // If flag is disabled globally, return off variation
         if !self.enabled {
-            return self.variations.first()
+            return self
+                .variations
+                .first()
                 .cloned()
                 .unwrap_or(Variation::Boolean(false));
         }
@@ -109,9 +111,10 @@ impl FeatureFlag {
 
         // Check rollout
         if let Some(ref rollout) = self.rollout
-            && let Some(variation) = rollout.evaluate(context, &self.key) {
-                return variation;
-            }
+            && let Some(variation) = rollout.evaluate(context, &self.key)
+        {
+            return variation;
+        }
 
         // Return default variation
         self.default_variation.clone()
@@ -217,27 +220,21 @@ impl Condition {
         let attr_value = context.get(&self.attribute);
 
         match self.operator {
-            Operator::In => {
-                attr_value.map(|v| self.values.contains(&v.to_string())).unwrap_or(false)
-            }
-            Operator::NotIn => {
-                attr_value.map(|v| !self.values.contains(&v.to_string())).unwrap_or(true)
-            }
-            Operator::Contains => {
-                attr_value.map(|v| {
-                    self.values.iter().any(|val| v.contains(val))
-                }).unwrap_or(false)
-            }
-            Operator::StartsWith => {
-                attr_value.map(|v| {
-                    self.values.iter().any(|val| v.starts_with(val))
-                }).unwrap_or(false)
-            }
-            Operator::EndsWith => {
-                attr_value.map(|v| {
-                    self.values.iter().any(|val| v.ends_with(val))
-                }).unwrap_or(false)
-            }
+            Operator::In => attr_value
+                .map(|v| self.values.contains(&v.to_string()))
+                .unwrap_or(false),
+            Operator::NotIn => attr_value
+                .map(|v| !self.values.contains(&v.to_string()))
+                .unwrap_or(true),
+            Operator::Contains => attr_value
+                .map(|v| self.values.iter().any(|val| v.contains(val)))
+                .unwrap_or(false),
+            Operator::StartsWith => attr_value
+                .map(|v| self.values.iter().any(|val| v.starts_with(val)))
+                .unwrap_or(false),
+            Operator::EndsWith => attr_value
+                .map(|v| self.values.iter().any(|val| v.ends_with(val)))
+                .unwrap_or(false),
             Operator::Matches => {
                 // Regex matching would go here
                 false
@@ -326,7 +323,8 @@ impl EvaluationContext {
     }
 
     pub fn with_user_id(mut self, user_id: impl Into<String>) -> Self {
-        self.attributes.insert("user_id".to_string(), user_id.into());
+        self.attributes
+            .insert("user_id".to_string(), user_id.into());
         self
     }
 
@@ -369,15 +367,13 @@ mod tests {
 
     #[test]
     fn test_targeting_rule() {
-        let rule = TargetingRule::new(Variation::boolean(true))
-            .with_condition(Condition::new(
-                "email",
-                Operator::EndsWith,
-                vec!["@example.com".to_string()],
-            ));
+        let rule = TargetingRule::new(Variation::boolean(true)).with_condition(Condition::new(
+            "email",
+            Operator::EndsWith,
+            vec!["@example.com".to_string()],
+        ));
 
-        let flag = FeatureFlag::boolean("test-flag", false)
-            .with_rule(rule);
+        let flag = FeatureFlag::boolean("test-flag", false).with_rule(rule);
 
         let context = EvaluationContext::new()
             .with_user_id("user-1")
@@ -390,14 +386,12 @@ mod tests {
     #[test]
     fn test_rollout() {
         let rollout = Rollout::new(50, Variation::boolean(true));
-        let flag = FeatureFlag::boolean("test-flag", false)
-            .with_rollout(rollout);
+        let flag = FeatureFlag::boolean("test-flag", false).with_rollout(rollout);
 
         // Test multiple users
         let mut enabled_count = 0;
         for i in 0..100 {
-            let context = EvaluationContext::new()
-                .with_user_id(format!("user-{}", i));
+            let context = EvaluationContext::new().with_user_id(format!("user-{}", i));
             if flag.evaluate(&context).as_bool() == Some(true) {
                 enabled_count += 1;
             }
@@ -423,4 +417,3 @@ mod tests {
         assert!(result.as_string().is_some());
     }
 }
-

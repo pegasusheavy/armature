@@ -15,8 +15,8 @@
 //!     .await?;
 //! ```
 
-use crate::tenant::Tenant;
 use crate::TenantError;
+use crate::tenant::Tenant;
 use async_trait::async_trait;
 
 /// PostgreSQL schema provider trait
@@ -204,13 +204,13 @@ impl<'a, P: SchemaProvider> TenantQuery<'a, P> {
     }
 
     /// Execute query with tenant's schema
-    pub async fn execute<F, T>(
-        &self,
-        conn: &mut P::Connection,
-        f: F,
-    ) -> Result<T, TenantError>
+    pub async fn execute<F, T>(&self, conn: &mut P::Connection, f: F) -> Result<T, TenantError>
     where
-        F: FnOnce(&mut P::Connection) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<T, TenantError>> + Send + '_>>,
+        F: FnOnce(
+            &mut P::Connection,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<T, TenantError>> + Send + '_>,
+        >,
     {
         // Set search_path
         self.manager.set_search_path(self.tenant, conn).await?;
@@ -318,4 +318,3 @@ mod tests {
         assert!(exists);
     }
 }
-

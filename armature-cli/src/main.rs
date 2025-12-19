@@ -18,9 +18,9 @@
 //! - `armature completions` - Generate shell completions
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
-use clap_complete::{generate, Shell};
+use clap_complete::{Shell, generate};
 use colored::Colorize;
-use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input, MultiSelect};
+use dialoguer::{Confirm, FuzzySelect, Input, MultiSelect, theme::ColorfulTheme};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::io;
 use std::time::Duration;
@@ -738,8 +738,8 @@ impl ArmatureFeature {
             Self::Cron => Some("cron"),
             Self::Security => Some("security"),
             Self::Storage => None, // Separate crate
-            Self::Mail => None, // Separate crate
-            Self::Push => None, // Separate crate
+            Self::Mail => None,    // Separate crate
+            Self::Push => None,    // Separate crate
             Self::Testing => Some("testing"),
             Self::Validation => Some("validation"),
             Self::Realtime => None, // Already in core
@@ -1075,12 +1075,13 @@ async fn run_interactive_wizard() -> CliResult<()> {
 
     // Print next steps
     println!();
-    println!(
-        "  {}",
-        "━".repeat(50).bright_cyan()
-    );
+    println!("  {}", "━".repeat(50).bright_cyan());
     println!();
-    println!("  {} {}", "🎉".bright_yellow(), "Your project is ready!".bright_white().bold());
+    println!(
+        "  {} {}",
+        "🎉".bright_yellow(),
+        "Your project is ready!".bright_white().bold()
+    );
     println!();
     println!("  {}", "Next steps:".bright_white());
     println!();
@@ -1093,10 +1094,7 @@ async fn run_interactive_wizard() -> CliResult<()> {
         "    {} Generate a controller",
         "armature g controller users --crud".cyan()
     );
-    println!(
-        "    {} List all routes",
-        "armature routes".cyan()
-    );
+    println!("    {} List all routes", "armature routes".cyan());
     println!(
         "    {} Build for production",
         "armature build --release".cyan()
@@ -1133,8 +1131,7 @@ fn run_add_command(args: AddArgs) -> CliResult<()> {
     }
 
     // Read current Cargo.toml
-    let cargo_toml = std::fs::read_to_string("Cargo.toml")
-        .map_err(|e| CliError::Io(e))?;
+    let cargo_toml = std::fs::read_to_string("Cargo.toml").map_err(|e| CliError::Io(e))?;
 
     // Check if feature is already added
     if cargo_toml.contains(crate_name) {
@@ -1158,11 +1155,7 @@ fn run_add_command(args: AddArgs) -> CliResult<()> {
         );
     } else {
         // Add as separate dependency
-        println!(
-            "    {} {} = \"*\"",
-            "+".green(),
-            crate_name.green()
-        );
+        println!("    {} {} = \"*\"", "+".green(), crate_name.green());
     }
     println!();
 
@@ -1209,40 +1202,52 @@ fn run_add_command(args: AddArgs) -> CliResult<()> {
 
 fn print_feature_usage_example(feature: &ArmatureFeature) {
     let example = match feature {
-        ArmatureFeature::Auth => r#"
+        ArmatureFeature::Auth => {
+            r#"
     use armature_auth::prelude::*;
 
     let service = AuthService::new();
     let hash = service.hash_password("secret")?;
-"#,
-        ArmatureFeature::Cache => r#"
+"#
+        }
+        ArmatureFeature::Cache => {
+            r#"
     use armature_cache::prelude::*;
 
     let cache = RedisCache::new(config).await?;
     cache.set("key", "value", ttl).await?;
-"#,
-        ArmatureFeature::Jwt => r#"
+"#
+        }
+        ArmatureFeature::Jwt => {
+            r#"
     use armature_jwt::prelude::*;
 
     let manager = JwtManager::new(JwtConfig::new("secret"))?;
     let token = manager.sign(&claims)?;
-"#,
-        ArmatureFeature::Queue => r#"
+"#
+        }
+        ArmatureFeature::Queue => {
+            r#"
     use armature_queue::prelude::*;
 
     let queue = Queue::new("redis://localhost", "default").await?;
     queue.enqueue("job_type", json!({})).await?;
-"#,
-        ArmatureFeature::Mail => r#"
+"#
+        }
+        ArmatureFeature::Mail => {
+            r#"
     use armature_mail::prelude::*;
 
     let mailer = Mailer::smtp(config).await?;
     let email = Email::new().to("user@example.com").subject("Hello");
     mailer.send(email).await?;
-"#,
-        _ => r#"
+"#
+        }
+        _ => {
+            r#"
     // Check the crate documentation for usage examples
-"#,
+"#
+        }
     };
 
     for line in example.lines().skip(1) {
@@ -1305,9 +1310,19 @@ async fn run_validate_command(args: ValidateArgs) -> CliResult<()> {
 
         for (file, desc) in config_files {
             if std::path::Path::new(file).exists() {
-                println!("  {} Found {} ({})", "✓".green(), file.cyan(), desc.dimmed());
+                println!(
+                    "  {} Found {} ({})",
+                    "✓".green(),
+                    file.cyan(),
+                    desc.dimmed()
+                );
             } else {
-                println!("  {} Missing {} ({})", "○".yellow(), file.dimmed(), desc.dimmed());
+                println!(
+                    "  {} Missing {} ({})",
+                    "○".yellow(),
+                    file.dimmed(),
+                    desc.dimmed()
+                );
             }
         }
     }
@@ -1357,10 +1372,7 @@ async fn run_validate_command(args: ValidateArgs) -> CliResult<()> {
             "warnings".yellow()
         );
     } else {
-        println!(
-            "  {} All checks passed!",
-            "✓".green().bold()
-        );
+        println!("  {} All checks passed!", "✓".green().bold());
     }
     println!();
 
@@ -1415,7 +1427,9 @@ async fn run_doctor() -> CliResult<()> {
     pb.set_message("Checking Cargo...");
     pb.enable_steady_tick(Duration::from_millis(80));
 
-    let cargo_version = std::process::Command::new("cargo").arg("--version").output();
+    let cargo_version = std::process::Command::new("cargo")
+        .arg("--version")
+        .output();
 
     tokio::time::sleep(Duration::from_millis(200)).await;
 
@@ -1474,7 +1488,12 @@ async fn run_doctor() -> CliResult<()> {
             pb.finish_with_message(format!(
                 "{} Docker: {}",
                 "✓".green(),
-                version.trim().split(',').next().unwrap_or("").bright_white()
+                version
+                    .trim()
+                    .split(',')
+                    .next()
+                    .unwrap_or("")
+                    .bright_white()
             ));
         }
         _ => {
@@ -1541,7 +1560,10 @@ async fn run_doctor() -> CliResult<()> {
     }
 
     println!();
-    println!("  {} All essential tools are installed!", "✓".green().bold());
+    println!(
+        "  {} All essential tools are installed!",
+        "✓".green().bold()
+    );
     println!();
 
     Ok(())
@@ -1566,7 +1588,7 @@ async fn main() {
             // Interactive wizard handles its own banner
         }
         Commands::New { .. } | Commands::Generate { .. } => print_mini_banner(),
-        Commands::Doctor => {}  // Has its own banner
+        Commands::Doctor => {} // Has its own banner
         _ => {}
     }
 
@@ -1869,10 +1891,7 @@ async fn main() {
         Commands::Clean => {
             print_mini_banner();
             info("Cleaning build artifacts...");
-            match std::process::Command::new("cargo")
-                .arg("clean")
-                .status()
-            {
+            match std::process::Command::new("cargo").arg("clean").status() {
                 Ok(status) if status.success() => {
                     success("Build artifacts cleaned!");
                     Ok(())

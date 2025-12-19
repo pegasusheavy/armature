@@ -253,4 +253,3 @@ mod tests {
         assert!(!manager.is_running().await);
     }
 }
-

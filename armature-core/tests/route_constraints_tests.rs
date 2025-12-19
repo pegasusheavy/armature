@@ -98,12 +98,16 @@ fn test_alphanum_constraint_invalid() {
 #[test]
 fn test_uuid_constraint_valid() {
     let constraint = UuidConstraint;
-    assert!(constraint
-        .validate("550e8400-e29b-41d4-a716-446655440000")
-        .is_ok());
-    assert!(constraint
-        .validate("123e4567-e89b-12d3-a456-426614174000")
-        .is_ok());
+    assert!(
+        constraint
+            .validate("550e8400-e29b-41d4-a716-446655440000")
+            .is_ok()
+    );
+    assert!(
+        constraint
+            .validate("123e4567-e89b-12d3-a456-426614174000")
+            .is_ok()
+    );
 }
 
 #[test]
@@ -112,7 +116,11 @@ fn test_uuid_constraint_invalid() {
     assert!(constraint.validate("not-a-uuid").is_err());
     assert!(constraint.validate("12345").is_err());
     assert!(constraint.validate("550e8400-e29b-41d4-a716").is_err()); // Too short
-    assert!(constraint.validate("550e8400e29b41d4a716446655440000").is_err()); // No hyphens
+    assert!(
+        constraint
+            .validate("550e8400e29b41d4a716446655440000")
+            .is_err()
+    ); // No hyphens
 }
 
 // EmailConstraint tests
@@ -217,10 +225,7 @@ fn test_enum_constraint_valid() {
 
 #[test]
 fn test_enum_constraint_invalid() {
-    let constraint = EnumConstraint::new(vec![
-        "active".to_string(),
-        "inactive".to_string(),
-    ]);
+    let constraint = EnumConstraint::new(vec!["active".to_string(), "inactive".to_string()]);
     assert!(constraint.validate("unknown").is_err());
     assert!(constraint.validate("pending").is_err());
 }
@@ -243,8 +248,7 @@ fn test_regex_constraint_invalid() {
 // RouteConstraints tests
 #[test]
 fn test_route_constraints_single() {
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(IntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(IntConstraint));
 
     let mut params = HashMap::new();
     params.insert("id".to_string(), "123".to_string());
@@ -254,8 +258,7 @@ fn test_route_constraints_single() {
 
 #[test]
 fn test_route_constraints_single_invalid() {
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(IntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(IntConstraint));
 
     let mut params = HashMap::new();
     params.insert("id".to_string(), "abc".to_string());
@@ -291,8 +294,7 @@ fn test_route_constraints_multiple_one_invalid() {
 
 #[test]
 fn test_route_constraints_missing_param() {
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(IntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(IntConstraint));
 
     let params = HashMap::new();
 
@@ -326,8 +328,7 @@ fn test_route_constraints_add_mut() {
 
 #[test]
 fn test_route_constraints_clone() {
-    let constraints1 = RouteConstraints::new()
-        .add("id", Box::new(IntConstraint));
+    let constraints1 = RouteConstraints::new().add("id", Box::new(IntConstraint));
 
     let constraints2 = constraints1.clone();
 
@@ -340,8 +341,7 @@ fn test_route_constraints_clone() {
 async fn test_route_with_constraints_valid() {
     use std::sync::Arc;
 
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(UIntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(UIntConstraint));
 
     let mut router = Router::new();
     router.add_route(Route {
@@ -366,8 +366,7 @@ async fn test_route_with_constraints_valid() {
 async fn test_route_with_constraints_invalid() {
     use std::sync::Arc;
 
-    let constraints = RouteConstraints::new()
-        .add("id", Box::new(UIntConstraint));
+    let constraints = RouteConstraints::new().add("id", Box::new(UIntConstraint));
 
     let mut router = Router::new();
     router.add_route(Route {
@@ -404,11 +403,7 @@ async fn test_route_with_multiple_constraints() {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:user_id/posts/:post_id".to_string(),
-        handler: Arc::new(|_req| {
-            Box::pin(async move {
-                Ok(HttpResponse::ok())
-            })
-        }),
+        handler: Arc::new(|_req| Box::pin(async move { Ok(HttpResponse::ok()) })),
         constraints: Some(constraints),
     });
 
@@ -425,4 +420,3 @@ async fn test_route_with_multiple_constraints() {
     let request3 = HttpRequest::new("GET".to_string(), "/users/123/posts/abc".to_string());
     assert!(router.route(request3).await.is_err());
 }
-

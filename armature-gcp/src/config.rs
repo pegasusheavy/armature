@@ -202,7 +202,9 @@ impl GcpConfigBuilder {
 
     /// Add service-specific configuration.
     pub fn service_config(mut self, service: &str, config: serde_json::Value) -> Self {
-        self.config.service_configs.insert(service.to_string(), config);
+        self.config
+            .service_configs
+            .insert(service.to_string(), config);
         self
     }
 
@@ -211,4 +213,3 @@ impl GcpConfigBuilder {
         self.config
     }
 }
-

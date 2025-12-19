@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Audit Example
 //!
 //! Demonstrates advanced audit features including:
@@ -62,17 +63,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         AuditLogger::builder()
             .backend(multi_backend)
             .masking_config(masking_config)
-            .build()
+            .build(),
     );
 
     // Setup retention policy
     info!("\nConfiguring retention policy...");
-    let retention_policy = RetentionPolicy::days(90)
-        .cleanup_interval(std::time::Duration::from_secs(3600)); // Hourly
+    let retention_policy =
+        RetentionPolicy::days(90).cleanup_interval(std::time::Duration::from_secs(3600)); // Hourly
 
     let retention_manager = Arc::new(RetentionManager::new(
         memory_backend.clone(),
-        retention_policy
+        retention_policy,
     ));
 
     info!("✓ Retention policy: 90 days, cleanup hourly");
@@ -99,17 +100,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let body_str = String::from_utf8_lossy(&req.body);
 
                 // Log PCI-DSS compliance event
-                logger.log(AuditEvent::new("payment.processed")
-                    .user("customer_12345")
-                    .ip("192.168.1.100")
-                    .action("process_payment")
-                    .resource("payment")
-                    .status(AuditStatus::Success)
-                    .severity(AuditSeverity::Critical)
-                    .metadata("amount", serde_json::json!(99.99))
-                    .metadata("currency", serde_json::json!("USD"))
-                    .metadata("compliance", serde_json::json!("PCI-DSS"))
-                    .request_body(body_str.to_string())).await.ok();
+                logger
+                    .log(
+                        AuditEvent::new("payment.processed")
+                            .user("customer_12345")
+                            .ip("192.168.1.100")
+                            .action("process_payment")
+                            .resource("payment")
+                            .status(AuditStatus::Success)
+                            .severity(AuditSeverity::Critical)
+                            .metadata("amount", serde_json::json!(99.99))
+                            .metadata("currency", serde_json::json!("USD"))
+                            .metadata("compliance", serde_json::json!("PCI-DSS"))
+                            .request_body(body_str.to_string()),
+                    )
+                    .await
+                    .ok();
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "status": "success",
@@ -130,15 +136,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let user_id = req.path_params.get("id").unwrap();
 
                 // Log GDPR data access
-                logger.log(AuditEvent::new("gdpr.data_access")
-                    .user("admin")
-                    .action("data_export")
-                    .resource("user_data")
-                    .resource_id(user_id)
-                    .status(AuditStatus::Success)
-                    .severity(AuditSeverity::Warning)
-                    .metadata("compliance", serde_json::json!("GDPR"))
-                    .metadata("purpose", serde_json::json!("user request"))).await.ok();
+                logger
+                    .log(
+                        AuditEvent::new("gdpr.data_access")
+                            .user("admin")
+                            .action("data_export")
+                            .resource("user_data")
+                            .resource_id(user_id)
+                            .status(AuditStatus::Success)
+                            .severity(AuditSeverity::Warning)
+                            .metadata("compliance", serde_json::json!("GDPR"))
+                            .metadata("purpose", serde_json::json!("user request")),
+                    )
+                    .await
+                    .ok();
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "user_id": user_id,
@@ -160,9 +171,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let backend = memory_for_query.clone();
             Box::pin(async move {
                 // Query recent audit events
-                let events = backend.read(10).await.map_err(|_| {
-                    Error::Internal("Failed to read audit logs".to_string())
-                })?;
+                let events = backend
+                    .read(10)
+                    .await
+                    .map_err(|_| Error::Internal("Failed to read audit logs".to_string()))?;
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "count": events.len(),

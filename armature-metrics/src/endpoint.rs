@@ -32,7 +32,10 @@ pub async fn metrics_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
     let metrics = crate::export_metrics();
 
     Ok(HttpResponse::ok()
-        .with_header("Content-Type".to_string(), "text/plain; version=0.0.4".to_string())
+        .with_header(
+            "Content-Type".to_string(),
+            "text/plain; version=0.0.4".to_string(),
+        )
         .with_body(metrics.into_bytes()))
 }
 
@@ -58,11 +61,7 @@ pub async fn metrics_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
 /// });
 /// ```
 pub fn create_metrics_handler() -> armature_core::routing::HandlerFn {
-    std::sync::Arc::new(|req| {
-        Box::pin(async move {
-            metrics_handler(req).await
-        })
-    })
+    std::sync::Arc::new(|req| Box::pin(async move { metrics_handler(req).await }))
 }
 
 #[cfg(test)]
@@ -81,4 +80,3 @@ mod tests {
         );
     }
 }
-

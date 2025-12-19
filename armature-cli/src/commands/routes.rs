@@ -70,9 +70,10 @@ fn find_routes(dir: &str) -> Result<Vec<RouteInfo>, CliError> {
 
     for path in paths_to_search {
         if Path::new(&path).exists()
-            && let Ok(content) = fs::read_to_string(&path) {
-                routes.extend(parse_routes(&content));
-            }
+            && let Ok(content) = fs::read_to_string(&path)
+        {
+            routes.extend(parse_routes(&content));
+        }
     }
 
     // Search in controllers directory
@@ -97,10 +98,12 @@ fn parse_routes(content: &str) -> Vec<RouteInfo> {
         let line = line.trim();
 
         // Match route decorators like #[get("/path")]
-        if line.starts_with("#[") && line.contains("(\"")
-            && let Some(route) = parse_route_decorator(line) {
-                routes.push(route);
-            }
+        if line.starts_with("#[")
+            && line.contains("(\"")
+            && let Some(route) = parse_route_decorator(line)
+        {
+            routes.push(route);
+        }
     }
 
     routes
@@ -114,16 +117,17 @@ fn parse_route_decorator(line: &str) -> Option<RouteInfo> {
         let pattern = format!("#[{}(\"", method);
         if line.contains(&pattern)
             && let Some(start) = line.find("(\"")
-                && let Some(end) = line[start..].find("\")") {
-                    let path = &line[start + 2..start + end];
-                    return Some(RouteInfo {
-                        method: method.to_uppercase(),
-                        path: path.to_string(),
-                        handler: "handler".to_string(),
-                        middleware: Vec::new(),
-                        guards: Vec::new(),
-                    });
-                }
+            && let Some(end) = line[start..].find("\")")
+        {
+            let path = &line[start + 2..start + end];
+            return Some(RouteInfo {
+                method: method.to_uppercase(),
+                path: path.to_string(),
+                handler: "handler".to_string(),
+                middleware: Vec::new(),
+                guards: Vec::new(),
+            });
+        }
     }
 
     None
@@ -131,8 +135,18 @@ fn parse_route_decorator(line: &str) -> Option<RouteInfo> {
 
 fn print_routes_table(routes: &[RouteInfo]) {
     // Calculate column widths
-    let method_width = routes.iter().map(|r| r.method.len()).max().unwrap_or(6).max(6);
-    let path_width = routes.iter().map(|r| r.path.len()).max().unwrap_or(4).max(4);
+    let method_width = routes
+        .iter()
+        .map(|r| r.method.len())
+        .max()
+        .unwrap_or(6)
+        .max(6);
+    let path_width = routes
+        .iter()
+        .map(|r| r.path.len())
+        .max()
+        .unwrap_or(4)
+        .max(4);
 
     // Print header
     println!("{:width$}  PATH", "METHOD", width = method_width);
@@ -140,7 +154,12 @@ fn print_routes_table(routes: &[RouteInfo]) {
 
     // Print routes
     for route in routes {
-        println!("{:width$}  {}", route.method, route.path, width = method_width);
+        println!(
+            "{:width$}  {}",
+            route.method,
+            route.path,
+            width = method_width
+        );
 
         if !route.middleware.is_empty() {
             println!("  └─ Middleware: {}", route.middleware.join(", "));
@@ -152,7 +171,10 @@ fn print_routes_table(routes: &[RouteInfo]) {
 }
 
 /// List routes with filtering
-pub fn execute_with_filter(project_dir: Option<&str>, method: Option<&str>) -> Result<(), CliError> {
+pub fn execute_with_filter(
+    project_dir: Option<&str>,
+    method: Option<&str>,
+) -> Result<(), CliError> {
     let dir = project_dir.unwrap_or(".");
 
     println!("🗺️  Armature Routes");
@@ -165,7 +187,8 @@ pub fn execute_with_filter(project_dir: Option<&str>, method: Option<&str>) -> R
     let routes = find_routes(dir)?;
 
     let filtered_routes: Vec<_> = if let Some(m) = method {
-        routes.into_iter()
+        routes
+            .into_iter()
             .filter(|r| r.method.eq_ignore_ascii_case(m))
             .collect()
     } else {
@@ -202,4 +225,3 @@ mod tests {
         assert_eq!(route.path, "/api/users");
     }
 }
-

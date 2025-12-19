@@ -1,8 +1,8 @@
 //! Distributed leader election using Redis
 
 use redis::AsyncCommands;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use thiserror::Error;
 use tokio::sync::RwLock;
@@ -23,7 +23,8 @@ pub enum LeaderError {
 }
 
 /// Leader election callback
-pub type LeaderCallback = Arc<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync>;
+pub type LeaderCallback =
+    Arc<dyn Fn() -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync>;
 
 /// Leader election coordinator
 pub struct LeaderElection {
@@ -73,11 +74,7 @@ impl LeaderElection {
     ///     conn,
     /// );
     /// ```
-    pub fn new(
-        key: impl Into<String>,
-        ttl: Duration,
-        conn: redis::aio::ConnectionManager,
-    ) -> Self {
+    pub fn new(key: impl Into<String>, ttl: Duration, conn: redis::aio::ConnectionManager) -> Self {
         let refresh_interval = Duration::from_millis((ttl.as_millis() / 3) as u64);
 
         Self {
@@ -160,7 +157,10 @@ impl LeaderElection {
                         }
                     } else if became_leader {
                         // Still leader, just refreshed
-                        debug!("Node {} refreshed leadership for {}", self.node_id, self.key);
+                        debug!(
+                            "Node {} refreshed leadership for {}",
+                            self.node_id, self.key
+                        );
                     }
                 }
                 Err(e) => {
@@ -168,9 +168,10 @@ impl LeaderElection {
 
                     // If we were leader but encountered an error, we're no longer leader
                     if self.is_leader.swap(false, Ordering::Release)
-                        && let Some(callback) = &self.on_revoked {
-                            callback().await;
-                        }
+                        && let Some(callback) = &self.on_revoked
+                    {
+                        callback().await;
+                    }
                 }
             }
 
@@ -310,11 +311,9 @@ mod tests {
 
     #[test]
     fn test_leader_election_builder() {
-        let builder = LeaderElectionBuilder::new("test-leader")
-            .with_ttl(Duration::from_secs(60));
+        let builder = LeaderElectionBuilder::new("test-leader").with_ttl(Duration::from_secs(60));
 
         assert_eq!(builder.key, "test-leader");
         assert_eq!(builder.ttl, Duration::from_secs(60));
     }
 }
-

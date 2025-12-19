@@ -150,7 +150,11 @@ impl BackoffStrategy {
                 let total = delay.saturating_mul(attempt + 1);
                 total.min(*max)
             }
-            Self::Exponential { initial, max, multiplier } => {
+            Self::Exponential {
+                initial,
+                max,
+                multiplier,
+            } => {
                 let factor = multiplier.powi(attempt as i32);
                 let millis = (initial.as_millis() as f64 * factor) as u64;
                 Duration::from_millis(millis).min(*max)
@@ -238,4 +242,3 @@ mod tests {
         assert_eq!(strategy.delay_for_attempt(5), Duration::from_millis(500));
     }
 }
-

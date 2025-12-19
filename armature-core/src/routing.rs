@@ -1,7 +1,7 @@
 // Routing system for HTTP requests
 
-use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use crate::route_constraint::RouteConstraints;
+use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -44,7 +44,11 @@ impl Router {
     /// Match a route without executing the handler.
     /// Returns the handler and path parameters if a route matches.
     /// Useful for route lookup benchmarking and inspection.
-    pub fn match_route(&self, method: &str, path: &str) -> Option<(HandlerFn, HashMap<String, String>)> {
+    pub fn match_route(
+        &self,
+        method: &str,
+        path: &str,
+    ) -> Option<(HandlerFn, HashMap<String, String>)> {
         // Strip query string if present
         let path = path.split('?').next().unwrap_or(path);
 

@@ -81,4 +81,3 @@ impl CounterVecBuilder {
         crate::register_counter_vec(&self.name, &self.help, &label_refs)
     }
 }
-

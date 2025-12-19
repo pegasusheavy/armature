@@ -30,9 +30,9 @@ pub struct FunctionRequest {
 
 /// Custom serde module for Bytes <-> base64 string conversion.
 mod body_serde {
+    use base64::{Engine as _, engine::general_purpose::STANDARD};
     use bytes::Bytes;
     use serde::{self, Deserialize, Deserializer, Serializer};
-    use base64::{Engine as _, engine::general_purpose::STANDARD};
 
     pub fn serialize<S>(bytes: &Bytes, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -169,4 +169,3 @@ impl Default for FunctionRequest {
         Self::new("GET", "/")
     }
 }
-

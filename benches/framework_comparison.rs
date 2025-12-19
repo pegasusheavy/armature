@@ -1,3 +1,6 @@
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! Framework Comparison Benchmarks
 //!
 //! This benchmark suite measures Armature's performance characteristics
@@ -25,13 +28,12 @@
 //! ```
 
 use armature_core::*;
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
+use uuid::Uuid;
 
 // =============================================================================
 // Test Data Structures
@@ -153,8 +155,10 @@ fn bench_request_creation(c: &mut Criterion) {
     // Request with path parameters
     group.bench_function("with_path_params", |b| {
         b.iter(|| {
-            let mut req =
-                HttpRequest::new(black_box("GET".to_string()), black_box("/api/users/123".to_string()));
+            let mut req = HttpRequest::new(
+                black_box("GET".to_string()),
+                black_box("/api/users/123".to_string()),
+            );
             req.path_params.insert("id".to_string(), "123".to_string());
             req
         })
@@ -163,10 +167,13 @@ fn bench_request_creation(c: &mut Criterion) {
     // Request with query parameters
     group.bench_function("with_query_params", |b| {
         b.iter(|| {
-            let mut req =
-                HttpRequest::new(black_box("GET".to_string()), black_box("/api/users".to_string()));
+            let mut req = HttpRequest::new(
+                black_box("GET".to_string()),
+                black_box("/api/users".to_string()),
+            );
             req.query_params.insert("page".to_string(), "1".to_string());
-            req.query_params.insert("limit".to_string(), "10".to_string());
+            req.query_params
+                .insert("limit".to_string(), "10".to_string());
             req.query_params
                 .insert("sort".to_string(), "-created_at".to_string());
             req
@@ -176,16 +183,14 @@ fn bench_request_creation(c: &mut Criterion) {
     // Request with headers
     group.bench_function("with_headers", |b| {
         b.iter(|| {
-            let mut req =
-                HttpRequest::new(black_box("POST".to_string()), black_box("/api/data".to_string()));
-            req.headers.insert(
-                "Content-Type".to_string(),
-                "application/json".to_string(),
+            let mut req = HttpRequest::new(
+                black_box("POST".to_string()),
+                black_box("/api/data".to_string()),
             );
-            req.headers.insert(
-                "Authorization".to_string(),
-                "Bearer token123".to_string(),
-            );
+            req.headers
+                .insert("Content-Type".to_string(), "application/json".to_string());
+            req.headers
+                .insert("Authorization".to_string(), "Bearer token123".to_string());
             req.headers
                 .insert("X-Request-ID".to_string(), "abc-123".to_string());
             req
@@ -196,12 +201,12 @@ fn bench_request_creation(c: &mut Criterion) {
     group.bench_function("with_json_body", |b| {
         let body = serde_json::to_vec(&create_medium_payload()).unwrap();
         b.iter(|| {
-            let mut req =
-                HttpRequest::new(black_box("POST".to_string()), black_box("/api/users".to_string()));
-            req.headers.insert(
-                "Content-Type".to_string(),
-                "application/json".to_string(),
+            let mut req = HttpRequest::new(
+                black_box("POST".to_string()),
+                black_box("/api/users".to_string()),
             );
+            req.headers
+                .insert("Content-Type".to_string(), "application/json".to_string());
             req.body = black_box(body.clone());
             req
         })
@@ -310,7 +315,14 @@ fn bench_json_operations(c: &mut Criterion) {
 fn generate_routes(count: usize) -> Vec<(String, String)> {
     let methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
     let resources = [
-        "users", "posts", "comments", "articles", "products", "orders", "customers", "invoices",
+        "users",
+        "posts",
+        "comments",
+        "articles",
+        "products",
+        "orders",
+        "customers",
+        "invoices",
     ];
 
     let mut routes = Vec::with_capacity(count);
@@ -425,7 +437,7 @@ fn bench_middleware_creation(c: &mut Criterion) {
 
     group.bench_function("request_id", |b| {
         b.iter(|| {
-            let id = uuid::Uuid::new_v4().to_string();
+            let id = Uuid::new_v4().to_string();
             black_box(id);
         })
     });
@@ -636,7 +648,9 @@ fn bench_full_cycle(c: &mut Criterion) {
         method: HttpMethod::GET,
         path: "/health".to_string(),
         handler: Arc::new(|_req| {
-            Box::pin(async { Ok(HttpResponse::ok().with_json(&serde_json::json!({"status": "ok"}))?) })
+            Box::pin(async {
+                Ok(HttpResponse::ok().with_json(&serde_json::json!({"status": "ok"}))?)
+            })
         }),
         constraints: None,
     });
@@ -708,10 +722,8 @@ fn bench_full_cycle(c: &mut Criterion) {
             let b = body.clone();
             runtime.block_on(async move {
                 let mut req = HttpRequest::new("POST".to_string(), "/api/users".to_string());
-                req.headers.insert(
-                    "Content-Type".to_string(),
-                    "application/json".to_string(),
-                );
+                req.headers
+                    .insert("Content-Type".to_string(), "application/json".to_string());
                 req.body = b;
                 let _ = r.route(black_box(req)).await;
             })
@@ -738,8 +750,8 @@ fn bench_allocations(c: &mut Criterion) {
 
     group.bench_function("string_medium", |b| {
         b.iter(|| {
-            let s: String = black_box("This is a medium length string for testing allocations")
-                .to_string();
+            let s: String =
+                black_box("This is a medium length string for testing allocations").to_string();
             black_box(s);
         })
     });
@@ -805,4 +817,3 @@ criterion_group! {
 }
 
 criterion_main!(framework_comparison);
-

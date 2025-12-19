@@ -109,7 +109,8 @@ fn test_verify_expired_request() {
     let old_timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() - 3600;
+        .as_secs()
+        - 3600;
 
     let signature = signer.sign("POST", "/api/users", "body", old_timestamp);
 
@@ -127,7 +128,8 @@ fn test_verify_request_within_window() {
     let recent_timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() - 60;
+        .as_secs()
+        - 60;
 
     let signature = signer.sign("POST", "/api/users", "body", recent_timestamp);
 
@@ -160,7 +162,9 @@ fn test_verify_http_request() {
     };
 
     request.headers.insert("X-Signature".to_string(), signature);
-    request.headers.insert("X-Timestamp".to_string(), timestamp.to_string());
+    request
+        .headers
+        .insert("X-Timestamp".to_string(), timestamp.to_string());
 
     let result = verifier.verify_request(&request);
     assert!(result.is_ok());
@@ -197,7 +201,9 @@ fn test_verify_request_missing_timestamp() {
         path_params: HashMap::new(),
     };
 
-    request.headers.insert("X-Signature".to_string(), "signature".to_string());
+    request
+        .headers
+        .insert("X-Signature".to_string(), "signature".to_string());
 
     let result = verifier.verify_request(&request);
     assert!(matches!(result, Err(SigningError::MissingTimestamp)));
@@ -216,8 +222,12 @@ fn test_verify_request_invalid_timestamp() {
         path_params: HashMap::new(),
     };
 
-    request.headers.insert("X-Signature".to_string(), "signature".to_string());
-    request.headers.insert("X-Timestamp".to_string(), "not-a-number".to_string());
+    request
+        .headers
+        .insert("X-Signature".to_string(), "signature".to_string());
+    request
+        .headers
+        .insert("X-Timestamp".to_string(), "not-a-number".to_string());
 
     let result = verifier.verify_request(&request);
     assert!(matches!(result, Err(SigningError::InvalidTimestamp)));
@@ -266,7 +276,8 @@ fn test_max_age_configuration() {
     let old_timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
-        .as_secs() - 400;
+        .as_secs()
+        - 400;
 
     let signer = RequestSigner::new("secret");
     let signature = signer.sign("POST", "/api/test", "body", old_timestamp);
@@ -280,4 +291,3 @@ fn test_max_age_configuration() {
     assert!(result2.is_ok());
     assert!(result2.unwrap());
 }
-

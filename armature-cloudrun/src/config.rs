@@ -68,9 +68,7 @@ impl CloudRunConfig {
             memory_limit_mb: std::env::var("MEMORY_LIMIT_MB")
                 .ok()
                 .and_then(|m| m.parse().ok()),
-            cpu_limit: std::env::var("CPU_LIMIT")
-                .ok()
-                .and_then(|c| c.parse().ok()),
+            cpu_limit: std::env::var("CPU_LIMIT").ok().and_then(|c| c.parse().ok()),
             timeout_seconds: std::env::var("CLOUD_RUN_TIMEOUT_SECONDS")
                 .ok()
                 .and_then(|t| t.parse().ok())
@@ -102,7 +100,9 @@ impl CloudRunConfig {
     /// Get the socket address.
     pub fn socket_addr(&self) -> SocketAddr {
         SocketAddr::new(
-            self.host.parse().unwrap_or_else(|_| "0.0.0.0".parse().unwrap()),
+            self.host
+                .parse()
+                .unwrap_or_else(|_| "0.0.0.0".parse().unwrap()),
             self.port,
         )
     }
@@ -115,16 +115,17 @@ impl CloudRunConfig {
     /// Get service URL (if deployed).
     pub fn service_url(&self) -> Option<String> {
         match (&self.service, &self.project_id, &self.region) {
-            (Some(service), Some(project), Some(region)) => {
-                Some(format!(
-                    "https://{}-{}.{}.run.app",
-                    service,
-                    project.replace('_', "-").chars().take(10).collect::<String>(),
-                    region
-                ))
-            }
+            (Some(service), Some(project), Some(region)) => Some(format!(
+                "https://{}-{}.{}.run.app",
+                service,
+                project
+                    .replace('_', "-")
+                    .chars()
+                    .take(10)
+                    .collect::<String>(),
+                region
+            )),
             _ => None,
         }
     }
 }
-

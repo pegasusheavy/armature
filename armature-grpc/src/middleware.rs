@@ -61,7 +61,9 @@ pub struct RateLimitMiddleware {
 impl RateLimitMiddleware {
     /// Create a new rate limit middleware.
     pub fn new(requests_per_second: u64) -> Self {
-        Self { requests_per_second }
+        Self {
+            requests_per_second,
+        }
     }
 
     /// Get the rate limit.
@@ -184,4 +186,3 @@ impl CompressionMiddleware {
         self.encoding
     }
 }
-

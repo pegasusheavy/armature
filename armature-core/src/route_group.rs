@@ -229,7 +229,9 @@ impl RouteGroup {
         }
 
         // Combine middleware (parent first, then child)
-        new_group.middleware.extend(parent.middleware.iter().cloned());
+        new_group
+            .middleware
+            .extend(parent.middleware.iter().cloned());
         new_group.middleware.extend(self.middleware);
 
         // Combine guards (parent first, then child)
@@ -288,4 +290,3 @@ mod tests {
         assert_eq!(child.apply_prefix("/users"), "/api/v1/users");
     }
 }
-

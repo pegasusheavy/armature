@@ -7,20 +7,7 @@
 //! ```
 
 pub use crate::{
-    bad_request,
-    created_json,
-    guard,
-    header,
-    internal_error,
-    json_object,
-    json_response,
-    log_error,
-    not_found,
-    ok_json,
-    paginated_response,
-    path_param,
-    path_params,
-    query_param,
+    bad_request, created_json, guard, header, internal_error, json_object, json_response,
+    log_error, not_found, ok_json, paginated_response, path_param, path_params, query_param,
     validation_error,
 };
-

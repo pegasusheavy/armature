@@ -80,10 +80,7 @@ impl OffsetPagination {
     ///
     /// Looks for `page` and `per_page` (or `limit`) parameters.
     pub fn from_query_params(params: &HashMap<String, String>) -> Self {
-        let page = params
-            .get("page")
-            .and_then(|p| p.parse().ok())
-            .unwrap_or(1);
+        let page = params.get("page").and_then(|p| p.parse().ok()).unwrap_or(1);
 
         let per_page = params
             .get("per_page")
@@ -269,7 +266,12 @@ impl<T> PaginatedResponse<T> {
     }
 
     /// Create paginated response from cursor pagination
-    pub fn with_cursor(data: Vec<T>, limit: usize, total: usize, next_cursor: Option<String>) -> Self {
+    pub fn with_cursor(
+        data: Vec<T>,
+        limit: usize,
+        total: usize,
+        next_cursor: Option<String>,
+    ) -> Self {
         Self {
             data,
             meta: PaginationMeta {
@@ -437,7 +439,7 @@ impl SortParams {
                 .iter()
                 .map(|f| f.to_sql())
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
         )
     }
 }
@@ -586,7 +588,9 @@ impl FilterParams {
         let mut conditions = Vec::new();
 
         // Skip known pagination/sorting params
-        let skip_params = ["page", "per_page", "limit", "cursor", "sort", "order_by", "fields", "q", "search"];
+        let skip_params = [
+            "page", "per_page", "limit", "cursor", "sort", "order_by", "fields", "q", "search",
+        ];
 
         for (key, value) in params {
             if skip_params.contains(&key.as_str()) {
@@ -595,14 +599,11 @@ impl FilterParams {
 
             // Parse field__operator format
             if let Some((field, op_str)) = key.split_once("__")
-                && let Some(operator) = FilterOperator::from_suffix(op_str) {
-                    conditions.push(FilterCondition::new(
-                        field,
-                        operator,
-                        Some(value.clone()),
-                    ));
-                    continue;
-                }
+                && let Some(operator) = FilterOperator::from_suffix(op_str)
+            {
+                conditions.push(FilterCondition::new(field, operator, Some(value.clone())));
+                continue;
+            }
 
             // Default to equality
             conditions.push(FilterCondition::new(
@@ -669,18 +670,11 @@ impl SearchParams {
     ///
     /// Looks for `q` or `search` parameter.
     pub fn from_query(params: &HashMap<String, String>) -> Self {
-        let query = params
-            .get("q")
-            .or_else(|| params.get("search"))
-            .cloned();
+        let query = params.get("q").or_else(|| params.get("search")).cloned();
 
         let fields = params
             .get("search_fields")
-            .map(|s| {
-                s.split(',')
-                    .map(|f| f.trim().to_string())
-                    .collect()
-            })
+            .map(|s| s.split(',').map(|f| f.trim().to_string()).collect())
             .unwrap_or_default();
 
         Self::new(query, fields)
@@ -771,15 +765,17 @@ impl FieldSelection {
     pub fn should_include(&self, field: &str) -> bool {
         // If include is specified, field must be in it
         if let Some(ref include) = self.include
-            && !include.contains(&field.to_string()) {
-                return false;
-            }
+            && !include.contains(&field.to_string())
+        {
+            return false;
+        }
 
         // If exclude is specified, field must not be in it
         if let Some(ref exclude) = self.exclude
-            && exclude.contains(&field.to_string()) {
-                return false;
-            }
+            && exclude.contains(&field.to_string())
+        {
+            return false;
+        }
 
         true
     }
@@ -935,4 +931,3 @@ mod tests {
         assert!(!fields.should_include("password"));
     }
 }
-

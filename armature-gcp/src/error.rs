@@ -56,4 +56,3 @@ impl GcpError {
         Self::ServiceNotConfigured(service)
     }
 }
-

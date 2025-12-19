@@ -150,7 +150,11 @@ pub trait Storage: Send + Sync {
     }
 
     /// Get a temporary/signed URL (if supported).
-    async fn temporary_url(&self, _key: &str, _expires_in: std::time::Duration) -> Result<Option<String>> {
+    async fn temporary_url(
+        &self,
+        _key: &str,
+        _expires_in: std::time::Duration,
+    ) -> Result<Option<String>> {
         Ok(None)
     }
 }
@@ -161,16 +165,17 @@ pub fn generate_unique_key(original_name: Option<&str>, preserve_extension: bool
 
     if preserve_extension
         && let Some(name) = original_name
-            && let Some(ext) = std::path::Path::new(name).extension() {
-                return format!("{}.{}", id, ext.to_string_lossy());
-            }
+        && let Some(ext) = std::path::Path::new(name).extension()
+    {
+        return format!("{}.{}", id, ext.to_string_lossy());
+    }
 
     id.to_string()
 }
 
 /// Calculate SHA-256 checksum of data.
 pub fn calculate_checksum(data: &[u8]) -> String {
-    use sha2::{Sha256, Digest};
+    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(data);
     hex::encode(hasher.finalize())
@@ -195,4 +200,3 @@ pub fn sanitize_filename(name: &str) -> String {
         .trim_start_matches('.')
         .to_string()
 }
-

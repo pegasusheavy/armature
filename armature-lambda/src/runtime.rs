@@ -1,6 +1,6 @@
 //! Lambda runtime for Armature applications.
 
-use lambda_http::{run, service_fn, Body, Error, Request, Response};
+use lambda_http::{Body, Error, Request, Response, run, service_fn};
 use std::sync::Arc;
 use tracing::{debug, info};
 
@@ -115,16 +115,17 @@ async fn handle_request<App: RequestHandler>(
 
     // Strip base path if configured
     if let Some(base_path) = &config.base_path
-        && lambda_request.path.starts_with(base_path) {
-            lambda_request.path = lambda_request
-                .path
-                .strip_prefix(base_path)
-                .unwrap_or(&lambda_request.path)
-                .to_string();
-            if lambda_request.path.is_empty() {
-                lambda_request.path = "/".to_string();
-            }
+        && lambda_request.path.starts_with(base_path)
+    {
+        lambda_request.path = lambda_request
+            .path
+            .strip_prefix(base_path)
+            .unwrap_or(&lambda_request.path)
+            .to_string();
+        if lambda_request.path.is_empty() {
+            lambda_request.path = "/".to_string();
         }
+    }
 
     // Log request if enabled
     if config.log_requests {
@@ -141,10 +142,7 @@ async fn handle_request<App: RequestHandler>(
 
     // Log response if enabled
     if config.log_responses {
-        debug!(
-            status = response.status,
-            "Lambda response"
-        );
+        debug!(status = response.status, "Lambda response");
     }
 
     Ok(response.into_lambda_response())
@@ -163,27 +161,23 @@ macro_rules! impl_request_handler {
     ($app_type:ty) => {
         #[async_trait::async_trait]
         impl $crate::runtime::RequestHandler for $app_type {
-            async fn handle(
-                &self,
-                request: $crate::LambdaRequest,
-            ) -> $crate::LambdaResponse {
+            async fn handle(&self, request: $crate::LambdaRequest) -> $crate::LambdaResponse {
                 // Convert to Armature HttpRequest and handle
                 // This is a simplified implementation - full version would
                 // properly convert all request data
-                match self.handle_request(request.method, &request.path, request.body).await {
+                match self
+                    .handle_request(request.method, &request.path, request.body)
+                    .await
+                {
                     Ok(response) => {
-                        let mut lambda_response = $crate::LambdaResponse::new(
-                            response.status,
-                            response.body,
-                        );
+                        let mut lambda_response =
+                            $crate::LambdaResponse::new(response.status, response.body);
                         for (name, value) in response.headers {
                             lambda_response = lambda_response.header(name, value);
                         }
                         lambda_response
                     }
-                    Err(e) => {
-                        $crate::LambdaResponse::internal_error(e.to_string())
-                    }
+                    Err(e) => $crate::LambdaResponse::internal_error(e.to_string()),
                 }
             }
         }
@@ -201,4 +195,3 @@ where
         self(request).await
     }
 }
-
