@@ -27,14 +27,14 @@ impl ValidationPipe {
 
     /// Transform validation errors to HTTP response
     pub fn error_response(errors: ValidationErrors) -> HttpResponse {
-        HttpResponse {
-            status: 400,
-            headers: std::collections::HashMap::from([(
+        HttpResponse::from_parts(
+            400,
+            std::collections::HashMap::from([(
                 "Content-Type".to_string(),
                 "application/json".to_string(),
             )]),
-            body: errors.to_json().to_string().into_bytes(),
-        }
+            errors.to_json().to_string().into_bytes(),
+        )
     }
 }
 

@@ -153,11 +153,7 @@ impl Middleware for CorsMiddleware {
                 );
             }
 
-            return Ok(HttpResponse {
-                status: 204,
-                headers,
-                body: Vec::new(),
-            });
+            return Ok(HttpResponse::with_status_and_headers(204, headers));
         }
 
         // Process request and add CORS headers to response
@@ -549,11 +545,7 @@ mod tests {
 
         let handler = Arc::new(|_req: HttpRequest| {
             Box::pin(async {
-                Ok(HttpResponse {
-                    status: 200,
-                    headers: HashMap::new(),
-                    body: Vec::new(),
-                })
+                Ok(HttpResponse::ok())
             }) as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
         });
 
@@ -571,13 +563,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -600,13 +586,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -623,13 +603,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -648,13 +622,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -676,13 +644,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -722,11 +684,7 @@ mod tests {
                 req,
                 Box::new(|_req| {
                     Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: b"test response body".to_vec(),
-                        })
+                        Ok(HttpResponse::ok().with_body(b"test response body".to_vec()))
                     })
                 }),
             )
@@ -746,11 +704,7 @@ mod tests {
 
         let handler = Arc::new(|_req: HttpRequest| {
             Box::pin(async {
-                Ok(HttpResponse {
-                    status: 200,
-                    headers: HashMap::new(),
-                    body: Vec::new(),
-                })
+                Ok(HttpResponse::ok())
             }) as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
         });
 
@@ -778,13 +732,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;
@@ -809,13 +757,7 @@ mod tests {
             .handle(
                 req,
                 Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
-                    })
+                    Box::pin(async { Ok(HttpResponse::ok()) })
                 }),
             )
             .await;

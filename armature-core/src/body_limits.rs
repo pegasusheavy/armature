@@ -598,11 +598,7 @@ mod tests {
                 req,
                 Box::new(|_req| {
                     Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
+                        Ok(HttpResponse::ok())
                     })
                 }),
             )
@@ -624,11 +620,7 @@ mod tests {
                 req,
                 Box::new(|_req| {
                     Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
+                        Ok(HttpResponse::ok())
                     })
                 }),
             )
@@ -656,11 +648,7 @@ mod tests {
                 req,
                 Box::new(|_req| {
                     Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
+                        Ok(HttpResponse::ok())
                     })
                 }),
             )
@@ -677,11 +665,7 @@ mod tests {
                 req,
                 Box::new(|_req| {
                     Box::pin(async {
-                        Ok(HttpResponse {
-                            status: 200,
-                            headers: HashMap::new(),
-                            body: Vec::new(),
-                        })
+                        Ok(HttpResponse::ok())
                     })
                 }),
             )

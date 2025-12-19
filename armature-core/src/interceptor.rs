@@ -160,15 +160,7 @@ mod tests {
 
     #[test]
     fn test_execution_context_creation() {
-        let request = crate::HttpRequest {
-            method: "GET".to_string(),
-            path: "/test".to_string(),
-            headers: HashMap::new(),
-            body: vec![],
-            path_params: HashMap::new(),
-            query_params: HashMap::new(),
-            extensions: crate::Extensions::new(),
-        };
+        let request = crate::HttpRequest::new("GET".to_string(), "/test".to_string());
 
         let context = ExecutionContext::new(request.clone());
         assert_eq!(context.request.method, "GET");
@@ -177,15 +169,8 @@ mod tests {
 
     #[test]
     fn test_execution_context_with_metadata() {
-        let request = crate::HttpRequest {
-            method: "POST".to_string(),
-            path: "/api/users".to_string(),
-            headers: HashMap::new(),
-            body: vec![1, 2, 3],
-            path_params: HashMap::new(),
-            query_params: HashMap::new(),
-            extensions: crate::Extensions::new(),
-        };
+        let mut request = crate::HttpRequest::new("POST".to_string(), "/api/users".to_string());
+        request.body = vec![1, 2, 3];
 
         let context = ExecutionContext::new(request.clone());
         assert_eq!(context.request.body.len(), 3);
