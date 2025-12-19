@@ -69,7 +69,6 @@ impl Default for ConfigService {
     }
 }
 
-
 /// Builder for ConfigService
 pub struct ConfigServiceBuilder {
     manager: ConfigManager,

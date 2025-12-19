@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Graceful Shutdown Example
 //!
 //! Demonstrates advanced shutdown features:
@@ -34,44 +35,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("\nRegistering shutdown hooks...");
 
     // Critical shutdown hook (database)
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("🔴 CRITICAL: Closing database connection pool");
-            tokio::time::sleep(Duration::from_millis(1000)).await;
-            info!("✓ Database connections closed");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("🔴 CRITICAL: Closing database connection pool");
+                tokio::time::sleep(Duration::from_millis(1000)).await;
+                info!("✓ Database connections closed");
+                Ok(())
+            })
+        }))
+        .await;
 
     // Important shutdown hook (cache)
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("🟠 IMPORTANT: Flushing cache to disk");
-            tokio::time::sleep(Duration::from_millis(800)).await;
-            info!("✓ Cache flushed");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("🟠 IMPORTANT: Flushing cache to disk");
+                tokio::time::sleep(Duration::from_millis(800)).await;
+                info!("✓ Cache flushed");
+                Ok(())
+            })
+        }))
+        .await;
 
     // Normal shutdown hook (metrics)
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("🟡 NORMAL: Sending final metrics");
-            tokio::time::sleep(Duration::from_millis(500)).await;
-            info!("✓ Metrics sent");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("🟡 NORMAL: Sending final metrics");
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                info!("✓ Metrics sent");
+                Ok(())
+            })
+        }))
+        .await;
 
     // Low priority shutdown hook (logs)
-    shutdown_manager.add_hook(Box::new(|| {
-        Box::pin(async {
-            info!("🟢 LOW: Rotating log files");
-            tokio::time::sleep(Duration::from_millis(300)).await;
-            info!("✓ Logs rotated");
-            Ok(())
-        })
-    })).await;
+    shutdown_manager
+        .add_hook(Box::new(|| {
+            Box::pin(async {
+                info!("🟢 LOW: Rotating log files");
+                tokio::time::sleep(Duration::from_millis(300)).await;
+                info!("✓ Logs rotated");
+                Ok(())
+            })
+        }))
+        .await;
 
     info!("✓ 4 shutdown hooks registered");
 
@@ -108,17 +117,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let shutdown = shutdown_clone.clone();
             Box::pin(async move {
                 if shutdown.is_shutting_down() {
-                    Ok(HttpResponse::new(503)
-                        .with_json(&serde_json::json!({
-                            "status": "shutting_down",
-                            "message": "Server is shutting down"
-                        }))?)
+                    Ok(HttpResponse::new(503).with_json(&serde_json::json!({
+                        "status": "shutting_down",
+                        "message": "Server is shutting down"
+                    }))?)
                 } else {
-                    Ok(HttpResponse::ok()
-                        .with_json(&serde_json::json!({
-                            "status": "ready",
-                            "message": "Server is ready"
-                        }))?)
+                    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+                        "status": "ready",
+                        "message": "Server is ready"
+                    }))?)
                 }
             })
         }),
@@ -137,10 +144,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let guard = match tracker.increment() {
                     Some(g) => g,
                     None => {
-                        return Ok(HttpResponse::new(503)
-                            .with_json(&serde_json::json!({
-                                "error": "Server is shutting down"
-                            }))?);
+                        return Ok(HttpResponse::new(503).with_json(&serde_json::json!({
+                            "error": "Server is shutting down"
+                        }))?);
                     }
                 };
 
@@ -148,8 +154,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let body_str = String::from_utf8_lossy(&req.body);
                 let duration_secs: u64 = body_str.parse().unwrap_or(3);
 
-                info!("Processing work request ({} seconds, active: {})",
-                    duration_secs, tracker.active_count());
+                info!(
+                    "Processing work request ({} seconds, active: {})",
+                    duration_secs,
+                    tracker.active_count()
+                );
 
                 // Simulate work
                 tokio::time::sleep(Duration::from_secs(duration_secs)).await;

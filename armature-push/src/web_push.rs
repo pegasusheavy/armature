@@ -3,8 +3,7 @@
 use async_trait::async_trait;
 use tracing::debug;
 use web_push::{
-    ContentEncoding, SubscriptionInfo, VapidSignatureBuilder,
-    WebPushClient, WebPushMessageBuilder,
+    ContentEncoding, SubscriptionInfo, VapidSignatureBuilder, WebPushClient, WebPushMessageBuilder,
 };
 
 use crate::{Notification, Platform, PushError, PushProvider, Result, Subscription};
@@ -91,8 +90,8 @@ pub struct WebPushProvider {
 impl WebPushProvider {
     /// Create a new Web Push provider.
     pub fn new(config: WebPushConfig) -> Result<Self> {
-        let client = web_push::IsahcWebPushClient::new()
-            .map_err(|e| PushError::Config(e.to_string()))?;
+        let client =
+            web_push::IsahcWebPushClient::new().map_err(|e| PushError::Config(e.to_string()))?;
 
         Ok(Self { config, client })
     }
@@ -127,7 +126,10 @@ impl WebPushProvider {
         )
         .map_err(|e: web_push::WebPushError| PushError::Config(e.to_string()))?;
 
-        sig_builder.add_claim("sub", serde_json::Value::String(self.config.subject.clone()));
+        sig_builder.add_claim(
+            "sub",
+            serde_json::Value::String(self.config.subject.clone()),
+        );
 
         let signature = sig_builder
             .build()
@@ -142,7 +144,9 @@ impl WebPushProvider {
         builder.set_payload(ContentEncoding::Aes128Gcm, payload.as_bytes());
         builder.set_ttl(notification.ttl.unwrap_or(self.config.default_ttl));
 
-        let message = builder.build().map_err(|e| PushError::Provider(e.to_string()))?;
+        let message = builder
+            .build()
+            .map_err(|e| PushError::Provider(e.to_string()))?;
 
         debug!(endpoint = %subscription.endpoint, "Sending web push notification");
 
@@ -168,7 +172,8 @@ impl PushProvider for WebPushProvider {
         }
 
         let subscription = WebPushSubscription::new(parts[0], parts[1], parts[2]);
-        self.send_to_web_subscription(&subscription, notification).await
+        self.send_to_web_subscription(&subscription, notification)
+            .await
     }
 
     fn platform(&self) -> Platform {
@@ -183,4 +188,3 @@ impl PushProvider for WebPushProvider {
         self.send_to_subscription(subscription, notification).await
     }
 }
-

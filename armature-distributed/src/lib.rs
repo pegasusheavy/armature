@@ -76,11 +76,11 @@
 //! }
 //! ```
 
-pub mod lock;
 pub mod leader;
+pub mod lock;
 
-pub use lock::{DistributedLock, LockBuilder, LockError, LockGuard, RedisLock};
 pub use leader::{LeaderElection, LeaderElectionBuilder, LeaderError};
+pub use lock::{DistributedLock, LockBuilder, LockError, LockGuard, RedisLock};
 
 #[cfg(test)]
 mod tests {
@@ -89,4 +89,3 @@ mod tests {
         // Ensure module compiles
     }
 }
-

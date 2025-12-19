@@ -15,7 +15,8 @@ pub trait CacheProvider: Send + Sync {
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, CacheError>;
 
     /// Set value in cache
-    async fn set(&self, key: &str, value: Vec<u8>, ttl: Option<Duration>) -> Result<(), CacheError>;
+    async fn set(&self, key: &str, value: Vec<u8>, ttl: Option<Duration>)
+    -> Result<(), CacheError>;
 
     /// Delete value from cache
     async fn delete(&self, key: &str) -> Result<(), CacheError>;
@@ -138,8 +139,8 @@ impl<P: CacheProvider> TenantCache<P> {
         value: &T,
         ttl: Option<Duration>,
     ) -> Result<(), CacheError> {
-        let data = serde_json::to_vec(value)
-            .map_err(|e| CacheError::Serialization(e.to_string()))?;
+        let data =
+            serde_json::to_vec(value).map_err(|e| CacheError::Serialization(e.to_string()))?;
         self.set(tenant, key, data, ttl).await
     }
 }
@@ -205,7 +206,12 @@ mod tests {
             Ok(data.get(key).cloned())
         }
 
-        async fn set(&self, key: &str, value: Vec<u8>, _ttl: Option<Duration>) -> Result<(), CacheError> {
+        async fn set(
+            &self,
+            key: &str,
+            value: Vec<u8>,
+            _ttl: Option<Duration>,
+        ) -> Result<(), CacheError> {
             let mut data = self.data.lock().await;
             data.insert(key.to_string(), value);
             Ok(())
@@ -237,7 +243,10 @@ mod tests {
         let tenant = Tenant::new("tenant-1", "acme");
         let value = b"test data".to_vec();
 
-        cache.set(&tenant, "test:key", value.clone(), None).await.unwrap();
+        cache
+            .set(&tenant, "test:key", value.clone(), None)
+            .await
+            .unwrap();
         let retrieved = cache.get(&tenant, "test:key").await.unwrap();
 
         assert_eq!(retrieved, Some(value));
@@ -251,8 +260,14 @@ mod tests {
         let tenant1 = Tenant::new("tenant-1", "acme");
         let tenant2 = Tenant::new("tenant-2", "globex");
 
-        cache.set(&tenant1, "key", b"value1".to_vec(), None).await.unwrap();
-        cache.set(&tenant2, "key", b"value2".to_vec(), None).await.unwrap();
+        cache
+            .set(&tenant1, "key", b"value1".to_vec(), None)
+            .await
+            .unwrap();
+        cache
+            .set(&tenant2, "key", b"value2".to_vec(), None)
+            .await
+            .unwrap();
 
         let val1 = cache.get(&tenant1, "key").await.unwrap();
         let val2 = cache.get(&tenant2, "key").await.unwrap();
@@ -279,7 +294,10 @@ mod tests {
             name: "Alice".to_string(),
         };
 
-        cache.set_json(&tenant, "user:1", &user, None).await.unwrap();
+        cache
+            .set_json(&tenant, "user:1", &user, None)
+            .await
+            .unwrap();
         let retrieved: Option<User> = cache.get_json(&tenant, "user:1").await.unwrap();
 
         assert_eq!(retrieved, Some(user));
@@ -305,11 +323,13 @@ mod tests {
 
         let tenant = Tenant::new("tenant-1", "acme");
 
-        cache.set(&tenant, "key", b"value".to_vec(), None).await.unwrap();
+        cache
+            .set(&tenant, "key", b"value".to_vec(), None)
+            .await
+            .unwrap();
         assert!(cache.exists(&tenant, "key").await.unwrap());
 
         cache.delete(&tenant, "key").await.unwrap();
         assert!(!cache.exists(&tenant, "key").await.unwrap());
     }
 }
-

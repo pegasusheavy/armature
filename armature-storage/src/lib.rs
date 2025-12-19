@@ -71,11 +71,11 @@
 //! ```
 
 mod error;
-mod storage;
-mod multipart;
-mod validation;
 mod file;
 mod local;
+mod multipart;
+mod storage;
+mod validation;
 
 #[cfg(feature = "s3")]
 mod s3;
@@ -86,21 +86,24 @@ mod gcs;
 #[cfg(feature = "azure")]
 mod azure;
 
-pub use error::{StorageError, Result};
-pub use storage::{Storage, StorageMetadata, StorageConfig, generate_unique_key, calculate_checksum, sanitize_filename};
-pub use multipart::{Multipart, MultipartField, MultipartStream};
-pub use validation::{FileValidator, ValidationError, ValidationRule};
-pub use file::{UploadedFile, FileInfo};
+pub use error::{Result, StorageError};
+pub use file::{FileInfo, UploadedFile};
 pub use local::{LocalStorage, LocalStorageConfig};
+pub use multipart::{Multipart, MultipartField, MultipartStream};
+pub use storage::{
+    Storage, StorageConfig, StorageMetadata, calculate_checksum, generate_unique_key,
+    sanitize_filename,
+};
+pub use validation::{FileValidator, ValidationError, ValidationRule};
 
 #[cfg(feature = "s3")]
-pub use s3::{S3Storage, S3Config};
+pub use s3::{S3Config, S3Storage};
 
 #[cfg(feature = "gcs")]
-pub use gcs::{GcsStorage, GcsConfig};
+pub use gcs::{GcsConfig, GcsStorage};
 
 #[cfg(feature = "azure")]
-pub use azure::{AzureBlobStorage, AzureBlobConfig};
+pub use azure::{AzureBlobConfig, AzureBlobStorage};
 
 // Re-export useful types
 pub use bytes::Bytes;

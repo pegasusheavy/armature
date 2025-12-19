@@ -25,9 +25,9 @@
 //! tokio::spawn(worker.run());
 //! ```
 
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
-use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
@@ -276,7 +276,8 @@ impl EmailQueueBackend for InMemoryBackend {
     }
 
     async fn complete(&self, _job_id: &str) -> Result<()> {
-        self.processed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.processed
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         Ok(())
     }
 
@@ -359,7 +360,11 @@ impl EmailQueueBackend for RedisBackend {
         let job_json = serde_json::to_string(&job)?;
         let score = job.priority as f64 * 1_000_000_000.0 + job.created_at as f64;
 
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
 
         // Store job data
         redis::cmd("SET")
@@ -383,7 +388,11 @@ impl EmailQueueBackend for RedisBackend {
     }
 
     async fn pop(&self, count: usize) -> Result<Vec<EmailJob>> {
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
         let now = chrono_now_ms() as f64;
 
         // Get job IDs from pending queue
@@ -437,7 +446,11 @@ impl EmailQueueBackend for RedisBackend {
     }
 
     async fn complete(&self, job_id: &str) -> Result<()> {
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
 
         // Remove job data
         redis::cmd("DEL")
@@ -463,7 +476,11 @@ impl EmailQueueBackend for RedisBackend {
         job.last_error = Some(error.to_string());
 
         let job_json = serde_json::to_string(&job)?;
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
 
         // Update job data
         redis::cmd("SET")
@@ -489,7 +506,11 @@ impl EmailQueueBackend for RedisBackend {
 
     async fn dead_letter(&self, job: EmailJob) -> Result<()> {
         let job_json = serde_json::to_string(&job)?;
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
 
         // Add to dead letter list
         redis::cmd("LPUSH")
@@ -511,7 +532,11 @@ impl EmailQueueBackend for RedisBackend {
     }
 
     async fn stats(&self) -> Result<QueueStats> {
-        let mut conn = self.redis.get().await.map_err(|e| MailError::Queue(e.to_string()))?;
+        let mut conn = self
+            .redis
+            .get()
+            .await
+            .map_err(|e| MailError::Queue(e.to_string()))?;
 
         let pending: u64 = redis::cmd("ZCARD")
             .arg(&self.pending_key())
@@ -573,7 +598,10 @@ impl EmailQueue {
     }
 
     /// Create with a custom backend.
-    pub fn with_backend(backend: impl EmailQueueBackend + 'static, config: EmailQueueConfig) -> Self {
+    pub fn with_backend(
+        backend: impl EmailQueueBackend + 'static,
+        config: EmailQueueConfig,
+    ) -> Self {
         Self {
             backend: Arc::new(backend),
             config,
@@ -776,7 +804,7 @@ impl MailerQueueExt for Mailer {
 #[allow(dead_code)]
 mod async_channel {
     use std::sync::Arc;
-    use tokio::sync::{mpsc, Mutex};
+    use tokio::sync::{Mutex, mpsc};
 
     pub struct Sender<T> {
         tx: mpsc::Sender<T>,
@@ -816,4 +844,3 @@ mod async_channel {
         }
     }
 }
-

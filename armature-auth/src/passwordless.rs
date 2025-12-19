@@ -104,8 +104,8 @@ impl MagicLinkToken {
         let token = hex::encode(bytes);
 
         let now = Utc::now();
-        let expires_at = now + Duration::from_std(ttl)
-            .map_err(|_| PasswordlessError::InvalidToken)?;
+        let expires_at =
+            now + Duration::from_std(ttl).map_err(|_| PasswordlessError::InvalidToken)?;
 
         Ok(Self {
             token,
@@ -160,7 +160,11 @@ pub struct WebAuthnConfig {
 
 #[cfg(feature = "webauthn")]
 impl WebAuthnConfig {
-    pub fn new(rp_id: impl Into<String>, rp_name: impl Into<String>, origin: impl Into<String>) -> Result<Self, PasswordlessError> {
+    pub fn new(
+        rp_id: impl Into<String>,
+        rp_name: impl Into<String>,
+        origin: impl Into<String>,
+    ) -> Result<Self, PasswordlessError> {
         Ok(Self {
             rp_id: rp_id.into(),
             rp_name: rp_name.into(),
@@ -204,7 +208,8 @@ impl WebAuthnManager {
 
         let builder = builder.rp_name(&config.rp_name);
 
-        let webauthn = builder.build()
+        let webauthn = builder
+            .build()
             .map_err(|e| PasswordlessError::WebAuthn(e.to_string()))?;
 
         Ok(Self { webauthn })
@@ -221,7 +226,8 @@ impl WebAuthnManager {
     ) -> Result<(CreationChallengeResponse, PasskeyRegistration), PasswordlessError> {
         let user_unique_id = UserId::from(user_id);
 
-        let (ccr, reg_state) = self.webauthn
+        let (ccr, reg_state) = self
+            .webauthn
             .start_passkey_registration(user_unique_id, username, display_name, None)
             .map_err(|e| PasswordlessError::WebAuthn(e.to_string()))?;
 
@@ -283,10 +289,9 @@ mod tests {
 
     #[test]
     fn test_generate_magic_link() {
-        let token = MagicLinkToken::generate(
-            "user@example.com",
-            std::time::Duration::from_secs(3600)
-        ).unwrap();
+        let token =
+            MagicLinkToken::generate("user@example.com", std::time::Duration::from_secs(3600))
+                .unwrap();
 
         assert!(!token.token.is_empty());
         assert_eq!(token.identifier, "user@example.com");
@@ -295,20 +300,18 @@ mod tests {
 
     #[test]
     fn test_verify_magic_link() {
-        let token = MagicLinkToken::generate(
-            "user@example.com",
-            std::time::Duration::from_secs(3600)
-        ).unwrap();
+        let token =
+            MagicLinkToken::generate("user@example.com", std::time::Duration::from_secs(3600))
+                .unwrap();
 
         assert!(token.verify().is_ok());
     }
 
     #[test]
     fn test_magic_link_url() {
-        let token = MagicLinkToken::generate(
-            "user@example.com",
-            std::time::Duration::from_secs(3600)
-        ).unwrap();
+        let token =
+            MagicLinkToken::generate("user@example.com", std::time::Duration::from_secs(3600))
+                .unwrap();
 
         let url = token.to_url("https://example.com/auth/verify");
         assert!(url.starts_with("https://example.com/auth/verify?token="));
@@ -316,10 +319,9 @@ mod tests {
 
     #[test]
     fn test_magic_link_used() {
-        let mut token = MagicLinkToken::generate(
-            "user@example.com",
-            std::time::Duration::from_secs(3600)
-        ).unwrap();
+        let mut token =
+            MagicLinkToken::generate("user@example.com", std::time::Duration::from_secs(3600))
+                .unwrap();
 
         token.mark_used();
         assert!(matches!(token.verify(), Err(PasswordlessError::TokenUsed)));
@@ -329,11 +331,14 @@ mod tests {
     fn test_expired_magic_link() {
         let token = MagicLinkToken::generate(
             "user@example.com",
-            std::time::Duration::from_secs(0) // Already expired
-        ).unwrap();
+            std::time::Duration::from_secs(0), // Already expired
+        )
+        .unwrap();
 
         std::thread::sleep(std::time::Duration::from_millis(10));
-        assert!(matches!(token.verify(), Err(PasswordlessError::TokenExpired)));
+        assert!(matches!(
+            token.verify(),
+            Err(PasswordlessError::TokenExpired)
+        ));
     }
 }
-

@@ -82,4 +82,3 @@ impl GaugeVecBuilder {
         crate::register_gauge_vec(&self.name, &self.help, &label_refs)
     }
 }
-

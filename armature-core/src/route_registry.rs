@@ -87,4 +87,3 @@ macro_rules! register_route {
         }
     };
 }
-

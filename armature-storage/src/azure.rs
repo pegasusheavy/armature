@@ -10,8 +10,8 @@ use std::time::Duration;
 use tracing::{debug, info};
 
 use crate::{
-    calculate_checksum, generate_unique_key, Result, Storage, StorageConfig, StorageError,
-    StorageMetadata, UploadedFile,
+    Result, Storage, StorageConfig, StorageError, StorageMetadata, UploadedFile,
+    calculate_checksum, generate_unique_key,
 };
 
 /// Azure Blob Storage configuration.
@@ -119,9 +119,9 @@ impl AzureBlobStorage {
             StorageCredentials::access_key(&config.account, key)
         } else {
             // Use default Azure credential
-            StorageCredentials::token_credential(
-                Arc::new(azure_identity::DefaultAzureCredential::default()),
-            )
+            StorageCredentials::token_credential(Arc::new(
+                azure_identity::DefaultAzureCredential::default(),
+            ))
         };
 
         let blob_service = if config.use_emulator {
@@ -365,7 +365,11 @@ impl Storage for AzureBlobStorage {
         }
 
         let mut results = Vec::new();
-        let mut stream = self.container_client.list_blobs().prefix(&full_prefix).into_stream();
+        let mut stream = self
+            .container_client
+            .list_blobs()
+            .prefix(&full_prefix)
+            .into_stream();
 
         while let Some(response) = stream.next().await {
             let response = response.map_err(|e| StorageError::Storage(e.to_string()))?;
@@ -407,7 +411,9 @@ impl Storage for AzureBlobStorage {
         let from_client = self.blob_client(from);
         let to_client = self.blob_client(to);
 
-        let source_url = from_client.url().map_err(|e| StorageError::Storage(e.to_string()))?;
+        let source_url = from_client
+            .url()
+            .map_err(|e| StorageError::Storage(e.to_string()))?;
 
         to_client
             .copy(&source_url)
@@ -428,4 +434,3 @@ impl Storage for AzureBlobStorage {
         Ok(Some(self.public_url(key)))
     }
 }
-

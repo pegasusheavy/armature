@@ -190,4 +190,3 @@ mod tests {
         assert_eq!(context.tenant().unwrap().name, "acme");
     }
 }
-

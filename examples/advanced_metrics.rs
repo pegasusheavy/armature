@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Advanced Metrics Example
 //!
 //! This example demonstrates advanced metric features including:
@@ -37,21 +38,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register()?;
 
     // Histogram with labels and custom buckets
-    let db_query_duration = HistogramVecBuilder::new(
-        "db_query_duration_seconds",
-        "Database query duration"
-    )
-        .labels(&["operation", "table"])
-        .buckets(vec![0.0001, 0.001, 0.01, 0.1, 0.5, 1.0])
-        .register()?;
+    let db_query_duration =
+        HistogramVecBuilder::new("db_query_duration_seconds", "Database query duration")
+            .labels(&["operation", "table"])
+            .buckets(vec![0.0001, 0.001, 0.01, 0.1, 0.5, 1.0])
+            .register()?;
 
     // Business metrics
     let orders_total = CounterVecBuilder::new("orders_total", "Total orders")
         .labels(&["status", "payment_method"])
         .register()?;
 
-    let revenue_total = CounterBuilder::new("revenue_dollars_total", "Total revenue in dollars")
-        .register()?;
+    let revenue_total =
+        CounterBuilder::new("revenue_dollars_total", "Total revenue in dollars").register()?;
 
     let cart_size = HistogramVecBuilder::new("shopping_cart_items", "Shopping cart size")
         .labels(&["user_segment"])
@@ -79,17 +78,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let start = std::time::Instant::now();
 
                 // Simulate DB connection
-                db_connections.with_label_values(&["default", "active"]).inc();
+                db_connections
+                    .with_label_values(&["default", "active"])
+                    .inc();
 
                 // Simulate query
                 tokio::time::sleep(tokio::time::Duration::from_millis(25)).await;
 
                 // Record query duration
                 let duration = start.elapsed().as_secs_f64();
-                db_query_duration.with_label_values(&["SELECT", "users"]).observe(duration);
+                db_query_duration
+                    .with_label_values(&["SELECT", "users"])
+                    .observe(duration);
 
                 // Release connection
-                db_connections.with_label_values(&["default", "active"]).dec();
+                db_connections
+                    .with_label_values(&["default", "active"])
+                    .dec();
                 db_connections.with_label_values(&["default", "idle"]).inc();
 
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
@@ -123,7 +128,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 if success {
                     // Record successful order
-                    orders_total.with_label_values(&["completed", "credit_card"]).inc();
+                    orders_total
+                        .with_label_values(&["completed", "credit_card"])
+                        .inc();
 
                     // Record revenue (simulate $50 order)
                     revenue_total.inc_by(50.0);
@@ -135,8 +142,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }))?)
                 } else {
                     // Record error
-                    http_errors.with_label_values(&["payment_failed", "/api/orders"]).inc();
-                    orders_total.with_label_values(&["failed", "credit_card"]).inc();
+                    http_errors
+                        .with_label_values(&["payment_failed", "/api/orders"])
+                        .inc();
+                    orders_total
+                        .with_label_values(&["failed", "credit_card"])
+                        .inc();
 
                     Err(Error::BadRequest("Payment failed".to_string()))
                 }

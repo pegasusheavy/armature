@@ -114,7 +114,8 @@ impl EventStore for InMemoryEventStore {
     }
 
     async fn save_snapshot(&self, snapshot: &Snapshot) -> Result<(), EventStoreError> {
-        self.snapshots.insert(snapshot.aggregate_id.clone(), snapshot.clone());
+        self.snapshots
+            .insert(snapshot.aggregate_id.clone(), snapshot.clone());
         Ok(())
     }
 
@@ -147,9 +148,7 @@ impl From<EventStoreError> for AggregateError {
             }
             EventStoreError::NotFound(id) => AggregateError::NotFound(id),
             EventStoreError::SerializationError(msg) => AggregateError::SerializationError(msg),
-            EventStoreError::StorageError(msg) => {
-                AggregateError::EventApplicationFailed(msg)
-            }
+            EventStoreError::StorageError(msg) => AggregateError::EventApplicationFailed(msg),
         }
     }
 }
@@ -171,7 +170,10 @@ mod tests {
         );
 
         // Save event
-        store.save_events("agg-1", &[event.clone()], None).await.unwrap();
+        store
+            .save_events("agg-1", &[event.clone()], None)
+            .await
+            .unwrap();
 
         // Load events
         let events = store.load_events("agg-1", None).await.unwrap();
@@ -191,11 +193,17 @@ mod tests {
         );
 
         // Save first event
-        store.save_events("agg-1", &[event.clone()], Some(0)).await.unwrap();
+        store
+            .save_events("agg-1", &[event.clone()], Some(0))
+            .await
+            .unwrap();
 
         // Try to save with wrong version
         let result = store.save_events("agg-1", &[event], Some(0)).await;
-        assert!(matches!(result, Err(EventStoreError::VersionConflict { .. })));
+        assert!(matches!(
+            result,
+            Err(EventStoreError::VersionConflict { .. })
+        ));
     }
 
     #[tokio::test]
@@ -218,4 +226,3 @@ mod tests {
         assert_eq!(loaded.unwrap().version, 10);
     }
 }
-

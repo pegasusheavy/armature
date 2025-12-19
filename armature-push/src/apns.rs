@@ -140,7 +140,7 @@ impl ApnsProvider {
 
     /// Create a new JWT token.
     fn create_token(&self) -> Result<String> {
-        use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+        use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -229,11 +229,7 @@ impl PushProvider for ApnsProvider {
         let jwt = self.get_token()?;
         let payload = self.build_payload(notification);
 
-        let url = format!(
-            "{}/3/device/{}",
-            self.config.environment.endpoint(),
-            token
-        );
+        let url = format!("{}/3/device/{}", self.config.environment.endpoint(), token);
 
         debug!(token = %token, "Sending APNS notification");
 
@@ -343,4 +339,3 @@ struct ApnsAlert {
     #[serde(skip_serializing_if = "Option::is_none")]
     subtitle: Option<String>,
 }
-

@@ -161,9 +161,7 @@ mod tests {
     async fn test_timeout_completes() {
         let timeout = Timeout::with_duration(Duration::from_secs(1));
 
-        let result: Result<i32, TimeoutError<&str>> = timeout.call(|| async {
-            Ok(42)
-        }).await;
+        let result: Result<i32, TimeoutError<&str>> = timeout.call(|| async { Ok(42) }).await;
 
         assert_eq!(result.unwrap(), 42);
     }
@@ -172,12 +170,13 @@ mod tests {
     async fn test_timeout_expires() {
         let timeout = Timeout::with_duration(Duration::from_millis(10));
 
-        let result: Result<i32, TimeoutError<&str>> = timeout.call(|| async {
-            tokio::time::sleep(Duration::from_millis(100)).await;
-            Ok(42)
-        }).await;
+        let result: Result<i32, TimeoutError<&str>> = timeout
+            .call(|| async {
+                tokio::time::sleep(Duration::from_millis(100)).await;
+                Ok(42)
+            })
+            .await;
 
         assert!(matches!(result, Err(TimeoutError::Timeout(_))));
     }
 }
-

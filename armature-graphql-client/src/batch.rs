@@ -136,4 +136,3 @@ impl<'a> IntoIterator for &'a BatchResponse {
         self.responses.iter()
     }
 }
-

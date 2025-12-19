@@ -134,7 +134,11 @@ pub trait ApiKeyStore: Send + Sync {
     async fn revoke(&self, key_id: &str) -> Result<(), ApiKeyError>;
 
     /// Update last used timestamp
-    async fn update_last_used(&self, key_id: &str, timestamp: DateTime<Utc>) -> Result<(), ApiKeyError>;
+    async fn update_last_used(
+        &self,
+        key_id: &str,
+        timestamp: DateTime<Utc>,
+    ) -> Result<(), ApiKeyError>;
 }
 
 /// API Key Manager
@@ -253,9 +257,10 @@ impl ApiKeyManager {
 
         // Check if expired
         if let Some(expires_at) = api_key.expires_at
-            && Utc::now() > expires_at {
-                return Err(ApiKeyError::Expired);
-            }
+            && Utc::now() > expires_at
+        {
+            return Err(ApiKeyError::Expired);
+        }
 
         // Update last used timestamp
         self.store.update_last_used(&api_key.id, Utc::now()).await?;
@@ -265,7 +270,10 @@ impl ApiKeyManager {
 
     /// Check if key has required scope
     pub fn has_scope(&self, api_key: &ApiKey, required_scope: &str) -> bool {
-        api_key.scopes.iter().any(|s| s == required_scope || s == "*")
+        api_key
+            .scopes
+            .iter()
+            .any(|s| s == required_scope || s == "*")
     }
 
     /// Revoke an API key
@@ -281,7 +289,10 @@ impl ApiKeyManager {
     /// Rotate an API key (revoke old, generate new)
     pub async fn rotate(&self, old_key_id: &str) -> Result<ApiKey, ApiKeyError> {
         // Get old key
-        let old_key = self.store.find_by_id(old_key_id).await?
+        let old_key = self
+            .store
+            .find_by_id(old_key_id)
+            .await?
             .ok_or(ApiKeyError::Invalid)?;
 
         // Revoke old key
@@ -342,7 +353,11 @@ mod tests {
 
         async fn list_by_user(&self, user_id: &str) -> Result<Vec<ApiKey>, ApiKeyError> {
             let keys = self.keys.lock().unwrap();
-            Ok(keys.iter().filter(|k| k.user_id == user_id).cloned().collect())
+            Ok(keys
+                .iter()
+                .filter(|k| k.user_id == user_id)
+                .cloned()
+                .collect())
         }
 
         async fn revoke(&self, key_id: &str) -> Result<(), ApiKeyError> {
@@ -353,7 +368,11 @@ mod tests {
             Ok(())
         }
 
-        async fn update_last_used(&self, key_id: &str, timestamp: DateTime<Utc>) -> Result<(), ApiKeyError> {
+        async fn update_last_used(
+            &self,
+            key_id: &str,
+            timestamp: DateTime<Utc>,
+        ) -> Result<(), ApiKeyError> {
             let mut keys = self.keys.lock().unwrap();
             if let Some(key) = keys.iter_mut().find(|k| k.id == key_id) {
                 key.last_used_at = Some(timestamp);
@@ -367,7 +386,10 @@ mod tests {
         let store = Arc::new(InMemoryStore::new());
         let manager = ApiKeyManager::new(store);
 
-        let key = manager.generate("user_123", vec!["read".to_string()]).await.unwrap();
+        let key = manager
+            .generate("user_123", vec!["read".to_string()])
+            .await
+            .unwrap();
 
         assert!(key.key.starts_with("ak_"));
         assert_eq!(key.user_id, "user_123");
@@ -379,7 +401,10 @@ mod tests {
         let store = Arc::new(InMemoryStore::new());
         let manager = ApiKeyManager::new(store);
 
-        let key = manager.generate("user_123", vec!["read".to_string()]).await.unwrap();
+        let key = manager
+            .generate("user_123", vec!["read".to_string()])
+            .await
+            .unwrap();
         let validated = manager.validate(&key.key).await.unwrap();
 
         assert!(validated.is_some());
@@ -391,7 +416,10 @@ mod tests {
         let store = Arc::new(InMemoryStore::new());
         let manager = ApiKeyManager::new(store);
 
-        let key = manager.generate("user_123", vec!["read".to_string()]).await.unwrap();
+        let key = manager
+            .generate("user_123", vec!["read".to_string()])
+            .await
+            .unwrap();
         manager.revoke(&key.id).await.unwrap();
 
         let result = manager.validate(&key.key).await;
@@ -403,11 +431,13 @@ mod tests {
         let store = Arc::new(InMemoryStore::new());
         let manager = ApiKeyManager::new(store);
 
-        let key = manager.generate("user_123", vec!["read".to_string(), "write".to_string()]).await.unwrap();
+        let key = manager
+            .generate("user_123", vec!["read".to_string(), "write".to_string()])
+            .await
+            .unwrap();
 
         assert!(manager.has_scope(&key, "read"));
         assert!(manager.has_scope(&key, "write"));
         assert!(!manager.has_scope(&key, "admin"));
     }
 }
-

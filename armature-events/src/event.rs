@@ -159,7 +159,9 @@ impl<E: Event, H: EventHandler<E>> TypedEventHandler<E, H> {
 }
 
 #[async_trait]
-impl<E: Event + Clone, H: EventHandler<E> + Clone + 'static> DynEventHandler for TypedEventHandler<E, H> {
+impl<E: Event + Clone, H: EventHandler<E> + Clone + 'static> DynEventHandler
+    for TypedEventHandler<E, H>
+{
     async fn handle_dyn(&self, event: &dyn Event) -> Result<(), EventHandlerError> {
         if let Some(typed_event) = event.as_any().downcast_ref::<E>() {
             self.handler.handle(typed_event).await
@@ -221,8 +223,7 @@ mod tests {
 
     #[test]
     fn test_event_metadata() {
-        let metadata = EventMetadata::new("test_event")
-            .with_correlation_id(Uuid::new_v4());
+        let metadata = EventMetadata::new("test_event").with_correlation_id(Uuid::new_v4());
 
         assert_eq!(metadata.name, "test_event");
         assert!(metadata.correlation_id.is_some());
@@ -242,4 +243,3 @@ mod tests {
         assert_eq!(event.aggregate_type, "User");
     }
 }
-

@@ -115,9 +115,10 @@ impl<T: DatabaseTestHelper> TestFixture<T> {
 
         // Teardown (even if test failed)
         if self.auto_cleanup
-            && let Err(e) = self.teardown().await {
-                eprintln!("Warning: Teardown failed: {}", e);
-            }
+            && let Err(e) = self.teardown().await
+        {
+            eprintln!("Warning: Teardown failed: {}", e);
+        }
 
         result
     }
@@ -224,10 +225,13 @@ mod tests {
         let helper = Arc::new(MockDbHelper);
         let fixture = TestFixture::new(helper);
 
-        fixture.run_test(|| async {
-            // Test code
-            Ok(())
-        }).await.unwrap();
+        fixture
+            .run_test(|| async {
+                // Test code
+                Ok(())
+            })
+            .await
+            .unwrap();
     }
 
     #[test]
@@ -239,4 +243,3 @@ mod tests {
         assert_eq!(seeder.fixtures().len(), 2);
     }
 }
-

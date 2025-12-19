@@ -8,16 +8,24 @@ pub enum Error {
     #[error("HTTP error: {0}")]
     Http(String),
 
-    #[error("Route not found: '{0}'. Check your controller paths and ensure the route is registered.")]
+    #[error(
+        "Route not found: '{0}'. Check your controller paths and ensure the route is registered."
+    )]
     RouteNotFound(String),
 
-    #[error("Method {0} not allowed. Verify the HTTP method matches your route definition (#[get], #[post], etc.).")]
+    #[error(
+        "Method {0} not allowed. Verify the HTTP method matches your route definition (#[get], #[post], etc.)."
+    )]
     MethodNotAllowed(String),
 
-    #[error("Dependency injection error: {0}. Ensure all dependencies are registered with the container.")]
+    #[error(
+        "Dependency injection error: {0}. Ensure all dependencies are registered with the container."
+    )]
     DependencyInjection(String),
 
-    #[error("Provider not found: '{0}'. Did you forget to register it? Use container.register() or add it to your module's providers().")]
+    #[error(
+        "Provider not found: '{0}'. Did you forget to register it? Use container.register() or add it to your module's providers()."
+    )]
     ProviderNotFound(String),
 
     #[error("Serialization error: {0}. Ensure your type implements Serialize correctly.")]
@@ -42,7 +50,9 @@ pub enum Error {
     #[error("Bad Request: {0}. Check the request parameters and body format.")]
     BadRequest(String),
 
-    #[error("Unauthorized: {0}. Include valid authentication credentials (e.g., Bearer token in Authorization header).")]
+    #[error(
+        "Unauthorized: {0}. Include valid authentication credentials (e.g., Bearer token in Authorization header)."
+    )]
     Unauthorized(String),
 
     #[error("Payment Required: {0}")]
@@ -72,13 +82,17 @@ pub enum Error {
     #[error("Precondition Failed: {0}")]
     PreconditionFailed(String),
 
-    #[error("Payload Too Large: {0}. Reduce the request body size or increase the server's body_limit.")]
+    #[error(
+        "Payload Too Large: {0}. Reduce the request body size or increase the server's body_limit."
+    )]
     PayloadTooLarge(String),
 
     #[error("URI Too Long: {0}. Use POST with a request body instead of query parameters.")]
     UriTooLong(String),
 
-    #[error("Unsupported Media Type: {0}. Set Content-Type header to a supported format (e.g., application/json).")]
+    #[error(
+        "Unsupported Media Type: {0}. Set Content-Type header to a supported format (e.g., application/json)."
+    )]
     UnsupportedMediaType(String),
 
     #[error("Range Not Satisfiable: {0}")]
@@ -111,7 +125,9 @@ pub enum Error {
     #[error("Precondition Required: {0}")]
     PreconditionRequired(String),
 
-    #[error("Too Many Requests: {0}. Rate limit exceeded. Wait before retrying or reduce request frequency.")]
+    #[error(
+        "Too Many Requests: {0}. Rate limit exceeded. Wait before retrying or reduce request frequency."
+    )]
     TooManyRequests(String),
 
     #[error("Request Header Fields Too Large: {0}")]
@@ -127,7 +143,9 @@ pub enum Error {
     #[error("Bad Gateway: {0}. The upstream server returned an invalid response.")]
     BadGateway(String),
 
-    #[error("Service Unavailable: {0}. Server is temporarily unable to handle requests. Try again later.")]
+    #[error(
+        "Service Unavailable: {0}. Server is temporarily unable to handle requests. Try again later."
+    )]
     ServiceUnavailable(String),
 
     #[error("Gateway Timeout: {0}. The upstream server did not respond in time.")]
@@ -287,33 +305,33 @@ impl Error {
                 "Make sure to:\n\
                  1. Add the provider to your module's providers() method\n\
                  2. Or register it directly: container.register(MyService::new())\n\
-                 3. Check that the type matches exactly (including generics)"
+                 3. Check that the type matches exactly (including generics)",
             ),
             Error::RouteNotFound(_) => Some(
                 "Check that:\n\
                  1. The route is registered in a controller\n\
                  2. The controller is added to a module\n\
                  3. The module is imported into your app module\n\
-                 4. The HTTP method matches (GET, POST, etc.)"
+                 4. The HTTP method matches (GET, POST, etc.)",
             ),
             Error::Deserialization(_) => Some(
                 "Verify that:\n\
                  1. The request body is valid JSON\n\
                  2. Field names match your struct (check #[serde(rename)] attributes)\n\
                  3. Data types match (strings vs numbers, etc.)\n\
-                 4. Required fields are present"
+                 4. Required fields are present",
             ),
             Error::Unauthorized(_) => Some(
                 "To authenticate:\n\
                  1. Include 'Authorization: Bearer <token>' header\n\
                  2. Ensure the token is not expired\n\
-                 3. Check that the token has the required scopes"
+                 3. Check that the token has the required scopes",
             ),
             Error::TooManyRequests(_) => Some(
                 "To resolve rate limiting:\n\
                  1. Wait for the retry-after duration\n\
                  2. Reduce request frequency\n\
-                 3. Check the X-RateLimit-* headers for limits"
+                 3. Check the X-RateLimit-* headers for limits",
             ),
             _ => None,
         }

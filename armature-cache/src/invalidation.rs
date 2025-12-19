@@ -212,7 +212,12 @@ mod tests {
             Ok(self.data.read().await.get(key).cloned())
         }
 
-        async fn set_json(&self, key: &str, value: String, _ttl: Option<Duration>) -> CacheResult<()> {
+        async fn set_json(
+            &self,
+            key: &str,
+            value: String,
+            _ttl: Option<Duration>,
+        ) -> CacheResult<()> {
             self.data.write().await.insert(key.to_string(), value);
             Ok(())
         }
@@ -299,4 +304,3 @@ mod tests {
         assert_eq!(value, None);
     }
 }
-

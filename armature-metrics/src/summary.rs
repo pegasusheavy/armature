@@ -24,4 +24,3 @@ impl Default for Summary {
         Self::new()
     }
 }
-

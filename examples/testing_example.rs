@@ -72,7 +72,8 @@ impl UserController {
     }
 
     fn get_one(&self, id: i32) -> Result<HttpResponse, Error> {
-        let user = self.user_service
+        let user = self
+            .user_service
             .get_by_id(id)
             .ok_or_else(|| Error::NotFound(format!("User {} not found", id)))?;
         HttpResponse::json(&user)

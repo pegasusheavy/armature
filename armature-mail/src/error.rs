@@ -132,4 +132,3 @@ impl From<tera::Error> for MailError {
         Self::Template(err.to_string())
     }
 }
-

@@ -31,7 +31,7 @@ impl Default for FunctionConfig {
             storage_connection: None,
             base_path: None,
             max_request_size: 100 * 1024 * 1024, // 100 MB
-            timeout_seconds: 230, // Azure Functions default timeout
+            timeout_seconds: 230,                // Azure Functions default timeout
         }
     }
 }
@@ -86,4 +86,3 @@ impl FunctionConfig {
         self.app_name.is_some() || std::env::var("FUNCTIONS_WORKER_RUNTIME").is_ok()
     }
 }
-

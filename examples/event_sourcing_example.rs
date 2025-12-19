@@ -1,3 +1,4 @@
+#![allow(clippy::needless_question_mark)]
 //! Event Sourcing Example
 //!
 //! Demonstrates event-sourced aggregates with event store and snapshots.
@@ -237,7 +238,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let events = store.load_events(account_id, None).await?;
     println!("   Total events: {}", events.len());
     for (i, event) in events.iter().enumerate() {
-        println!("   {}. {} (version {})", i + 1, event.metadata.name, event.version);
+        println!(
+            "   {}. {} (version {})",
+            i + 1,
+            event.metadata.name,
+            event.version
+        );
         println!("      Payload: {}", event.payload);
     }
     println!();

@@ -35,12 +35,10 @@
 /// ```
 #[macro_export]
 macro_rules! json_response {
-    ($status:expr, $value:expr) => {
-        {
-            use armature_core::HttpResponse;
-            HttpResponse::new($status).with_json(&$value)
-        }
-    };
+    ($status:expr, $value:expr) => {{
+        use armature_core::HttpResponse;
+        HttpResponse::new($status).with_json(&$value)
+    }};
 }
 
 /// Create a 200 OK JSON response
@@ -53,12 +51,10 @@ macro_rules! json_response {
 /// ```
 #[macro_export]
 macro_rules! ok_json {
-    ($value:expr) => {
-        {
-            use armature_core::HttpResponse;
-            HttpResponse::ok().with_json(&$value)
-        }
-    };
+    ($value:expr) => {{
+        use armature_core::HttpResponse;
+        HttpResponse::ok().with_json(&$value)
+    }};
 }
 
 /// Create a 201 Created JSON response
@@ -70,12 +66,10 @@ macro_rules! ok_json {
 /// ```
 #[macro_export]
 macro_rules! created_json {
-    ($value:expr) => {
-        {
-            use armature_core::HttpResponse;
-            HttpResponse::created().with_json(&$value)
-        }
-    };
+    ($value:expr) => {{
+        use armature_core::HttpResponse;
+        HttpResponse::created().with_json(&$value)
+    }};
 }
 
 /// Create a 400 Bad Request JSON error response
@@ -156,19 +150,20 @@ macro_rules! internal_error {
 /// ```
 #[macro_export]
 macro_rules! path_param {
-    ($req:expr, $name:expr) => {
-        {
-            $req.path_params
-                .get($name)
-                .ok_or_else(|| armature_core::Error::BadRequest(
-                    format!("Missing path parameter: {}", $name)
-                ))?
-                .parse()
-                .map_err(|e| armature_core::Error::BadRequest(
-                    format!("Invalid path parameter '{}': {}", $name, e)
+    ($req:expr, $name:expr) => {{
+        $req.path_params
+            .get($name)
+            .ok_or_else(|| {
+                armature_core::Error::BadRequest(format!("Missing path parameter: {}", $name))
+            })?
+            .parse()
+            .map_err(|e| {
+                armature_core::Error::BadRequest(format!(
+                    "Invalid path parameter '{}': {}",
+                    $name, e
                 ))
-        }
-    };
+            })
+    }};
 }
 
 /// Extract and validate query parameters
@@ -181,13 +176,7 @@ macro_rules! path_param {
 /// ```
 #[macro_export]
 macro_rules! query_param {
-    ($req:expr, $name:expr) => {
-        {
-            $req.query_params
-                .get($name)
-                .and_then(|v| v.parse().ok())
-        }
-    };
+    ($req:expr, $name:expr) => {{ $req.query_params.get($name).and_then(|v| v.parse().ok()) }};
 }
 
 /// Extract header value
@@ -200,15 +189,11 @@ macro_rules! query_param {
 /// ```
 #[macro_export]
 macro_rules! header {
-    ($req:expr, $name:expr) => {
-        {
-            $req.headers
-                .get($name)
-                .ok_or_else(|| armature_core::Error::BadRequest(
-                    format!("Missing header: {}", $name)
-                ))
-        }
-    };
+    ($req:expr, $name:expr) => {{
+        $req.headers
+            .get($name)
+            .ok_or_else(|| armature_core::Error::BadRequest(format!("Missing header: {}", $name)))
+    }};
 }
 
 /// Create a validation error
@@ -381,4 +366,3 @@ mod tests {
         // Ensure macros are exported
     }
 }
-

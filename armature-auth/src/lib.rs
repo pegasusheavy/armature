@@ -272,6 +272,7 @@ impl Default for AuthService {
 /// use armature_auth::prelude::*;
 /// ```
 pub mod prelude {
+    pub use crate::AuthService;
     pub use crate::api_key::{ApiKey, ApiKeyManager, ApiKeyStore};
     pub use crate::error::{AuthError, Result};
     pub use crate::guard::{AuthGuard, Guard, RoleGuard};
@@ -279,7 +280,6 @@ pub mod prelude {
     pub use crate::password::{PasswordHasher, PasswordVerifier};
     pub use crate::strategy::{AuthStrategy, JwtStrategy, LocalStrategy};
     pub use crate::user::{AuthUser, UserContext};
-    pub use crate::AuthService;
 
     // OAuth2 providers
     pub use crate::providers::{
@@ -293,7 +293,6 @@ pub mod prelude {
     #[cfg(feature = "two-factor")]
     pub use crate::two_factor::{BackupCodes, TotpSecret, TwoFactorError};
 }
-
 
 #[cfg(test)]
 mod tests {

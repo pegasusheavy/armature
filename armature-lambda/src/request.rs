@@ -152,12 +152,17 @@ impl LambdaRequest {
 
     /// Get a specific claim.
     pub fn claim(&self, key: &str) -> Option<&str> {
-        self.request_context.authorizer_claims.get(key).map(|s| s.as_str())
+        self.request_context
+            .authorizer_claims
+            .get(key)
+            .map(|s| s.as_str())
     }
 }
 
 /// Extract claims from API Gateway V1 authorizer.
-fn extract_claims_v1(_v1: &lambda_http::aws_lambda_events::apigw::ApiGatewayProxyRequestContext) -> HashMap<String, String> {
+fn extract_claims_v1(
+    _v1: &lambda_http::aws_lambda_events::apigw::ApiGatewayProxyRequestContext,
+) -> HashMap<String, String> {
     // The authorizer field structure has changed - just return empty for now
     // Users can access raw context if needed
     HashMap::new()

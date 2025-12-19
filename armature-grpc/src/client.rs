@@ -66,10 +66,7 @@ impl GrpcClient {
             endpoint = endpoint.rate_limit(rps, Duration::from_secs(1));
         }
 
-        let channel = endpoint
-            .connect()
-            .await
-            .map_err(GrpcError::Transport)?;
+        let channel = endpoint.connect().await.map_err(GrpcError::Transport)?;
 
         debug!("gRPC client connected");
 
@@ -81,9 +78,7 @@ impl GrpcClient {
 
     /// Connect to a gRPC server with default configuration.
     pub async fn connect_default(endpoint: impl Into<String>) -> Result<GrpcChannel> {
-        let config = GrpcClientConfig::builder()
-            .endpoint(endpoint)
-            .build();
+        let config = GrpcClientConfig::builder().endpoint(endpoint).build();
         Self::connect(config).await
     }
 
@@ -128,12 +123,11 @@ impl GrpcClient {
         let endpoints: Vec<Endpoint> = endpoints
             .into_iter()
             .map(|ep| {
-                Endpoint::from_shared(ep)
-                    .map(|e| {
-                        e.timeout(config.timeout)
-                            .connect_timeout(config.connect_timeout)
-                            .tcp_nodelay(config.tcp_nodelay)
-                    })
+                Endpoint::from_shared(ep).map(|e| {
+                    e.timeout(config.timeout)
+                        .connect_timeout(config.connect_timeout)
+                        .tcp_nodelay(config.tcp_nodelay)
+                })
             })
             .collect::<std::result::Result<Vec<_>, _>>()
             .map_err(|e| GrpcError::Config(e.to_string()))?;
@@ -162,4 +156,3 @@ mod tests {
         assert_eq!(config.timeout, Duration::from_secs(60));
     }
 }
-

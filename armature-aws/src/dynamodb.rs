@@ -1,0 +1,1 @@
+//! AWS dynamodb integration placeholder

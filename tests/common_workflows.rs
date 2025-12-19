@@ -2,6 +2,9 @@
 //!
 //! These tests verify that the most common use cases work correctly.
 
+#![allow(clippy::get_first)]
+#![allow(clippy::unnecessary_get_then_check)]
+
 use armature_core::*;
 
 // =============================================================================
@@ -71,7 +74,13 @@ fn test_http_response_convenience_methods() {
 
     // Test no_cache
     let response = HttpResponse::ok().no_cache();
-    assert!(response.headers.get("Cache-Control").unwrap().contains("no-store"));
+    assert!(
+        response
+            .headers
+            .get("Cache-Control")
+            .unwrap()
+            .contains("no-store")
+    );
 
     // Test cookie
     let response = HttpResponse::ok().cookie("session", "abc123; HttpOnly");
@@ -206,9 +215,15 @@ fn test_error_help_messages() {
 #[test]
 fn test_http_request_helpers() {
     let mut request = HttpRequest::new("GET".to_string(), "/api/users/123".to_string());
-    request.path_params.insert("id".to_string(), "123".to_string());
-    request.query_params.insert("format".to_string(), "json".to_string());
-    request.headers.insert("Content-Type".to_string(), "application/json".to_string());
+    request
+        .path_params
+        .insert("id".to_string(), "123".to_string());
+    request
+        .query_params
+        .insert("format".to_string(), "json".to_string());
+    request
+        .headers
+        .insert("Content-Type".to_string(), "application/json".to_string());
     request.body = b"{\"name\":\"John\"}".to_vec();
 
     // Test param helper
@@ -256,7 +271,7 @@ fn test_circuit_breaker_basic() {
 
 #[test]
 fn test_retry_config() {
-    use armature_core::resilience::{RetryConfig, BackoffStrategy};
+    use armature_core::resilience::{BackoffStrategy, RetryConfig};
     use std::time::Duration;
 
     // Test exponential backoff
@@ -291,4 +306,3 @@ async fn test_bulkhead_basic() {
     assert_eq!(stats.name, "test");
     assert_eq!(stats.max_concurrent, 2);
 }
-

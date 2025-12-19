@@ -22,7 +22,9 @@ static HTTP_REQUEST_DURATION: Lazy<HistogramVec> = Lazy::new(|| {
         "http_request_duration_seconds",
         "HTTP request duration in seconds",
         &["method", "path", "status"],
-        vec![0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0],
+        vec![
+            0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0,
+        ],
     )
     .expect("Failed to register http_request_duration_seconds")
 });
@@ -41,7 +43,14 @@ static HTTP_REQUEST_SIZE_BYTES: Lazy<HistogramVec> = Lazy::new(|| {
         "http_request_size_bytes",
         "HTTP request size in bytes",
         &["method", "path"],
-        vec![100.0, 1_000.0, 10_000.0, 100_000.0, 1_000_000.0, 10_000_000.0],
+        vec![
+            100.0,
+            1_000.0,
+            10_000.0,
+            100_000.0,
+            1_000_000.0,
+            10_000_000.0,
+        ],
     )
     .expect("Failed to register http_request_size_bytes")
 });
@@ -51,7 +60,14 @@ static HTTP_RESPONSE_SIZE_BYTES: Lazy<HistogramVec> = Lazy::new(|| {
         "http_response_size_bytes",
         "HTTP response size in bytes",
         &["method", "path", "status"],
-        vec![100.0, 1_000.0, 10_000.0, 100_000.0, 1_000_000.0, 10_000_000.0],
+        vec![
+            100.0,
+            1_000.0,
+            10_000.0,
+            100_000.0,
+            1_000_000.0,
+            10_000_000.0,
+        ],
     )
     .expect("Failed to register http_response_size_bytes")
 });
@@ -82,9 +98,7 @@ pub struct RequestMetricsMiddleware {
 impl RequestMetricsMiddleware {
     /// Create new request metrics middleware
     pub fn new() -> Self {
-        Self {
-            include_path: true,
-        }
+        Self { include_path: true }
     }
 
     /// Create middleware without path labels (to reduce cardinality)
@@ -218,4 +232,3 @@ mod tests {
         assert_eq!(middleware.sanitize_path("/api/users"), "/");
     }
 }
-

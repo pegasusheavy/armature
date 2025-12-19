@@ -5,8 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 /// Content disposition for attachments.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ContentDisposition {
     /// Attachment (for downloads).
     #[default]
@@ -14,7 +13,6 @@ pub enum ContentDisposition {
     /// Inline (for embedding in HTML).
     Inline,
 }
-
 
 /// Email attachment.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -134,12 +132,20 @@ impl Attachment {
 
     /// Create a plain text attachment.
     pub fn text(filename: impl Into<String>, content: impl Into<String>) -> Self {
-        Self::new(filename, "text/plain; charset=utf-8", content.into().into_bytes())
+        Self::new(
+            filename,
+            "text/plain; charset=utf-8",
+            content.into().into_bytes(),
+        )
     }
 
     /// Create a CSV attachment.
     pub fn csv(filename: impl Into<String>, content: impl Into<String>) -> Self {
-        Self::new(filename, "text/csv; charset=utf-8", content.into().into_bytes())
+        Self::new(
+            filename,
+            "text/csv; charset=utf-8",
+            content.into().into_bytes(),
+        )
     }
 
     /// Create a JSON attachment.
@@ -170,4 +176,3 @@ impl Attachment {
         Self::new(filename, "application/zip", data)
     }
 }
-

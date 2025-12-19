@@ -164,19 +164,15 @@ impl DistributedLock for RedisLock {
         let result: Option<String> = redis::cmd("SET")
             .arg(&self.key)
             .arg(&token)
-            .arg("NX")  // Only set if not exists
-            .arg("PX")  // Set expiry in milliseconds
+            .arg("NX") // Only set if not exists
+            .arg("PX") // Set expiry in milliseconds
             .arg(ttl_ms)
             .query_async(&mut conn)
             .await?;
 
         if result.is_some() {
             info!("Acquired lock: {}", self.key);
-            Ok(Some(LockGuard::new(
-                self.key.clone(),
-                token,
-                conn,
-            )))
+            Ok(Some(LockGuard::new(self.key.clone(), token, conn)))
         } else {
             debug!("Failed to acquire lock (already held): {}", self.key);
             Ok(None)
@@ -233,11 +229,9 @@ mod tests {
 
     #[test]
     fn test_lock_builder() {
-        let builder = LockBuilder::new("test-lock")
-            .with_ttl(Duration::from_secs(60));
+        let builder = LockBuilder::new("test-lock").with_ttl(Duration::from_secs(60));
 
         assert_eq!(builder.key, "test-lock");
         assert_eq!(builder.ttl, Duration::from_secs(60));
     }
 }
-

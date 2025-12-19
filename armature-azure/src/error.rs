@@ -56,4 +56,3 @@ impl AzureError {
         Self::ServiceNotConfigured(service)
     }
 }
-

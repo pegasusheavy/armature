@@ -97,15 +97,15 @@
 //! - **Graceful Shutdown**: Proper SIGTERM handling
 //! - **Instance Metadata**: Access to Cloud Run instance info
 
-mod error;
 mod config;
-mod metadata;
+mod error;
 mod health;
+mod metadata;
 
-pub use error::{CloudRunError, Result};
 pub use config::CloudRunConfig;
-pub use metadata::{InstanceMetadata, ServiceMetadata};
+pub use error::{CloudRunError, Result};
 pub use health::{HealthCheck, HealthStatus};
+pub use metadata::{InstanceMetadata, ServiceMetadata};
 
 /// Initialize tracing for Cloud Logging.
 ///
@@ -177,7 +177,7 @@ pub fn configuration_name() -> Option<String> {
 /// Cloud Run sends SIGTERM when scaling down or deploying new revisions.
 /// This function waits for that signal to enable graceful shutdown.
 pub async fn wait_for_shutdown() {
-    use tokio::signal::unix::{signal, SignalKind};
+    use tokio::signal::unix::{SignalKind, signal};
 
     let mut sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
     let mut sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");
@@ -191,4 +191,3 @@ pub async fn wait_for_shutdown() {
         }
     }
 }
-

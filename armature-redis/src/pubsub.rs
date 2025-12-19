@@ -1,5 +1,7 @@
 //! Redis Pub/Sub support.
 
+#![allow(dead_code)]
+
 use futures::StreamExt;
 use redis::Client;
 use tokio::sync::mpsc;
@@ -174,4 +176,3 @@ impl PubSub {
         Ok(receivers)
     }
 }
-

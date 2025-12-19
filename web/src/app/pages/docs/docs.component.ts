@@ -1,124 +1,181 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { marked } from 'marked';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DocsOverviewComponent } from './overview/overview.component';
+
+// Import doc page components
+import { AuthGuideComponent } from './pages/auth-guide/auth-guide.component';
+import { DiGuideComponent } from './pages/di-guide/di-guide.component';
+import { GraphqlGuideComponent } from './pages/graphql-guide/graphql-guide.component';
+import { WebsocketSseGuideComponent } from './pages/websocket-sse-guide/websocket-sse-guide.component';
+import { CacheGuideComponent } from './pages/cache-guide/cache-guide.component';
+import { LoggingGuideComponent } from './pages/logging-guide/logging-guide.component';
+import { HealthCheckGuideComponent } from './pages/health-check-guide/health-check-guide.component';
+import { GrafanaDashboardsComponent } from './pages/grafana-dashboards/grafana-dashboards.component';
+import { DocFerronComponent } from './ferron/ferron.component';
+
+// New doc page components
+import { ProjectTemplatesComponent } from './pages/project-templates/project-templates.component';
+import { ConfigGuideComponent } from './pages/config-guide/config-guide.component';
+import { LifecycleHooksComponent } from './pages/lifecycle-hooks/lifecycle-hooks.component';
+import { RouteGroupsComponent } from './pages/route-groups/route-groups.component';
+import { MiddlewareGuideComponent } from './pages/middleware-guide/middleware-guide.component';
+import { RateLimitingComponent } from './pages/rate-limiting/rate-limiting.component';
+import { ApiVersioningComponent } from './pages/api-versioning/api-versioning.component';
+import { RedisGuideComponent } from './pages/redis-guide/redis-guide.component';
+import { QueueGuideComponent } from './pages/queue-guide/queue-guide.component';
+import { CronGuideComponent } from './pages/cron-guide/cron-guide.component';
+import { GracefulShutdownComponent } from './pages/graceful-shutdown/graceful-shutdown.component';
+import { DockerGuideComponent } from './pages/docker-guide/docker-guide.component';
+import { MetricsGuideComponent } from './pages/metrics-guide/metrics-guide.component';
+import { TestingGuideComponent } from './pages/testing-guide/testing-guide.component';
+import { KubernetesGuideComponent } from './pages/kubernetes-guide/kubernetes-guide.component';
+import { SessionGuideComponent } from './pages/session-guide/session-guide.component';
+import { WebhooksGuideComponent } from './pages/webhooks-guide/webhooks-guide.component';
+import { OpenTelemetryGuideComponent } from './pages/opentelemetry-guide/opentelemetry-guide.component';
+import { ProfilingGuideComponent } from './pages/profiling-guide/profiling-guide.component';
 
 interface DocMetadata {
   id: string;
   title: string;
-  filename: string;
   category: string;
+  component?: any;
+  hasComponent?: boolean;
 }
 
 @Component({
   selector: 'app-docs',
   standalone: true,
-  imports: [CommonModule, RouterModule, DocsOverviewComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    DocsOverviewComponent,
+    AuthGuideComponent,
+    DiGuideComponent,
+    GraphqlGuideComponent,
+    WebsocketSseGuideComponent,
+    CacheGuideComponent,
+    LoggingGuideComponent,
+    HealthCheckGuideComponent,
+    GrafanaDashboardsComponent,
+    DocFerronComponent,
+    ProjectTemplatesComponent,
+    ConfigGuideComponent,
+    LifecycleHooksComponent,
+    RouteGroupsComponent,
+    MiddlewareGuideComponent,
+    RateLimitingComponent,
+    ApiVersioningComponent,
+    RedisGuideComponent,
+    QueueGuideComponent,
+    CronGuideComponent,
+    GracefulShutdownComponent,
+    DockerGuideComponent,
+    MetricsGuideComponent,
+    TestingGuideComponent,
+    KubernetesGuideComponent,
+    SessionGuideComponent,
+    WebhooksGuideComponent,
+    OpenTelemetryGuideComponent,
+    ProfilingGuideComponent,
+  ],
   templateUrl: './docs.component.html',
   styleUrls: ['./docs.component.scss'],
 })
 export class DocsComponent implements OnInit {
-  content = signal<SafeHtml>('');
   loading = signal(true);
   error = signal<string | null>(null);
   currentDoc = signal<DocMetadata | null>(null);
-  isOverview = signal(false);
+  activeComponent = signal<string>('overview');
 
   // Documentation metadata with user-friendly titles
   docs: DocMetadata[] = [
-    // Getting Started
-    { id: 'readme', title: 'Overview', filename: '', category: 'Getting Started' },
-    { id: 'di-guide', title: 'Dependency Injection', filename: 'di-guide.md', category: 'Getting Started' },
-    { id: 'config-guide', title: 'Configuration Management', filename: 'config-guide.md', category: 'Getting Started' },
-    { id: 'project-templates', title: 'Project Templates', filename: 'project-templates.md', category: 'Getting Started' },
-    { id: 'lifecycle-hooks', title: 'Lifecycle Hooks', filename: 'lifecycle-hooks.md', category: 'Getting Started' },
-    { id: 'macro-overview', title: 'Macros Overview', filename: 'macro-overview.md', category: 'Getting Started' },
+    // 1. Getting Started - First things first
+    { id: 'readme', title: 'Overview', category: 'Getting Started', hasComponent: true },
+    { id: 'project-templates', title: 'Project Templates', category: 'Getting Started', hasComponent: true },
+    { id: 'config-guide', title: 'Configuration', category: 'Getting Started', hasComponent: true },
+    { id: 'macro-overview', title: 'Macros Overview', category: 'Getting Started' },
 
-    // Authentication & Security
-    { id: 'auth-guide', title: 'Authentication Basics', filename: 'auth-guide.md', category: 'Authentication & Security' },
-    { id: 'oauth2-providers', title: 'OAuth2 & Social Login', filename: 'oauth2-providers-guide.md', category: 'Authentication & Security' },
-    { id: 'security-guide', title: 'Security Best Practices', filename: 'security-guide.md', category: 'Authentication & Security' },
-    { id: 'security-advanced', title: 'Advanced Security (2FA, WebAuthn)', filename: 'security-advanced-guide.md', category: 'Authentication & Security' },
-    { id: 'session-guide', title: 'Session Management', filename: 'session-guide.md', category: 'Authentication & Security' },
-    { id: 'rate-limiting', title: 'Rate Limiting & Throttling', filename: 'rate-limiting-guide.md', category: 'Authentication & Security' },
+    // 2. Core Concepts - Foundation before building
+    { id: 'di-guide', title: 'Dependency Injection', category: 'Core Concepts', hasComponent: true },
+    { id: 'lifecycle-hooks', title: 'Lifecycle Hooks', category: 'Core Concepts', hasComponent: true },
 
-    // Routing & Controllers
-    { id: 'route-groups', title: 'Organizing Routes', filename: 'route-groups-guide.md', category: 'Routing & Controllers' },
-    { id: 'route-constraints', title: 'Route Constraints & Validation', filename: 'route-constraints-guide.md', category: 'Routing & Controllers' },
-    { id: 'guards-interceptors', title: 'Guards & Interceptors', filename: 'guards-interceptors.md', category: 'Routing & Controllers' },
-    { id: 'use-guard', title: 'Using Guards', filename: 'use-guard-guide.md', category: 'Routing & Controllers' },
-    { id: 'use-middleware', title: 'Using Middleware', filename: 'use-middleware-guide.md', category: 'Routing & Controllers' },
-    { id: 'request-extractors', title: 'Request Extractors', filename: 'request-extractors.md', category: 'Routing & Controllers' },
+    // 3. Routing & Controllers - Learn to handle requests first
+    { id: 'route-groups', title: 'Route Groups', category: 'Routing', hasComponent: true },
+    { id: 'route-constraints', title: 'Route Constraints', category: 'Routing' },
+    { id: 'request-extractors', title: 'Request Extractors', category: 'Routing' },
+    { id: 'use-middleware', title: 'Middleware', category: 'Routing', hasComponent: true },
+    { id: 'guards-interceptors', title: 'Guards & Interceptors', category: 'Routing' },
+    { id: 'use-guard', title: 'Using Guards', category: 'Routing' },
 
-    // API Features
-    { id: 'api-versioning', title: 'Versioning Your API', filename: 'api-versioning-guide.md', category: 'API Features' },
-    { id: 'content-negotiation', title: 'Content Negotiation', filename: 'content-negotiation-guide.md', category: 'API Features' },
-    { id: 'pagination-filtering', title: 'Pagination, Sorting & Filtering', filename: 'pagination-filtering-guide.md', category: 'API Features' },
-    { id: 'response-caching', title: 'HTTP Caching Headers', filename: 'response-caching-guide.md', category: 'API Features' },
-    { id: 'etag-conditional', title: 'ETags & Conditional Requests', filename: 'etag-conditional-requests-guide.md', category: 'API Features' },
+    // 4. Request & Response - HTTP handling
+    { id: 'http-status-errors', title: 'HTTP Errors', category: 'HTTP' },
+    { id: 'request-timeouts', title: 'Timeouts', category: 'HTTP' },
+    { id: 'streaming-responses', title: 'Streaming', category: 'HTTP' },
+    { id: 'compression', title: 'Compression', category: 'HTTP' },
+    { id: 'https-guide', title: 'HTTPS & TLS', category: 'HTTP' },
+    { id: 'acme-certificates', title: 'SSL Certificates', category: 'HTTP' },
 
-    // HTTP & Networking
-    { id: 'https-guide', title: 'HTTPS & TLS Setup', filename: 'https-guide.md', category: 'HTTP & Networking' },
-    { id: 'acme-certificates', title: 'Auto SSL Certificates', filename: 'acme-certificates.md', category: 'HTTP & Networking' },
-    { id: 'compression', title: 'Response Compression', filename: 'compression.md', category: 'HTTP & Networking' },
-    { id: 'http-status-errors', title: 'HTTP Status Codes & Errors', filename: 'http-status-errors.md', category: 'HTTP & Networking' },
-    { id: 'request-timeouts', title: 'Request Timeouts', filename: 'request-timeouts-guide.md', category: 'HTTP & Networking' },
-    { id: 'streaming-responses', title: 'Streaming Large Responses', filename: 'streaming-responses-guide.md', category: 'HTTP & Networking' },
+    // 5. Security - After understanding routing
+    { id: 'auth-guide', title: 'Authentication', category: 'Security', hasComponent: true },
+    { id: 'oauth2-providers', title: 'OAuth2 & Social Login', category: 'Security' },
+    { id: 'session-guide', title: 'Sessions', category: 'Security', hasComponent: true },
+    { id: 'rate-limiting', title: 'Rate Limiting', category: 'Security', hasComponent: true },
+    { id: 'security-guide', title: 'Security Best Practices', category: 'Security' },
+    { id: 'security-advanced', title: 'Advanced Security', category: 'Security' },
 
-    // Real-Time Communication
-    { id: 'websocket-sse', title: 'WebSockets & Server-Sent Events', filename: 'websocket-sse-guide.md', category: 'Real-Time Communication' },
-    { id: 'webhooks', title: 'Webhook Integration', filename: 'webhooks.md', category: 'Real-Time Communication' },
+    // 6. API Features - Building APIs
+    { id: 'api-versioning', title: 'API Versioning', category: 'API Features', hasComponent: true },
+    { id: 'pagination-filtering', title: 'Pagination & Filtering', category: 'API Features' },
+    { id: 'content-negotiation', title: 'Content Negotiation', category: 'API Features' },
+    { id: 'response-caching', title: 'HTTP Caching', category: 'API Features' },
+    { id: 'etag-conditional', title: 'ETags', category: 'API Features' },
 
-    // GraphQL
-    { id: 'graphql-guide', title: 'Getting Started with GraphQL', filename: 'graphql-guide.md', category: 'GraphQL' },
-    { id: 'graphql-config', title: 'Advanced GraphQL Configuration', filename: 'graphql-configuration.md', category: 'GraphQL' },
+    // 7. Data & Caching - Persistence layer
+    { id: 'cache-improvements', title: 'Caching Strategies', category: 'Data & Caching', hasComponent: true },
+    { id: 'redis-guide', title: 'Redis', category: 'Data & Caching', hasComponent: true },
 
-    // OpenAPI
-    { id: 'openapi-guide', title: 'OpenAPI & Swagger Documentation', filename: 'openapi-guide.md', category: 'OpenAPI' },
+    // 8. Background Processing - Async work
+    { id: 'queue-guide', title: 'Job Queues', category: 'Background Jobs', hasComponent: true },
+    { id: 'cron-guide', title: 'Scheduled Tasks', category: 'Background Jobs', hasComponent: true },
+    { id: 'graceful-shutdown', title: 'Graceful Shutdown', category: 'Background Jobs', hasComponent: true },
 
-    // Background Processing
-    { id: 'queue-guide', title: 'Background Jobs & Queues', filename: 'queue-guide.md', category: 'Background Processing' },
-    { id: 'cron-guide', title: 'Scheduled Tasks (Cron)', filename: 'cron-guide.md', category: 'Background Processing' },
-    { id: 'graceful-shutdown', title: 'Graceful Shutdown', filename: 'graceful-shutdown-guide.md', category: 'Background Processing' },
+    // 9. Real-Time - Live communication
+    { id: 'websocket-sse', title: 'WebSockets & SSE', category: 'Real-Time', hasComponent: true },
+    { id: 'webhooks', title: 'Webhooks', category: 'Real-Time', hasComponent: true },
 
-    // Caching
-    { id: 'cache-improvements', title: 'Caching Strategies', filename: 'cache-improvements-guide.md', category: 'Caching' },
-    { id: 'redis-guide', title: 'Redis Integration', filename: 'redis-guide.md', category: 'Caching' },
+    // 10. GraphQL - Alternative API paradigm
+    { id: 'graphql-guide', title: 'GraphQL', category: 'GraphQL', hasComponent: true },
+    { id: 'graphql-config', title: 'GraphQL Config', category: 'GraphQL' },
 
-    // Cloud Providers
-    { id: 'cloud-providers', title: 'Cloud Provider SDKs', filename: 'cloud-providers-guide.md', category: 'Cloud Providers' },
+    // 11. Cloud & Deployment - Production readiness
+    { id: 'cloud-providers', title: 'Cloud SDKs', category: 'Cloud & Deployment' },
+    { id: 'deployment-guide', title: 'Deployment Guide', category: 'Cloud & Deployment' },
+    { id: 'docker-guide', title: 'Docker', category: 'Cloud & Deployment', hasComponent: true },
+    { id: 'kubernetes-guide', title: 'Kubernetes', category: 'Cloud & Deployment', hasComponent: true },
+    { id: 'ferron-guide', title: 'Ferron Reverse Proxy', category: 'Cloud & Deployment', hasComponent: true },
+    { id: 'scaling-guide', title: 'Scaling', category: 'Cloud & Deployment' },
 
-    // Observability
-    { id: 'logging-guide', title: 'Structured Logging', filename: 'logging-guide.md', category: 'Observability' },
-    { id: 'debug-logging', title: 'Debug & Development Logging', filename: 'debug-logging-guide.md', category: 'Observability' },
-    { id: 'opentelemetry-guide', title: 'Distributed Tracing (OpenTelemetry)', filename: 'opentelemetry-guide.md', category: 'Observability' },
-    { id: 'metrics-guide', title: 'Prometheus Metrics', filename: 'metrics-guide.md', category: 'Observability' },
-    { id: 'health-check', title: 'Health Checks & Probes', filename: 'health-check-guide.md', category: 'Observability' },
-    { id: 'error-correlation', title: 'Error Tracking & Correlation', filename: 'error-correlation-guide.md', category: 'Observability' },
-    { id: 'audit-guide', title: 'Audit Logging', filename: 'audit-guide.md', category: 'Observability' },
+    // 12. Observability - Monitoring and debugging
+    { id: 'logging-guide', title: 'Logging', category: 'Observability', hasComponent: true },
+    { id: 'debug-logging', title: 'Debug Logging', category: 'Observability' },
+    { id: 'health-check', title: 'Health Checks', category: 'Observability', hasComponent: true },
+    { id: 'metrics-guide', title: 'Metrics', category: 'Observability', hasComponent: true },
+    { id: 'grafana-dashboards', title: 'Grafana Dashboards', category: 'Observability', hasComponent: true },
+    { id: 'opentelemetry-guide', title: 'OpenTelemetry', category: 'Observability', hasComponent: true },
+    { id: 'error-correlation', title: 'Error Tracking', category: 'Observability' },
+    { id: 'audit-guide', title: 'Audit Logging', category: 'Observability' },
 
-    // Architecture
-    { id: 'stateless-architecture', title: 'Building Stateless Services', filename: 'stateless-architecture.md', category: 'Architecture' },
-    { id: 'server-integration', title: 'Server & Runtime Integration', filename: 'server-integration.md', category: 'Architecture' },
+    // 13. Testing - Quality assurance
+    { id: 'testing-guide', title: 'Testing', category: 'Testing', hasComponent: true },
+    { id: 'testing-coverage', title: 'Coverage', category: 'Testing' },
 
-    // Macros
-    { id: 'macros-guide', title: 'Macro System Deep Dive', filename: 'macros-guide.md', category: 'Macros' },
+    // 14. Performance - Optimization tools
+    { id: 'profiling-guide', title: 'CPU Profiling', category: 'Performance', hasComponent: true },
 
-    // Error Handling
-    { id: 'error-transformation', title: 'Custom Error Handling', filename: 'error-transformation-guide.md', category: 'Error Handling' },
-
-    // Testing & Quality
-    { id: 'testing-guide', title: 'Testing Your Application', filename: 'testing-guide.md', category: 'Testing & Quality' },
-    { id: 'testing-coverage', title: 'Code Coverage', filename: 'testing-coverage.md', category: 'Testing & Quality' },
-    { id: 'testing-documentation', title: 'Testing Best Practices', filename: 'testing-documentation.md', category: 'Testing & Quality' },
-    { id: 'documentation-testing', title: 'Documentation Examples', filename: 'documentation-testing.md', category: 'Testing & Quality' },
-
-    // Benchmarks
-    { id: 'armature-vs-nodejs', title: 'Performance vs Node.js', filename: 'armature-vs-nodejs-benchmark.md', category: 'Benchmarks' },
-    { id: 'armature-vs-nextjs', title: 'Performance vs Next.js', filename: 'armature-vs-nextjs-benchmark.md', category: 'Benchmarks' },
+    // 15. Benchmarks - Performance comparisons
+    { id: 'armature-vs-nodejs', title: 'vs Node.js', category: 'Benchmarks' },
+    { id: 'armature-vs-nextjs', title: 'vs Next.js', category: 'Benchmarks' },
   ];
 
   // Group docs by category
@@ -126,16 +183,8 @@ export class DocsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private router: Router
   ) {
-    // Configure marked options
-    marked.setOptions({
-      gfm: true,
-      breaks: true,
-    });
-
     // Group docs by category
     const grouped: { [key: string]: DocMetadata[] } = {};
     this.docs.forEach((doc) => {
@@ -145,14 +194,6 @@ export class DocsComponent implements OnInit {
       grouped[doc.category].push(doc);
     });
     this.docsByCategory.set(grouped);
-
-    // Watch for route changes
-    effect(() => {
-      const docId = this.route.snapshot.paramMap.get('id');
-      if (docId) {
-        this.loadDoc(docId);
-      }
-    });
   }
 
   ngOnInit() {
@@ -167,10 +208,9 @@ export class DocsComponent implements OnInit {
     });
   }
 
-  async loadDoc(docId: string) {
+  loadDoc(docId: string) {
     this.loading.set(true);
     this.error.set(null);
-    this.isOverview.set(false);
 
     const doc = this.docs.find((d) => d.id === docId);
     if (!doc) {
@@ -180,32 +220,18 @@ export class DocsComponent implements OnInit {
     }
 
     this.currentDoc.set(doc);
+    this.activeComponent.set(docId);
+    this.loading.set(false);
 
-    // Handle overview page specially - it uses a component, not markdown
-    if (docId === 'readme') {
-      this.isOverview.set(true);
-      this.loading.set(false);
-      return;
-    }
-
-    try {
-      const markdown = await this.http
-        .get(`docs/${doc.filename}`, { responseType: 'text' })
-        .toPromise();
-
-      if (markdown) {
-        const html = await marked.parse(markdown);
-        this.content.set(this.sanitizer.bypassSecurityTrustHtml(html as string));
-      }
-    } catch (err) {
-      this.error.set('Failed to load documentation');
-      console.error('Error loading doc:', err);
-    } finally {
-      this.loading.set(false);
-    }
+    // Scroll to top on navigation
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   getCategories(): string[] {
     return Object.keys(this.docsByCategory());
+  }
+
+  isActiveDoc(docId: string): boolean {
+    return this.currentDoc()?.id === docId;
   }
 }

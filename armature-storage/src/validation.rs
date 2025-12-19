@@ -1,5 +1,7 @@
 //! File validation utilities.
 
+#![allow(dead_code)]
+
 use std::collections::HashSet;
 use thiserror::Error;
 
@@ -234,7 +236,9 @@ impl ValidationRule for AllowedTypesRule {
         if let Some(mime) = file.content_type() {
             let mime_str = mime.to_string();
             if !self.0.contains(&mime_str) && !self.0.contains(&format!("{}/*", mime.type_())) {
-                return Err(ValidationError::TypeNotAllowed { mime_type: mime_str });
+                return Err(ValidationError::TypeNotAllowed {
+                    mime_type: mime_str,
+                });
             }
         }
         Ok(())
@@ -361,4 +365,3 @@ mod tests {
         assert!(validator.validate(&jpeg_file).is_ok());
     }
 }
-

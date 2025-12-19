@@ -5,7 +5,6 @@ struct TestService {
     name: String,
 }
 
-
 #[test]
 fn test_register_and_resolve() {
     let container = Container::new();

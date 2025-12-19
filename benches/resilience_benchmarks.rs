@@ -1,9 +1,13 @@
+#![allow(clippy::all)]
+#![allow(deprecated)]
+#![allow(clippy::needless_question_mark)]
+
 //! Resilience Pattern Benchmarks
 //!
 //! Benchmarks for circuit breakers, retry strategies, bulkheads, timeouts, and fallbacks.
 
 use armature_core::resilience::*;
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use std::sync::Arc;
 use std::time::Duration;
 

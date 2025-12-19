@@ -1,7 +1,9 @@
 //! Middleware chain for HTTP client.
 
+#![allow(dead_code)]
+
+use crate::{Response, Result};
 use async_trait::async_trait;
-use crate::{Result, Response};
 use reqwest::Request;
 use std::sync::Arc;
 
@@ -12,11 +14,7 @@ pub type HttpMetricsCallbackFn = Arc<dyn Fn(&str, &str, u16, std::time::Duration
 #[async_trait]
 pub trait Middleware: Send + Sync {
     /// Process the request and call the next middleware.
-    async fn handle(
-        &self,
-        request: Request,
-        next: &MiddlewareChain,
-    ) -> Result<Response>;
+    async fn handle(&self, request: Request, next: &MiddlewareChain) -> Result<Response>;
 }
 
 /// Chain of middleware handlers.
@@ -83,11 +81,7 @@ impl TimeoutMiddleware {
 
 #[async_trait]
 impl Middleware for TimeoutMiddleware {
-    async fn handle(
-        &self,
-        request: Request,
-        next: &MiddlewareChain,
-    ) -> Result<Response> {
+    async fn handle(&self, request: Request, next: &MiddlewareChain) -> Result<Response> {
         match tokio::time::timeout(self.timeout, next.next(request)).await {
             Ok(result) => result,
             Err(_) => Err(crate::HttpClientError::Timeout(self.timeout)),
@@ -124,16 +118,15 @@ impl Default for RequestIdMiddleware {
 
 #[async_trait]
 impl Middleware for RequestIdMiddleware {
-    async fn handle(
-        &self,
-        mut request: Request,
-        next: &MiddlewareChain,
-    ) -> Result<Response> {
+    async fn handle(&self, mut request: Request, next: &MiddlewareChain) -> Result<Response> {
         // Generate a simple request ID
-        let request_id = format!("{:x}", std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos());
+        let request_id = format!(
+            "{:x}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        );
 
         request.headers_mut().insert(
             http::header::HeaderName::from_bytes(self.header_name.as_bytes()).unwrap(),
@@ -163,11 +156,7 @@ impl MetricsMiddleware {
 
 #[async_trait]
 impl Middleware for MetricsMiddleware {
-    async fn handle(
-        &self,
-        request: Request,
-        next: &MiddlewareChain,
-    ) -> Result<Response> {
+    async fn handle(&self, request: Request, next: &MiddlewareChain) -> Result<Response> {
         let method = request.method().to_string();
         let url = request.url().to_string();
         let start = std::time::Instant::now();
@@ -185,4 +174,3 @@ impl Middleware for MetricsMiddleware {
         result
     }
 }
-

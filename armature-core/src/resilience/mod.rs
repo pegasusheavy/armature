@@ -29,15 +29,14 @@
 //! }).await;
 //! ```
 
-mod circuit_breaker;
-mod retry;
 mod bulkhead;
-mod timeout;
+mod circuit_breaker;
 mod fallback;
+mod retry;
+mod timeout;
 
-pub use circuit_breaker::*;
-pub use retry::*;
 pub use bulkhead::*;
-pub use timeout::*;
+pub use circuit_breaker::*;
 pub use fallback::*;
-
+pub use retry::*;
+pub use timeout::*;

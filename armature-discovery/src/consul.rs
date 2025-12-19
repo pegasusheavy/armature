@@ -60,13 +60,19 @@ impl ServiceDiscovery for ConsulDiscovery {
             info!("Registered service {} with Consul", service.id);
             Ok(())
         } else {
-            let error = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            let error = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
             Err(DiscoveryError::RegistrationFailed(error))
         }
     }
 
     async fn deregister(&self, service_id: &str) -> Result<(), DiscoveryError> {
-        let url = format!("{}/v1/agent/service/deregister/{}", self.base_url, service_id);
+        let url = format!(
+            "{}/v1/agent/service/deregister/{}",
+            self.base_url, service_id
+        );
 
         let response = self.client.put(&url).send().await?;
 
@@ -74,7 +80,10 @@ impl ServiceDiscovery for ConsulDiscovery {
             info!("Deregistered service {} from Consul", service_id);
             Ok(())
         } else {
-            let error = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            let error = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
             Err(DiscoveryError::DeregistrationFailed(error))
         }
     }
@@ -127,7 +136,11 @@ impl ServiceDiscovery for ConsulDiscovery {
             })
             .collect();
 
-        debug!("Discovered {} instances of service {}", instances.len(), service_name);
+        debug!(
+            "Discovered {} instances of service {}",
+            instances.len(),
+            service_name
+        );
         Ok(instances)
     }
 
@@ -158,7 +171,8 @@ impl ServiceDiscovery for ConsulDiscovery {
 
         let service: ConsulServiceDetail = response.json().await?;
 
-        let mut instance = ServiceInstance::new(service.id, service.service, service.address, service.port);
+        let mut instance =
+            ServiceInstance::new(service.id, service.service, service.address, service.port);
         instance.tags = service.tags;
         instance.metadata = service.meta.unwrap_or_default();
 
@@ -171,7 +185,9 @@ impl ServiceDiscovery for ConsulDiscovery {
         let response = self.client.get(&url).send().await?;
 
         if !response.status().is_success() {
-            return Err(DiscoveryError::RegistrationFailed("Failed to list services".to_string()));
+            return Err(DiscoveryError::RegistrationFailed(
+                "Failed to list services".to_string(),
+            ));
         }
 
         let services: HashMap<String, Vec<String>> = response.json().await?;
@@ -189,4 +205,3 @@ mod tests {
         assert!(consul.is_ok());
     }
 }
-

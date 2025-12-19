@@ -87,4 +87,3 @@ impl GitHubProvider {
         Ok(user)
     }
 }
-

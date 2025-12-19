@@ -56,10 +56,7 @@ pub enum RedisError {
 impl RedisError {
     /// Check if this error is retryable.
     pub fn is_retryable(&self) -> bool {
-        matches!(
-            self,
-            Self::Connection(_) | Self::Timeout | Self::Pool(_)
-        )
+        matches!(self, Self::Connection(_) | Self::Timeout | Self::Pool(_))
     }
 
     /// Check if this error indicates connection loss.
@@ -82,4 +79,3 @@ impl From<serde_json::Error> for RedisError {
         Self::Serialization(err.to_string())
     }
 }
-

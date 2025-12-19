@@ -96,15 +96,31 @@ impl BackoffStrategy {
     /// Set maximum delay.
     pub fn with_max(self, max: Duration) -> Self {
         match self {
-            Self::Linear { initial, increment, .. } => {
-                Self::Linear { initial, increment, max }
-            }
-            Self::Exponential { initial, multiplier, .. } => {
-                Self::Exponential { initial, multiplier, max }
-            }
-            Self::ExponentialWithJitter { initial, multiplier, .. } => {
-                Self::ExponentialWithJitter { initial, multiplier, max }
-            }
+            Self::Linear {
+                initial, increment, ..
+            } => Self::Linear {
+                initial,
+                increment,
+                max,
+            },
+            Self::Exponential {
+                initial,
+                multiplier,
+                ..
+            } => Self::Exponential {
+                initial,
+                multiplier,
+                max,
+            },
+            Self::ExponentialWithJitter {
+                initial,
+                multiplier,
+                ..
+            } => Self::ExponentialWithJitter {
+                initial,
+                multiplier,
+                max,
+            },
             other => other,
         }
     }
@@ -114,16 +130,28 @@ impl BackoffStrategy {
         match self {
             Self::None => Duration::ZERO,
             Self::Constant(d) => *d,
-            Self::Linear { initial, increment, max } => {
+            Self::Linear {
+                initial,
+                increment,
+                max,
+            } => {
                 let delay = *initial + increment.saturating_mul(attempt);
                 delay.min(*max)
             }
-            Self::Exponential { initial, multiplier, max } => {
+            Self::Exponential {
+                initial,
+                multiplier,
+                max,
+            } => {
                 let factor = multiplier.powi(attempt as i32);
                 let millis = (initial.as_millis() as f64 * factor) as u64;
                 Duration::from_millis(millis).min(*max)
             }
-            Self::ExponentialWithJitter { initial, multiplier, max } => {
+            Self::ExponentialWithJitter {
+                initial,
+                multiplier,
+                max,
+            } => {
                 let factor = multiplier.powi(attempt as i32);
                 let base_millis = (initial.as_millis() as f64 * factor) as u64;
                 // Add jitter: 0-50% of the delay
@@ -377,9 +405,7 @@ mod tests {
     async fn test_retry_succeeds_on_first_try() {
         let retry = Retry::new(RetryConfig::new(3));
 
-        let result: Result<i32, RetryError<&str>> = retry.call(|| async {
-            Ok(42)
-        }).await;
+        let result: Result<i32, RetryError<&str>> = retry.call(|| async { Ok(42) }).await;
 
         assert_eq!(result.unwrap(), 42);
     }
@@ -393,16 +419,18 @@ mod tests {
             ..Default::default()
         });
 
-        let result: Result<i32, RetryError<&str>> = retry.call(|| {
-            let attempt = attempts.fetch_add(1, Ordering::SeqCst);
-            async move {
-                if attempt == 0 {
-                    Err("first failure")
-                } else {
-                    Ok(42)
+        let result: Result<i32, RetryError<&str>> = retry
+            .call(|| {
+                let attempt = attempts.fetch_add(1, Ordering::SeqCst);
+                async move {
+                    if attempt == 0 {
+                        Err("first failure")
+                    } else {
+                        Ok(42)
+                    }
                 }
-            }
-        }).await;
+            })
+            .await;
 
         assert_eq!(result.unwrap(), 42);
         assert_eq!(attempts.load(Ordering::SeqCst), 2);
@@ -416,9 +444,8 @@ mod tests {
             ..Default::default()
         });
 
-        let result: Result<i32, RetryError<&str>> = retry.call(|| async {
-            Err("always fails")
-        }).await;
+        let result: Result<i32, RetryError<&str>> =
+            retry.call(|| async { Err("always fails") }).await;
 
         let err = result.unwrap_err();
         assert_eq!(err.attempts, 3);
@@ -434,4 +461,3 @@ mod tests {
         assert_eq!(backoff.delay_for_attempt(2), Duration::from_millis(400));
     }
 }
-

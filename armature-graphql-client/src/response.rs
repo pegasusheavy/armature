@@ -26,12 +26,12 @@ impl<T> GraphQLResponse<T> {
     /// Get the data, returning an error if there are GraphQL errors.
     pub fn into_result(self) -> crate::Result<T> {
         if let Some(errors) = self.errors
-            && !errors.is_empty() {
-                return Err(crate::GraphQLError::GraphQL(errors));
-            }
-        self.data.ok_or_else(|| {
-            crate::GraphQLError::Parse("Response contained no data".to_string())
-        })
+            && !errors.is_empty()
+        {
+            return Err(crate::GraphQLError::GraphQL(errors));
+        }
+        self.data
+            .ok_or_else(|| crate::GraphQLError::Parse("Response contained no data".to_string()))
     }
 
     /// Get the data, ignoring any errors.
@@ -65,15 +65,16 @@ impl std::fmt::Display for GraphQLResponseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.message)?;
         if let Some(locations) = &self.locations
-            && !locations.is_empty() {
-                write!(f, " at ")?;
-                for (i, loc) in locations.iter().enumerate() {
-                    if i > 0 {
-                        write!(f, ", ")?;
-                    }
-                    write!(f, "{}:{}", loc.line, loc.column)?;
+            && !locations.is_empty()
+        {
+            write!(f, " at ")?;
+            for (i, loc) in locations.iter().enumerate() {
+                if i > 0 {
+                    write!(f, ", ")?;
                 }
+                write!(f, "{}:{}", loc.line, loc.column)?;
             }
+        }
         Ok(())
     }
 }
@@ -113,4 +114,3 @@ pub fn format_path(path: &[PathSegment]) -> String {
         .collect::<Vec<_>>()
         .join(".")
 }
-

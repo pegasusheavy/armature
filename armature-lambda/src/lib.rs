@@ -80,14 +80,14 @@
 //! ```
 
 mod error;
-mod runtime;
 mod request;
 mod response;
+mod runtime;
 
 pub use error::{LambdaError, Result};
-pub use runtime::{LambdaRuntime, LambdaConfig};
 pub use request::LambdaRequest;
 pub use response::LambdaResponse;
+pub use runtime::{LambdaConfig, LambdaRuntime};
 
 // Re-export lambda types
 pub use lambda_http;
@@ -119,4 +119,3 @@ pub fn init_tracing_with_level(level: &str) {
         .with(tracing_subscriber::fmt::layer().json().flatten_event(true))
         .init();
 }
-

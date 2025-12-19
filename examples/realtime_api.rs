@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! Real-time Communication API Example
 //!
 //! This example demonstrates real-time communication patterns with Armature:
@@ -12,10 +13,10 @@
 
 use armature::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::broadcast;
-use tokio::time::{interval, Duration};
+use tokio::time::{Duration, interval};
 
 // =============================================================================
 // Message Types
@@ -73,7 +74,12 @@ impl BroadcastService {
     }
 
     /// Broadcast a message to all subscribers.
-    pub fn broadcast(&self, username: String, content: String, room: Option<String>) -> ChatMessage {
+    pub fn broadcast(
+        &self,
+        username: String,
+        content: String,
+        room: Option<String>,
+    ) -> ChatMessage {
         let id = self.message_id.fetch_add(1, Ordering::SeqCst);
         let message = ChatMessage {
             id,
@@ -101,7 +107,9 @@ impl BroadcastService {
 static BROADCAST_SERVICE: std::sync::OnceLock<BroadcastService> = std::sync::OnceLock::new();
 
 fn get_broadcast_service() -> &'static BroadcastService {
-    BROADCAST_SERVICE.get().expect("BroadcastService not initialized")
+    BROADCAST_SERVICE
+        .get()
+        .expect("BroadcastService not initialized")
 }
 
 // =============================================================================
@@ -212,7 +220,10 @@ async fn spawn_event_generator() {
     let mut interval = interval(Duration::from_secs(30));
     let events = vec![
         ("System", "Server health check completed"),
-        ("Bot", "Did you know? Armature supports WebSocket, SSE, and REST!"),
+        (
+            "Bot",
+            "Did you know? Armature supports WebSocket, SSE, and REST!",
+        ),
         ("System", "Connected clients: checking..."),
     ];
     let mut event_idx = 0;
@@ -222,7 +233,10 @@ async fn spawn_event_generator() {
 
         let (username, content) = events[event_idx % events.len()];
         let content = if content.contains("checking") {
-            format!("Connected clients: {}", get_broadcast_service().subscriber_count())
+            format!(
+                "Connected clients: {}",
+                get_broadcast_service().subscriber_count()
+            )
         } else {
             content.to_string()
         };
@@ -257,7 +271,9 @@ async fn main() {
 
     // Create broadcast service
     let broadcast = BroadcastService::new(100);
-    BROADCAST_SERVICE.set(broadcast).expect("Failed to set broadcast service");
+    BROADCAST_SERVICE
+        .set(broadcast)
+        .expect("Failed to set broadcast service");
 
     // Spawn background event generator
     tokio::spawn(async move {

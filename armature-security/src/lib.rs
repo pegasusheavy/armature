@@ -338,13 +338,13 @@ impl Default for SecurityMiddleware {
 /// use armature_security::prelude::*;
 /// ```
 pub mod prelude {
+    pub use crate::SecurityMiddleware;
     pub use crate::content_security_policy::CspConfig;
     pub use crate::cors::CorsConfig;
     pub use crate::frame_guard::FrameGuard;
     pub use crate::hsts::HstsConfig;
     pub use crate::referrer_policy::ReferrerPolicy;
     pub use crate::request_signing::{RequestSigner, RequestSigningMiddleware, RequestVerifier};
-    pub use crate::SecurityMiddleware;
 }
 
 /// Implement the core Middleware trait for SecurityMiddleware
