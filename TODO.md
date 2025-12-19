@@ -33,6 +33,7 @@ Only features that are **not yet completed**.
 | ✅ Hyper Body Passthrough | Zero-copy Bytes-based body handling (~4x faster clone) | `armature-core/src/body.rs` |
 | ✅ Automated Regression Tests | CI pipeline with benchmark regression detection | `.github/workflows/benchmark.yml` |
 | ✅ HTTP/1.1 Pipelining | Pipeline config, stats, TCP_NODELAY, keep-alive | `armature-core/src/pipeline.rs` |
+| ✅ Request Batching | Batch-read multiple requests from socket buffer | `armature-core/src/batch.rs` |
 
 ---
 
@@ -238,7 +239,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | HTTP/1.1 Pipelining | Process multiple requests per connection without waiting | `armature-core/src/pipeline.rs` |
-| 🔴 | Request Batching | Batch-read multiple requests from socket buffer | `armature-core/http.rs` |
+| ✅ | Request Batching | Batch-read multiple requests from socket buffer | `armature-core/src/batch.rs` |
 | 🟠 | Response Pipelining | Queue responses for batch-write to socket | `armature-core/http.rs` |
 | 🟠 | Vectored I/O (writev) | Use `writev()` to send headers+body in single syscall | `armature-core/http.rs` |
 
@@ -338,7 +339,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
 | ↳ Actix Performance Roadmap | 12 | 🔴/🟠/🟡 |
-| ↳ HTTP/1.1 Optimizations | 3 | 🔴/🟠 |
+| ↳ HTTP/1.1 Optimizations | 2 | 🟠 |
 | ↳ Buffer Management | 5 | 🔴/🟠/🟡 |
 | ↳ Worker Architecture | 4 | 🟠/🟡 |
 | ↳ Connection State Machine | 4 | 🟠/🟡 |
@@ -348,7 +349,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **20** | ✅ |
+| **Recently Completed** | **21** | ✅ |
 
 ### Performance Target
 
