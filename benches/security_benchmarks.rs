@@ -8,9 +8,8 @@ use serde::{Deserialize, Serialize};
 use std::hint::black_box;
 use std::time::Duration;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct BenchClaims {
-    sub: String,
     name: String,
     admin: bool,
 }
@@ -22,11 +21,15 @@ fn bench_jwt_operations(c: &mut Criterion) {
         .with_expiration(Duration::from_secs(3600));
     let manager = JwtManager::new(config).unwrap();
 
-    let claims = BenchClaims {
-        sub: "user_123".to_string(),
+    let custom_claims = BenchClaims {
         name: "John Doe".to_string(),
         admin: false,
     };
+
+    // Use Claims wrapper with subject and expiration in StandardClaims
+    let claims = Claims::new(custom_claims.clone())
+        .with_subject("user_123".to_string())
+        .with_expiration(3600);
 
     group.bench_function("sign", |b| {
         b.iter(|| manager.sign(black_box(&claims)).unwrap())
