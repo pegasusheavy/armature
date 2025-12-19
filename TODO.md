@@ -19,10 +19,6 @@ Only features that are **not yet completed**.
 | ✅ Profiling Script | Automated profiling workflow | `scripts/profile.sh` |
 | ✅ Profiling Docs | Documentation website guide | `web/src/app/pages/docs/pages/profiling-guide/` |
 | ✅ Grafana Dashboards | Pre-built dashboard templates | `templates/grafana/` |
-| ✅ Replace Trie with `matchit` | High-performance route matching (same as Axum) | `armature-core/routing.rs` |
-| ✅ TechEmpower Benchmark Suite | All 7 TechEmpower tests (JSON, DB, Fortunes, etc.) | `benches/techempower/` |
-| ✅ Compile-time Route Validation | Validates routes at compile time with helpful errors | `armature-macro/route_validation.rs` |
-| ✅ CI Fixes | Fixed missing modules, formatting, workspace config | PR #70 |
 
 ---
 
@@ -71,8 +67,8 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| ✅ | Replace Trie with `matchit` | Use `matchit` crate (same as Axum) for route matching | `armature-core/routing.rs` |
-| ✅ | Compile-time Route Validation | Validate routes at compile time, not runtime | `armature-macro` |
+| 🔴 | Replace Trie with `matchit` | Use `matchit` crate (same as Axum) for route matching | `armature-core/routing.rs` |
+| 🔴 | Compile-time Route Validation | Validate routes at compile time, not runtime | `armature-macro` |
 | 🟠 | Route Parameter Extraction | Zero-allocation parameter extraction like Axum | `armature-core/routing.rs` |
 | 🟠 | Wildcard/Catch-all Optimization | Optimize `*path` and `/*rest` patterns | `armature-core/routing.rs` |
 
@@ -117,7 +113,7 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| ✅ | TechEmpower Benchmark Suite | Implement all TechEmpower tests (JSON, DB, Fortune) | `benches/techempower/` |
+| 🔴 | TechEmpower Benchmark Suite | Implement all TechEmpower tests (JSON, DB, Fortune) | `benches/techempower/` |
 | 🟠 | Automated Regression Tests | CI pipeline to catch performance regressions | `.github/workflows/` |
 | 🟠 | Axum Comparison Benchmark | Side-by-side benchmark vs Axum with same routes | `benches/comparison/` |
 | 🟡 | Flame Graph CI Integration | Auto-generate flamegraphs on benchmark runs | `.github/workflows/` |
@@ -235,12 +231,12 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Performance - Serialization | 3 | 🟠/🟡 |
 | Performance - Connections | 3 | 🟡 |
 | **Axum-Competitive** | | |
-| ↳ Router Optimization | 2 | 🟠 |
+| ↳ Router Optimization | 4 | 🔴/🟠 |
 | ↳ Zero-Cost Abstractions | 4 | 🔴/🟠 |
 | ↳ Memory & Allocation | 5 | 🔴/🟠/🟡 |
 | ↳ Hyper Integration | 4 | 🔴/🟠/🟡 |
 | ↳ Async Runtime | 4 | 🟠/🟡 |
-| ↳ Benchmark Infrastructure | 3 | 🟠/🟡 |
+| ↳ Benchmark Infrastructure | 4 | 🔴/🟠/🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
 | ↳ HTTP/1.1 Optimizations | 4 | 🔴/🟠 |
@@ -252,8 +248,8 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Syscall Optimization | 4 | 🔴/🟠/🟡 |
 | ↳ Actix Benchmarks | 4 | 🔴/🟠/🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **73** | |
-| **Recently Completed** | **8** | ✅ |
+| **Total Remaining** | **76** | |
+| **Recently Completed** | **4** | ✅ |
 
 ---
 

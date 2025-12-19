@@ -5,6 +5,8 @@ use syn::{
     token::Comma,
 };
 
+use crate::route_validation::validate_route_path;
+
 /// Parameter extraction kind
 #[derive(Debug)]
 enum ExtractorKind {
@@ -210,6 +212,15 @@ pub fn route_impl(attr: TokenStream, item: TokenStream, method: &str) -> TokenSt
         parse_macro_input!(attr as LitStr)
     };
     let path_value = path.value();
+
+    // Validate route path at compile time
+    let validated = match validate_route_path(&path_value, path.span()) {
+        Ok(v) => v,
+        Err(e) => return e.to_compile_error().into(),
+    };
+
+    // Use the validated path (may be normalized in future versions)
+    let path_value = validated.path;
 
     let route_const_name = syn::Ident::new(
         &format!(
