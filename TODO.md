@@ -28,6 +28,7 @@ Only features that are **not yet completed**.
 | ✅ CI Pipeline Fixes | All 16 CI jobs passing (format, clippy, tests, benchmarks) | `.github/workflows/` |
 | ✅ Inline Handler Dispatch | Handler trait with monomorphization and `#[inline]` hints | `armature-core/src/handler.rs` |
 | ✅ SIMD HTTP Parser | Integrated `httparse` + `memchr` for SIMD-optimized parsing | `armature-core/src/simd_parser.rs` |
+| ✅ SIMD JSON | Optional `simd-json` feature for SIMD-accelerated JSON | `armature-core/src/json.rs` |
 
 ---
 
@@ -54,7 +55,7 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | SIMD JSON | Add optional `simd-json` or `sonic-rs` for faster JSON | `armature-core` |
+| ✅ | SIMD JSON | Added optional `simd-json` feature flag | `armature-core/src/json.rs` |
 | 🟡 | Zero-Copy Responses | Use `Bytes` for zero-copy response bodies | `armature-core` |
 | 🟡 | Pre-allocated Buffers | Buffer pool for response serialization | `armature-core` |
 
@@ -321,7 +322,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 |----------|-----------|----------|
 | Performance - Routing | 3 | 🟠/🟡 |
 | Performance - HTTP Parsing | 0 | ✅ |
-| Performance - Serialization | 3 | 🟠/🟡 |
+| Performance - Serialization | 2 | 🟡 |
 | Performance - Connections | 3 | 🟡 |
 | **Axum-Competitive** | | |
 | ↳ Router Optimization | 2 | 🟠 |
@@ -343,7 +344,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **14** | ✅ |
+| **Recently Completed** | **16** | ✅ |
 
 ### Performance Target
 
