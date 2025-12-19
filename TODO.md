@@ -51,6 +51,7 @@ Only features that are **not yet completed**.
 | ✅ Connection Recycling | Reset and reuse connection objects via pool | `armature-core/src/connection.rs` |
 | ✅ Streaming Response Body | Send response while still generating body | `armature-core/src/streaming.rs` |
 | ✅ Chunk Size Optimization | Optimal chunk sizes for chunked encoding | `armature-core/src/streaming.rs` |
+| ✅ Copy-on-Write State | Arc-based state with cheap reads, versioning | `armature-core/src/cow_state.rs` |
 
 ---
 
@@ -301,7 +302,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Copy-on-Write State | Use `Arc<T>` patterns that avoid cloning | `armature-core/state.rs` |
+| ✅ | Copy-on-Write State | Use `Arc<T>` patterns that avoid cloning | `armature-core/src/cow_state.rs` |
 | 🟠 | State Locality | Keep frequently-accessed state in cache | `armature-core/state.rs` |
 | 🟡 | Read-Optimized State | Use `parking_lot::RwLock` for read-heavy state | `armature-core/state.rs` |
 
@@ -366,7 +367,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **38** | ✅ |
+| **Recently Completed** | **39** | ✅ |
 
 ### Performance Target
 

@@ -1095,7 +1095,7 @@ mod tests {
     #[test]
     fn test_adaptive_chunk_optimizer() {
         let optimizer = AdaptiveChunkOptimizer::new(ChunkContentType::Json);
-        
+
         // Default conditions
         let size = optimizer.optimal_size();
         assert!(size >= optimizer.min_chunk);
@@ -1105,21 +1105,21 @@ mod tests {
     #[test]
     fn test_adaptive_optimizer_rtt_adaptation() {
         let optimizer = AdaptiveChunkOptimizer::new(ChunkContentType::Binary);
-        
+
         // Record poor network conditions
         for _ in 0..5 {
             optimizer.record_rtt(300);
         }
-        
+
         let poor_size = optimizer.optimal_size();
-        
+
         // Record excellent conditions
         for _ in 0..10 {
             optimizer.record_rtt(5);
         }
-        
+
         let good_size = optimizer.optimal_size();
-        
+
         // Good conditions should allow larger chunks
         assert!(good_size >= poor_size);
     }
@@ -1127,12 +1127,12 @@ mod tests {
     #[test]
     fn test_chunked_encoding_optimizer() {
         let optimizer = ChunkedEncodingOptimizer::new();
-        
+
         // Small data - single chunk
         let plan = optimizer.optimal_for_data(500);
         assert_eq!(plan.num_chunks, 1);
         assert_eq!(plan.chunk_size, 500);
-        
+
         // Data larger than max_chunk - multiple chunks
         let large_data = optimizer.max_chunk * 3;
         let plan = optimizer.optimal_for_data(large_data);
@@ -1145,7 +1145,7 @@ mod tests {
         // Small chunks have lower efficiency
         let small_eff = ChunkedEncodingOptimizer::chunk_efficiency(100);
         let large_eff = ChunkedEncodingOptimizer::chunk_efficiency(16384);
-        
+
         assert!(large_eff > small_eff);
         assert!(large_eff > 0.99); // Large chunks very efficient
     }
@@ -1154,13 +1154,13 @@ mod tests {
     fn test_chunked_encoding_create_chunks() {
         let optimizer = ChunkedEncodingOptimizer::new()
             .target_chunk(100);
-        
+
         let data = vec![0u8; 350];
         let chunks = optimizer.create_chunks(&data);
-        
+
         // Should create multiple chunks
         assert!(chunks.len() >= 3);
-        
+
         // Total size should match
         let total: usize = chunks.iter().map(|c| c.len()).sum();
         assert_eq!(total, 350);
