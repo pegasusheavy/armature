@@ -70,7 +70,174 @@ export class RoadmapComponent {
         { feature: 'Advanced Caching', status: 'completed' },
         { feature: 'Serverless Deployment', status: 'completed' },
         { feature: 'CLI Enhancements', status: 'completed' },
-        { feature: 'Grafana Dashboards', status: 'medium' },
+        { feature: 'Grafana Dashboards', status: 'completed' },
+      ],
+    },
+    {
+      name: 'Phase 5: Performance',
+      quarter: 'Q1 2025',
+      items: [
+        { feature: 'CPU Profiling', status: 'completed' },
+        { feature: 'matchit Router', status: 'completed' },
+        { feature: 'TechEmpower Benchmarks', status: 'critical' },
+        { feature: 'Zero-Cost Abstractions', status: 'critical' },
+        { feature: 'Buffer Pooling', status: 'critical' },
+        { feature: 'io_uring Support', status: 'critical' },
+      ],
+    },
+  ];
+
+  // Performance optimization roadmap based on CPU profiling
+  performanceCategories: RoadmapCategory[] = [
+    {
+      name: 'Recently Completed',
+      items: [
+        { feature: 'CPU Profiling', description: 'Flamegraph generation with pprof', module: 'examples/profiling_server.rs', status: 'completed' },
+        { feature: 'Profiling Script', description: 'Automated profiling workflow', module: 'scripts/profile.sh', status: 'completed' },
+        { feature: 'Profiling Docs', description: 'Documentation website guide', module: 'docs/', status: 'completed' },
+        { feature: 'Grafana Dashboards', description: 'Pre-built dashboard templates', module: 'templates/grafana/', status: 'completed' },
+        { feature: 'matchit Router', description: 'Replace trie with matchit crate (PR #66)', module: 'armature-core/routing.rs', status: 'completed' },
+      ],
+    },
+    {
+      name: 'Routing & Request Handling (~28% CPU)',
+      items: [
+        { feature: 'Route Matching Cache', description: 'Cache compiled routes to avoid repeated traversal', module: 'armature-core/routing.rs', status: 'high' },
+        { feature: 'Static Route Fast Path', description: 'Bypass tree for exact-match static routes using HashMap', module: 'armature-core/routing.rs', status: 'high' },
+        { feature: 'Header Map Optimization', description: 'Use smallvec or pre-allocated headers for common cases', module: 'armature-core', status: 'medium' },
+      ],
+    },
+    {
+      name: 'HTTP Parsing (~7% CPU)',
+      items: [
+        { feature: 'SIMD HTTP Parser', description: 'Integrate httparse SIMD features or picohttpparser', module: 'armature-core', status: 'medium' },
+        { feature: 'Header Interning', description: 'Intern common header names to avoid allocations', module: 'armature-core', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Serialization',
+      items: [
+        { feature: 'SIMD JSON', description: 'Add optional simd-json or sonic-rs for faster JSON', module: 'armature-core', status: 'high' },
+        { feature: 'Zero-Copy Responses', description: 'Use Bytes for zero-copy response bodies', module: 'armature-core', status: 'medium' },
+        { feature: 'Pre-allocated Buffers', description: 'Buffer pool for response serialization', module: 'armature-core', status: 'medium' },
+      ],
+    },
+  ];
+
+  // Axum-competitive performance roadmap
+  axumCategories: RoadmapCategory[] = [
+    {
+      name: 'Router Optimization (Critical)',
+      items: [
+        { feature: 'Replace Trie with matchit', description: 'Use matchit crate (same as Axum) for route matching', module: 'armature-core/routing.rs', status: 'completed' },
+        { feature: 'Compile-time Route Validation', description: 'Validate routes at compile time, not runtime', module: 'armature-macro', status: 'critical' },
+        { feature: 'Route Parameter Extraction', description: 'Zero-allocation parameter extraction like Axum', module: 'armature-core/routing.rs', status: 'high' },
+        { feature: 'Wildcard/Catch-all Optimization', description: 'Optimize *path and /*rest patterns', module: 'armature-core/routing.rs', status: 'high' },
+      ],
+    },
+    {
+      name: 'Zero-Cost Abstractions (Critical)',
+      items: [
+        { feature: 'Inline Handler Dispatch', description: 'Ensure handlers are inlined via monomorphization', module: 'armature-core', status: 'critical' },
+        { feature: 'Remove Runtime Type Checks', description: 'Eliminate Any downcasting in hot paths', module: 'armature-core/di.rs', status: 'critical' },
+        { feature: 'Const Generic Extractors', description: 'Use const generics for zero-cost extractor chains', module: 'armature-core/extractors.rs', status: 'high' },
+        { feature: 'Static Dispatch Middleware', description: 'Replace Box<dyn> with static dispatch where possible', module: 'armature-core/middleware.rs', status: 'high' },
+      ],
+    },
+    {
+      name: 'Memory & Allocation',
+      items: [
+        { feature: 'Arena Allocator for Requests', description: 'Per-request arena to batch deallocations', module: 'armature-core', status: 'critical' },
+        { feature: 'SmallVec for Headers', description: 'Use SmallVec<[_; 16]> for typical header counts', module: 'armature-core', status: 'high' },
+        { feature: 'CompactString for Paths', description: 'Use compact_str for short route paths', module: 'armature-core/routing.rs', status: 'high' },
+        { feature: 'Pre-sized Response Buffers', description: 'Avoid reallocations during response building', module: 'armature-core/response.rs', status: 'high' },
+        { feature: 'Object Pool for Requests', description: 'Reuse request/response objects across connections', module: 'armature-core', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Hyper Integration',
+      items: [
+        { feature: 'Direct Hyper Body Passthrough', description: 'Avoid wrapping/unwrapping hyper::Body', module: 'armature-core', status: 'critical' },
+        { feature: 'Native http Crate Types', description: 'Use http::Request/Response directly', module: 'armature-core', status: 'high' },
+        { feature: 'Tower Service Compatibility', description: 'Implement tower::Service for composability', module: 'armature-core', status: 'high' },
+        { feature: 'Hyper 1.0 Full Support', description: 'Ensure all Hyper 1.0 features are utilized', module: 'armature-core', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Async Runtime Optimization',
+      items: [
+        { feature: 'Reduce Task Spawning', description: 'Inline simple handlers instead of spawning tasks', module: 'armature-core', status: 'high' },
+        { feature: 'tokio::task::LocalSet Option', description: 'Single-threaded mode for maximum cache locality', module: 'armature-core', status: 'high' },
+        { feature: 'Custom Executor Tuning', description: 'Expose tokio runtime configuration', module: 'armature-core', status: 'medium' },
+        { feature: 'Work-Stealing Optimization', description: 'Tune work-stealing for HTTP workloads', module: 'armature-core', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Benchmark Infrastructure',
+      items: [
+        { feature: 'TechEmpower Benchmark Suite', description: 'Implement all TechEmpower tests (JSON, DB, Fortune)', module: 'benches/techempower/', status: 'critical' },
+        { feature: 'Automated Regression Tests', description: 'CI pipeline to catch performance regressions', module: '.github/workflows/', status: 'high' },
+        { feature: 'Axum Comparison Benchmark', description: 'Side-by-side benchmark vs Axum with same routes', module: 'benches/comparison/', status: 'high' },
+        { feature: 'Flame Graph CI Integration', description: 'Auto-generate flamegraphs on benchmark runs', module: '.github/workflows/', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Compiler Optimizations',
+      items: [
+        { feature: 'Profile-Guided Optimization', description: 'Add PGO build profile', module: 'Cargo.toml', status: 'high' },
+        { feature: 'LTO Thin/Fat Modes', description: 'Benchmark LTO impact on binary size vs speed', module: 'Cargo.toml', status: 'high' },
+        { feature: 'Target-specific Tuning', description: 'Enable -C target-cpu=native for benchmarks', module: 'Cargo.toml', status: 'medium' },
+        { feature: 'Codegen Units = 1', description: 'Single codegen unit for maximum optimization', module: 'Cargo.toml', status: 'medium' },
+      ],
+    },
+  ];
+
+  // Actix-web competitive performance roadmap
+  actixCategories: RoadmapCategory[] = [
+    {
+      name: 'HTTP/1.1 Optimizations (Critical)',
+      items: [
+        { feature: 'HTTP/1.1 Pipelining', description: 'Process multiple requests per connection without waiting', module: 'armature-core/http.rs', status: 'critical' },
+        { feature: 'Request Batching', description: 'Batch-read multiple requests from socket buffer', module: 'armature-core/http.rs', status: 'critical' },
+        { feature: 'Response Pipelining', description: 'Queue responses for batch-write to socket', module: 'armature-core/http.rs', status: 'high' },
+        { feature: 'Vectored I/O (writev)', description: 'Use writev() to send headers+body in single syscall', module: 'armature-core/http.rs', status: 'high' },
+      ],
+    },
+    {
+      name: 'Buffer Management (Critical)',
+      items: [
+        { feature: 'BytesMut Buffer Pool', description: 'Thread-local pool of pre-allocated BytesMut buffers', module: 'armature-core/buffer.rs', status: 'critical' },
+        { feature: 'Zero-Copy Request Body', description: 'Parse directly into pooled buffers without copying', module: 'armature-core/request.rs', status: 'critical' },
+        { feature: 'Read Buffer Sizing', description: 'Tune read buffer sizes based on typical payload', module: 'armature-core/config.rs', status: 'high' },
+        { feature: 'Write Buffer Coalescing', description: 'Combine small writes into single buffer flush', module: 'armature-core/response.rs', status: 'high' },
+        { feature: 'Buffer Size Auto-Tuning', description: 'Dynamically adjust buffer sizes based on traffic', module: 'armature-core/buffer.rs', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Worker Architecture',
+      items: [
+        { feature: 'Per-Worker State', description: 'Thread-local state to avoid Arc contention', module: 'armature-core/worker.rs', status: 'high' },
+        { feature: 'CPU Core Affinity', description: 'Pin worker threads to CPU cores for cache locality', module: 'armature-core/runtime.rs', status: 'high' },
+        { feature: 'NUMA-Aware Allocation', description: 'Allocate memory on same NUMA node as worker', module: 'armature-core/runtime.rs', status: 'high' },
+        { feature: 'Worker Load Balancing', description: 'Round-robin or least-connections distribution', module: 'armature-core/worker.rs', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Syscall Optimization',
+      items: [
+        { feature: 'io_uring Support', description: 'Use io_uring for async I/O on Linux 5.1+', module: 'armature-core/io.rs', status: 'critical' },
+        { feature: 'epoll Tuning', description: 'Optimize epoll flags and batch sizes', module: 'armature-core/io.rs', status: 'high' },
+        { feature: 'Reduce recv/send Calls', description: 'Batch socket operations where possible', module: 'armature-core/io.rs', status: 'high' },
+        { feature: 'TCP_CORK Usage', description: 'Cork TCP for header+body combining', module: 'armature-core/io.rs', status: 'medium' },
+      ],
+    },
+    {
+      name: 'Actix Benchmark Comparison',
+      items: [
+        { feature: 'Actix Comparison Benchmark', description: 'Direct A/B benchmark against Actix-web', module: 'benches/comparison/actix/', status: 'critical' },
+        { feature: 'JSON Serialization Benchmark', description: 'Compare JSON endpoint performance', module: 'benches/json/', status: 'high' },
+        { feature: 'Plaintext Benchmark', description: 'Raw "Hello World" throughput test', module: 'benches/plaintext/', status: 'high' },
+        { feature: 'Database Query Benchmark', description: 'Single/multiple query performance', module: 'benches/database/', status: 'medium' },
       ],
     },
   ];
@@ -120,7 +287,7 @@ export class RoadmapComponent {
         { feature: 'Prometheus Metrics', description: '/metrics endpoint with custom metrics', module: 'armature-metrics', status: 'completed' },
         { feature: 'Request Metrics', description: 'Request count, latency, error rates', module: 'armature-metrics', status: 'completed' },
         { feature: 'Business Metrics', description: 'Custom metric registration', module: 'armature-metrics', status: 'completed' },
-        { feature: 'Grafana Dashboards', description: 'Pre-built dashboard templates', module: 'docs/', status: 'medium' },
+        { feature: 'Grafana Dashboards', description: 'Pre-built dashboard templates', module: 'templates/grafana/', status: 'completed' },
       ],
     },
     {
@@ -386,5 +553,49 @@ export class RoadmapComponent {
 
   getTotalFeatures(): number {
     return this.categories.reduce((sum, cat) => sum + cat.items.length, 0);
+  }
+
+  // Performance roadmap helpers
+  getPerformanceCompletedCount(): number {
+    return this.performanceCategories.reduce((sum, cat) => sum + this.getCompletedCount(cat.items), 0);
+  }
+
+  getPerformanceTotalCount(): number {
+    return this.performanceCategories.reduce((sum, cat) => sum + cat.items.length, 0);
+  }
+
+  getAxumCompletedCount(): number {
+    return this.axumCategories.reduce((sum, cat) => sum + this.getCompletedCount(cat.items), 0);
+  }
+
+  getAxumTotalCount(): number {
+    return this.axumCategories.reduce((sum, cat) => sum + cat.items.length, 0);
+  }
+
+  getActixCompletedCount(): number {
+    return this.actixCategories.reduce((sum, cat) => sum + this.getCompletedCount(cat.items), 0);
+  }
+
+  getActixTotalCount(): number {
+    return this.actixCategories.reduce((sum, cat) => sum + cat.items.length, 0);
+  }
+
+  getCriticalCount(items: RoadmapItem[]): number {
+    return items.filter((item) => item.status === 'critical').length;
+  }
+
+  getHighCount(items: RoadmapItem[]): number {
+    return items.filter((item) => item.status === 'high').length;
+  }
+
+  getPriorityLabel(status: string): string {
+    switch (status) {
+      case 'completed': return 'Completed';
+      case 'critical': return 'Critical';
+      case 'high': return 'High';
+      case 'medium': return 'Medium';
+      case 'low': return 'Low';
+      default: return 'Planned';
+    }
   }
 }
