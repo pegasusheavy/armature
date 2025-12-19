@@ -13,6 +13,7 @@ use proc_macro2::Span;
 use syn::Error;
 
 /// Result of route validation
+#[allow(dead_code)]
 pub struct ValidatedRoute {
     /// The normalized path (converted to matchit syntax internally)
     pub path: String,
@@ -259,10 +260,7 @@ fn parse_wildcard(segment: &str) -> Option<String> {
 /// Validate that a string is a valid Rust identifier
 fn validate_identifier(name: &str, span: Span) -> Result<(), Error> {
     if name.is_empty() {
-        return Err(Error::new(
-            span,
-            "parameter name cannot be empty",
-        ));
+        return Err(Error::new(span, "parameter name cannot be empty"));
     }
 
     let first = name.chars().next().unwrap();
@@ -292,11 +290,10 @@ fn validate_identifier(name: &str, span: Span) -> Result<(), Error> {
 
     // Check for Rust keywords (common ones that might be used)
     let keywords = [
-        "type", "fn", "let", "mut", "ref", "self", "Self", "struct", "enum",
-        "impl", "trait", "pub", "mod", "use", "const", "static", "async",
-        "await", "loop", "while", "for", "if", "else", "match", "return",
-        "break", "continue", "move", "box", "where", "as", "in", "extern",
-        "crate", "super", "dyn", "unsafe",
+        "type", "fn", "let", "mut", "ref", "self", "Self", "struct", "enum", "impl", "trait",
+        "pub", "mod", "use", "const", "static", "async", "await", "loop", "while", "for", "if",
+        "else", "match", "return", "break", "continue", "move", "box", "where", "as", "in",
+        "extern", "crate", "super", "dyn", "unsafe",
     ];
 
     if keywords.contains(&name) {
@@ -364,4 +361,3 @@ mod tests {
         assert!(validate("/*path/more").is_err()); // Wildcard not at end
     }
 }
-

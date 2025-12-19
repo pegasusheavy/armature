@@ -69,6 +69,7 @@ name = "armature"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
+autobenches = false  # Disable auto-discovery, use explicit [[bench]] only
 authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"
 readme = "README.md"
@@ -216,40 +217,103 @@ debug = true  # Enable debug symbols for better stack traces
 lto = "thin"
 codegen-units = 1
 
-# Armature crates for benchmarks
-armature-validation = { path = "armature-validation" }
-armature-jwt = { path = "armature-jwt" }
-armature-queue = { path = "armature-queue" }
-armature-cron = { path = "armature-cron" }
-armature-cache = { path = "armature-cache", features = ["redis"] }
-armature-ratelimit = { path = "armature-ratelimit" }
-armature-metrics = { path = "armature-metrics" }
-armature-audit = { path = "armature-audit" }
-armature-security = { path = "armature-security" }
-armature-testing = { path = "armature-testing" }
-armature-events = { path = "armature-events" }
-armature-eventsourcing = { path = "armature-eventsourcing" }
-armature-cqrs = { path = "armature-cqrs" }
-armature-distributed = { path = "armature-distributed" }
-armature-discovery = { path = "armature-discovery" }
-armature-tenancy = { path = "armature-tenancy" }
-armature-features = { path = "armature-features" }
-armature-auth = { path = "armature-auth" }
-armature-storage = { path = "armature-storage" }
-armature-http-client = { path = "armature-http-client" }
-# armature-ferron = { path = "armature-ferron" }  # TODO: Add when ferron integration is merged
-jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
-handlebars = "6.3"
-bytes = "1.5"
+# Armature crates for examples and benchmarks
+[dev-dependencies.armature-validation]
+path = "armature-validation"
+
+[dev-dependencies.armature-jwt]
+path = "armature-jwt"
+
+[dev-dependencies.armature-queue]
+path = "armature-queue"
+
+[dev-dependencies.armature-cron]
+path = "armature-cron"
+
+[dev-dependencies.armature-cache]
+path = "armature-cache"
+features = ["redis"]
+
+[dev-dependencies.armature-ratelimit]
+path = "armature-ratelimit"
+
+[dev-dependencies.armature-metrics]
+path = "armature-metrics"
+
+[dev-dependencies.armature-audit]
+path = "armature-audit"
+
+[dev-dependencies.armature-security]
+path = "armature-security"
+
+[dev-dependencies.armature-testing]
+path = "armature-testing"
+
+[dev-dependencies.armature-events]
+path = "armature-events"
+
+[dev-dependencies.armature-eventsourcing]
+path = "armature-eventsourcing"
+
+[dev-dependencies.armature-cqrs]
+path = "armature-cqrs"
+
+[dev-dependencies.armature-distributed]
+path = "armature-distributed"
+
+[dev-dependencies.armature-discovery]
+path = "armature-discovery"
+
+[dev-dependencies.armature-tenancy]
+path = "armature-tenancy"
+
+[dev-dependencies.armature-features]
+path = "armature-features"
+
+[dev-dependencies.armature-auth]
+path = "armature-auth"
+
+[dev-dependencies.armature-storage]
+path = "armature-storage"
+
+[dev-dependencies.armature-http-client]
+path = "armature-http-client"
+
+[dev-dependencies.jsonwebtoken]
+version = "10.2"
+features = ["rust_crypto"]
+
+[dev-dependencies.handlebars]
+version = "6.3"
+
+[dev-dependencies.bytes]
+version = "1.5"
 
 # Database ORMs for examples - using rustls instead of native-tls to avoid openssl
-sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono"] }
-diesel = { version = "2.2", features = ["postgres", "r2d2", "chrono"] }
-sea-orm = { version = "1.1", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
-chrono = "0.4"
-uuid = { version = "1.11", features = ["v4"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
+[dev-dependencies.sqlx]
+version = "0.8"
+features = ["runtime-tokio-rustls", "postgres", "chrono"]
+
+[dev-dependencies.diesel]
+version = "2.2"
+features = ["postgres", "r2d2", "chrono"]
+
+[dev-dependencies.sea-orm]
+version = "1.1"
+features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"]
+
+[dev-dependencies.chrono]
+version = "0.4"
+
+[dev-dependencies.uuid]
+version = "1.11"
+features = ["v4"]
+
+[dev-dependencies.tracing]
+version = "0.1"
+
+[dev-dependencies.tracing-subscriber]
+version = "0.3"
 
 # Examples require runtime dependencies
 [[example]]
@@ -376,14 +440,6 @@ required-features = ["webhooks"]
 [[example]]
 name = "extractors_example"
 path = "examples/extractors_example.rs"
-
-[[example]]
-name = "ferron_proxy"
-path = "examples/ferron_proxy.rs"
-
-[[example]]
-name = "ferron_integration"
-path = "examples/ferron_integration.rs"
 
 [[example]]
 name = "profiling_server"

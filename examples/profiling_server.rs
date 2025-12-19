@@ -97,7 +97,12 @@ impl TaskService {
     }
 
     fn get_by_id(&self, id: u32) -> Option<Task> {
-        self.tasks.read().unwrap().iter().find(|t| t.id == id).cloned()
+        self.tasks
+            .read()
+            .unwrap()
+            .iter()
+            .find(|t| t.id == id)
+            .cloned()
     }
 
     fn create(&self, title: String, completed: bool) -> Task {
@@ -322,7 +327,10 @@ async fn main() {
     println!();
     println!("Generate load with:");
     println!("  curl http://localhost:{}/tasks", port);
-    println!("  for i in {{1..1000}}; do curl -s http://localhost:{}/compute/light > /dev/null; done", port);
+    println!(
+        "  for i in {{1..1000}}; do curl -s http://localhost:{}/compute/light > /dev/null; done",
+        port
+    );
     println!();
     println!("Press Ctrl+C to stop and generate flamegraph...");
     println!();
@@ -353,7 +361,9 @@ async fn main() {
                             if report.flamegraph(file).is_ok() {
                                 println!("✅ Flamegraph saved: flamegraph-profile.svg");
                                 println!();
-                                println!("Open the SVG file in a browser to explore the flamegraph.");
+                                println!(
+                                    "Open the SVG file in a browser to explore the flamegraph."
+                                );
                                 println!("Wider bars = more CPU time spent in that function.");
                             }
                         }
@@ -367,7 +377,8 @@ async fn main() {
         println!();
         println!("🎉 Done!");
         std::process::exit(0);
-    }).expect("Failed to set Ctrl+C handler");
+    })
+    .expect("Failed to set Ctrl+C handler");
 
     // Start the server
     let app = Application::create::<AppModule>().await;
