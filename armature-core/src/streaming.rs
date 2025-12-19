@@ -975,5 +975,544 @@ mod tests {
         let from_str: StreamChunk = "world".into();
         assert!(matches!(from_str, StreamChunk::Bytes(_)));
     }
+
+    // Advanced streaming tests
+
+    #[test]
+    fn test_backpressure_config() {
+        let config = BackpressureConfig::new()
+            .high_watermark(100)
+            .low_watermark(20)
+            .strategy(BackpressureStrategy::PauseResume);
+
+        assert_eq!(config.high_watermark, 100);
+        assert_eq!(config.low_watermark, 20);
+    }
+
+    #[test]
+    fn test_chunk_optimizer_default() {
+        let optimizer = ChunkOptimizer::default();
+        assert_eq!(optimizer.min_chunk, DEFAULT_MIN_CHUNK);
+        assert_eq!(optimizer.max_chunk, DEFAULT_MAX_CHUNK);
+    }
+
+    #[test]
+    fn test_chunk_optimizer_sizing() {
+        let optimizer = ChunkOptimizer::new(512, 8192);
+
+        assert_eq!(optimizer.optimal_chunk_size(100), 512); // Below min
+        assert_eq!(optimizer.optimal_chunk_size(1000), 1000); // In range
+        assert_eq!(optimizer.optimal_chunk_size(10000), 8192); // Above max
+    }
+
+    #[test]
+    fn test_streaming_stats() {
+        let stats = streaming_stats();
+        let _ = stats.streams_created();
+        let _ = stats.chunks_sent();
+        let _ = stats.bytes_sent();
+    }
+
+    #[tokio::test]
+    async fn test_streaming_body_builder() {
+        let (body, handle) = StreamingBodyBuilder::new()
+            .chunk_size(1024)
+            .build_with_sender();
+
+        tokio::spawn(async move {
+            handle.send(b"test data".to_vec()).await.ok();
+            handle.close().await;
+        });
+
+        let mut total = 0;
+        let mut body = body;
+        while let Some(chunk) = body.next().await {
+            total += chunk.unwrap().len();
+        }
+        assert_eq!(total, 9);
+    }
+
+    #[test]
+    fn test_rate_limiter() {
+        let limiter = StreamRateLimiter::new(1024); // 1KB/s
+        assert_eq!(limiter.bytes_per_sec, 1024);
+    }
+}
+
+// ============================================================================
+// Advanced Streaming Features
+// ============================================================================
+
+// Default chunk sizes
+/// Minimum chunk size (4KB)
+pub const DEFAULT_MIN_CHUNK: usize = 4 * 1024;
+/// Default chunk size (16KB)
+pub const DEFAULT_CHUNK_SIZE: usize = 16 * 1024;
+/// Maximum chunk size (64KB)
+pub const DEFAULT_MAX_CHUNK: usize = 64 * 1024;
+
+// ============================================================================
+// Backpressure Handling
+// ============================================================================
+
+/// Strategy for handling backpressure when consumer is slow.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BackpressureStrategy {
+    /// Pause production when buffer is full (default)
+    PauseResume,
+    /// Drop oldest chunks when buffer is full
+    DropOldest,
+    /// Drop newest chunks when buffer is full
+    DropNewest,
+    /// Block producer until space is available
+    Block,
+    /// Error when buffer is full
+    Error,
+}
+
+impl Default for BackpressureStrategy {
+    fn default() -> Self {
+        Self::PauseResume
+    }
+}
+
+/// Configuration for backpressure handling.
+#[derive(Debug, Clone)]
+pub struct BackpressureConfig {
+    /// High watermark - pause when buffer exceeds this
+    pub high_watermark: usize,
+    /// Low watermark - resume when buffer drops below this
+    pub low_watermark: usize,
+    /// Backpressure strategy
+    pub strategy: BackpressureStrategy,
+    /// Maximum buffer size (for DropOldest/DropNewest)
+    pub max_buffer: usize,
+}
+
+impl Default for BackpressureConfig {
+    fn default() -> Self {
+        Self {
+            high_watermark: 64,
+            low_watermark: 16,
+            strategy: BackpressureStrategy::PauseResume,
+            max_buffer: 256,
+        }
+    }
+}
+
+impl BackpressureConfig {
+    /// Create new configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set high watermark.
+    pub fn high_watermark(mut self, watermark: usize) -> Self {
+        self.high_watermark = watermark;
+        self
+    }
+
+    /// Set low watermark.
+    pub fn low_watermark(mut self, watermark: usize) -> Self {
+        self.low_watermark = watermark;
+        self
+    }
+
+    /// Set backpressure strategy.
+    pub fn strategy(mut self, strategy: BackpressureStrategy) -> Self {
+        self.strategy = strategy;
+        self
+    }
+
+    /// Set maximum buffer size.
+    pub fn max_buffer(mut self, size: usize) -> Self {
+        self.max_buffer = size;
+        self
+    }
+}
+
+// ============================================================================
+// Chunk Optimization
+// ============================================================================
+
+/// Optimizes chunk sizes for efficient streaming.
+#[derive(Debug, Clone)]
+pub struct ChunkOptimizer {
+    /// Minimum chunk size
+    pub min_chunk: usize,
+    /// Maximum chunk size
+    pub max_chunk: usize,
+    /// Target latency in milliseconds
+    pub target_latency_ms: u64,
+    /// Observed throughput (bytes/sec)
+    throughput: Arc<AtomicU64>,
+    /// Chunk count
+    chunk_count: Arc<AtomicU64>,
+}
+
+impl ChunkOptimizer {
+    /// Create a new chunk optimizer.
+    pub fn new(min_chunk: usize, max_chunk: usize) -> Self {
+        Self {
+            min_chunk,
+            max_chunk,
+            target_latency_ms: 50, // 50ms default
+            throughput: Arc::new(AtomicU64::new(0)),
+            chunk_count: Arc::new(AtomicU64::new(0)),
+        }
+    }
+
+    /// Create with target latency.
+    pub fn with_target_latency(mut self, ms: u64) -> Self {
+        self.target_latency_ms = ms;
+        self
+    }
+
+    /// Calculate optimal chunk size based on available data.
+    #[inline]
+    pub fn optimal_chunk_size(&self, available: usize) -> usize {
+        available.clamp(self.min_chunk, self.max_chunk)
+    }
+
+    /// Record a chunk being sent for throughput tracking.
+    pub fn record_chunk(&self, size: usize) {
+        self.throughput.fetch_add(size as u64, Ordering::Relaxed);
+        self.chunk_count.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Get total bytes sent.
+    pub fn total_bytes(&self) -> u64 {
+        self.throughput.load(Ordering::Relaxed)
+    }
+
+    /// Get total chunks sent.
+    pub fn total_chunks(&self) -> u64 {
+        self.chunk_count.load(Ordering::Relaxed)
+    }
+
+    /// Get average chunk size.
+    pub fn average_chunk_size(&self) -> usize {
+        let chunks = self.total_chunks();
+        if chunks > 0 {
+            (self.total_bytes() / chunks) as usize
+        } else {
+            self.min_chunk
+        }
+    }
+}
+
+impl Default for ChunkOptimizer {
+    fn default() -> Self {
+        Self::new(DEFAULT_MIN_CHUNK, DEFAULT_MAX_CHUNK)
+    }
+}
+
+// ============================================================================
+// Streaming Body Builder
+// ============================================================================
+
+/// Fluent builder for streaming response bodies.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// let (body, handle) = StreamingBodyBuilder::new()
+///     .chunk_size(8192)
+///     .backpressure(BackpressureConfig::new().high_watermark(100))
+///     .build_with_sender();
+///
+/// // Send data
+/// handle.send(data).await?;
+/// handle.close().await;
+/// ```
+pub struct StreamingBodyBuilder {
+    chunk_size: usize,
+    buffer_size: usize,
+    backpressure: BackpressureConfig,
+    content_type: Option<String>,
+    rate_limit: Option<u64>,
+}
+
+impl StreamingBodyBuilder {
+    /// Create a new builder.
+    pub fn new() -> Self {
+        Self {
+            chunk_size: DEFAULT_CHUNK_SIZE,
+            buffer_size: 64,
+            backpressure: BackpressureConfig::default(),
+            content_type: None,
+            rate_limit: None,
+        }
+    }
+
+    /// Set chunk size.
+    pub fn chunk_size(mut self, size: usize) -> Self {
+        self.chunk_size = size;
+        self
+    }
+
+    /// Set buffer size (number of chunks).
+    pub fn buffer_size(mut self, size: usize) -> Self {
+        self.buffer_size = size;
+        self
+    }
+
+    /// Set backpressure configuration.
+    pub fn backpressure(mut self, config: BackpressureConfig) -> Self {
+        self.backpressure = config;
+        self
+    }
+
+    /// Set content type.
+    pub fn content_type(mut self, content_type: impl Into<String>) -> Self {
+        self.content_type = Some(content_type.into());
+        self
+    }
+
+    /// Set rate limit in bytes per second.
+    pub fn rate_limit(mut self, bytes_per_sec: u64) -> Self {
+        self.rate_limit = Some(bytes_per_sec);
+        self
+    }
+
+    /// Build a byte stream with sender handle.
+    pub fn build_with_sender(self) -> (ByteStream, StreamingHandle) {
+        let (stream, sender) = ByteStream::with_buffer_size(self.buffer_size);
+        let handle = StreamingHandle {
+            sender,
+            chunk_size: self.chunk_size,
+            rate_limiter: self.rate_limit.map(StreamRateLimiter::new),
+            stats: Arc::new(StreamingHandleStats::default()),
+        };
+        STREAMING_STATS.record_stream_created();
+        (stream, handle)
+    }
+
+    /// Build as a streaming response.
+    pub fn build_response(self) -> (StreamingResponse, StreamingHandle) {
+        let content_type = self.content_type.clone();
+        let (stream, handle) = self.build_with_sender();
+        let mut response = StreamingResponse::new(stream);
+        if let Some(ct) = content_type {
+            response = response.content_type(ct);
+        }
+        (response, handle)
+    }
+}
+
+impl Default for StreamingBodyBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Handle for sending data to a streaming body.
+pub struct StreamingHandle {
+    sender: ByteStreamSender,
+    chunk_size: usize,
+    rate_limiter: Option<StreamRateLimiter>,
+    stats: Arc<StreamingHandleStats>,
+}
+
+impl StreamingHandle {
+    /// Send data to the stream.
+    pub async fn send(&self, data: impl Into<Vec<u8>>) -> Result<(), Error> {
+        let data = data.into();
+        let len = data.len();
+
+        // Apply rate limiting if configured
+        if let Some(ref limiter) = self.rate_limiter {
+            limiter.wait_for_capacity(len).await;
+        }
+
+        self.sender.send(data).await?;
+        self.stats.record_send(len);
+        STREAMING_STATS.record_chunk_sent(len);
+        Ok(())
+    }
+
+    /// Send bytes.
+    pub async fn send_bytes(&self, bytes: Bytes) -> Result<(), Error> {
+        let len = bytes.len();
+
+        if let Some(ref limiter) = self.rate_limiter {
+            limiter.wait_for_capacity(len).await;
+        }
+
+        self.sender.send_bytes(bytes).await?;
+        self.stats.record_send(len);
+        STREAMING_STATS.record_chunk_sent(len);
+        Ok(())
+    }
+
+    /// Send a chunk of data, splitting if necessary.
+    pub async fn send_chunked(&self, data: &[u8]) -> Result<(), Error> {
+        for chunk in data.chunks(self.chunk_size) {
+            self.send(chunk.to_vec()).await?;
+        }
+        Ok(())
+    }
+
+    /// Send an error.
+    pub async fn send_error(&self, error: impl Into<String>) -> Result<(), Error> {
+        self.sender.send_error(error).await
+    }
+
+    /// Close the stream.
+    pub async fn close(&self) {
+        self.sender.close().await;
+    }
+
+    /// Check if the receiver has been dropped.
+    pub fn is_closed(&self) -> bool {
+        self.sender.is_closed()
+    }
+
+    /// Get bytes sent.
+    pub fn bytes_sent(&self) -> u64 {
+        self.stats.bytes_sent.load(Ordering::Relaxed)
+    }
+
+    /// Get chunks sent.
+    pub fn chunks_sent(&self) -> u64 {
+        self.stats.chunks_sent.load(Ordering::Relaxed)
+    }
+}
+
+/// Statistics for a streaming handle.
+#[derive(Debug, Default)]
+struct StreamingHandleStats {
+    bytes_sent: AtomicU64,
+    chunks_sent: AtomicU64,
+}
+
+impl StreamingHandleStats {
+    fn record_send(&self, len: usize) {
+        self.bytes_sent.fetch_add(len as u64, Ordering::Relaxed);
+        self.chunks_sent.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+// ============================================================================
+// Rate Limiting
+// ============================================================================
+
+/// Rate limiter for streaming data.
+pub struct StreamRateLimiter {
+    /// Bytes per second limit
+    pub bytes_per_sec: u64,
+    /// Bytes sent in current window
+    bytes_in_window: AtomicU64,
+    /// Window start time
+    window_start: std::sync::Mutex<std::time::Instant>,
+}
+
+impl StreamRateLimiter {
+    /// Create a new rate limiter.
+    pub fn new(bytes_per_sec: u64) -> Self {
+        Self {
+            bytes_per_sec,
+            bytes_in_window: AtomicU64::new(0),
+            window_start: std::sync::Mutex::new(std::time::Instant::now()),
+        }
+    }
+
+    /// Wait until capacity is available for sending.
+    pub async fn wait_for_capacity(&self, bytes: usize) {
+        loop {
+            // Check current window
+            let now = std::time::Instant::now();
+            let elapsed = {
+                let start = self.window_start.lock().unwrap();
+                now.duration_since(*start)
+            };
+
+            // Reset window if more than 1 second has passed
+            if elapsed.as_secs() >= 1 {
+                self.bytes_in_window.store(0, Ordering::Relaxed);
+                *self.window_start.lock().unwrap() = now;
+            }
+
+            let current = self.bytes_in_window.load(Ordering::Relaxed);
+            if current + bytes as u64 <= self.bytes_per_sec {
+                self.bytes_in_window.fetch_add(bytes as u64, Ordering::Relaxed);
+                return;
+            }
+
+            // Wait until next window
+            let remaining = Duration::from_secs(1).saturating_sub(elapsed);
+            if !remaining.is_zero() {
+                tokio::time::sleep(remaining.min(Duration::from_millis(10))).await;
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Global Streaming Statistics
+// ============================================================================
+
+/// Global statistics for streaming operations.
+#[derive(Debug, Default)]
+pub struct StreamingStats {
+    /// Streams created
+    streams_created: AtomicU64,
+    /// Total chunks sent
+    chunks_sent: AtomicU64,
+    /// Total bytes sent
+    bytes_sent: AtomicU64,
+}
+
+impl StreamingStats {
+    /// Create new stats.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn record_stream_created(&self) {
+        self.streams_created.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_chunk_sent(&self, len: usize) {
+        self.chunks_sent.fetch_add(1, Ordering::Relaxed);
+        self.bytes_sent.fetch_add(len as u64, Ordering::Relaxed);
+    }
+
+    /// Get streams created.
+    pub fn streams_created(&self) -> u64 {
+        self.streams_created.load(Ordering::Relaxed)
+    }
+
+    /// Get chunks sent.
+    pub fn chunks_sent(&self) -> u64 {
+        self.chunks_sent.load(Ordering::Relaxed)
+    }
+
+    /// Get bytes sent.
+    pub fn bytes_sent(&self) -> u64 {
+        self.bytes_sent.load(Ordering::Relaxed)
+    }
+
+    /// Get average chunk size.
+    pub fn average_chunk_size(&self) -> usize {
+        let chunks = self.chunks_sent();
+        if chunks > 0 {
+            (self.bytes_sent() / chunks) as usize
+        } else {
+            0
+        }
+    }
+}
+
+/// Global streaming statistics.
+static STREAMING_STATS: StreamingStats = StreamingStats {
+    streams_created: AtomicU64::new(0),
+    chunks_sent: AtomicU64::new(0),
+    bytes_sent: AtomicU64::new(0),
+};
+
+/// Get global streaming statistics.
+pub fn streaming_stats() -> &'static StreamingStats {
+    &STREAMING_STATS
 }
 

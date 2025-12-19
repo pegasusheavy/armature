@@ -49,6 +49,7 @@ Only features that are **not yet completed**.
 | ✅ NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/src/numa.rs` |
 | ✅ Optimized State Transitions | Branchless connection FSM with lookup tables | `armature-core/src/connection.rs` |
 | ✅ Connection Recycling | Reset and reuse connection objects via pool | `armature-core/src/connection.rs` |
+| ✅ Streaming Response Body | Send response while still generating body | `armature-core/src/streaming.rs` |
 
 ---
 
@@ -290,7 +291,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Streaming Response Body | Send response while still generating body | `armature-core/response.rs` |
+| ✅ | Streaming Response Body | Send response while still generating body | `armature-core/src/streaming.rs` |
 | 🟠 | Chunk Size Optimization | Optimal chunk sizes for chunked encoding | `armature-core/response.rs` |
 | 🟡 | Backpressure Handling | Flow control when client reads slowly | `armature-core/response.rs` |
 | 🟡 | Streaming Compression | Compress chunks as they're generated | `armature-compression` |
@@ -364,7 +365,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **36** | ✅ |
+| **Recently Completed** | **37** | ✅ |
 
 ### Performance Target
 

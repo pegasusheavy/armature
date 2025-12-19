@@ -166,6 +166,7 @@ pub mod shutdown;
 pub mod sse;
 pub mod static_assets;
 pub mod status;
+pub mod streaming;
 pub mod timeout;
 pub mod tls;
 pub mod traits;
