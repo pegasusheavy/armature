@@ -1,0 +1,171 @@
+[1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
+[1m[92m   Compiling[0m armature-security v0.1.0 (/home/runner/work/armature/armature/armature-security)
+[1m[92m   Compiling[0m armature-validation v0.1.0 (/home/runner/work/armature/armature/armature-validation)
+[1m[92m   Compiling[0m armature-compression v0.1.0 (/home/runner/work/armature/armature/armature-compression)
+[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
+  [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
+   [1m[94m|[0m
+[1m[94m94[0m [1m[94m|[0m     Ok(HttpResponse {
+   [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
+[1m[96mhelp[0m: you might have meant to use an associated function to build this type
+   [1m[94m|[0m
+[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m95[0m [91m-         status: 200,[0m
+[1m[94m96[0m [91m-         headers: {[0m
+[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
+[1m[94m99[0m [91m-             headers[0m
+[1m[94m100[0m[91m-         },[0m
+[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
+[1m[94m102[0m[91m-     }[0m)
+[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
+   [1m[94m|[0m
+[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m95[0m [91m-         status: 200,[0m
+[1m[94m96[0m [91m-         headers: {[0m
+[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
+[1m[94m99[0m [91m-             headers[0m
+[1m[94m100[0m[91m-         },[0m
+[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
+[1m[94m102[0m[91m-     }[0m)
+[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
+   [1m[94m|[0m
+[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m95[0m [91m-         status: 200,[0m
+[1m[94m96[0m [91m-         headers: {[0m
+[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
+[1m[94m99[0m [91m-             headers[0m
+[1m[94m100[0m[91m-         },[0m
+[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
+[1m[94m102[0m[91m-     }[0m)
+[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::created()[0m)
+   [1m[94m|[0m
+[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m95[0m [91m-         status: 200,[0m
+[1m[94m96[0m [91m-         headers: {[0m
+[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
+[1m[94m99[0m [91m-             headers[0m
+[1m[94m100[0m[91m-         },[0m
+[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
+[1m[94m102[0m[91m-     }[0m)
+[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::no_content()[0m)
+   [1m[94m|[0m
+   [1m[94m= [0mand 16 other candidates
+
+[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
+   [1m[94m--> [0marmature-openapi/src/swagger.rs:109:8
+    [1m[94m|[0m
+[1m[94m109[0m [1m[94m|[0m     Ok(HttpResponse {
+    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
+[1m[96mhelp[0m: you might have meant to use an associated function to build this type
+    [1m[94m|[0m
+[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m110[0m [91m-         status: 200,[0m
+[1m[94m111[0m [91m-         headers: {[0m
+[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
+[1m[94m114[0m [91m-             headers[0m
+[1m[94m115[0m [91m-         },[0m
+[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
+[1m[94m117[0m [91m-     }[0m)
+[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
+    [1m[94m|[0m
+[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m110[0m [91m-         status: 200,[0m
+[1m[94m111[0m [91m-         headers: {[0m
+[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
+[1m[94m114[0m [91m-             headers[0m
+[1m[94m115[0m [91m-         },[0m
+[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
+[1m[94m117[0m [91m-     }[0m)
+[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
+    [1m[94m|[0m
+[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m110[0m [91m-         status: 200,[0m
+[1m[94m111[0m [91m-         headers: {[0m
+[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
+[1m[94m114[0m [91m-             headers[0m
+[1m[94m115[0m [91m-         },[0m
+[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
+[1m[94m117[0m [91m-     }[0m)
+[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::created()[0m)
+    [1m[94m|[0m
+[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m110[0m [91m-         status: 200,[0m
+[1m[94m111[0m [91m-         headers: {[0m
+[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
+[1m[94m114[0m [91m-             headers[0m
+[1m[94m115[0m [91m-         },[0m
+[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
+[1m[94m117[0m [91m-     }[0m)
+[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::no_content()[0m)
+    [1m[94m|[0m
+    [1m[94m= [0mand 16 other candidates
+
+[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
+   [1m[94m--> [0marmature-openapi/src/swagger.rs:124:8
+    [1m[94m|[0m
+[1m[94m124[0m [1m[94m|[0m     Ok(HttpResponse {
+    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
+[1m[96mhelp[0m: you might have meant to use an associated function to build this type
+    [1m[94m|[0m
+[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m125[0m [91m-         status: 200,[0m
+[1m[94m126[0m [91m-         headers: {[0m
+[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
+[1m[94m129[0m [91m-             headers[0m
+[1m[94m130[0m [91m-         },[0m
+[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
+[1m[94m132[0m [91m-     }[0m)
+[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
+    [1m[94m|[0m
+[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m125[0m [91m-         status: 200,[0m
+[1m[94m126[0m [91m-         headers: {[0m
+[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
+[1m[94m129[0m [91m-             headers[0m
+[1m[94m130[0m [91m-         },[0m
+[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
+[1m[94m132[0m [91m-     }[0m)
+[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
+    [1m[94m|[0m
+[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m125[0m [91m-         status: 200,[0m
+[1m[94m126[0m [91m-         headers: {[0m
+[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
+[1m[94m129[0m [91m-             headers[0m
+[1m[94m130[0m [91m-         },[0m
+[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
+[1m[94m132[0m [91m-     }[0m)
+[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::created()[0m)
+    [1m[94m|[0m
+[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
+[1m[94m125[0m [91m-         status: 200,[0m
+[1m[94m126[0m [91m-         headers: {[0m
+[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
+[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
+[1m[94m129[0m [91m-             headers[0m
+[1m[94m130[0m [91m-         },[0m
+[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
+[1m[94m132[0m [91m-     }[0m)
+[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::no_content()[0m)
+    [1m[94m|[0m
+    [1m[94m= [0mand 16 other candidates
+
+[1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...

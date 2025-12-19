@@ -1,54 +1,6 @@
 {
-  "version": "1.0",
-  "description": "Armature benchmark baseline for performance regression detection",
-  "thresholds": {
-    "routing": {
-      "warn": 10,
-      "fail": 20
-    },
-    "arena": {
-      "warn": 10,
-      "fail": 20
-    },
-    "body": {
-      "warn": 10,
-      "fail": 20
-    },
-    "json": {
-      "warn": 15,
-      "fail": 25
-    },
-    "simd_parser": {
-      "warn": 10,
-      "fail": 20
-    },
-    "security": {
-      "warn": 15,
-      "fail": 25
-    }
-  },
-  "targets": {
-    "routing/match_10_routes": {
-      "target_ns": 100,
-      "acceptable_ns": 150
-    },
-    "routing/match_50_routes": {
-      "target_ns": 200,
-      "acceptable_ns": 300
-    },
-    "arena/request_create/typical": {
-      "target_ns": 50,
-      "acceptable_ns": 75
-    },
-    "body/hyper_passthrough/zero_copy": {
-      "target_ns": 25,
-      "acceptable_ns": 40
-    }
-  },
-  "notes": [
-    "Thresholds are percentages - warn at X%, fail at Y% regression",
-    "Targets are nanoseconds for specific benchmarks",
-    "Update this file when performance characteristics change significantly"
-  ]
+  "commit": "a56b4686d145c6b3f7a9b3560d8ff419f853fd23",
+  "branch": "develop",
+  "timestamp": "2025-12-19T17:30:49Z",
+  "runner": "Linux"
 }
-
