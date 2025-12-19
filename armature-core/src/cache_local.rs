@@ -14,7 +14,7 @@
 //! # Performance Impact
 //!
 //! - L1 cache hit: ~4 cycles
-//! - L2 cache hit: ~10 cycles  
+//! - L2 cache hit: ~10 cycles
 //! - L3 cache hit: ~40 cycles
 //! - Main memory: ~200+ cycles
 //!
