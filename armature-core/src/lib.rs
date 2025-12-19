@@ -143,6 +143,7 @@ pub mod simd_parser;
 pub mod hmr;
 pub mod http;
 pub mod interceptor;
+pub mod io_uring;
 pub mod lifecycle;
 pub mod logging;
 pub mod middleware;

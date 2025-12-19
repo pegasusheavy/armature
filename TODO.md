@@ -34,6 +34,7 @@ Only features that are **not yet completed**.
 | ✅ Automated Regression Tests | CI pipeline with benchmark regression detection | `.github/workflows/benchmark.yml` |
 | ✅ HTTP/1.1 Pipelining | Pipeline config, stats, TCP_NODELAY, keep-alive | `armature-core/src/pipeline.rs` |
 | ✅ Request Batching | Batch-read multiple requests from socket buffer | `armature-core/src/batch.rs` |
+| ✅ `io_uring` Backend | Linux io_uring support for reduced syscall overhead | `armature-core/src/io_uring.rs` |
 
 ---
 
@@ -228,7 +229,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Task | Estimated Impact | Effort |
 |----------|------|------------------|--------|
-| 🟠 | `io_uring` backend for Linux | +3-5% | Very High |
+| ✅ | `io_uring` backend for Linux | +3-5% | Very High |
 | 🟡 | Object pool for request/response structs | +1-2% | Medium |
 | 🟡 | PGO (Profile-Guided Optimization) build | +2-3% | Low |
 
@@ -292,7 +293,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | `io_uring` Support | Use io_uring for async I/O on Linux 5.1+ | `armature-core/io.rs` |
+| ✅ | `io_uring` Support | Use io_uring for async I/O on Linux 5.1+ | `armature-core/src/io_uring.rs` |
 | 🟠 | `epoll` Tuning | Optimize epoll flags and batch sizes | `armature-core/io.rs` |
 | 🟠 | Reduce `recv`/`send` Calls | Batch socket operations where possible | `armature-core/io.rs` |
 | 🟡 | `TCP_CORK` Usage | Cork TCP for header+body combining | `armature-core/io.rs` |
@@ -338,18 +339,18 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Benchmark Infrastructure | 1 | 🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
-| ↳ Actix Performance Roadmap | 12 | 🔴/🟠/🟡 |
+| ↳ Actix Performance Roadmap | 11 | 🔴/🟠/🟡 |
 | ↳ HTTP/1.1 Optimizations | 2 | 🟠 |
 | ↳ Buffer Management | 5 | 🔴/🟠/🟡 |
 | ↳ Worker Architecture | 4 | 🟠/🟡 |
 | ↳ Connection State Machine | 4 | 🟠/🟡 |
 | ↳ Streaming & Chunked | 4 | 🟠/🟡 |
 | ↳ State Optimization | 3 | 🟠/🟡 |
-| ↳ Syscall Optimization | 4 | 🔴/🟠/🟡 |
+| ↳ Syscall Optimization | 3 | 🟠/🟡 |
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **21** | ✅ |
+| **Recently Completed** | **22** | ✅ |
 
 ### Performance Target
 

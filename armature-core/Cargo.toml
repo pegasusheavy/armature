@@ -58,6 +58,10 @@ default = []
 self-signed-certs = ["rcgen"]
 simd-json = ["dep:simd-json"]
 
+# io_uring support for Linux (kernel 5.1+)
+# Provides 3-5% throughput improvement via reduced syscall overhead
+io-uring = []
+
 [dev-dependencies]
 tokio-test = "0.4"
 
