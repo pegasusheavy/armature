@@ -45,6 +45,7 @@ Only features that are **not yet completed**.
 | ✅ Response Pipelining | Queue responses for batch-write to socket | `armature-core/src/response_pipeline.rs` |
 | ✅ Read Buffer Sizing | Tune read buffer sizes based on payload patterns | `armature-core/src/read_buffer.rs` |
 | ✅ Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/src/write_coalesce.rs` |
+| ✅ Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/src/worker.rs` |
 
 ---
 
@@ -268,7 +269,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/worker.rs` |
+| ✅ | Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/src/worker.rs` |
 | 🟠 | CPU Core Affinity | Pin worker threads to CPU cores for cache locality | `armature-core/runtime.rs` |
 | 🟠 | NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/runtime.rs` |
 | 🟡 | Worker Load Balancing | Round-robin or least-connections distribution | `armature-core/worker.rs` |
@@ -360,7 +361,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **32** | ✅ |
+| **Recently Completed** | **33** | ✅ |
 
 ### Performance Target
 

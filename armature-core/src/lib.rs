@@ -235,12 +235,13 @@ pub use response_pipeline::{
 pub use websocket::*;
 pub use worker::{
     AffinityConfig, AffinityError, AffinityMode, AffinityStats,
-    WorkerConfig, WorkerHandle, WorkerRouter, WorkerStats,
+    StateFactory, WorkerCache, WorkerConfig, WorkerHandle,
+    WorkerRouter, WorkerState, WorkerStateStats, WorkerStats,
     affinity_stats, affinity_supported, clear_worker_router,
-    get_thread_affinity, has_worker_router, init_worker_router,
-    init_worker_with_affinity, next_worker_id, num_cpus,
-    num_physical_cpus, set_thread_affinity, total_workers,
-    worker_id, worker_stats,
+    clear_worker_state, get_thread_affinity, has_worker_router,
+    init_worker_router, init_worker_state, init_worker_with_affinity,
+    next_worker_id, num_cpus, num_physical_cpus, set_thread_affinity,
+    total_workers, worker_id, worker_state_stats, worker_stats,
 };
 pub use write_coalesce::{
     CoalesceConfig, CoalesceStats, ConnectionWriteBuffer, MultiBufferCoalescer,
