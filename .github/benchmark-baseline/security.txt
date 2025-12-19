@@ -6,11 +6,32 @@
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
+[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
+  [1m[94m--> [0marmature-core/src/numa.rs:59:36
+   [1m[94m|[0m
+[1m[94m59[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+
 [1m[33mwarning[0m[1m: unused import: `BufMut`[0m
   [1m[94m--> [0marmature-core/src/write_coalesce.rs:54:30
    [1m[94m|[0m
 [1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
    [1m[94m|[0m                              [1m[33m^^^^^^[0m
+
+[1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
+   [1m[94m--> [0marmature-core/src/numa.rs:549:13
+    [1m[94m|[0m
+[1m[94m549[0m [1m[94m|[0m             dealloc(ptr, layout);
+    [1m[94m|[0m             [1m[33m^^^^^^^^^^^^^^^^^^^^[0m [1m[33mcall to unsafe function[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: for more information, see <https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html>
+    [1m[94m= [0m[1mnote[0m: consult the function's documentation for information on how to avoid undefined behavior
+[1m[92mnote[0m: an unsafe function restricts its caller, but its body is safe by default
+   [1m[94m--> [0marmature-core/src/numa.rs:545:5
+    [1m[94m|[0m
+[1m[94m545[0m [1m[94m|[0m     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
+    [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
 
 [1m[33mwarning[0m[1m: field `config` is never read[0m
    [1m[94m--> [0marmature-core/src/body_parser.rs:528:5
@@ -32,7 +53,8 @@
 [1m[94m325[0m [1m[94m|[0m     fn allocate(&self) -> BytesMut {
     [1m[94m|[0m        [1m[33m^^^^^^^^[0m
 
-[1m[33mwarning[0m: `armature-core` (lib) generated 4 warnings (run `cargo fix --lib -p armature-core` to apply 2 suggestions)
+[1mFor more information about this error, try `rustc --explain E0133`.[0m
+[1m[33mwarning[0m: `armature-core` (lib) generated 6 warnings (run `cargo fix --lib -p armature-core` to apply 4 suggestions)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
    [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
@@ -48,9 +70,6 @@
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-features v0.1.0 (/home/runner/work/armature/armature/armature-features)
-[1m[92m   Compiling[0m armature-tenancy v0.1.0 (/home/runner/work/armature/armature/armature-tenancy)
-[1m[92m   Compiling[0m armature-audit v0.1.0 (/home/runner/work/armature/armature/armature-audit)
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
    [1m[94m|[0m
@@ -217,4 +236,3 @@
     [1m[94m= [0mand 18 other candidates
 
 [1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
-[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
