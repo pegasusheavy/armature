@@ -9,6 +9,7 @@ mod controller;
 mod injectable;
 mod module;
 mod params;
+mod route_validation;
 mod routes;
 mod routes_impl;
 mod timeout_attr;
