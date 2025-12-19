@@ -151,6 +151,7 @@ pub mod lifecycle;
 pub mod logging;
 pub mod middleware;
 pub mod module;
+pub mod numa;
 pub mod pipeline;
 pub mod pagination;
 pub mod resilience;
@@ -195,6 +196,12 @@ pub use lifecycle::*;
 pub use logging::*;
 pub use middleware::*;
 pub use module::*;
+pub use numa::{
+    GlobalNumaStats, NumaAllocStats, NumaAllocator, NumaBuffer, NumaConfig,
+    NumaError, NumaNode, NumaPolicy, bind_to_local_node, bind_to_node,
+    cached_numa_config, current_numa_node, init_worker_numa, num_numa_nodes,
+    numa_available, numa_stats,
+};
 pub use pagination::*;
 pub use resilience::{
     BackoffStrategy, Bulkhead, BulkheadConfig, BulkheadError, BulkheadStats, CircuitBreaker,
