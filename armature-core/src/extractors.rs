@@ -37,11 +37,118 @@
 use crate::{Error, HttpRequest};
 use serde::de::DeserializeOwned;
 use std::ops::Deref;
+use std::sync::Arc;
 
 /// Trait for extracting data from an HTTP request
 pub trait FromRequest: Sized {
     /// Extract data from the request
     fn from_request(request: &HttpRequest) -> Result<Self, Error>;
+}
+
+// ========== State Extractor ==========
+
+/// Zero-cost application state extractor.
+///
+/// `State<T>` provides type-safe access to application state without
+/// runtime type checking overhead. State is stored in request extensions
+/// and retrieved via `TypeId` lookup followed by a direct pointer cast.
+///
+/// # Performance
+///
+/// Unlike DI container lookups which use `Any::downcast`, `State<T>` uses
+/// a pre-verified `TypeId` for O(1) retrieval with no runtime type checking.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use armature_core::extractors::State;
+/// use std::sync::Arc;
+///
+/// // Define your application state
+/// #[derive(Clone)]
+/// struct AppState {
+///     db_pool: Pool,
+///     config: AppConfig,
+/// }
+///
+/// // Insert state into the application (done once at startup)
+/// let state = Arc::new(AppState { db_pool, config });
+/// app.with_state(state);
+///
+/// // Extract in handler - zero-cost after setup
+/// #[get("/users")]
+/// async fn list_users(state: State<AppState>) -> Result<HttpResponse, Error> {
+///     let users = state.db_pool.query("SELECT * FROM users").await?;
+///     HttpResponse::json(&users)
+/// }
+/// ```
+///
+/// # Notes
+///
+/// - State must be `Send + Sync + 'static`
+/// - State should be wrapped in `Arc` for efficient cloning
+/// - Multiple state types can be registered
+#[derive(Debug)]
+pub struct State<T: Send + Sync + 'static>(pub Arc<T>);
+
+impl<T: Send + Sync + 'static> State<T> {
+    /// Create a new State wrapper.
+    #[inline]
+    pub fn new(value: Arc<T>) -> Self {
+        Self(value)
+    }
+
+    /// Get the inner Arc.
+    #[inline]
+    pub fn into_inner(self) -> Arc<T> {
+        self.0
+    }
+}
+
+impl<T: Send + Sync + 'static> Clone for State<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(Arc::clone(&self.0))
+    }
+}
+
+impl<T: Send + Sync + 'static> Deref for State<T> {
+    type Target = T;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T: Send + Sync + 'static> AsRef<T> for State<T> {
+    #[inline]
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T: Send + Sync + 'static> FromRequest for State<T> {
+    /// Extract state from request extensions.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Error::ProviderNotFound` if state of type `T` was not
+    /// registered in the application.
+    #[inline]
+    fn from_request(request: &HttpRequest) -> Result<Self, Error> {
+        request
+            .extensions
+            .get_arc::<T>()
+            .map(State)
+            .ok_or_else(|| {
+                Error::ProviderNotFound(format!(
+                    "State<{}> not found in request extensions. \
+                     Did you forget to register it with `app.with_state()`?",
+                    std::any::type_name::<T>()
+                ))
+            })
+    }
 }
 
 /// Trait for extracting named parameters from a request
