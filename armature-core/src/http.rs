@@ -258,7 +258,11 @@ pub struct HttpResponse {
     body_bytes: Option<Bytes>,
 }
 
+/// Default pre-allocated response buffer size (512 bytes).
+pub const DEFAULT_RESPONSE_CAPACITY: usize = 512;
+
 impl HttpResponse {
+    /// Create a new response with the given status code.
     pub fn new(status: u16) -> Self {
         Self {
             status,
@@ -268,8 +272,36 @@ impl HttpResponse {
         }
     }
 
+    /// Create a new response with pre-allocated body buffer.
+    ///
+    /// This is more efficient than `new()` when you know you'll be
+    /// writing to the body, as it avoids reallocation.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // Pre-allocate for typical JSON responses
+    /// let response = HttpResponse::with_capacity(200, 512);
+    /// ```
+    #[inline]
+    pub fn with_capacity(status: u16, capacity: usize) -> Self {
+        Self {
+            status,
+            headers: HashMap::with_capacity(8),
+            body: Vec::with_capacity(capacity),
+            body_bytes: None,
+        }
+    }
+
+    /// Create a 200 OK response.
     pub fn ok() -> Self {
         Self::new(200)
+    }
+
+    /// Create a 200 OK response with pre-allocated buffer (512 bytes default).
+    #[inline]
+    pub fn ok_preallocated() -> Self {
+        Self::with_capacity(200, DEFAULT_RESPONSE_CAPACITY)
     }
 
     pub fn created() -> Self {

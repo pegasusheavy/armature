@@ -38,6 +38,7 @@ Only features that are **not yet completed**.
 | ✅ Thread-local `BytesMut` Pool | Buffer pool for reduced allocation overhead | `armature-core/src/buffer_pool.rs` |
 | ✅ Zero-Copy Body Parsing | Lazy body, streaming, pooled buffer integration | `armature-core/src/body_parser.rs` |
 | ✅ SmallVec Headers | Stack-allocated headers (12 inline, no heap for typical requests) | `armature-core/src/headers.rs` |
+| ✅ Pre-allocated Response Buffer | 512-byte default buffer to avoid reallocations | `armature-core/src/response_buffer.rs` |
 
 ---
 
@@ -210,7 +211,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ✅ | Use `matchit` crate for O(log n) routing | +8-10% | Low |
 | ✅ | Replace HashMap with `SmallVec<[_; 12]>` for headers | +3-5% | Medium |
 | ✅ | Add `simd-json` feature flag for JSON | +2-3% | Low |
-| 🔴 | Pre-allocate response buffer (512 bytes default) | +1-2% | Low |
+| ✅ | Pre-allocate response buffer (512 bytes default) | +1-2% | Low |
 
 **Phase 2: Buffer Management (Expected: +10% throughput)**
 
@@ -342,7 +343,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Benchmark Infrastructure | 1 | 🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
-| ↳ Actix Performance Roadmap | 9 | 🔴/🟠/🟡 |
+| ↳ Actix Performance Roadmap | 8 | 🟠/🟡 |
 | ↳ HTTP/1.1 Optimizations | 2 | 🟠 |
 | ↳ Buffer Management | 3 | 🟠/🟡 |
 | ↳ Worker Architecture | 4 | 🟠/🟡 |
@@ -353,7 +354,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **25** | ✅ |
+| **Recently Completed** | **26** | ✅ |
 
 ### Performance Target
 
