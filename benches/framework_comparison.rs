@@ -31,7 +31,6 @@ use armature_core::*;
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -360,13 +359,11 @@ fn bench_routing_performance(c: &mut Criterion) {
                 "PATCH" => HttpMethod::PATCH,
                 _ => HttpMethod::GET,
             };
-            let handler: HandlerFn = Arc::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) }));
-            router.add_route(Route {
-                method,
-                path: path.clone(),
-                handler,
-                constraints: None,
-            });
+            // Use the optimized Route::new for monomorphized handler dispatch
+            async fn bench_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
+                Ok(HttpResponse::ok())
+            }
+            router.add_route(Route::new(method, path.clone(), bench_handler));
         }
 
         // Benchmark route matching - first route (best case)
@@ -551,8 +548,31 @@ fn bench_handler_invocation(c: &mut Criterion) {
     let mut group = c.benchmark_group("handler_invocation");
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
-    // Sync-like handler (minimal async)
-    let simple_handler: HandlerFn = Arc::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) }));
+    // Optimized handlers using the new Handler trait system
+    async fn simple_handler_fn(_req: HttpRequest) -> Result<HttpResponse, Error> {
+        Ok(HttpResponse::ok())
+    }
+
+    async fn json_handler_fn(_req: HttpRequest) -> Result<HttpResponse, Error> {
+        let data = create_small_payload();
+        Ok(HttpResponse::ok().with_json(&data)?)
+    }
+
+    async fn param_handler_fn(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let id = req.path_params.get("id").cloned().unwrap_or_default();
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({ "id": id }))?)
+    }
+
+    async fn body_handler_fn(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let _payload: MediumPayload = req.json()?;
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({ "status": "received" }))?)
+    }
+
+    // Create boxed handlers for benchmarking
+    let simple_handler = armature_core::handler::handler(simple_handler_fn);
+    let json_handler = armature_core::handler::handler(json_handler_fn);
+    let param_handler = armature_core::handler::handler(param_handler_fn);
+    let body_handler = armature_core::handler::handler(body_handler_fn);
 
     group.bench_function("simple_handler", |b| {
         let handler = simple_handler.clone();
@@ -560,16 +580,8 @@ fn bench_handler_invocation(c: &mut Criterion) {
             let h = handler.clone();
             runtime.block_on(async move {
                 let req = HttpRequest::new("GET".to_string(), "/".to_string());
-                let _ = h(black_box(req)).await;
+                let _ = h.call(black_box(req)).await;
             })
-        })
-    });
-
-    // Handler with JSON response
-    let json_handler: HandlerFn = Arc::new(|_req| {
-        Box::pin(async {
-            let data = create_small_payload();
-            Ok(HttpResponse::ok().with_json(&data)?)
         })
     });
 
@@ -579,16 +591,8 @@ fn bench_handler_invocation(c: &mut Criterion) {
             let h = handler.clone();
             runtime.block_on(async move {
                 let req = HttpRequest::new("GET".to_string(), "/".to_string());
-                let _ = h(black_box(req)).await;
+                let _ = h.call(black_box(req)).await;
             })
-        })
-    });
-
-    // Handler with path parameter extraction
-    let param_handler: HandlerFn = Arc::new(|req| {
-        Box::pin(async move {
-            let id = req.path_params.get("id").cloned().unwrap_or_default();
-            Ok(HttpResponse::ok().with_json(&serde_json::json!({ "id": id }))?)
         })
     });
 
@@ -599,16 +603,8 @@ fn bench_handler_invocation(c: &mut Criterion) {
             runtime.block_on(async move {
                 let mut req = HttpRequest::new("GET".to_string(), "/users/123".to_string());
                 req.path_params.insert("id".to_string(), "123".to_string());
-                let _ = h(black_box(req)).await;
+                let _ = h.call(black_box(req)).await;
             })
-        })
-    });
-
-    // Handler with JSON body parsing
-    let body_handler: HandlerFn = Arc::new(|req| {
-        Box::pin(async move {
-            let _payload: MediumPayload = req.json()?;
-            Ok(HttpResponse::ok().with_json(&serde_json::json!({ "status": "received" }))?)
         })
     });
 
@@ -622,7 +618,7 @@ fn bench_handler_invocation(c: &mut Criterion) {
             runtime.block_on(async move {
                 let mut req = HttpRequest::new("POST".to_string(), "/api/data".to_string());
                 req.body = b;
-                let _ = h(black_box(req)).await;
+                let _ = h.call(black_box(req)).await;
             })
         })
     });
@@ -640,53 +636,33 @@ fn bench_full_cycle(c: &mut Criterion) {
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
-    // Setup router
+    // Define optimized handlers
+    async fn health_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({"status": "ok"}))?)
+    }
+
+    async fn get_user_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let id = req.path_params.get("id").cloned().unwrap_or_default();
+        Ok(HttpResponse::ok().with_json(&serde_json::json!({
+            "id": id,
+            "name": "John Doe",
+            "email": "john@example.com"
+        }))?)
+    }
+
+    async fn create_user_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+        let _payload: MediumPayload = req.json()?;
+        Ok(HttpResponse::created().with_json(&serde_json::json!({
+            "status": "created",
+            "id": 12345
+        }))?)
+    }
+
+    // Setup router with optimized handlers
     let mut router = Router::new();
-
-    // Simple endpoint
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/health".to_string(),
-        handler: Arc::new(|_req| {
-            Box::pin(async {
-                Ok(HttpResponse::ok().with_json(&serde_json::json!({"status": "ok"}))?)
-            })
-        }),
-        constraints: None,
-    });
-
-    // JSON endpoint
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/api/users/:id".to_string(),
-        handler: Arc::new(|req| {
-            Box::pin(async move {
-                let id = req.path_params.get("id").cloned().unwrap_or_default();
-                Ok(HttpResponse::ok().with_json(&serde_json::json!({
-                    "id": id,
-                    "name": "John Doe",
-                    "email": "john@example.com"
-                }))?)
-            })
-        }),
-        constraints: None,
-    });
-
-    // POST endpoint
-    router.add_route(Route {
-        method: HttpMethod::POST,
-        path: "/api/users".to_string(),
-        handler: Arc::new(|req| {
-            Box::pin(async move {
-                let _payload: MediumPayload = req.json()?;
-                Ok(HttpResponse::created().with_json(&serde_json::json!({
-                    "status": "created",
-                    "id": 12345
-                }))?)
-            })
-        }),
-        constraints: None,
-    });
+    router.get("/health", health_handler);
+    router.get("/api/users/:id", get_user_handler);
+    router.post("/api/users", create_user_handler);
 
     // Health check
     group.bench_function("health_check", |b| {

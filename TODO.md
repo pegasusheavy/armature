@@ -141,7 +141,91 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 Goal: Match Actix-web's TechEmpower-leading performance through low-level optimizations.
 
-**Profiling baseline**: Run Actix-web comparison benchmarks to identify specific gaps.
+### Benchmark Results (December 2024)
+
+**Current Performance Gap**:
+| Framework | Requests/sec | vs Armature |
+|-----------|-------------|-------------|
+| Actix-web 4 | 589,565 | +40% faster |
+| Axum 0.7 | 434,567 | +3% faster |
+| **Armature 0.1** | 421,323 | baseline |
+
+**Micro-benchmark Analysis** (per-operation latency):
+
+| Operation | Armature | Notes |
+|-----------|----------|-------|
+| Handler dispatch (simple) | 112 ns | Good - monomorphized |
+| Handler dispatch (JSON) | 172 ns | +60ns for JSON response |
+| Handler dispatch (params) | 292 ns | HashMap param extraction overhead |
+| Handler dispatch (body parse) | 533 ns | JSON deserialization dominates |
+| Route match (10 routes) | 55-150 ns | O(n) linear scan |
+| Route match (50 routes) | 54-489 ns | Degrades with route count |
+| Route match (100 routes) | 57-400+ ns | Scaling issue |
+| Request creation (minimal) | 24 ns | Good |
+| Request creation (headers) | 192 ns | HashMap allocation overhead |
+| Response creation (empty) | 2 ns | Excellent |
+| Response (small JSON) | 55 ns | Good |
+| JSON serialize (small) | 20 ns | Good - serde_json |
+| JSON serialize (large) | 15.5 µs | Consider simd-json |
+
+### Critical Bottlenecks Identified
+
+1. **Routing is O(n)** - Current implementation uses linear search
+   - Actix uses radix trie with O(log n) lookup
+   - Solution: Implement `matchit` crate properly or custom radix trie
+
+2. **HashMap Allocations** - Headers/params use std HashMap
+   - Each request allocates 2+ HashMaps
+   - Solution: SmallVec or pre-allocated fixed-size arrays
+
+3. **No Buffer Pooling** - Request/response allocate fresh buffers
+   - Actix reuses BytesMut from thread-local pools
+   - Solution: Thread-local buffer pool with BytesMut
+
+4. **JSON Serialization** - Using standard serde_json
+   - 15µs for large payloads
+   - Solution: Optional simd-json or sonic-rs feature
+
+5. **Router Cloning** - Arc<Router> cloned per connection
+   - Actix avoids this with shared state
+   - Solution: Arc-free routing or per-worker routers
+
+### Actix Performance Gap Roadmap
+
+**Phase 1: Low-Hanging Fruit (Expected: +15% throughput)**
+
+| Priority | Task | Estimated Impact | Effort |
+|----------|------|------------------|--------|
+| 🔴 | Use `matchit` crate for O(log n) routing | +8-10% | Low |
+| 🔴 | Replace HashMap with `SmallVec<[_; 8]>` for headers | +3-5% | Medium |
+| 🔴 | Add `simd-json` feature flag for JSON | +2-3% | Low |
+| 🔴 | Pre-allocate response buffer (512 bytes default) | +1-2% | Low |
+
+**Phase 2: Buffer Management (Expected: +10% throughput)**
+
+| Priority | Task | Estimated Impact | Effort |
+|----------|------|------------------|--------|
+| 🔴 | Thread-local `BytesMut` buffer pool | +4-5% | Medium |
+| 🔴 | Zero-copy request body parsing | +3-4% | High |
+| 🟠 | Vectored I/O for responses (writev) | +2-3% | Medium |
+
+**Phase 3: Connection Optimization (Expected: +10% throughput)**
+
+| Priority | Task | Estimated Impact | Effort |
+|----------|------|------------------|--------|
+| 🔴 | HTTP/1.1 request pipelining | +5-7% | High |
+| 🟠 | Per-worker routing tables (avoid Arc clone) | +2-3% | Medium |
+| 🟠 | CPU core affinity for workers | +1-2% | Low |
+
+**Phase 4: Advanced Optimizations (Expected: +5% throughput)**
+
+| Priority | Task | Estimated Impact | Effort |
+|----------|------|------------------|--------|
+| 🟠 | `io_uring` backend for Linux | +3-5% | Very High |
+| 🟡 | Object pool for request/response structs | +1-2% | Medium |
+| 🟡 | PGO (Profile-Guided Optimization) build | +2-3% | Low |
+
+---
 
 ### HTTP/1.1 Optimizations (Actix excels here)
 
@@ -247,6 +331,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Benchmark Infrastructure | 2 | 🟠/🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
+| ↳ Actix Performance Roadmap | 12 | 🔴/🟠/🟡 |
 | ↳ HTTP/1.1 Optimizations | 4 | 🔴/🟠 |
 | ↳ Buffer Management | 5 | 🔴/🟠/🟡 |
 | ↳ Worker Architecture | 4 | 🟠/🟡 |
@@ -256,8 +341,21 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Syscall Optimization | 4 | 🔴/🟠/🟡 |
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
-| **Total Remaining** | **67** | |
+| **Total Remaining** | **79** | |
 | **Recently Completed** | **12** | ✅ |
+
+### Performance Target
+
+**Goal**: Close the 40% gap to Actix-web through systematic optimization.
+
+| Phase | Tasks | Expected Gain | Cumulative |
+|-------|-------|---------------|------------|
+| Phase 1 | Routing, Headers, JSON | +15% | 485k req/s |
+| Phase 2 | Buffer pools, zero-copy | +10% | 534k req/s |
+| Phase 3 | Pipelining, workers | +10% | 587k req/s |
+| Phase 4 | io_uring, PGO | +5% | 617k req/s |
+
+Target: **~590k req/s** (Actix-equivalent performance)
 
 ---
 
