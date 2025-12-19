@@ -167,6 +167,7 @@ pub mod timeout;
 pub mod tls;
 pub mod traits;
 pub mod vectored_io;
+pub mod response_pipeline;
 pub mod websocket;
 pub mod worker;
 
@@ -217,6 +218,11 @@ pub use traits::*;
 pub use vectored_io::{
     ResponseChunks, VectoredIoStats, VectoredResponse,
     status_line, vectored_stats, MAX_IO_SLICES,
+};
+pub use response_pipeline::{
+    ConnectionPipeline, GlobalPipelineStats, ResponseBatch, ResponseItem,
+    ResponseQueue, ResponseQueueStats, ResponseWriterConfig, ResponseWriterStats,
+    global_pipeline_stats, writer_stats,
 };
 pub use websocket::*;
 pub use worker::{
