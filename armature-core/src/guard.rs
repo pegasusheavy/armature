@@ -152,6 +152,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -169,6 +170,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -189,6 +191,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -208,6 +211,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -225,6 +229,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -242,6 +247,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -259,6 +265,7 @@ mod tests {
             body: vec![1, 2, 3],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request.clone());
 
@@ -279,6 +286,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -299,6 +307,7 @@ mod tests {
             body: vec![],
             path_params: HashMap::new(),
             query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
@@ -324,6 +333,7 @@ mod tests {
                 body: vec![],
                 path_params: HashMap::new(),
                 query_params: HashMap::new(),
+            extensions: crate::Extensions::new(),
             };
             let context = GuardContext::new(request);
 
@@ -360,6 +370,7 @@ mod tests {
             body: vec![],
             path_params,
             query_params,
+            extensions: crate::Extensions::new(),
         };
         let context = GuardContext::new(request);
 
