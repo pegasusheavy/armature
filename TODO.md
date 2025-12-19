@@ -225,7 +225,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 
 | Priority | Task | Estimated Impact | Effort |
 |----------|------|------------------|--------|
-| 🔴 | HTTP/1.1 request pipelining | +5-7% | High |
+| ✅ | HTTP/1.1 request pipelining | +5-7% | High |
 | 🟠 | Per-worker routing tables (avoid Arc clone) | +2-3% | Medium |
 | 🟠 | CPU core affinity for workers | +1-2% | Low |
 
