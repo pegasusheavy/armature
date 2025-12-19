@@ -27,6 +27,7 @@ Only features that are **not yet completed**.
 | ✅ Ferron Integration | Reverse proxy integration with Ferron | `armature-ferron/` |
 | ✅ CI Pipeline Fixes | All 16 CI jobs passing (format, clippy, tests, benchmarks) | `.github/workflows/` |
 | ✅ Inline Handler Dispatch | Handler trait with monomorphization and `#[inline]` hints | `armature-core/src/handler.rs` |
+| ✅ SIMD HTTP Parser | Integrated `httparse` + `memchr` for SIMD-optimized parsing | `armature-core/src/simd_parser.rs` |
 
 ---
 
@@ -46,8 +47,8 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟡 | SIMD HTTP Parser | Integrate `httparse` SIMD features or `picohttpparser` | `armature-core` |
-| 🟡 | Header Interning | Intern common header names to avoid allocations | `armature-core` |
+| ✅ | SIMD HTTP Parser | Integrated `httparse` + `memchr` with SIMD query parsing | `armature-core/src/simd_parser.rs` |
+| ✅ | Header Interning | Intern 32+ common header names to avoid allocations | `armature-core/src/simd_parser.rs` |
 
 ### Serialization
 
@@ -319,7 +320,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Category | Remaining | Priority |
 |----------|-----------|----------|
 | Performance - Routing | 3 | 🟠/🟡 |
-| Performance - HTTP Parsing | 2 | 🟡 |
+| Performance - HTTP Parsing | 0 | ✅ |
 | Performance - Serialization | 3 | 🟠/🟡 |
 | Performance - Connections | 3 | 🟡 |
 | **Axum-Competitive** | | |
@@ -342,7 +343,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **12** | ✅ |
+| **Recently Completed** | **14** | ✅ |
 
 ### Performance Target
 

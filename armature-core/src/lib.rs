@@ -135,6 +135,7 @@ pub mod form;
 pub mod guard;
 pub mod handler;
 pub mod health;
+pub mod simd_parser;
 pub mod hmr;
 pub mod http;
 pub mod interceptor;
