@@ -36,6 +36,7 @@ Only features that are **not yet completed**.
 | ✅ Request Batching | Batch-read multiple requests from socket buffer | `armature-core/src/batch.rs` |
 | ✅ `io_uring` Backend | Linux io_uring support for reduced syscall overhead | `armature-core/src/io_uring.rs` |
 | ✅ Thread-local `BytesMut` Pool | Buffer pool for reduced allocation overhead | `armature-core/src/buffer_pool.rs` |
+| ✅ Zero-Copy Body Parsing | Lazy body, streaming, pooled buffer integration | `armature-core/src/body_parser.rs` |
 
 ---
 
@@ -215,7 +216,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Task | Estimated Impact | Effort |
 |----------|------|------------------|--------|
 | ✅ | Thread-local `BytesMut` buffer pool | +4-5% | Medium |
-| 🔴 | Zero-copy request body parsing | +3-4% | High |
+| ✅ | Zero-copy request body parsing | +3-4% | High |
 | 🟠 | Vectored I/O for responses (writev) | +2-3% | Medium |
 
 **Phase 3: Connection Optimization (Expected: +10% throughput)**
@@ -250,7 +251,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | `BytesMut` Buffer Pool | Thread-local pool of pre-allocated `BytesMut` buffers | `armature-core/src/buffer_pool.rs` |
-| 🔴 | Zero-Copy Request Body | Parse directly into pooled buffers without copying | `armature-core/request.rs` |
+| ✅ | Zero-Copy Request Body | Parse directly into pooled buffers without copying | `armature-core/src/body_parser.rs` |
 | 🟠 | Read Buffer Sizing | Tune read buffer sizes based on typical payload | `armature-core/config.rs` |
 | 🟠 | Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/response.rs` |
 | 🟡 | Buffer Size Auto-Tuning | Dynamically adjust buffer sizes based on traffic | `armature-core/buffer.rs` |
@@ -340,9 +341,9 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Benchmark Infrastructure | 1 | 🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
-| ↳ Actix Performance Roadmap | 10 | 🔴/🟠/🟡 |
+| ↳ Actix Performance Roadmap | 9 | 🔴/🟠/🟡 |
 | ↳ HTTP/1.1 Optimizations | 2 | 🟠 |
-| ↳ Buffer Management | 4 | 🔴/🟠/🟡 |
+| ↳ Buffer Management | 3 | 🟠/🟡 |
 | ↳ Worker Architecture | 4 | 🟠/🟡 |
 | ↳ Connection State Machine | 4 | 🟠/🟡 |
 | ↳ Streaming & Chunked | 4 | 🟠/🟡 |
@@ -351,7 +352,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **23** | ✅ |
+| **Recently Completed** | **24** | ✅ |
 
 ### Performance Target
 
