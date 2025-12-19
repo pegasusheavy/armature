@@ -168,6 +168,7 @@ pub mod tls;
 pub mod traits;
 pub mod vectored_io;
 pub mod websocket;
+pub mod worker;
 
 // Re-export commonly used types
 pub use application::*;
@@ -218,6 +219,11 @@ pub use vectored_io::{
     status_line, vectored_stats, MAX_IO_SLICES,
 };
 pub use websocket::*;
+pub use worker::{
+    WorkerConfig, WorkerHandle, WorkerRouter, WorkerStats,
+    clear_worker_router, has_worker_router, init_worker_router,
+    next_worker_id, total_workers, worker_id, worker_stats,
+};
 
 // Re-export inventory for route registration macros
 pub use inventory;
