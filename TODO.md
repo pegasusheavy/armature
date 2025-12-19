@@ -39,6 +39,7 @@ Only features that are **not yet completed**.
 | ✅ Zero-Copy Body Parsing | Lazy body, streaming, pooled buffer integration | `armature-core/src/body_parser.rs` |
 | ✅ SmallVec Headers | Stack-allocated headers (12 inline, no heap for typical requests) | `armature-core/src/headers.rs` |
 | ✅ Pre-allocated Response Buffer | 512-byte default buffer to avoid reallocations | `armature-core/src/response_buffer.rs` |
+| ✅ Vectored I/O | writev() support for headers+body in single syscall | `armature-core/src/vectored_io.rs` |
 
 ---
 
@@ -219,7 +220,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 |----------|------|------------------|--------|
 | ✅ | Thread-local `BytesMut` buffer pool | +4-5% | Medium |
 | ✅ | Zero-copy request body parsing | +3-4% | High |
-| 🟠 | Vectored I/O for responses (writev) | +2-3% | Medium |
+| ✅ | Vectored I/O for responses (writev) | +2-3% | Medium |
 
 **Phase 3: Connection Optimization (Expected: +10% throughput)**
 
@@ -354,7 +355,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **26** | ✅ |
+| **Recently Completed** | **27** | ✅ |
 
 ### Performance Target
 
