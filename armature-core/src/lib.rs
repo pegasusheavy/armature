@@ -220,9 +220,13 @@ pub use vectored_io::{
 };
 pub use websocket::*;
 pub use worker::{
+    AffinityConfig, AffinityError, AffinityMode, AffinityStats,
     WorkerConfig, WorkerHandle, WorkerRouter, WorkerStats,
-    clear_worker_router, has_worker_router, init_worker_router,
-    next_worker_id, total_workers, worker_id, worker_stats,
+    affinity_stats, affinity_supported, clear_worker_router,
+    get_thread_affinity, has_worker_router, init_worker_router,
+    init_worker_with_affinity, next_worker_id, num_cpus,
+    num_physical_cpus, set_thread_affinity, total_workers,
+    worker_id, worker_stats,
 };
 
 // Re-export inventory for route registration macros

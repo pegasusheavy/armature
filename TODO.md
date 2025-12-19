@@ -41,6 +41,7 @@ Only features that are **not yet completed**.
 | ✅ Pre-allocated Response Buffer | 512-byte default buffer to avoid reallocations | `armature-core/src/response_buffer.rs` |
 | ✅ Vectored I/O | writev() support for headers+body in single syscall | `armature-core/src/vectored_io.rs` |
 | ✅ Per-Worker Router | Thread-local router to avoid Arc cloning overhead | `armature-core/src/worker.rs` |
+| ✅ CPU Core Affinity | Pin workers to CPU cores for cache locality | `armature-core/src/worker.rs` |
 
 ---
 
@@ -229,7 +230,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 |----------|------|------------------|--------|
 | ✅ | HTTP/1.1 request pipelining | +5-7% | High |
 | ✅ | Per-worker routing tables (avoid Arc clone) | +2-3% | Medium |
-| 🟠 | CPU core affinity for workers | +1-2% | Low |
+| ✅ | CPU core affinity for workers | +1-2% | Low |
 
 **Phase 4: Advanced Optimizations (Expected: +5% throughput)**
 
@@ -356,7 +357,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **28** | ✅ |
+| **Recently Completed** | **29** | ✅ |
 
 ### Performance Target
 

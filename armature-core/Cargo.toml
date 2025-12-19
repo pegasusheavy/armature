@@ -54,6 +54,10 @@ tokio-rustls = "0.26"
 rustls-pemfile = "2.0"
 rcgen = { version = "0.14", optional = true }
 
+# CPU affinity (Linux)
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+
 [features]
 default = []
 self-signed-certs = ["rcgen"]
