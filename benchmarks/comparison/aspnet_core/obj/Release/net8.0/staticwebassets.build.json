@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "DdYMM0ixL47CqCCkzh+kJBTBfBKvi0OU1CCf8ge/Zac=",
+  "Source": "aspnet_bench",
+  "BasePath": "_content/aspnet_bench",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
