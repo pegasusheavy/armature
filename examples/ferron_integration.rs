@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 //! Ferron Integration Example
 //!
 //! This example demonstrates a complete setup of an Armature application
