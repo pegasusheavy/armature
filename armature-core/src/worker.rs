@@ -734,6 +734,472 @@ impl WorkerHandle {
 }
 
 // ============================================================================
+// Per-Worker State
+// ============================================================================
+
+/// Per-worker state storage.
+///
+/// This provides thread-local storage for arbitrary state that needs to be
+/// accessed on the hot path without Arc cloning overhead.
+///
+/// ## Use Cases
+///
+/// - Database connection pools (one per worker)
+/// - Caches (per-worker to avoid contention)
+/// - Metrics collectors
+/// - Random number generators
+/// - Pre-allocated buffers
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// use armature_core::worker::{WorkerState, init_worker_state};
+///
+/// // Define state
+/// struct MyState {
+///     counter: u64,
+///     buffer: Vec<u8>,
+/// }
+///
+/// // Initialize once per worker
+/// init_worker_state(MyState {
+///     counter: 0,
+///     buffer: Vec::with_capacity(4096),
+/// });
+///
+/// // Access without Arc cloning
+/// WorkerState::<MyState>::with_mut(|state| {
+///     state.counter += 1;
+/// });
+/// ```
+pub struct WorkerState<T: 'static> {
+    _marker: std::marker::PhantomData<T>,
+}
+
+// Thread-local storage for arbitrary state
+// Uses a type-erased approach with TypeId for flexibility
+thread_local! {
+    static WORKER_STATE: RefCell<WorkerStateStorage> = RefCell::new(WorkerStateStorage::new());
+}
+
+/// Type-erased storage for per-worker state.
+#[derive(Default)]
+struct WorkerStateStorage {
+    /// Store state by TypeId
+    data: std::collections::HashMap<std::any::TypeId, Box<dyn std::any::Any + Send>>,
+}
+
+impl WorkerStateStorage {
+    fn new() -> Self {
+        Self {
+            data: std::collections::HashMap::new(),
+        }
+    }
+
+    fn insert<T: 'static + Send>(&mut self, value: T) {
+        let type_id = std::any::TypeId::of::<T>();
+        self.data.insert(type_id, Box::new(value));
+    }
+
+    fn get<T: 'static>(&self) -> Option<&T> {
+        let type_id = std::any::TypeId::of::<T>();
+        self.data.get(&type_id).and_then(|b| b.downcast_ref::<T>())
+    }
+
+    fn get_mut<T: 'static>(&mut self) -> Option<&mut T> {
+        let type_id = std::any::TypeId::of::<T>();
+        self.data.get_mut(&type_id).and_then(|b| b.downcast_mut::<T>())
+    }
+
+    fn remove<T: 'static>(&mut self) -> Option<T> {
+        let type_id = std::any::TypeId::of::<T>();
+        self.data.remove(&type_id).and_then(|b| b.downcast::<T>().ok().map(|b| *b))
+    }
+
+    fn contains<T: 'static>(&self) -> bool {
+        let type_id = std::any::TypeId::of::<T>();
+        self.data.contains_key(&type_id)
+    }
+
+    fn clear(&mut self) {
+        self.data.clear();
+    }
+}
+
+impl<T: 'static + Send> WorkerState<T> {
+    /// Initialize state for this worker.
+    ///
+    /// Call once per worker thread during startup.
+    #[inline]
+    pub fn init(value: T) {
+        WORKER_STATE.with(|storage| {
+            storage.borrow_mut().insert(value);
+        });
+        WORKER_STATE_STATS.record_init();
+    }
+
+    /// Access state immutably.
+    ///
+    /// # Panics
+    ///
+    /// Panics if state was not initialized. Use `try_with` for non-panicking.
+    #[inline]
+    pub fn with<F, R>(f: F) -> R
+    where
+        F: FnOnce(&T) -> R,
+    {
+        WORKER_STATE.with(|storage| {
+            let storage_ref = storage.borrow();
+            let state = storage_ref
+                .get::<T>()
+                .expect("WorkerState not initialized for this type");
+            WORKER_STATE_STATS.record_access();
+            f(state)
+        })
+    }
+
+    /// Access state mutably.
+    ///
+    /// # Panics
+    ///
+    /// Panics if state was not initialized.
+    #[inline]
+    pub fn with_mut<F, R>(f: F) -> R
+    where
+        F: FnOnce(&mut T) -> R,
+    {
+        WORKER_STATE.with(|storage| {
+            let mut storage_ref = storage.borrow_mut();
+            let state = storage_ref
+                .get_mut::<T>()
+                .expect("WorkerState not initialized for this type");
+            WORKER_STATE_STATS.record_access();
+            f(state)
+        })
+    }
+
+    /// Try to access state immutably.
+    ///
+    /// Returns `None` if state was not initialized.
+    #[inline]
+    pub fn try_with<F, R>(f: F) -> Option<R>
+    where
+        F: FnOnce(&T) -> R,
+    {
+        WORKER_STATE.with(|storage| {
+            let storage_ref = storage.borrow();
+            storage_ref.get::<T>().map(|state| {
+                WORKER_STATE_STATS.record_access();
+                f(state)
+            })
+        })
+    }
+
+    /// Try to access state mutably.
+    ///
+    /// Returns `None` if state was not initialized.
+    #[inline]
+    pub fn try_with_mut<F, R>(f: F) -> Option<R>
+    where
+        F: FnOnce(&mut T) -> R,
+    {
+        WORKER_STATE.with(|storage| {
+            let mut storage_ref = storage.borrow_mut();
+            storage_ref.get_mut::<T>().map(|state| {
+                WORKER_STATE_STATS.record_access();
+                f(state)
+            })
+        })
+    }
+
+    /// Check if state is initialized.
+    #[inline]
+    pub fn is_initialized() -> bool {
+        WORKER_STATE.with(|storage| storage.borrow().contains::<T>())
+    }
+
+    /// Remove state and return it.
+    #[inline]
+    pub fn take() -> Option<T> {
+        WORKER_STATE.with(|storage| {
+            storage.borrow_mut().remove::<T>()
+        })
+    }
+
+    /// Replace state with a new value, returning the old one.
+    #[inline]
+    pub fn replace(value: T) -> Option<T> {
+        let old = Self::take();
+        Self::init(value);
+        old
+    }
+}
+
+/// Initialize per-worker state.
+///
+/// Convenience function equivalent to `WorkerState::<T>::init(value)`.
+#[inline]
+pub fn init_worker_state<T: 'static + Send>(value: T) {
+    WorkerState::<T>::init(value);
+}
+
+/// Clear all per-worker state.
+///
+/// Use for testing or worker cleanup.
+pub fn clear_worker_state() {
+    WORKER_STATE.with(|storage| {
+        storage.borrow_mut().clear();
+    });
+}
+
+// ============================================================================
+// Worker State Statistics
+// ============================================================================
+
+/// Statistics for per-worker state operations.
+#[derive(Debug, Default)]
+pub struct WorkerStateStats {
+    /// State initializations
+    inits: AtomicU64,
+    /// State accesses
+    accesses: AtomicU64,
+}
+
+impl WorkerStateStats {
+    /// Create new stats.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    fn record_init(&self) {
+        self.inits.fetch_add(1, Ordering::Relaxed);
+    }
+
+    #[inline]
+    fn record_access(&self) {
+        self.accesses.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Get initialization count.
+    pub fn inits(&self) -> u64 {
+        self.inits.load(Ordering::Relaxed)
+    }
+
+    /// Get access count.
+    pub fn accesses(&self) -> u64 {
+        self.accesses.load(Ordering::Relaxed)
+    }
+}
+
+/// Global worker state statistics.
+static WORKER_STATE_STATS: WorkerStateStats = WorkerStateStats {
+    inits: AtomicU64::new(0),
+    accesses: AtomicU64::new(0),
+};
+
+/// Get global worker state statistics.
+pub fn worker_state_stats() -> &'static WorkerStateStats {
+    &WORKER_STATE_STATS
+}
+
+// ============================================================================
+// Cloneable State Factory
+// ============================================================================
+
+/// Factory for creating per-worker clones of shared state.
+///
+/// This is useful for state that needs to be cloned once per worker
+/// rather than once per request.
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// let pool = DatabasePool::new("postgres://...");
+/// let factory = StateFactory::new(pool);
+///
+/// // In worker initialization
+/// factory.init_for_worker(); // Clones pool once per worker
+///
+/// // In request handler - no clone needed
+/// WorkerState::<DatabasePool>::with(|pool| {
+///     pool.get_connection()
+/// });
+/// ```
+pub struct StateFactory<T: Clone + Send + 'static> {
+    /// Shared state to clone from
+    state: Arc<T>,
+}
+
+impl<T: Clone + Send + 'static> StateFactory<T> {
+    /// Create a new state factory.
+    pub fn new(state: T) -> Self {
+        Self {
+            state: Arc::new(state),
+        }
+    }
+
+    /// Create from an existing Arc.
+    pub fn from_arc(state: Arc<T>) -> Self {
+        Self { state }
+    }
+
+    /// Initialize state for the current worker.
+    ///
+    /// This clones the shared state once per worker.
+    pub fn init_for_worker(&self) {
+        let cloned = (*self.state).clone();
+        WorkerState::<T>::init(cloned);
+    }
+
+    /// Get a reference to the shared state.
+    pub fn shared(&self) -> &T {
+        &self.state
+    }
+
+    /// Get the Arc to the shared state.
+    pub fn arc(&self) -> Arc<T> {
+        Arc::clone(&self.state)
+    }
+}
+
+impl<T: Clone + Send + 'static> Clone for StateFactory<T> {
+    fn clone(&self) -> Self {
+        Self {
+            state: Arc::clone(&self.state),
+        }
+    }
+}
+
+// ============================================================================
+// Worker-Local Cache
+// ============================================================================
+
+/// A simple per-worker cache to avoid repeated allocations.
+///
+/// Each worker maintains its own cache, eliminating contention.
+#[derive(Debug)]
+pub struct WorkerCache<K, V>
+where
+    K: std::hash::Hash + Eq + Clone,
+{
+    /// Cache entries
+    data: std::collections::HashMap<K, V>,
+    /// Maximum entries
+    max_entries: usize,
+    /// Hits
+    hits: u64,
+    /// Misses
+    misses: u64,
+}
+
+impl<K, V> WorkerCache<K, V>
+where
+    K: std::hash::Hash + Eq + Clone,
+{
+    /// Create a new cache with max entries.
+    pub fn new(max_entries: usize) -> Self {
+        Self {
+            data: std::collections::HashMap::with_capacity(max_entries),
+            max_entries,
+            hits: 0,
+            misses: 0,
+        }
+    }
+
+    /// Get a value from the cache.
+    pub fn get(&mut self, key: &K) -> Option<&V> {
+        if self.data.contains_key(key) {
+            self.hits += 1;
+            self.data.get(key)
+        } else {
+            self.misses += 1;
+            None
+        }
+    }
+
+    /// Get a mutable value from the cache.
+    pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
+        if self.data.contains_key(key) {
+            self.hits += 1;
+            self.data.get_mut(key)
+        } else {
+            self.misses += 1;
+            None
+        }
+    }
+
+    /// Insert a value into the cache.
+    ///
+    /// If at capacity, evicts a random entry.
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        // Simple eviction: remove first entry if at capacity
+        if self.data.len() >= self.max_entries && !self.data.contains_key(&key) {
+            if let Some(first_key) = self.data.keys().next().cloned() {
+                self.data.remove(&first_key);
+            }
+        }
+        self.data.insert(key, value)
+    }
+
+    /// Remove a value from the cache.
+    pub fn remove(&mut self, key: &K) -> Option<V> {
+        self.data.remove(key)
+    }
+
+    /// Check if key exists.
+    pub fn contains(&self, key: &K) -> bool {
+        self.data.contains_key(key)
+    }
+
+    /// Clear the cache.
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.hits = 0;
+        self.misses = 0;
+    }
+
+    /// Get cache size.
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    /// Check if empty.
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    /// Get hit count.
+    pub fn hits(&self) -> u64 {
+        self.hits
+    }
+
+    /// Get miss count.
+    pub fn misses(&self) -> u64 {
+        self.misses
+    }
+
+    /// Get hit ratio.
+    pub fn hit_ratio(&self) -> f64 {
+        let total = self.hits + self.misses;
+        if total > 0 {
+            (self.hits as f64 / total as f64) * 100.0
+        } else {
+            0.0
+        }
+    }
+}
+
+impl<K, V> Default for WorkerCache<K, V>
+where
+    K: std::hash::Hash + Eq + Clone,
+{
+    fn default() -> Self {
+        Self::new(1000)
+    }
+}
+
+// ============================================================================
 // Macros for ergonomic usage
 // ============================================================================
 
@@ -896,6 +1362,145 @@ mod tests {
         assert!(!has_worker_router());
         assert!(WorkerRouter::try_with(|_| ()).is_none());
         assert!(WorkerRouter::clone_arc().is_none());
+    }
+
+    // Per-Worker State Tests
+
+    #[test]
+    fn test_worker_state_basic() {
+        // Clear any existing state
+        clear_worker_state();
+
+        // Initialize state
+        WorkerState::<u64>::init(42);
+
+        // Access immutably
+        let value = WorkerState::<u64>::with(|v| *v);
+        assert_eq!(value, 42);
+
+        // Access mutably
+        WorkerState::<u64>::with_mut(|v| *v += 1);
+        let value = WorkerState::<u64>::with(|v| *v);
+        assert_eq!(value, 43);
+
+        // Clean up
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_state_multiple_types() {
+        clear_worker_state();
+
+        WorkerState::<u64>::init(100);
+        WorkerState::<String>::init("hello".to_string());
+
+        assert_eq!(WorkerState::<u64>::with(|v| *v), 100);
+        assert_eq!(WorkerState::<String>::with(|v| v.clone()), "hello");
+
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_state_try_with() {
+        clear_worker_state();
+
+        // Not initialized
+        assert!(WorkerState::<i32>::try_with(|_| ()).is_none());
+
+        // Initialize and access
+        WorkerState::<i32>::init(123);
+        assert!(WorkerState::<i32>::try_with(|v| *v).is_some());
+        assert_eq!(WorkerState::<i32>::try_with(|v| *v), Some(123));
+
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_state_take() {
+        clear_worker_state();
+
+        WorkerState::<String>::init("test".to_string());
+        assert!(WorkerState::<String>::is_initialized());
+
+        let taken = WorkerState::<String>::take();
+        assert_eq!(taken, Some("test".to_string()));
+        assert!(!WorkerState::<String>::is_initialized());
+
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_state_replace() {
+        clear_worker_state();
+
+        WorkerState::<u32>::init(10);
+        let old = WorkerState::<u32>::replace(20);
+        assert_eq!(old, Some(10));
+        assert_eq!(WorkerState::<u32>::with(|v| *v), 20);
+
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_cache_basic() {
+        let mut cache = WorkerCache::<String, u32>::new(10);
+
+        cache.insert("key1".to_string(), 100);
+        cache.insert("key2".to_string(), 200);
+
+        assert_eq!(cache.get(&"key1".to_string()), Some(&100));
+        assert_eq!(cache.get(&"key3".to_string()), None);
+        assert_eq!(cache.len(), 2);
+    }
+
+    #[test]
+    fn test_worker_cache_eviction() {
+        let mut cache = WorkerCache::<u32, u32>::new(3);
+
+        cache.insert(1, 100);
+        cache.insert(2, 200);
+        cache.insert(3, 300);
+        assert_eq!(cache.len(), 3);
+
+        // This should evict one entry
+        cache.insert(4, 400);
+        assert_eq!(cache.len(), 3);
+        assert!(cache.contains(&4));
+    }
+
+    #[test]
+    fn test_worker_cache_hit_ratio() {
+        let mut cache = WorkerCache::<u32, u32>::new(10);
+
+        cache.insert(1, 100);
+        cache.get(&1); // Hit
+        cache.get(&1); // Hit
+        cache.get(&2); // Miss
+
+        assert_eq!(cache.hits(), 2);
+        assert_eq!(cache.misses(), 1);
+        assert!((cache.hit_ratio() - 66.67).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_state_factory() {
+        clear_worker_state();
+
+        let factory = StateFactory::new(vec![1, 2, 3]);
+        factory.init_for_worker();
+
+        WorkerState::<Vec<i32>>::with(|v| {
+            assert_eq!(v, &vec![1, 2, 3]);
+        });
+
+        clear_worker_state();
+    }
+
+    #[test]
+    fn test_worker_state_stats() {
+        let stats = worker_state_stats();
+        let _ = stats.inits();
+        let _ = stats.accesses();
     }
 
     #[test]
