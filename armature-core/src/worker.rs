@@ -277,6 +277,363 @@ impl WorkerConfig {
 }
 
 // ============================================================================
+// CPU Core Affinity
+// ============================================================================
+
+/// CPU core affinity configuration.
+#[derive(Debug, Clone)]
+pub struct AffinityConfig {
+    /// Enable core pinning
+    pub enabled: bool,
+    /// Specific cores to use (empty = all available)
+    pub cores: Vec<usize>,
+    /// Affinity mode
+    pub mode: AffinityMode,
+}
+
+impl Default for AffinityConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            cores: Vec::new(),
+            mode: AffinityMode::RoundRobin,
+        }
+    }
+}
+
+impl AffinityConfig {
+    /// Create a new affinity configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Enable CPU affinity.
+    #[inline]
+    pub fn enable(mut self) -> Self {
+        self.enabled = true;
+        self
+    }
+
+    /// Disable CPU affinity.
+    #[inline]
+    pub fn disable(mut self) -> Self {
+        self.enabled = false;
+        self
+    }
+
+    /// Set specific cores to use.
+    #[inline]
+    pub fn cores(mut self, cores: Vec<usize>) -> Self {
+        self.cores = cores;
+        self
+    }
+
+    /// Set affinity mode.
+    #[inline]
+    pub fn mode(mut self, mode: AffinityMode) -> Self {
+        self.mode = mode;
+        self
+    }
+
+    /// Get the core to pin a worker to based on worker ID.
+    #[inline]
+    pub fn core_for_worker(&self, worker_id: usize) -> usize {
+        if self.cores.is_empty() {
+            // Use all available cores
+            let num_cores = num_cpus();
+            match self.mode {
+                AffinityMode::RoundRobin => worker_id % num_cores,
+                AffinityMode::Packed => worker_id.min(num_cores - 1),
+                AffinityMode::Spread => {
+                    // Spread across cores with gaps
+                    let stride = num_cores / 2;
+                    (worker_id * stride.max(1)) % num_cores
+                }
+            }
+        } else {
+            // Use specified cores
+            self.cores[worker_id % self.cores.len()]
+        }
+    }
+}
+
+/// CPU affinity mode - how workers are assigned to cores.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AffinityMode {
+    /// Round-robin assignment: worker 0 → core 0, worker 1 → core 1, etc.
+    RoundRobin,
+    /// Pack workers on first N cores
+    Packed,
+    /// Spread workers across cores with gaps (better for hyper-threading)
+    Spread,
+}
+
+/// Get the number of CPU cores.
+#[inline]
+pub fn num_cpus() -> usize {
+    std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1)
+}
+
+/// Get the number of physical CPU cores (excluding hyper-threads).
+///
+/// On systems without hyper-threading, this returns the same as `num_cpus()`.
+#[inline]
+pub fn num_physical_cpus() -> usize {
+    // On most systems, physical cores = total cores / 2 if hyper-threading
+    // This is a heuristic; for accurate info, use platform-specific APIs
+    let total = num_cpus();
+    // Assume hyper-threading if > 4 cores and even number
+    if total > 4 && total % 2 == 0 {
+        total / 2
+    } else {
+        total
+    }
+}
+
+/// Set CPU affinity for the current thread.
+///
+/// This pins the current thread to the specified CPU core.
+///
+/// # Platform Support
+///
+/// - Linux: Uses `sched_setaffinity`
+/// - macOS/Windows: No-op (returns Ok but doesn't pin)
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // Pin current thread to core 0
+/// set_thread_affinity(0)?;
+/// ```
+#[inline]
+pub fn set_thread_affinity(core: usize) -> Result<(), AffinityError> {
+    #[cfg(target_os = "linux")]
+    {
+        set_thread_affinity_linux(core)
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    {
+        // No-op on non-Linux platforms
+        let _ = core;
+        Ok(())
+    }
+}
+
+/// Set CPU affinity on Linux using sched_setaffinity.
+#[cfg(target_os = "linux")]
+fn set_thread_affinity_linux(core: usize) -> Result<(), AffinityError> {
+    use std::mem;
+
+    // Check if core is valid
+    let num_cores = num_cpus();
+    if core >= num_cores {
+        return Err(AffinityError::InvalidCore { core, max: num_cores - 1 });
+    }
+
+    // cpu_set_t is 1024 bits = 128 bytes on Linux
+    // We use a simplified version that supports up to 64 cores
+    let mut mask: u64 = 0;
+    mask |= 1u64 << core;
+
+    // SAFETY: sched_setaffinity is a safe syscall when called with correct parameters
+    unsafe {
+        let result = libc::sched_setaffinity(
+            0, // 0 = current thread
+            mem::size_of::<u64>(),
+            &mask as *const u64 as *const libc::cpu_set_t,
+        );
+
+        if result == 0 {
+            AFFINITY_STATS.record_set(true);
+            Ok(())
+        } else {
+            AFFINITY_STATS.record_set(false);
+            Err(AffinityError::SystemError {
+                errno: *libc::__errno_location(),
+            })
+        }
+    }
+}
+
+/// Error setting CPU affinity.
+#[derive(Debug, Clone)]
+pub enum AffinityError {
+    /// Invalid core number
+    InvalidCore { core: usize, max: usize },
+    /// System error (Linux errno)
+    SystemError { errno: i32 },
+    /// Platform not supported
+    NotSupported,
+}
+
+impl std::fmt::Display for AffinityError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidCore { core, max } => {
+                write!(f, "Invalid core {}, max is {}", core, max)
+            }
+            Self::SystemError { errno } => {
+                write!(f, "System error: errno {}", errno)
+            }
+            Self::NotSupported => write!(f, "CPU affinity not supported on this platform"),
+        }
+    }
+}
+
+impl std::error::Error for AffinityError {}
+
+/// Get the CPU affinity of the current thread.
+///
+/// Returns the set of cores the thread is allowed to run on.
+#[inline]
+pub fn get_thread_affinity() -> Result<Vec<usize>, AffinityError> {
+    #[cfg(target_os = "linux")]
+    {
+        get_thread_affinity_linux()
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    {
+        // Return all cores on non-Linux
+        Ok((0..num_cpus()).collect())
+    }
+}
+
+/// Get CPU affinity on Linux.
+#[cfg(target_os = "linux")]
+fn get_thread_affinity_linux() -> Result<Vec<usize>, AffinityError> {
+    use std::mem;
+
+    let mut mask: u64 = 0;
+
+    // SAFETY: sched_getaffinity is a safe syscall
+    unsafe {
+        let result = libc::sched_getaffinity(
+            0,
+            mem::size_of::<u64>(),
+            &mut mask as *mut u64 as *mut libc::cpu_set_t,
+        );
+
+        if result == 0 {
+            let mut cores = Vec::new();
+            for i in 0..64 {
+                if (mask & (1u64 << i)) != 0 {
+                    cores.push(i);
+                }
+            }
+            Ok(cores)
+        } else {
+            Err(AffinityError::SystemError {
+                errno: *libc::__errno_location(),
+            })
+        }
+    }
+}
+
+/// Check if CPU affinity is supported on this platform.
+#[inline]
+pub fn affinity_supported() -> bool {
+    cfg!(target_os = "linux")
+}
+
+/// Initialize a worker with CPU affinity.
+///
+/// This is a convenience function that:
+/// 1. Sets CPU affinity based on worker ID
+/// 2. Initializes the thread-local router
+///
+/// # Example
+///
+/// ```rust,ignore
+/// let config = AffinityConfig::new().enable();
+///
+/// tokio::spawn(async move {
+///     init_worker_with_affinity(worker_id, &config, router.clone())?;
+///     // Worker is now pinned to a core and has router access
+/// });
+/// ```
+#[inline]
+pub fn init_worker_with_affinity(
+    worker_id: usize,
+    config: &AffinityConfig,
+    router: Arc<Router>,
+) -> Result<(), AffinityError> {
+    // Set CPU affinity if enabled
+    if config.enabled && affinity_supported() {
+        let core = config.core_for_worker(worker_id);
+        set_thread_affinity(core)?;
+    }
+
+    // Initialize thread-local router
+    init_worker_router(router);
+
+    Ok(())
+}
+
+// ============================================================================
+// Affinity Statistics
+// ============================================================================
+
+/// Statistics for CPU affinity operations.
+#[derive(Debug, Default)]
+pub struct AffinityStats {
+    /// Successful affinity sets
+    successful: AtomicU64,
+    /// Failed affinity sets
+    failed: AtomicU64,
+}
+
+impl AffinityStats {
+    /// Create new stats.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    fn record_set(&self, success: bool) {
+        if success {
+            self.successful.fetch_add(1, Ordering::Relaxed);
+        } else {
+            self.failed.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    /// Get successful sets.
+    pub fn successful(&self) -> u64 {
+        self.successful.load(Ordering::Relaxed)
+    }
+
+    /// Get failed sets.
+    pub fn failed(&self) -> u64 {
+        self.failed.load(Ordering::Relaxed)
+    }
+
+    /// Get success rate.
+    pub fn success_rate(&self) -> f64 {
+        let total = self.successful() + self.failed();
+        if total > 0 {
+            (self.successful() as f64 / total as f64) * 100.0
+        } else {
+            0.0
+        }
+    }
+}
+
+/// Global affinity statistics.
+static AFFINITY_STATS: AffinityStats = AffinityStats {
+    successful: AtomicU64::new(0),
+    failed: AtomicU64::new(0),
+};
+
+/// Get global affinity statistics.
+pub fn affinity_stats() -> &'static AffinityStats {
+    &AFFINITY_STATS
+}
+
+// ============================================================================
 // Statistics
 // ============================================================================
 
@@ -439,6 +796,96 @@ mod tests {
 
         let auto_config = WorkerConfig::new();
         assert!(auto_config.effective_workers() >= 1);
+    }
+
+    #[test]
+    fn test_affinity_config_default() {
+        let config = AffinityConfig::default();
+        assert!(!config.enabled);
+        assert!(config.cores.is_empty());
+        assert_eq!(config.mode, AffinityMode::RoundRobin);
+    }
+
+    #[test]
+    fn test_affinity_config_builder() {
+        let config = AffinityConfig::new()
+            .enable()
+            .cores(vec![0, 2, 4])
+            .mode(AffinityMode::Spread);
+
+        assert!(config.enabled);
+        assert_eq!(config.cores, vec![0, 2, 4]);
+        assert_eq!(config.mode, AffinityMode::Spread);
+    }
+
+    #[test]
+    fn test_core_for_worker_round_robin() {
+        let config = AffinityConfig::new()
+            .enable()
+            .mode(AffinityMode::RoundRobin);
+
+        let num_cores = num_cpus();
+        assert_eq!(config.core_for_worker(0), 0);
+        assert_eq!(config.core_for_worker(1), 1 % num_cores);
+        assert_eq!(config.core_for_worker(num_cores), 0);
+    }
+
+    #[test]
+    fn test_core_for_worker_specific_cores() {
+        let config = AffinityConfig::new()
+            .enable()
+            .cores(vec![0, 4, 8]);
+
+        assert_eq!(config.core_for_worker(0), 0);
+        assert_eq!(config.core_for_worker(1), 4);
+        assert_eq!(config.core_for_worker(2), 8);
+        assert_eq!(config.core_for_worker(3), 0); // Wraps around
+    }
+
+    #[test]
+    fn test_num_cpus() {
+        let cpus = num_cpus();
+        assert!(cpus >= 1);
+    }
+
+    #[test]
+    fn test_num_physical_cpus() {
+        let physical = num_physical_cpus();
+        let total = num_cpus();
+        assert!(physical >= 1);
+        assert!(physical <= total);
+    }
+
+    #[test]
+    fn test_affinity_supported() {
+        // Just check it returns a bool without panicking
+        let _ = affinity_supported();
+    }
+
+    #[test]
+    fn test_get_thread_affinity() {
+        // Should return Ok on all platforms
+        let result = get_thread_affinity();
+        assert!(result.is_ok());
+        let cores = result.unwrap();
+        assert!(!cores.is_empty());
+    }
+
+    #[test]
+    fn test_affinity_stats() {
+        let stats = affinity_stats();
+        let _ = stats.successful();
+        let _ = stats.failed();
+        let _ = stats.success_rate();
+    }
+
+    #[test]
+    fn test_affinity_error_display() {
+        let err1 = AffinityError::InvalidCore { core: 100, max: 7 };
+        assert!(err1.to_string().contains("100"));
+
+        let err2 = AffinityError::NotSupported;
+        assert!(err2.to_string().contains("not supported"));
     }
 
     #[test]
