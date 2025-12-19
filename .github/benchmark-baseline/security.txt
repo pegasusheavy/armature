@@ -6,6 +6,12 @@
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
+[1m[33mwarning[0m[1m: unused import: `BufMut`[0m
+  [1m[94m--> [0marmature-core/src/write_coalesce.rs:54:30
+   [1m[94m|[0m
+[1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
+   [1m[94m|[0m                              [1m[33m^^^^^^[0m
+
 [1m[33mwarning[0m[1m: field `config` is never read[0m
    [1m[94m--> [0marmature-core/src/body_parser.rs:528:5
     [1m[94m|[0m
@@ -26,7 +32,7 @@
 [1m[94m325[0m [1m[94m|[0m     fn allocate(&self) -> BytesMut {
     [1m[94m|[0m        [1m[33m^^^^^^^^[0m
 
-[1m[33mwarning[0m: `armature-core` (lib) generated 3 warnings (run `cargo fix --lib -p armature-core` to apply 1 suggestion)
+[1m[33mwarning[0m: `armature-core` (lib) generated 4 warnings (run `cargo fix --lib -p armature-core` to apply 2 suggestions)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
    [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
@@ -42,8 +48,6 @@
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-tenancy v0.1.0 (/home/runner/work/armature/armature/armature-tenancy)
-[1m[92m   Compiling[0m armature-audit v0.1.0 (/home/runner/work/armature/armature/armature-audit)
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
    [1m[94m|[0m
@@ -210,4 +214,3 @@
     [1m[94m= [0mand 18 other candidates
 
 [1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
-[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
