@@ -71,6 +71,7 @@
 [1m[92m   Compiling[0m armature-ferron v0.1.0 (/home/runner/work/armature/armature/armature-ferron)
 [1m[92m   Compiling[0m armature-cqrs v0.1.0 (/home/runner/work/armature/armature/armature-cqrs)
 [1m[92m   Compiling[0m armature-storage v0.1.0 (/home/runner/work/armature/armature/armature-storage)
+[1m[92m   Compiling[0m armature-distributed v0.1.0 (/home/runner/work/armature/armature/armature-distributed)
 [1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
    [1m[94m--> [0marmature-core/src/numa.rs:549:13
     [1m[94m|[0m
@@ -146,36 +147,10 @@
 [1m[94m1581[0m [1m[94m|[0m     batch_size: usize,
      [1m[94m|[0m     [1m[33m^^^^^^^^^^[0m
 
-[1m[92m   Compiling[0m armature-distributed v0.1.0 (/home/runner/work/armature/armature/armature-distributed)
 [1m[92m   Compiling[0m armature-discovery v0.1.0 (/home/runner/work/armature/armature/armature-discovery)
 [1m[92m   Compiling[0m armature-http-client v0.1.0 (/home/runner/work/armature/armature/armature-http-client)
 [1m[92m   Compiling[0m armature-jwt v0.1.0 (/home/runner/work/armature/armature/armature-jwt)
 [1m[92m   Compiling[0m armature-auth v0.1.0 (/home/runner/work/armature/armature/armature-auth)
-[1m[92m   Compiling[0m armature-graphql v0.1.0 (/home/runner/work/armature/armature/armature-graphql)
-[1m[92m   Compiling[0m armature-config v0.1.0 (/home/runner/work/armature/armature/armature-config)
-[1m[92m   Compiling[0m armature-testing v0.1.0 (/home/runner/work/armature/armature/armature-testing)
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[92m   Compiling[0m armature-ratelimit v0.1.0 (/home/runner/work/armature/armature/armature-ratelimit)
-[1m[92m   Compiling[0m armature-validation v0.1.0 (/home/runner/work/armature/armature/armature-validation)
-[1m[92m   Compiling[0m armature-security v0.1.0 (/home/runner/work/armature/armature/armature-security)
-[1m[92m   Compiling[0m armature-webhooks v0.1.0 (/home/runner/work/armature/armature/armature-webhooks)
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-queue v0.1.0 (/home/runner/work/armature/armature/armature-queue)
-[1m[92m   Compiling[0m armature-compression v0.1.0 (/home/runner/work/armature/armature/armature-compression)
-[1m[92m   Compiling[0m armature-acme v0.1.0 (/home/runner/work/armature/armature/armature-acme)
-[1m[92m   Compiling[0m armature-opentelemetry v0.1.0 (/home/runner/work/armature/armature/armature-opentelemetry)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
