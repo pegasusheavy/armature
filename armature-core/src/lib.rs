@@ -166,6 +166,7 @@ pub mod route_group;
 pub mod route_registry;
 pub mod routing;
 pub mod shutdown;
+pub mod socket_batch;
 pub mod sse;
 pub mod static_assets;
 pub mod status;
