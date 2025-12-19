@@ -1,0 +1,36 @@
+[package]
+name = "armature-benchmarks"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[[bin]]
+name = "armature_bench"
+path = "armature_bench.rs"
+
+[[bin]]
+name = "actix_bench"
+path = "actix_bench.rs"
+
+[[bin]]
+name = "axum_bench"
+path = "axum_bench.rs"
+
+[dependencies]
+# Armature (full path with needed features)
+armature = { path = "../.." }
+armature-core = { path = "../../armature-core" }
+armature-macro = { path = "../../armature-macro" }
+async-trait = "0.1"
+
+# Actix-web
+actix-web = "4"
+
+# Axum
+axum = "0.7"
+
+# Common
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

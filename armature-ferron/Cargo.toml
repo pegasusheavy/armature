@@ -1,0 +1,58 @@
+[package]
+name = "armature-ferron"
+version = "0.1.0"
+edition = "2021"
+authors = ["Pegasus Heavy Industries <pegasusheavyindustries@gmail.com>"]
+description = "Ferron reverse proxy integration for Armature web applications"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/PegasusHeavyIndustries/armature"
+keywords = ["ferron", "proxy", "reverse-proxy", "load-balancer", "armature"]
+categories = ["web-programming", "network-programming"]
+
+[dependencies]
+# Core dependencies
+tokio = { version = "1.0", features = ["full", "process"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+async-trait = "0.1"
+
+# Configuration generation
+kdl = "4.0"
+
+# Process management
+nix = { version = "0.27", features = ["signal", "process"] }
+
+# Health checking
+reqwest = { version = "0.11", features = ["json"], default-features = false }
+
+# File watching for config reload
+notify = "6.0"
+
+# Template rendering
+handlebars = "4.0"
+
+# URL parsing
+url = "2.0"
+
+# UUID for unique identifiers
+uuid = { version = "1.0", features = ["v4"] }
+
+# Futures utilities
+futures = "0.3"
+
+# Time utilities
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.0"
+
+[features]
+default = []
+# Enable native TLS for health checks
+native-tls = ["reqwest/native-tls"]
+# Enable rustls for health checks
+rustls = ["reqwest/rustls-tls"]
+

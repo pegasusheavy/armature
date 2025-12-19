@@ -448,6 +448,10 @@ path = "examples/extractors_example.rs"
 name = "profiling_server"
 path = "examples/profiling_server.rs"
 
+[[example]]
+name = "techempower_server"
+path = "examples/techempower_server.rs"
+
 # Benchmarks
 [[bench]]
 name = "core_benchmarks"
