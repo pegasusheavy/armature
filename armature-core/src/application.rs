@@ -577,13 +577,14 @@ async fn handle_request(
     }
     trace!(header_count = header_count, "Headers parsed");
 
-    // Read body
+    // Read body into Bytes (zero-copy after this point)
     let body_bytes = req.collect().await?.to_bytes();
     let body_size = body_bytes.len();
-    armature_req.body = body_bytes.to_vec();
-
+    
+    // Use zero-copy body storage
     if body_size > 0 {
-        trace!(body_size = body_size, "Request body received");
+        armature_req.set_body_bytes(body_bytes);
+        trace!(body_size = body_size, "Request body received (zero-copy)");
     }
 
     // Route the request
@@ -619,10 +620,11 @@ async fn handle_request(
     // Convert our HttpResponse to hyper Response
     let mut builder = Response::builder().status(response.status);
 
-    for (key, value) in response.headers {
+    for (key, value) in &response.headers {
         builder = builder.header(key, value);
     }
 
-    let body = Full::new(bytes::Bytes::from(response.body));
+    // Zero-copy body passthrough to Hyper
+    let body = Full::new(response.into_body_bytes());
     Ok(builder.body(body).unwrap())
 }

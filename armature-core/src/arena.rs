@@ -22,11 +22,11 @@
 //!     // Allocate strings in the arena
 //!     let method = ArenaString::from_str(arena, "GET");
 //!     let path = ArenaString::from_str(arena, "/api/users/123");
-//!     
+//!
 //!     // Allocate vectors in the arena
 //!     let mut headers = ArenaVec::new_in(arena);
 //!     headers.push(("Content-Type", "application/json"));
-//!     
+//!
 //!     // All allocations are freed when this closure returns
 //! });
 //! ```
@@ -121,7 +121,7 @@ where
 pub fn reset_arena() {
     ARENA.with(|arena| {
         let mut arena = arena.borrow_mut();
-        
+
         // If arena grew too large, recreate it with default size
         if arena.allocated_bytes() > MAX_ARENA_SIZE {
             *arena = Bump::with_capacity(DEFAULT_ARENA_SIZE);
@@ -396,7 +396,7 @@ impl<'a, K: PartialEq + fmt::Debug, V: fmt::Debug> fmt::Debug for ArenaMap<'a, K
 ///     let mut request = ArenaRequest::new(arena, "GET", "/api/users");
 ///     request.add_header(arena, "Content-Type", "application/json");
 ///     request.add_query_param(arena, "page", "1");
-///     
+///
 ///     // Process request...
 /// }); // All data freed at once
 /// ```

@@ -127,6 +127,7 @@
 
 pub mod application;
 pub mod arena;
+pub mod body;
 pub mod body_limits;
 pub mod container;
 pub mod error;

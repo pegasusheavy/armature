@@ -47,15 +47,8 @@ impl TestClient {
         path: &str,
         body: Option<Vec<u8>>,
     ) -> TestResponse {
-        let req = HttpRequest {
-            method: method.as_str().to_string(),
-            path: path.to_string(),
-            headers: HashMap::new(),
-            body: body.unwrap_or_default(),
-            path_params: HashMap::new(),
-            query_params: HashMap::new(),
-            extensions: Extensions::new(),
-        };
+        let mut req = HttpRequest::new(method.as_str().to_string(), path.to_string());
+        req.body = body.unwrap_or_default();
 
         // Route the request
         match self.router.route(req).await {
@@ -133,15 +126,14 @@ impl TestRequestBuilder {
             String::new()
         };
 
-        HttpRequest {
-            method: self.method.as_str().to_string(),
-            path: format!("{}{}", self.path, query_string),
-            headers: self.headers,
-            body: self.body,
-            path_params: HashMap::new(),
-            query_params: self.query_params,
-            extensions: Extensions::new(),
-        }
+        HttpRequest::from_parts(
+            self.method.as_str().to_string(),
+            format!("{}{}", self.path, query_string),
+            self.headers,
+            self.body,
+            HashMap::new(),
+            self.query_params,
+        )
     }
 }
 

@@ -383,16 +383,13 @@ impl armature_core::Middleware for RateLimitMiddleware {
                 retry_after,
             } => {
                 // Request is rate limited
-                let mut response = armature_core::HttpResponse {
-                    status: 429,
-                    headers: std::collections::HashMap::new(),
-                    body: serde_json::json!({
+                let mut response = armature_core::HttpResponse::new(429)
+                    .with_body(serde_json::json!({
                         "error": "Too Many Requests",
                         "message": message
                     })
                     .to_string()
-                    .into_bytes(),
-                };
+                    .into_bytes());
 
                 response
                     .headers

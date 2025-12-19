@@ -518,6 +518,10 @@ harness = false
 name = "arena_benchmarks"
 harness = false
 
+[[bench]]
+name = "body_benchmarks"
+harness = false
+
 # Benchmark Examples
 [[example]]
 name = "benchmark_server"

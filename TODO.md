@@ -30,6 +30,7 @@ Only features that are **not yet completed**.
 | ✅ SIMD HTTP Parser | Integrated `httparse` + `memchr` for SIMD-optimized parsing | `armature-core/src/simd_parser.rs` |
 | ✅ SIMD JSON | Optional `simd-json` feature for SIMD-accelerated JSON | `armature-core/src/json.rs` |
 | ✅ Arena Allocator | Per-request arena for batch allocations (~6x faster) | `armature-core/src/arena.rs` |
+| ✅ Hyper Body Passthrough | Zero-copy Bytes-based body handling (~4x faster clone) | `armature-core/src/body.rs` |
 
 ---
 
@@ -106,7 +107,7 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🔴 | Direct Hyper Body Passthrough | Avoid wrapping/unwrapping `hyper::Body` | `armature-core` |
+| ✅ | Direct Hyper Body Passthrough | Zero-copy Bytes-based body handling | `armature-core/src/body.rs` |
 | 🟠 | Native `http` Crate Types | Use `http::Request`/`Response` directly | `armature-core` |
 | 🟠 | Tower Service Compatibility | Implement `tower::Service` for composability | `armature-core` |
 | 🟡 | Hyper 1.0 Full Support | Ensure all Hyper 1.0 features are utilized | `armature-core` |
@@ -329,7 +330,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Router Optimization | 2 | 🟠 |
 | ↳ Zero-Cost Abstractions | 2 | 🟠 |
 | ↳ Memory & Allocation | 4 | 🟠/🟡 |
-| ↳ Hyper Integration | 4 | 🔴/🟠/🟡 |
+| ↳ Hyper Integration | 3 | 🟠/🟡 |
 | ↳ Async Runtime | 4 | 🟠/🟡 |
 | ↳ Benchmark Infrastructure | 2 | 🟠/🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
@@ -345,7 +346,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **17** | ✅ |
+| **Recently Completed** | **18** | ✅ |
 
 ### Performance Target
 
