@@ -267,16 +267,12 @@ fn match_path(pattern: &str, path: &str) -> Option<HashMap<String, String>> {
 }
 
 /// Parse a query string into a map of parameters
+///
+/// Uses SIMD-optimized byte searching via memchr for faster parsing.
+#[inline]
 fn parse_query_string(query: &str) -> HashMap<String, String> {
-    query
-        .split('&')
-        .filter_map(|part| {
-            let mut split = part.splitn(2, '=');
-            let key = split.next()?;
-            let value = split.next().unwrap_or("");
-            Some((key.to_string(), value.to_string()))
-        })
-        .collect()
+    // Use the SIMD-optimized parser
+    crate::simd_parser::parse_query_string_fast(query)
 }
 
 #[cfg(test)]
