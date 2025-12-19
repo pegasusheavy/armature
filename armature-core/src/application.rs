@@ -1,6 +1,7 @@
 // Application bootstrapper and HTTP server
 
 use crate::logging::{debug, error, info, trace, warn};
+use crate::pipeline::{PipelineConfig, PipelineStats, PipelinedHttp1Builder};
 use crate::{
     Container, Error, HttpRequest, HttpResponse, HttpsConfig, LifecycleManager, Module, Router,
     TlsConfig,
@@ -20,6 +21,10 @@ pub struct Application {
     pub container: Container,
     pub router: Arc<Router>,
     pub lifecycle: Arc<LifecycleManager>,
+    /// HTTP/1.1 pipelining configuration
+    pipeline_config: PipelineConfig,
+    /// Shared pipeline statistics
+    pipeline_stats: Arc<PipelineStats>,
 }
 
 impl Application {
@@ -29,7 +34,36 @@ impl Application {
             container,
             router: Arc::new(router),
             lifecycle: Arc::new(LifecycleManager::new()),
+            pipeline_config: PipelineConfig::default(),
+            pipeline_stats: Arc::new(PipelineStats::new()),
         }
+    }
+
+    /// Set the pipeline configuration for HTTP/1.1 pipelining
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, pipeline::{PipelineConfig, PipelineMode}};
+    ///
+    /// let app = Application::new(container, router)
+    ///     .with_pipeline_config(PipelineConfig::high_performance());
+    /// ```
+    pub fn with_pipeline_config(mut self, config: PipelineConfig) -> Self {
+        self.pipeline_config = config;
+        self
+    }
+
+    /// Get the pipeline statistics
+    ///
+    /// Use this to monitor pipeline performance at runtime.
+    pub fn pipeline_stats(&self) -> Arc<PipelineStats> {
+        Arc::clone(&self.pipeline_stats)
+    }
+
+    /// Get the pipeline configuration
+    pub fn pipeline_config(&self) -> &PipelineConfig {
+        &self.pipeline_config
     }
 
     /// Create a new application from a root module with lifecycle support
@@ -88,6 +122,8 @@ impl Application {
             container,
             router: Arc::new(router),
             lifecycle,
+            pipeline_config: PipelineConfig::default(),
+            pipeline_stats: Arc::new(PipelineStats::new()),
         }
     }
 
@@ -315,32 +351,83 @@ impl Application {
     }
 
     /// Start the HTTP server on the specified port
+    ///
+    /// Uses HTTP/1.1 pipelining for improved throughput. Configure pipelining
+    /// behavior with `with_pipeline_config()` before calling this method.
+    ///
+    /// # Pipelining
+    ///
+    /// HTTP/1.1 pipelining allows clients to send multiple requests on the
+    /// same connection without waiting for responses. This significantly
+    /// improves throughput, especially on high-latency connections.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, pipeline::PipelineConfig};
+    ///
+    /// let app = Application::new(container, router)
+    ///     .with_pipeline_config(PipelineConfig::high_performance());
+    ///
+    /// app.listen(8080).await?;
+    /// ```
     pub async fn listen(self, port: u16) -> Result<(), Error> {
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
         debug!(address = %addr, "Binding to address");
         let listener = TcpListener::bind(addr).await?;
 
-        info!(address = %addr, "HTTP server listening");
+        info!(
+            address = %addr,
+            pipeline_mode = ?self.pipeline_config.mode,
+            pipeline_flush = self.pipeline_config.pipeline_flush,
+            max_concurrent = self.pipeline_config.max_concurrent,
+            "HTTP server listening with pipelining enabled"
+        );
 
         let router = self.router.clone();
+        let pipeline_builder = PipelinedHttp1Builder::with_stats(
+            self.pipeline_config.clone(),
+            Arc::clone(&self.pipeline_stats),
+        );
+        let pipeline_stats = Arc::clone(&self.pipeline_stats);
 
         loop {
             let (stream, client_addr) = listener.accept().await?;
             trace!(client_address = %client_addr, "Connection accepted");
 
+            // Apply TCP_NODELAY if configured
+            if pipeline_builder.config().tcp_nodelay {
+                if let Err(e) = stream.set_nodelay(true) {
+                    trace!(error = %e, "Failed to set TCP_NODELAY");
+                }
+            }
+
             let io = TokioIo::new(stream);
             let router = router.clone();
+            let http_builder = pipeline_builder.configure_hyper_builder();
+            let stats = Arc::clone(&pipeline_stats);
+
+            // Track connection
+            stats.connection_opened();
 
             tokio::spawn(async move {
+                let stats_for_close = Arc::clone(&stats);
                 let service = service_fn(move |req: Request<IncomingBody>| {
                     let router = router.clone();
-                    async move { handle_request(req, router).await }
+                    let stats = Arc::clone(&stats);
+                    async move {
+                        stats.request_processed();
+                        handle_request(req, router).await
+                    }
                 });
 
-                if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
+                if let Err(err) = http_builder.serve_connection(io, service).await {
                     error!(error = %err, client = %client_addr, "Error serving connection");
                 }
+
+                // Track connection close
+                stats_for_close.connection_closed();
             });
         }
     }
@@ -372,19 +459,42 @@ impl Application {
         debug!(address = %addr, "Binding to address (HTTPS)");
         let listener = TcpListener::bind(addr).await?;
 
-        info!(address = %addr, "HTTPS server listening");
+        info!(
+            address = %addr,
+            pipeline_mode = ?self.pipeline_config.mode,
+            pipeline_flush = self.pipeline_config.pipeline_flush,
+            "HTTPS server listening with pipelining enabled"
+        );
 
         let acceptor = TlsAcceptor::from(tls_config.server_config);
         let router = self.router.clone();
+        let pipeline_builder = PipelinedHttp1Builder::with_stats(
+            self.pipeline_config.clone(),
+            Arc::clone(&self.pipeline_stats),
+        );
+        let pipeline_stats = Arc::clone(&self.pipeline_stats);
 
         loop {
             let (stream, client_addr) = listener.accept().await?;
             trace!(client_address = %client_addr, "HTTPS connection accepted");
 
+            // Apply TCP_NODELAY if configured
+            if pipeline_builder.config().tcp_nodelay {
+                if let Err(e) = stream.set_nodelay(true) {
+                    trace!(error = %e, "Failed to set TCP_NODELAY");
+                }
+            }
+
             let acceptor = acceptor.clone();
             let router = router.clone();
+            let http_builder = pipeline_builder.configure_hyper_builder();
+            let stats = Arc::clone(&pipeline_stats);
+
+            // Track connection
+            stats.connection_opened();
 
             tokio::spawn(async move {
+                let stats_for_close = Arc::clone(&stats);
                 match acceptor.accept(stream).await {
                     Ok(tls_stream) => {
                         debug!(client = %client_addr, "TLS handshake successful");
@@ -392,11 +502,14 @@ impl Application {
 
                         let service = service_fn(move |req: Request<IncomingBody>| {
                             let router = router.clone();
-                            async move { handle_request(req, router).await }
+                            let stats = Arc::clone(&stats);
+                            async move {
+                                stats.request_processed();
+                                handle_request(req, router).await
+                            }
                         });
 
-                        if let Err(err) = http1::Builder::new().serve_connection(io, service).await
-                        {
+                        if let Err(err) = http_builder.serve_connection(io, service).await {
                             error!(error = %err, client = %client_addr, "Error serving HTTPS connection");
                         }
                     }
@@ -404,6 +517,9 @@ impl Application {
                         error!(error = %err, client = %client_addr, "TLS handshake failed");
                     }
                 }
+
+                // Track connection close
+                stats_for_close.connection_closed();
             });
         }
     }

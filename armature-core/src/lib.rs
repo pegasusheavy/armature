@@ -146,6 +146,7 @@ pub mod lifecycle;
 pub mod logging;
 pub mod middleware;
 pub mod module;
+pub mod pipeline;
 pub mod pagination;
 pub mod resilience;
 pub mod route_constraint;
