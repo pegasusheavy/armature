@@ -1,54 +1,182 @@
 // Routing system for HTTP requests
+//
+// This module provides an optimized routing system that leverages:
+// - Monomorphization: Handlers are specialized at compile time
+// - Inline dispatch: Hot paths use #[inline(always)]
+// - Zero-cost abstractions: Minimal runtime overhead
 
+use crate::handler::{BoxedHandler, IntoHandler};
 use crate::route_constraint::RouteConstraints;
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 
-/// A route handler function type
+/// A route handler function type (legacy - for backwards compatibility)
+///
+/// **Deprecated**: Use `BoxedHandler` for better performance via monomorphization.
+/// This type uses double dynamic dispatch (dyn Fn + Box<dyn Future>) which
+/// prevents the compiler from inlining handler code.
+///
+/// Prefer using the optimized handler system:
+/// ```ignore
+/// use armature_core::handler::handler;
+///
+/// let h = handler(my_async_fn);
+/// ```
 pub type HandlerFn = Arc<
     dyn Fn(
             HttpRequest,
-        ) -> std::pin::Pin<
-            Box<dyn std::future::Future<Output = Result<HttpResponse, Error>> + Send>,
-        > + Send
+        ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+        + Send
         + Sync,
 >;
+
+/// Optimized route handler that enables inlining via monomorphization.
+///
+/// This type wraps handlers in a way that allows the compiler to see through
+/// to the actual handler implementation and inline it.
+pub type OptimizedHandler = BoxedHandler;
 
 /// Route definition with handler
 #[derive(Clone)]
 pub struct Route {
     pub method: HttpMethod,
     pub path: String,
-    pub handler: HandlerFn,
+    /// The route handler - uses optimized dispatch
+    pub handler: BoxedHandler,
     /// Optional route constraints for parameter validation
     pub constraints: Option<RouteConstraints>,
 }
 
-/// Router for managing routes and dispatching requests
+impl Route {
+    /// Create a new route with an optimized handler.
+    ///
+    /// This method accepts any handler type that implements `IntoHandler`,
+    /// enabling compile-time specialization.
+    #[inline]
+    pub fn new<H, Args>(method: HttpMethod, path: impl Into<String>, handler: H) -> Self
+    where
+        H: IntoHandler<Args>,
+    {
+        Self {
+            method,
+            path: path.into(),
+            handler: BoxedHandler::new(handler.into_handler()),
+            constraints: None,
+        }
+    }
+
+    /// Create a route from a legacy HandlerFn for backwards compatibility.
+    #[inline]
+    pub fn from_legacy(
+        method: HttpMethod,
+        path: impl Into<String>,
+        handler: HandlerFn,
+    ) -> Self {
+        Self {
+            method,
+            path: path.into(),
+            handler: crate::handler::from_legacy_handler(handler),
+            constraints: None,
+        }
+    }
+
+    /// Add route constraints.
+    #[inline]
+    pub fn with_constraints(mut self, constraints: RouteConstraints) -> Self {
+        self.constraints = Some(constraints);
+        self
+    }
+}
+
+/// Router for managing routes and dispatching requests.
+///
+/// The router uses optimized handler dispatch that enables:
+/// - Monomorphization of handler code
+/// - Inlining of handler bodies
+/// - Minimal allocation in the hot path
 #[derive(Clone)]
 pub struct Router {
     pub routes: Vec<Route>,
 }
 
 impl Router {
+    /// Create a new empty router.
+    #[inline]
     pub fn new() -> Self {
         Self { routes: Vec::new() }
     }
 
-    /// Add a route to the router
+    /// Add a route to the router.
+    #[inline]
     pub fn add_route(&mut self, route: Route) {
         self.routes.push(route);
+    }
+
+    /// Add a GET route with an optimized handler.
+    #[inline]
+    pub fn get<H, Args>(&mut self, path: impl Into<String>, handler: H) -> &mut Self
+    where
+        H: IntoHandler<Args>,
+    {
+        self.routes.push(Route::new(HttpMethod::GET, path, handler));
+        self
+    }
+
+    /// Add a POST route with an optimized handler.
+    #[inline]
+    pub fn post<H, Args>(&mut self, path: impl Into<String>, handler: H) -> &mut Self
+    where
+        H: IntoHandler<Args>,
+    {
+        self.routes
+            .push(Route::new(HttpMethod::POST, path, handler));
+        self
+    }
+
+    /// Add a PUT route with an optimized handler.
+    #[inline]
+    pub fn put<H, Args>(&mut self, path: impl Into<String>, handler: H) -> &mut Self
+    where
+        H: IntoHandler<Args>,
+    {
+        self.routes.push(Route::new(HttpMethod::PUT, path, handler));
+        self
+    }
+
+    /// Add a DELETE route with an optimized handler.
+    #[inline]
+    pub fn delete<H, Args>(&mut self, path: impl Into<String>, handler: H) -> &mut Self
+    where
+        H: IntoHandler<Args>,
+    {
+        self.routes
+            .push(Route::new(HttpMethod::DELETE, path, handler));
+        self
+    }
+
+    /// Add a PATCH route with an optimized handler.
+    #[inline]
+    pub fn patch<H, Args>(&mut self, path: impl Into<String>, handler: H) -> &mut Self
+    where
+        H: IntoHandler<Args>,
+    {
+        self.routes
+            .push(Route::new(HttpMethod::PATCH, path, handler));
+        self
     }
 
     /// Match a route without executing the handler.
     /// Returns the handler and path parameters if a route matches.
     /// Useful for route lookup benchmarking and inspection.
+    #[inline]
     pub fn match_route(
         &self,
         method: &str,
         path: &str,
-    ) -> Option<(HandlerFn, HashMap<String, String>)> {
+    ) -> Option<(BoxedHandler, HashMap<String, String>)> {
         // Strip query string if present
         let path = path.split('?').next().unwrap_or(path);
 
@@ -65,7 +193,12 @@ impl Router {
         None
     }
 
-    /// Find a route that matches the request
+    /// Find a route that matches the request and execute the handler.
+    ///
+    /// This is the main hot path for request handling. The handler dispatch
+    /// is optimized via monomorphization - the actual handler code can be
+    /// inlined by the compiler.
+    #[inline]
     pub async fn route(&self, mut request: HttpRequest) -> Result<HttpResponse, Error> {
         // Parse query parameters from path
         let (path, query_string) = request
@@ -78,7 +211,7 @@ impl Router {
             request.query_params = parse_query_string(query);
         }
 
-        // Find matching route
+        // Find matching route - this is the route matching hot path
         for route in &self.routes {
             if route.method.as_str() != request.method {
                 continue;
@@ -91,7 +224,10 @@ impl Router {
                 }
 
                 request.path_params = params;
-                return (route.handler)(request).await;
+
+                // Handler dispatch - the BoxedHandler.call() is optimized
+                // to allow the compiler to inline the actual handler body
+                return route.handler.call(request).await;
             }
         }
 
@@ -146,6 +282,11 @@ fn parse_query_string(query: &str) -> HashMap<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Test helper handler
+    async fn test_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
+        Ok(HttpResponse::ok())
+    }
 
     #[test]
     fn test_match_path_static() {
@@ -255,33 +396,40 @@ mod tests {
     }
 
     #[test]
-    fn test_route_creation() {
-        use crate::HttpMethod;
-        let route = Route {
-            method: HttpMethod::GET,
-            path: "/users".to_string(),
-            handler: std::sync::Arc::new(|_req| {
-                Box::pin(async move { Ok(crate::HttpResponse::ok()) })
-            }),
-            constraints: None,
-        };
-
+    fn test_route_creation_optimized() {
+        // Test the new optimized route creation
+        let route = Route::new(HttpMethod::GET, "/users", test_handler);
         assert_eq!(route.method, HttpMethod::GET);
         assert_eq!(route.path, "/users");
     }
 
     #[test]
+    fn test_route_creation_legacy() {
+        // Test legacy handler compatibility
+        let legacy_handler: HandlerFn = Arc::new(|_req| {
+            Box::pin(async move { Ok(HttpResponse::ok()) })
+        });
+        let route = Route::from_legacy(HttpMethod::GET, "/users", legacy_handler);
+        assert_eq!(route.method, HttpMethod::GET);
+        assert_eq!(route.path, "/users");
+    }
+
+    #[test]
+    fn test_router_fluent_api() {
+        let mut router = Router::new();
+        router
+            .get("/users", test_handler)
+            .post("/users", test_handler)
+            .put("/users/:id", test_handler)
+            .delete("/users/:id", test_handler);
+
+        assert_eq!(router.routes.len(), 4);
+    }
+
+    #[test]
     fn test_router_add_route() {
         let mut router = Router::new();
-        let route = Route {
-            method: crate::HttpMethod::GET,
-            path: "/test".to_string(),
-            handler: std::sync::Arc::new(|_req| {
-                Box::pin(async move { Ok(crate::HttpResponse::ok()) })
-            }),
-            constraints: None,
-        };
-
+        let route = Route::new(HttpMethod::GET, "/test", test_handler);
         router.add_route(route);
         assert_eq!(router.routes.len(), 1);
     }
@@ -291,15 +439,7 @@ mod tests {
         let mut router = Router::new();
 
         for i in 0..5 {
-            let route = Route {
-                method: crate::HttpMethod::GET,
-                path: format!("/test{}", i),
-                handler: std::sync::Arc::new(|_req| {
-                    Box::pin(async move { Ok(crate::HttpResponse::ok()) })
-                }),
-                constraints: None,
-            };
-            router.add_route(route);
+            router.get(format!("/test{}", i), test_handler);
         }
 
         assert_eq!(router.routes.len(), 5);
@@ -311,5 +451,50 @@ mod tests {
         let params = parse_query_string(query);
         // Should contain at least one tag
         assert!(params.contains_key("tag"));
+    }
+
+    #[test]
+    fn test_route_with_constraints() {
+        let constraints = RouteConstraints::new()
+            .add("id", Box::new(crate::route_constraint::IntConstraint));
+
+        let route = Route::new(HttpMethod::GET, "/users/:id", test_handler)
+            .with_constraints(constraints);
+
+        assert!(route.constraints.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_router_dispatch() {
+        let mut router = Router::new();
+        router.get("/test", test_handler);
+
+        let req = HttpRequest::new("GET".to_string(), "/test".to_string());
+        let response = router.route(req).await.unwrap();
+        assert_eq!(response.status, 200);
+    }
+
+    #[tokio::test]
+    async fn test_router_dispatch_with_params() {
+        async fn param_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
+            let id = req.param("id").unwrap();
+            Ok(HttpResponse::ok().with_body(id.as_bytes().to_vec()))
+        }
+
+        let mut router = Router::new();
+        router.get("/users/:id", param_handler);
+
+        let req = HttpRequest::new("GET".to_string(), "/users/123".to_string());
+        let response = router.route(req).await.unwrap();
+        assert_eq!(response.status, 200);
+        assert_eq!(String::from_utf8(response.body).unwrap(), "123");
+    }
+
+    #[tokio::test]
+    async fn test_router_404() {
+        let router = Router::new();
+        let req = HttpRequest::new("GET".to_string(), "/nonexistent".to_string());
+        let result = router.route(req).await;
+        assert!(matches!(result, Err(Error::RouteNotFound(_))));
     }
 }
