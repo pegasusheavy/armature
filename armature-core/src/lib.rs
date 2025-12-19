@@ -130,6 +130,7 @@ pub mod arena;
 pub mod batch;
 pub mod body;
 pub mod body_limits;
+pub mod body_parser;
 pub mod buffer_pool;
 pub mod container;
 pub mod error;
