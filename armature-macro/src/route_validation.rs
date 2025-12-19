@@ -40,10 +40,8 @@ pub fn validate_controller_path(path: &str, span: Span) -> Result<(), Error> {
         return Err(Error::new(
             span,
             format!(
-                "controller path must start with '/' or be empty, got: \"{}\"\n\
-                 hint: change to \"{}\" or use \"\" for no prefix",
-                path,
-                format!("/{}", path)
+                "controller path must start with '/' or be empty, got: \"{path}\"\n\
+                 hint: change to \"/{path}\" or use \"\" for no prefix"
             ),
         ));
     }
@@ -120,10 +118,8 @@ pub fn validate_route_path(path: &str, span: Span) -> Result<ValidatedRoute, Err
         return Err(Error::new(
             span,
             format!(
-                "route path must start with '/', got: \"{}\"\n\
-                 hint: change to \"{}\"",
-                path,
-                format!("/{}", path)
+                "route path must start with '/', got: \"{path}\"\n\
+                 hint: change to \"/{path}\""
             ),
         ));
     }
