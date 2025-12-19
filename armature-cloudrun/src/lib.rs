@@ -1,3 +1,5 @@
+// Allow dead_code while crate is under development
+#![allow(dead_code)]
 //! # Armature Cloud Run
 //!
 //! Google Cloud Run deployment utilities for Armature applications.

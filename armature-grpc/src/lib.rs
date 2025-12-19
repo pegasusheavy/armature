@@ -1,3 +1,8 @@
+// Allow dead_code for now as this crate is still under development
+#![allow(dead_code)]
+// Status from tonic is inherently large; this is acceptable for error handling
+#![allow(clippy::result_large_err)]
+
 //! # Armature gRPC
 //!
 //! gRPC server and client support for Armature applications.

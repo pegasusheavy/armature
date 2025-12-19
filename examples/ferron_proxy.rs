@@ -103,9 +103,15 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let registry = ServiceRegistry::new();
 
     // Register service instances
-    let id1 = registry.register("api-service", "http://localhost:3001").await?;
-    let id2 = registry.register("api-service", "http://localhost:3002").await?;
-    let _id3 = registry.register("api-service", "http://localhost:3003").await?;
+    let id1 = registry
+        .register("api-service", "http://localhost:3001")
+        .await?;
+    let id2 = registry
+        .register("api-service", "http://localhost:3002")
+        .await?;
+    let _id3 = registry
+        .register("api-service", "http://localhost:3003")
+        .await?;
 
     println!("Registered instances: {}, {}, ...", id1, id2);
 
@@ -145,7 +151,10 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("  Method: {}", health_config.method);
     println!("  Timeout: {:?}", health_config.timeout);
     println!("  Interval: {:?}", health_config.interval);
-    println!("  Unhealthy threshold: {}", health_config.unhealthy_threshold);
+    println!(
+        "  Unhealthy threshold: {}",
+        health_config.unhealthy_threshold
+    );
     println!("  Healthy threshold: {}", health_config.healthy_threshold);
 
     // Example 6: Armature App Configuration Helper
@@ -218,4 +227,3 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

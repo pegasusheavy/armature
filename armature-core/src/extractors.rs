@@ -137,17 +137,13 @@ impl<T: Send + Sync + 'static> FromRequest for State<T> {
     /// registered in the application.
     #[inline]
     fn from_request(request: &HttpRequest) -> Result<Self, Error> {
-        request
-            .extensions
-            .get_arc::<T>()
-            .map(State)
-            .ok_or_else(|| {
-                Error::ProviderNotFound(format!(
-                    "State<{}> not found in request extensions. \
+        request.extensions.get_arc::<T>().map(State).ok_or_else(|| {
+            Error::ProviderNotFound(format!(
+                "State<{}> not found in request extensions. \
                      Did you forget to register it with `app.with_state()`?",
-                    std::any::type_name::<T>()
-                ))
-            })
+                std::any::type_name::<T>()
+            ))
+        })
     }
 }
 

@@ -2,8 +2,8 @@
 //!
 //! This module provides shared functionality used across multiple examples.
 
-use std::net::{TcpListener, SocketAddr};
 use rand::Rng;
+use std::net::{SocketAddr, TcpListener};
 
 /// Port range for examples (50000-50999)
 pub const PORT_RANGE_START: u16 = 50000;
@@ -50,7 +50,10 @@ pub fn find_available_port() -> u16 {
         }
     }
 
-    panic!("Could not find an available port in range {}-{}", PORT_RANGE_START, PORT_RANGE_END);
+    panic!(
+        "Could not find an available port in range {}-{}",
+        PORT_RANGE_START, PORT_RANGE_END
+    );
 }
 
 /// Check if a specific port is available.
@@ -66,4 +69,3 @@ pub fn is_port_available(port: u16) -> bool {
     let addr: SocketAddr = ([0, 0, 0, 0], port).into();
     TcpListener::bind(addr).is_ok()
 }
-

@@ -117,7 +117,11 @@ struct AppState {
 static APP_STATE: std::sync::OnceLock<Arc<AppState>> = std::sync::OnceLock::new();
 
 fn get_state() -> &'static Arc<AppState> {
-    APP_STATE.get_or_init(|| Arc::new(AppState { db: InMemoryDb::new() }))
+    APP_STATE.get_or_init(|| {
+        Arc::new(AppState {
+            db: InMemoryDb::new(),
+        })
+    })
 }
 
 // ============================================================================
@@ -207,9 +211,7 @@ impl TechEmpowerController {
         let state = get_state();
         let count = parse_queries(req.query_params.get("queries").map(|s| s.as_str()));
 
-        let worlds: Vec<World> = (0..count)
-            .map(|_| state.db.get_random_world())
-            .collect();
+        let worlds: Vec<World> = (0..count).map(|_| state.db.get_random_world()).collect();
 
         HttpResponse::json(&worlds)
     }
@@ -235,7 +237,10 @@ impl TechEmpowerController {
         let html = render_fortunes_html(&fortunes);
 
         Ok(HttpResponse::ok()
-            .with_header("Content-Type".to_string(), "text/html; charset=utf-8".to_string())
+            .with_header(
+                "Content-Type".to_string(),
+                "text/html; charset=utf-8".to_string(),
+            )
             .with_body(html.into_bytes()))
     }
 
@@ -268,9 +273,7 @@ impl TechEmpowerController {
         let state = get_state();
         let count = parse_queries(req.query_params.get("queries").map(|s| s.as_str()));
 
-        let worlds: Vec<World> = (0..count)
-            .map(|_| state.db.get_random_world())
-            .collect();
+        let worlds: Vec<World> = (0..count).map(|_| state.db.get_random_world()).collect();
 
         HttpResponse::json(&worlds)
     }

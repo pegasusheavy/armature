@@ -26,8 +26,8 @@
 #[path = "common/mod.rs"]
 mod common;
 
-use armature::prelude::*;
 use armature::logging::LogConfig;
+use armature::prelude::*;
 use armature_ferron::{
     Backend, FerronConfig, HealthCheckConfig, LoadBalanceStrategy, LoadBalancer, Location,
     RateLimitConfig, ServiceRegistry,
@@ -213,9 +213,24 @@ impl ApiController {
             .ok_or_else(|| Error::validation("Invalid user ID"))?;
 
         let users = vec![
-            User { id: 1, name: "Alice".to_string(), email: "alice@example.com".to_string(), role: "admin".to_string() },
-            User { id: 2, name: "Bob".to_string(), email: "bob@example.com".to_string(), role: "user".to_string() },
-            User { id: 3, name: "Charlie".to_string(), email: "charlie@example.com".to_string(), role: "user".to_string() },
+            User {
+                id: 1,
+                name: "Alice".to_string(),
+                email: "alice@example.com".to_string(),
+                role: "admin".to_string(),
+            },
+            User {
+                id: 2,
+                name: "Bob".to_string(),
+                email: "bob@example.com".to_string(),
+                role: "user".to_string(),
+            },
+            User {
+                id: 3,
+                name: "Charlie".to_string(),
+                email: "charlie@example.com".to_string(),
+                role: "user".to_string(),
+            },
         ];
 
         match users.into_iter().find(|u| u.id == id) {
@@ -293,18 +308,9 @@ fn generate_ferron_config(
                 .rate_limit(RateLimitConfig::new(100).burst(200)),
         )
         // Health endpoints (no rate limit for probes)
-        .location(Location::new("/health").proxy(format!(
-            "http://127.0.0.1:{}/health",
-            app_port
-        )))
-        .location(Location::new("/ready").proxy(format!(
-            "http://127.0.0.1:{}/ready",
-            app_port
-        )))
-        .location(Location::new("/live").proxy(format!(
-            "http://127.0.0.1:{}/live",
-            app_port
-        )))
+        .location(Location::new("/health").proxy(format!("http://127.0.0.1:{}/health", app_port)))
+        .location(Location::new("/ready").proxy(format!("http://127.0.0.1:{}/ready", app_port)))
+        .location(Location::new("/live").proxy(format!("http://127.0.0.1:{}/live", app_port)))
         // Security headers
         .header("X-Frame-Options", "DENY")
         .header("X-Content-Type-Options", "nosniff")
@@ -364,10 +370,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("\n📝 Step 2: Load-Balanced Configuration");
     println!("---------------------------------------\n");
 
-    let lb_config = generate_load_balanced_config(
-        "api.example.com",
-        &[port, port + 1, port + 2],
-    )?;
+    let lb_config = generate_load_balanced_config("api.example.com", &[port, port + 1, port + 2])?;
     println!("Load-balanced configuration:\n");
     println!("{}", lb_config.to_kdl()?);
 
@@ -412,8 +415,14 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("  Endpoint: /health");
     println!("  Timeout: {:?}", health_config.timeout);
     println!("  Interval: {:?}", health_config.interval);
-    println!("  Unhealthy after: {} failures", health_config.unhealthy_threshold);
-    println!("  Healthy after: {} successes", health_config.healthy_threshold);
+    println!(
+        "  Unhealthy after: {} failures",
+        health_config.unhealthy_threshold
+    );
+    println!(
+        "  Healthy after: {} successes",
+        health_config.healthy_threshold
+    );
 
     // 5. Start the Armature server
     println!("\n🚀 Step 5: Starting Armature Server");
@@ -447,4 +456,3 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

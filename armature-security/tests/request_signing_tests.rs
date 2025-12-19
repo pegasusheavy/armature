@@ -152,15 +152,8 @@ fn test_verify_http_request() {
     let body = "test body";
     let signature = signer.sign("POST", "/api/test", body, timestamp);
 
-    let mut request = HttpRequest {
-        method: "POST".to_string(),
-        path: "/api/test".to_string(),
-        headers: HashMap::new(),
-        query_params: HashMap::new(),
-        body: body.as_bytes().to_vec(),
-        path_params: HashMap::new(),
-    };
-
+    let mut request = HttpRequest::new("POST".to_string(), "/api/test".to_string());
+    request.body = body.as_bytes().to_vec();
     request.headers.insert("X-Signature".to_string(), signature);
     request
         .headers
@@ -175,14 +168,7 @@ fn test_verify_http_request() {
 fn test_verify_request_missing_signature() {
     let verifier = RequestVerifier::new("secret");
 
-    let request = HttpRequest {
-        method: "POST".to_string(),
-        path: "/api/test".to_string(),
-        headers: HashMap::new(),
-        query_params: HashMap::new(),
-        body: Vec::new(),
-        path_params: HashMap::new(),
-    };
+    let request = HttpRequest::new("POST".to_string(), "/api/test".to_string());
 
     let result = verifier.verify_request(&request);
     assert!(matches!(result, Err(SigningError::MissingSignature)));
@@ -192,15 +178,7 @@ fn test_verify_request_missing_signature() {
 fn test_verify_request_missing_timestamp() {
     let verifier = RequestVerifier::new("secret");
 
-    let mut request = HttpRequest {
-        method: "POST".to_string(),
-        path: "/api/test".to_string(),
-        headers: HashMap::new(),
-        query_params: HashMap::new(),
-        body: Vec::new(),
-        path_params: HashMap::new(),
-    };
-
+    let mut request = HttpRequest::new("POST".to_string(), "/api/test".to_string());
     request
         .headers
         .insert("X-Signature".to_string(), "signature".to_string());
@@ -213,15 +191,7 @@ fn test_verify_request_missing_timestamp() {
 fn test_verify_request_invalid_timestamp() {
     let verifier = RequestVerifier::new("secret");
 
-    let mut request = HttpRequest {
-        method: "POST".to_string(),
-        path: "/api/test".to_string(),
-        headers: HashMap::new(),
-        query_params: HashMap::new(),
-        body: Vec::new(),
-        path_params: HashMap::new(),
-    };
-
+    let mut request = HttpRequest::new("POST".to_string(), "/api/test".to_string());
     request
         .headers
         .insert("X-Signature".to_string(), "signature".to_string());

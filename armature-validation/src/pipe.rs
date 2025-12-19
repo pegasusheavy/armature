@@ -87,14 +87,8 @@ mod tests {
         };
 
         let json = serde_json::to_vec(&valid_dto).unwrap();
-        let req = HttpRequest {
-            method: "POST".to_string(),
-            path: "/test".to_string(),
-            headers: std::collections::HashMap::new(),
-            body: json,
-            path_params: std::collections::HashMap::new(),
-            query_params: std::collections::HashMap::new(),
-        };
+        let mut req = HttpRequest::new("POST".to_string(), "/test".to_string());
+        req.body = json;
 
         let result: Result<TestDto, Error> = ValidationPipe::parse(&req);
         assert!(result.is_ok());

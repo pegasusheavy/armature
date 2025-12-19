@@ -1,3 +1,5 @@
+// Allow dead_code while crate is under development
+#![allow(dead_code)]
 //! # Armature Azure Functions
 //!
 //! Azure Functions runtime adapter for Armature applications.

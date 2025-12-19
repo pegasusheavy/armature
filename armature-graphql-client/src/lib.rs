@@ -1,3 +1,5 @@
+// Allow dead_code while crate is under development
+#![allow(dead_code)]
 //! # Armature GraphQL Client
 //!
 //! A type-safe GraphQL client with support for queries, mutations, and subscriptions.
