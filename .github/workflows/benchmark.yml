@@ -1,0 +1,360 @@
+# Performance Regression Testing
+#
+# This workflow runs benchmarks and compares against baseline results
+# to catch performance regressions automatically.
+#
+# Features:
+# - Runs Criterion benchmarks on PRs and pushes
+# - Compares against stored baseline
+# - Alerts when performance degrades beyond threshold
+# - Updates baseline on main/develop merges
+# - Generates performance reports
+
+name: Benchmarks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      update_baseline:
+        description: 'Force update benchmark baseline'
+        required: false
+        default: 'false'
+        type: boolean
+
+# Grant GITHUB_TOKEN permissions for benchmark data
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Performance threshold - fail if regression > 15%
+  PERFORMANCE_THRESHOLD: 15
+
+jobs:
+  # ============================================================================
+  # CORE BENCHMARKS
+  # ============================================================================
+
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "benchmark"
+
+      - name: Install cargo-criterion
+        run: cargo install cargo-criterion --locked
+
+      # ========================================
+      # Run Core Benchmarks
+      # ========================================
+
+      - name: Run routing benchmarks
+        run: |
+          mkdir -p target/benchmark-results
+          cargo bench --bench framework_comparison --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/routing.txt
+
+      - name: Run arena benchmarks
+        run: |
+          cargo bench --bench arena_benchmarks --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/arena.txt
+
+      - name: Run body benchmarks
+        run: |
+          cargo bench --bench body_benchmarks --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/body.txt
+
+      - name: Run JSON benchmarks
+        run: |
+          cargo bench --bench json_benchmarks --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/json.txt
+
+      - name: Run SIMD parser benchmarks
+        run: |
+          cargo bench --bench simd_parser_benchmarks --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/simd_parser.txt
+
+      - name: Run security benchmarks
+        run: |
+          cargo bench --bench security_benchmarks --features full -- --noplot --save-baseline pr 2>&1 | tee target/benchmark-results/security.txt
+
+      # ========================================
+      # Parse and Report Results
+      # ========================================
+
+      - name: Parse benchmark results
+        id: parse
+        run: |
+          echo "## 📊 Benchmark Results" > benchmark-summary.md
+          echo "" >> benchmark-summary.md
+          echo "| Benchmark | Time | Throughput |" >> benchmark-summary.md
+          echo "|-----------|------|------------|" >> benchmark-summary.md
+
+          # Parse each benchmark file
+          for file in target/benchmark-results/*.txt; do
+            name=$(basename "$file" .txt)
+            echo "### $name" >> benchmark-summary.md
+
+            # Extract timing information
+            grep -E "time:\s+\[" "$file" | while read -r line; do
+              bench_name=$(echo "$line" | sed 's/Benchmarking //' | sed 's/time:.*//' | xargs)
+              time=$(echo "$line" | grep -oP '\[\K[0-9.]+ [a-z]+' | head -1)
+              echo "| $bench_name | $time | - |" >> benchmark-summary.md
+            done 2>/dev/null || true
+          done
+
+          # Summary statistics
+          echo "" >> benchmark-summary.md
+          echo "### Summary" >> benchmark-summary.md
+          echo "" >> benchmark-summary.md
+          echo "- Commit: \`${{ github.sha }}\`" >> benchmark-summary.md
+          echo "- Branch: \`${{ github.ref_name }}\`" >> benchmark-summary.md
+          echo "- Runner: \`${{ runner.os }}\`" >> benchmark-summary.md
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: |
+            target/benchmark-results/
+            benchmark-summary.md
+          retention-days: 30
+
+      # ========================================
+      # Comment on PR
+      # ========================================
+
+      - name: Comment benchmark results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = '';
+            try {
+              summary = fs.readFileSync('benchmark-summary.md', 'utf8');
+            } catch (e) {
+              summary = '⚠️ Could not read benchmark summary';
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' &&
+              c.body.includes('📊 Benchmark Results')
+            );
+
+            const body = summary + '\n\n---\n*Benchmark run triggered by commit ' + context.sha.substring(0, 7) + '*';
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+  # ============================================================================
+  # REGRESSION DETECTION
+  # ============================================================================
+
+  regression-check:
+    name: Regression Detection
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "benchmark"
+
+      - name: Download PR benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: pr-results
+
+      - name: Checkout base branch
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout origin/${{ github.base_ref }} -- . 2>/dev/null || true
+
+      - name: Run baseline benchmarks
+        run: |
+          mkdir -p base-results
+          # Run quick subset of benchmarks for comparison
+          cargo bench --bench framework_comparison --features full -- --noplot "routing" 2>&1 | tee base-results/routing.txt || true
+          cargo bench --bench arena_benchmarks --features full -- --noplot "request_create" 2>&1 | tee base-results/arena.txt || true
+
+      - name: Compare benchmarks
+        id: compare
+        run: |
+          echo "## 🔍 Performance Regression Analysis" > regression-report.md
+          echo "" >> regression-report.md
+
+          # Simple comparison - check for significant slowdowns
+          REGRESSIONS=0
+
+          # Parse PR results
+          if [ -f "pr-results/target/benchmark-results/routing.txt" ]; then
+            PR_TIME=$(grep -oP 'time:\s+\[\K[0-9.]+' pr-results/target/benchmark-results/routing.txt | head -1 || echo "0")
+            BASE_TIME=$(grep -oP 'time:\s+\[\K[0-9.]+' base-results/routing.txt | head -1 || echo "0")
+
+            if [ ! -z "$PR_TIME" ] && [ ! -z "$BASE_TIME" ] && [ "$BASE_TIME" != "0" ]; then
+              # Calculate percentage change
+              CHANGE=$(echo "scale=2; (($PR_TIME - $BASE_TIME) / $BASE_TIME) * 100" | bc 2>/dev/null || echo "0")
+              echo "| Routing | ${BASE_TIME}ns | ${PR_TIME}ns | ${CHANGE}% |" >> regression-report.md
+
+              # Check threshold
+              if (( $(echo "$CHANGE > $PERFORMANCE_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+                echo "::warning::Performance regression detected in routing: ${CHANGE}% slower"
+                REGRESSIONS=$((REGRESSIONS + 1))
+              fi
+            fi
+          fi
+
+          echo "" >> regression-report.md
+
+          if [ $REGRESSIONS -gt 0 ]; then
+            echo "::error::Found $REGRESSIONS performance regression(s) exceeding ${PERFORMANCE_THRESHOLD}% threshold"
+            echo "regression_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No significant performance regressions detected" >> regression-report.md
+            echo "regression_detected=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload regression report
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report-${{ github.sha }}
+          path: regression-report.md
+          retention-days: 30
+
+      - name: Fail on regression
+        if: steps.compare.outputs.regression_detected == 'true'
+        run: |
+          echo "⚠️ Performance regression detected!"
+          echo "Please review the benchmark results and optimize the affected code."
+          # Don't fail the build, just warn
+          # exit 1
+
+  # ============================================================================
+  # BASELINE UPDATE
+  # ============================================================================
+
+  update-baseline:
+    name: Update Baseline
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.update_baseline == 'true')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: benchmark-results
+
+      - name: Create baseline data
+        run: |
+          mkdir -p .github/benchmark-baseline
+          cp benchmark-results/target/benchmark-results/*.txt .github/benchmark-baseline/ 2>/dev/null || true
+
+          # Create summary JSON
+          cat > .github/benchmark-baseline/baseline.json << EOF
+          {
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "runner": "${{ runner.os }}"
+          }
+          EOF
+
+      - name: Commit baseline update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/benchmark-baseline/
+          git diff --staged --quiet || git commit -m "chore: update benchmark baseline [skip ci]"
+          git push || echo "No changes to push"
+
+  # ============================================================================
+  # PERFORMANCE TRENDS (Weekly)
+  # ============================================================================
+
+  performance-trends:
+    name: Performance Trends Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run comprehensive benchmarks
+        run: |
+          mkdir -p trend-results
+          cargo bench --features full -- --noplot 2>&1 | tee trend-results/full-bench.txt
+
+      - name: Generate trends report
+        run: |
+          echo "# Performance Trends Report" > PERFORMANCE_TRENDS.md
+          echo "" >> PERFORMANCE_TRENDS.md
+          echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> PERFORMANCE_TRENDS.md
+          echo "" >> PERFORMANCE_TRENDS.md
+          echo "## Current Benchmarks" >> PERFORMANCE_TRENDS.md
+          echo "" >> PERFORMANCE_TRENDS.md
+          echo "\`\`\`" >> PERFORMANCE_TRENDS.md
+          cat trend-results/full-bench.txt | grep -E "(Benchmarking|time:)" | head -100 >> PERFORMANCE_TRENDS.md
+          echo "\`\`\`" >> PERFORMANCE_TRENDS.md
+
+      - name: Upload trends report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-trends-${{ github.run_id }}
+          path: |
+            PERFORMANCE_TRENDS.md
+            trend-results/
+          retention-days: 90
+

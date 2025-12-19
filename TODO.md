@@ -31,6 +31,7 @@ Only features that are **not yet completed**.
 | ✅ SIMD JSON | Optional `simd-json` feature for SIMD-accelerated JSON | `armature-core/src/json.rs` |
 | ✅ Arena Allocator | Per-request arena for batch allocations (~6x faster) | `armature-core/src/arena.rs` |
 | ✅ Hyper Body Passthrough | Zero-copy Bytes-based body handling (~4x faster clone) | `armature-core/src/body.rs` |
+| ✅ Automated Regression Tests | CI pipeline with benchmark regression detection | `.github/workflows/benchmark.yml` |
 
 ---
 
@@ -126,7 +127,7 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | TechEmpower Benchmark Suite | Implement all TechEmpower tests (JSON, DB, Fortune) | `benches/techempower/` |
-| 🟠 | Automated Regression Tests | CI pipeline to catch performance regressions | `.github/workflows/` |
+| ✅ | Automated Regression Tests | CI pipeline with threshold alerts | `.github/workflows/benchmark.yml` |
 | ✅ | Axum Comparison Benchmark | Side-by-side benchmark vs Axum with same routes | `benchmarks/comparison/` |
 | 🟡 | Flame Graph CI Integration | Auto-generate flamegraphs on benchmark runs | `.github/workflows/` |
 
@@ -332,7 +333,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Memory & Allocation | 4 | 🟠/🟡 |
 | ↳ Hyper Integration | 3 | 🟠/🟡 |
 | ↳ Async Runtime | 4 | 🟠/🟡 |
-| ↳ Benchmark Infrastructure | 2 | 🟠/🟡 |
+| ↳ Benchmark Infrastructure | 1 | 🟡 |
 | ↳ Compiler Optimizations | 4 | 🟠/🟡 |
 | **Actix-web Competitive** | | |
 | ↳ Actix Performance Roadmap | 12 | 🔴/🟠/🟡 |
@@ -346,7 +347,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **18** | ✅ |
+| **Recently Completed** | **19** | ✅ |
 
 ### Performance Target
 

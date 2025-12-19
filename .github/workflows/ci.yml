@@ -239,24 +239,11 @@ jobs:
   # ============================================================================
   # BENCHMARKS
   # ============================================================================
-
-  benchmarks:
-    name: Benchmarks
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v6
-      - name: Install SAML system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl pkg-config
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Run benchmarks
-        run: |
-          if ls benches/*.rs 1> /dev/null 2>&1; then
-            cargo bench --features full-with-saml
-          else
-            echo "No benchmarks found yet"
-          fi
+  # Note: Performance benchmarks and regression detection are handled by
+  # the dedicated benchmark.yml workflow. This includes:
+  # - Criterion benchmarks for routing, arena, body, JSON, SIMD parsing
+  # - Automated regression detection on PRs
+  # - Baseline tracking on main/develop merges
+  # - Performance trend reports
+  #
+  # See: .github/workflows/benchmark.yml

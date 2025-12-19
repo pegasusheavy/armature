@@ -580,7 +580,7 @@ async fn handle_request(
     // Read body into Bytes (zero-copy after this point)
     let body_bytes = req.collect().await?.to_bytes();
     let body_size = body_bytes.len();
-    
+
     // Use zero-copy body storage
     if body_size > 0 {
         armature_req.set_body_bytes(body_bytes);
