@@ -52,6 +52,7 @@ Only features that are **not yet completed**.
 | ✅ Streaming Response Body | Send response while still generating body | `armature-core/src/streaming.rs` |
 | ✅ Chunk Size Optimization | Optimal chunk sizes for chunked encoding | `armature-core/src/streaming.rs` |
 | ✅ Copy-on-Write State | Arc-based state with cheap reads, versioning | `armature-core/src/cow_state.rs` |
+| ✅ State Locality | Cache-line alignment, hot/cold separation, prefetching | `armature-core/src/cache_local.rs` |
 
 ---
 
@@ -303,7 +304,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | Copy-on-Write State | Use `Arc<T>` patterns that avoid cloning | `armature-core/src/cow_state.rs` |
-| 🟠 | State Locality | Keep frequently-accessed state in cache | `armature-core/state.rs` |
+| ✅ | State Locality | Keep frequently-accessed state in cache | `armature-core/src/cache_local.rs` |
 | 🟡 | Read-Optimized State | Use `parking_lot::RwLock` for read-heavy state | `armature-core/state.rs` |
 
 ### Syscall Optimization
@@ -367,7 +368,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **39** | ✅ |
+| **Recently Completed** | **40** | ✅ |
 
 ### Performance Target
 
