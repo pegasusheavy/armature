@@ -522,6 +522,10 @@ harness = false
 name = "body_benchmarks"
 harness = false
 
+[[bench]]
+name = "pipeline_benchmarks"
+harness = false
+
 # Benchmark Examples
 [[example]]
 name = "benchmark_server"

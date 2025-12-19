@@ -75,7 +75,7 @@ while IFS= read -r line; do
         # Extract benchmark name from previous lines
         CURRENT_TIME="${BASH_REMATCH[1]}"
         CURRENT_UNIT="${BASH_REMATCH[2]}"
-        
+
         # Calculate rough percentage (simplified)
         echo "| - | - | ${CURRENT_TIME} ${CURRENT_UNIT} | - |"
     fi
