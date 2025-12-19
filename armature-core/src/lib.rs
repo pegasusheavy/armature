@@ -134,6 +134,7 @@ pub mod body_parser;
 pub mod buffer_pool;
 pub mod connection;
 pub mod container;
+pub mod cow_state;
 pub mod error;
 pub mod extensions;
 pub mod extractors;
