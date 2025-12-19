@@ -171,6 +171,7 @@ pub mod vectored_io;
 pub mod response_pipeline;
 pub mod websocket;
 pub mod worker;
+pub mod write_coalesce;
 
 // Re-export commonly used types
 pub use application::*;
@@ -240,6 +241,12 @@ pub use worker::{
     init_worker_with_affinity, next_worker_id, num_cpus,
     num_physical_cpus, set_thread_affinity, total_workers,
     worker_id, worker_stats,
+};
+pub use write_coalesce::{
+    CoalesceConfig, CoalesceStats, ConnectionWriteBuffer, MultiBufferCoalescer,
+    WriteCoalescer, WriteResult, coalesce_stats,
+    DEFAULT_COALESCE_CAPACITY, DEFAULT_FLUSH_THRESHOLD, DEFAULT_FLUSH_TIMEOUT_US,
+    MAX_COALESCE_BUFFER, MIN_COALESCE_SIZE,
 };
 
 // Re-export inventory for route registration macros

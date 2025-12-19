@@ -44,6 +44,7 @@ Only features that are **not yet completed**.
 | ✅ CPU Core Affinity | Pin workers to CPU cores for cache locality | `armature-core/src/worker.rs` |
 | ✅ Response Pipelining | Queue responses for batch-write to socket | `armature-core/src/response_pipeline.rs` |
 | ✅ Read Buffer Sizing | Tune read buffer sizes based on payload patterns | `armature-core/src/read_buffer.rs` |
+| ✅ Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/src/write_coalesce.rs` |
 
 ---
 
@@ -260,7 +261,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ✅ | `BytesMut` Buffer Pool | Thread-local pool of pre-allocated `BytesMut` buffers | `armature-core/src/buffer_pool.rs` |
 | ✅ | Zero-Copy Request Body | Parse directly into pooled buffers without copying | `armature-core/src/body_parser.rs` |
 | ✅ | Read Buffer Sizing | Tune read buffer sizes based on typical payload | `armature-core/src/read_buffer.rs` |
-| 🟠 | Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/response.rs` |
+| ✅ | Write Buffer Coalescing | Combine small writes into single buffer flush | `armature-core/src/write_coalesce.rs` |
 | 🟡 | Buffer Size Auto-Tuning | Dynamically adjust buffer sizes based on traffic | `armature-core/buffer.rs` |
 
 ### Worker Architecture (Actix's Arbiter pattern)
@@ -359,7 +360,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **31** | ✅ |
+| **Recently Completed** | **32** | ✅ |
 
 ### Performance Target
 
