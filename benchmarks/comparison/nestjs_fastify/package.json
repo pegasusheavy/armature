@@ -1,0 +1,19 @@
+{
+  "name": "nestjs-fastify-bench",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-fastify": "^10.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
+

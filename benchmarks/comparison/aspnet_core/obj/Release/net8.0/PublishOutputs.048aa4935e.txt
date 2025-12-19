@@ -1,0 +1,5 @@
+/home/joseph/PegasusHeavyIndustries/armature/benchmarks/comparison/aspnet_core/publish/aspnet_bench
+/home/joseph/PegasusHeavyIndustries/armature/benchmarks/comparison/aspnet_core/publish/aspnet_bench.dll
+/home/joseph/PegasusHeavyIndustries/armature/benchmarks/comparison/aspnet_core/publish/aspnet_bench.deps.json
+/home/joseph/PegasusHeavyIndustries/armature/benchmarks/comparison/aspnet_core/publish/aspnet_bench.runtimeconfig.json
+/home/joseph/PegasusHeavyIndustries/armature/benchmarks/comparison/aspnet_core/publish/aspnet_bench.pdb
