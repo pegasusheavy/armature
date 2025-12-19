@@ -166,6 +166,7 @@ pub mod status;
 pub mod timeout;
 pub mod tls;
 pub mod traits;
+pub mod vectored_io;
 pub mod websocket;
 
 // Re-export commonly used types
@@ -212,6 +213,10 @@ pub use status::*;
 pub use timeout::*;
 pub use tls::*;
 pub use traits::*;
+pub use vectored_io::{
+    ResponseChunks, VectoredIoStats, VectoredResponse,
+    status_line, vectored_stats, MAX_IO_SLICES,
+};
 pub use websocket::*;
 
 // Re-export inventory for route registration macros
