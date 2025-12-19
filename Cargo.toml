@@ -203,11 +203,13 @@ criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 regex = "1.10"
 cargo-husky = { version = "1.5", default-features = false, features = ["user-hooks"] }
 rand = "0.9"
-fastrand = "2.0"  # Fast random number generation for benchmarks
-pprof = { version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] }
-inferno = "0.12"
 reqwest = { version = "0.12", features = ["json"] }
 ctrlc = "3.4"
+
+# Unix-only profiling dependencies (pprof requires Unix-specific APIs)
+[target.'cfg(unix)'.dev-dependencies]
+pprof = { version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] }
+inferno = "0.12"
 
 # Profiling configuration
 [profile.profiling]
