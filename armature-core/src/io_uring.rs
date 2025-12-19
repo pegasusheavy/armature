@@ -24,7 +24,7 @@
 //!         .ring_size(4096)
 //!         .sqpoll(true)  // Kernel-side polling
 //!         .build();
-//!     
+//!
 //!     let runtime = IoUringRuntime::new(config)?;
 //!     // Use runtime for I/O operations
 //! }
