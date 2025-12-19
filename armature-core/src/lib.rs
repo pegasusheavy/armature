@@ -179,9 +179,10 @@ pub mod write_coalesce;
 pub use application::*;
 pub use body_limits::*;
 pub use connection::{
-    Connection, ConnectionConfig, ConnectionEvent, ConnectionPool, ConnectionState,
-    ConnectionStats, StateMachineExecutor, TransitionAction, TransitionError,
-    connection_stats,
+    Connection, ConnectionConfig, ConnectionEvent, ConnectionPool, ConnectionRecycler,
+    ConnectionState, ConnectionStats, PoolHandle, Recyclable, RecyclableConnection,
+    RecyclePool, RecyclePoolConfig, RecycleStats, RecyclerStats, StateMachineExecutor,
+    TransitionAction, TransitionError, connection_stats, recycle_stats,
 };
 pub use container::*;
 pub use error::*;

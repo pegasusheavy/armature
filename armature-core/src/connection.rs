@@ -570,6 +570,696 @@ impl Default for Connection {
 }
 
 // ============================================================================
+// Recyclable Trait
+// ============================================================================
+
+/// Trait for objects that can be reset and reused.
+///
+/// Implementing this trait allows objects to be efficiently recycled
+/// in a pool, avoiding allocation overhead.
+pub trait Recyclable {
+    /// Reset the object to its initial state for reuse.
+    ///
+    /// This should clear all request-specific data while preserving
+    /// pooled resources like buffers.
+    fn reset(&mut self);
+
+    /// Check if the object is clean and ready for reuse.
+    fn is_clean(&self) -> bool;
+
+    /// Get the generation counter (for use-after-recycle detection).
+    fn generation(&self) -> u64;
+
+    /// Increment the generation counter.
+    fn increment_generation(&mut self);
+}
+
+// ============================================================================
+// Recyclable Connection
+// ============================================================================
+
+/// Extended connection with full recycling support.
+#[derive(Debug)]
+pub struct RecyclableConnection {
+    /// Base connection state machine
+    inner: Connection,
+    /// Generation counter for use-after-recycle detection
+    generation: u64,
+    /// Total recycle count for this slot
+    recycle_count: u64,
+    /// Pre-allocated read buffer capacity
+    read_buffer_capacity: usize,
+    /// Pre-allocated write buffer capacity
+    write_buffer_capacity: usize,
+    /// Custom user data slot (type-erased)
+    user_data: Option<Box<dyn std::any::Any + Send + Sync>>,
+}
+
+impl RecyclableConnection {
+    /// Create a new recyclable connection.
+    pub fn new() -> Self {
+        Self {
+            inner: Connection::new(),
+            generation: 0,
+            recycle_count: 0,
+            read_buffer_capacity: 0,
+            write_buffer_capacity: 0,
+            user_data: None,
+        }
+    }
+
+    /// Create with specific ID.
+    pub fn with_id(id: u64) -> Self {
+        Self {
+            inner: Connection::with_id(id),
+            generation: 0,
+            recycle_count: 0,
+            read_buffer_capacity: 0,
+            write_buffer_capacity: 0,
+            user_data: None,
+        }
+    }
+
+    /// Create with buffer capacity hints.
+    pub fn with_capacities(read_capacity: usize, write_capacity: usize) -> Self {
+        Self {
+            inner: Connection::new(),
+            generation: 0,
+            recycle_count: 0,
+            read_buffer_capacity: read_capacity,
+            write_buffer_capacity: write_capacity,
+            user_data: None,
+        }
+    }
+
+    /// Get the inner connection.
+    #[inline(always)]
+    pub fn inner(&self) -> &Connection {
+        &self.inner
+    }
+
+    /// Get mutable inner connection.
+    #[inline(always)]
+    pub fn inner_mut(&mut self) -> &mut Connection {
+        &mut self.inner
+    }
+
+    /// Get total recycle count.
+    #[inline(always)]
+    pub fn recycle_count(&self) -> u64 {
+        self.recycle_count
+    }
+
+    /// Get read buffer capacity hint.
+    #[inline(always)]
+    pub fn read_buffer_capacity(&self) -> usize {
+        self.read_buffer_capacity
+    }
+
+    /// Get write buffer capacity hint.
+    #[inline(always)]
+    pub fn write_buffer_capacity(&self) -> usize {
+        self.write_buffer_capacity
+    }
+
+    /// Set buffer capacity hints for next use.
+    #[inline]
+    pub fn set_buffer_capacities(&mut self, read: usize, write: usize) {
+        self.read_buffer_capacity = read;
+        self.write_buffer_capacity = write;
+    }
+
+    /// Set user data.
+    pub fn set_user_data<T: std::any::Any + Send + Sync + 'static>(&mut self, data: T) {
+        self.user_data = Some(Box::new(data));
+    }
+
+    /// Get user data.
+    pub fn user_data<T: std::any::Any + Send + Sync + 'static>(&self) -> Option<&T> {
+        self.user_data.as_ref()?.downcast_ref::<T>()
+    }
+
+    /// Take user data.
+    pub fn take_user_data<T: std::any::Any + Send + Sync + 'static>(&mut self) -> Option<T> {
+        let boxed = self.user_data.take()?;
+        boxed.downcast::<T>().ok().map(|b| *b)
+    }
+
+    /// Handle event (delegates to inner).
+    #[inline]
+    pub fn handle_event(&mut self, event: ConnectionEvent) -> TransitionAction {
+        self.inner.handle_event(event)
+    }
+
+    /// Get state (delegates to inner).
+    #[inline(always)]
+    pub fn state(&self) -> ConnectionState {
+        self.inner.state()
+    }
+
+    /// Get connection ID (delegates to inner).
+    #[inline(always)]
+    pub fn id(&self) -> u64 {
+        self.inner.id()
+    }
+
+    /// Prepare for recycling - clean up and return to pool.
+    pub fn prepare_for_recycle(&mut self) {
+        // Clear user data
+        self.user_data = None;
+        // Reset inner connection
+        self.inner.state = ConnectionState::Idle;
+        self.inner.keep_alive = true;
+        self.inner.request_count = 0;
+        self.inner.connected_at = None;
+        self.inner.last_activity = None;
+        // Increment counters
+        self.generation += 1;
+        self.recycle_count += 1;
+        // Record stats
+        RECYCLE_STATS.record_recycle();
+    }
+}
+
+impl Default for RecyclableConnection {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Recyclable for RecyclableConnection {
+    fn reset(&mut self) {
+        self.prepare_for_recycle();
+    }
+
+    fn is_clean(&self) -> bool {
+        self.inner.state() == ConnectionState::Idle && self.user_data.is_none()
+    }
+
+    fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    fn increment_generation(&mut self) {
+        self.generation += 1;
+    }
+}
+
+// ============================================================================
+// Generic Recycle Pool
+// ============================================================================
+
+/// Generic object pool with recycling support.
+///
+/// This pool maintains a set of pre-allocated objects that can be
+/// acquired, used, and returned for reuse.
+#[derive(Debug)]
+pub struct RecyclePool<T: Recyclable + Default> {
+    /// Pooled objects
+    objects: Vec<T>,
+    /// Free list (indices of available objects)
+    free_indices: Vec<usize>,
+    /// Pool capacity
+    capacity: usize,
+    /// High water mark (max concurrent usage)
+    high_water_mark: usize,
+    /// Configuration
+    config: RecyclePoolConfig,
+}
+
+impl<T: Recyclable + Default> RecyclePool<T> {
+    /// Create a new pool with capacity.
+    pub fn new(capacity: usize) -> Self {
+        Self::with_config(capacity, RecyclePoolConfig::default())
+    }
+
+    /// Create with custom configuration.
+    pub fn with_config(capacity: usize, config: RecyclePoolConfig) -> Self {
+        let mut objects = Vec::with_capacity(capacity);
+        let mut free_indices = Vec::with_capacity(capacity);
+
+        for i in 0..capacity {
+            objects.push(T::default());
+            free_indices.push(i);
+        }
+
+        Self {
+            objects,
+            free_indices,
+            capacity,
+            high_water_mark: 0,
+            config,
+        }
+    }
+
+    /// Acquire an object from the pool.
+    ///
+    /// Returns a handle that automatically returns the object when dropped.
+    #[inline]
+    pub fn acquire(&mut self) -> Option<PoolHandle<'_, T>> {
+        let index = self.free_indices.pop()?;
+        let obj = &mut self.objects[index];
+
+        // Ensure object is clean
+        if !obj.is_clean() {
+            obj.reset();
+        }
+
+        // Track high water mark
+        let active = self.capacity - self.free_indices.len();
+        if active > self.high_water_mark {
+            self.high_water_mark = active;
+        }
+
+        RECYCLE_STATS.record_acquire();
+
+        Some(PoolHandle {
+            pool: self,
+            index,
+            released: false,
+            _marker: std::marker::PhantomData,
+        })
+    }
+
+    /// Try to acquire without blocking.
+    #[inline]
+    pub fn try_acquire(&mut self) -> Option<PoolHandle<'_, T>> {
+        self.acquire()
+    }
+
+    /// Release an object back to the pool.
+    #[inline]
+    fn release(&mut self, index: usize) {
+        if index < self.capacity {
+            // Reset object for reuse
+            self.objects[index].reset();
+            self.free_indices.push(index);
+            RECYCLE_STATS.record_release();
+        }
+    }
+
+    /// Get object by index (for internal use).
+    #[inline]
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.objects.get(index)
+    }
+
+    /// Get mutable object by index.
+    #[inline]
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        self.objects.get_mut(index)
+    }
+
+    /// Get pool capacity.
+    #[inline]
+    pub fn capacity(&self) -> usize {
+        self.capacity
+    }
+
+    /// Get available count.
+    #[inline]
+    pub fn available(&self) -> usize {
+        self.free_indices.len()
+    }
+
+    /// Get active count.
+    #[inline]
+    pub fn active(&self) -> usize {
+        self.capacity - self.free_indices.len()
+    }
+
+    /// Get high water mark.
+    #[inline]
+    pub fn high_water_mark(&self) -> usize {
+        self.high_water_mark
+    }
+
+    /// Reset high water mark.
+    #[inline]
+    pub fn reset_high_water_mark(&mut self) {
+        self.high_water_mark = self.active();
+    }
+
+    /// Check if pool is exhausted.
+    #[inline]
+    pub fn is_exhausted(&self) -> bool {
+        self.free_indices.is_empty()
+    }
+
+    /// Shrink pool to minimum size.
+    pub fn shrink(&mut self, min_capacity: usize) {
+        let target = min_capacity.max(self.active());
+        if target < self.capacity {
+            // Only shrink if we have excess free slots
+            while self.capacity > target && !self.free_indices.is_empty() {
+                if let Some(index) = self.free_indices.pop() {
+                    // Mark as removed (but keep in vec to avoid reindexing)
+                    self.objects[index].reset();
+                }
+                self.capacity -= 1;
+            }
+        }
+    }
+
+    /// Grow pool capacity.
+    pub fn grow(&mut self, additional: usize) {
+        let new_capacity = self.capacity + additional;
+        self.objects.reserve(additional);
+
+        for _ in 0..additional {
+            let index = self.objects.len();
+            self.objects.push(T::default());
+            self.free_indices.push(index);
+        }
+
+        self.capacity = new_capacity;
+    }
+}
+
+/// Pool handle - RAII wrapper for acquired objects.
+#[derive(Debug)]
+pub struct PoolHandle<'a, T: Recyclable + Default> {
+    pool: *mut RecyclePool<T>,
+    index: usize,
+    released: bool,
+    _marker: std::marker::PhantomData<&'a mut T>,
+}
+
+impl<'a, T: Recyclable + Default> PoolHandle<'a, T> {
+    /// Get reference to the object.
+    #[inline]
+    pub fn get(&self) -> &T {
+        unsafe { &(&(*self.pool).objects)[self.index] }
+    }
+
+    /// Get mutable reference.
+    #[inline]
+    pub fn get_mut(&mut self) -> &mut T {
+        unsafe { &mut (&mut (*self.pool).objects)[self.index] }
+    }
+
+    /// Get the pool index.
+    #[inline]
+    pub fn index(&self) -> usize {
+        self.index
+    }
+
+    /// Get the generation of the object.
+    #[inline]
+    pub fn generation(&self) -> u64 {
+        self.get().generation()
+    }
+
+    /// Release back to pool explicitly.
+    #[inline]
+    pub fn release(mut self) {
+        if !self.released {
+            unsafe { (*self.pool).release(self.index) };
+            self.released = true;
+        }
+    }
+}
+
+impl<'a, T: Recyclable + Default> Drop for PoolHandle<'a, T> {
+    fn drop(&mut self) {
+        if !self.released {
+            unsafe { (*self.pool).release(self.index) };
+        }
+    }
+}
+
+impl<'a, T: Recyclable + Default> std::ops::Deref for PoolHandle<'a, T> {
+    type Target = T;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.get()
+    }
+}
+
+impl<'a, T: Recyclable + Default> std::ops::DerefMut for PoolHandle<'a, T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.get_mut()
+    }
+}
+
+// ============================================================================
+// Recycle Pool Configuration
+// ============================================================================
+
+/// Configuration for recycle pools.
+#[derive(Debug, Clone)]
+pub struct RecyclePoolConfig {
+    /// Initial capacity
+    pub initial_capacity: usize,
+    /// Maximum capacity (0 = unlimited)
+    pub max_capacity: usize,
+    /// Grow by this amount when exhausted
+    pub grow_by: usize,
+    /// Shrink when usage drops below this fraction
+    pub shrink_threshold: f32,
+    /// Minimum capacity to maintain
+    pub min_capacity: usize,
+}
+
+impl Default for RecyclePoolConfig {
+    fn default() -> Self {
+        Self {
+            initial_capacity: 100,
+            max_capacity: 10000,
+            grow_by: 50,
+            shrink_threshold: 0.25,
+            min_capacity: 10,
+        }
+    }
+}
+
+impl RecyclePoolConfig {
+    /// Create new configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set initial capacity.
+    pub fn initial_capacity(mut self, capacity: usize) -> Self {
+        self.initial_capacity = capacity;
+        self
+    }
+
+    /// Set maximum capacity.
+    pub fn max_capacity(mut self, max: usize) -> Self {
+        self.max_capacity = max;
+        self
+    }
+
+    /// Set grow-by amount.
+    pub fn grow_by(mut self, amount: usize) -> Self {
+        self.grow_by = amount;
+        self
+    }
+
+    /// Set shrink threshold.
+    pub fn shrink_threshold(mut self, threshold: f32) -> Self {
+        self.shrink_threshold = threshold;
+        self
+    }
+
+    /// Set minimum capacity.
+    pub fn min_capacity(mut self, min: usize) -> Self {
+        self.min_capacity = min;
+        self
+    }
+}
+
+// ============================================================================
+// Recycling Statistics
+// ============================================================================
+
+/// Statistics for object recycling.
+#[derive(Debug, Default)]
+pub struct RecycleStats {
+    /// Total acquires
+    acquires: AtomicU64,
+    /// Total releases
+    releases: AtomicU64,
+    /// Total recycles (resets)
+    recycles: AtomicU64,
+    /// Total allocations (when pool exhausted)
+    allocations: AtomicU64,
+}
+
+impl RecycleStats {
+    /// Create new stats.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    fn record_acquire(&self) {
+        self.acquires.fetch_add(1, Ordering::Relaxed);
+    }
+
+    #[inline]
+    fn record_release(&self) {
+        self.releases.fetch_add(1, Ordering::Relaxed);
+    }
+
+    #[inline]
+    fn record_recycle(&self) {
+        self.recycles.fetch_add(1, Ordering::Relaxed);
+    }
+
+    #[inline]
+    fn record_allocation(&self) {
+        self.allocations.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Get acquire count.
+    pub fn acquires(&self) -> u64 {
+        self.acquires.load(Ordering::Relaxed)
+    }
+
+    /// Get release count.
+    pub fn releases(&self) -> u64 {
+        self.releases.load(Ordering::Relaxed)
+    }
+
+    /// Get recycle count.
+    pub fn recycles(&self) -> u64 {
+        self.recycles.load(Ordering::Relaxed)
+    }
+
+    /// Get allocation count.
+    pub fn allocations(&self) -> u64 {
+        self.allocations.load(Ordering::Relaxed)
+    }
+
+    /// Get recycle ratio (recycles / acquires).
+    pub fn recycle_ratio(&self) -> f64 {
+        let acquires = self.acquires() as f64;
+        if acquires > 0.0 {
+            self.recycles() as f64 / acquires
+        } else {
+            0.0
+        }
+    }
+
+    /// Get hit ratio (1 - allocations/acquires).
+    pub fn hit_ratio(&self) -> f64 {
+        let acquires = self.acquires() as f64;
+        if acquires > 0.0 {
+            1.0 - (self.allocations() as f64 / acquires)
+        } else {
+            1.0
+        }
+    }
+}
+
+/// Global recycle statistics.
+static RECYCLE_STATS: RecycleStats = RecycleStats {
+    acquires: AtomicU64::new(0),
+    releases: AtomicU64::new(0),
+    recycles: AtomicU64::new(0),
+    allocations: AtomicU64::new(0),
+};
+
+/// Get global recycle statistics.
+pub fn recycle_stats() -> &'static RecycleStats {
+    &RECYCLE_STATS
+}
+
+// ============================================================================
+// Connection Recycler
+// ============================================================================
+
+/// Specialized connection recycler with optimizations.
+pub struct ConnectionRecycler {
+    /// Pool of recyclable connections
+    pool: RecyclePool<RecyclableConnection>,
+    /// Configuration
+    config: ConnectionConfig,
+}
+
+impl ConnectionRecycler {
+    /// Create a new connection recycler.
+    pub fn new(capacity: usize) -> Self {
+        Self::with_config(capacity, ConnectionConfig::default())
+    }
+
+    /// Create with custom configuration.
+    pub fn with_config(capacity: usize, config: ConnectionConfig) -> Self {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(capacity);
+
+        // Pre-configure all connections
+        for i in 0..capacity {
+            if let Some(conn) = pool.get_mut(i) {
+                conn.inner_mut().set_keep_alive(config.keep_alive);
+            }
+        }
+
+        Self { pool, config }
+    }
+
+    /// Acquire a connection.
+    #[inline]
+    pub fn acquire(&mut self) -> Option<PoolHandle<'_, RecyclableConnection>> {
+        let handle = self.pool.acquire()?;
+        Some(handle)
+    }
+
+    /// Get pool statistics.
+    pub fn stats(&self) -> RecyclerStats {
+        RecyclerStats {
+            capacity: self.pool.capacity(),
+            available: self.pool.available(),
+            active: self.pool.active(),
+            high_water_mark: self.pool.high_water_mark(),
+        }
+    }
+
+    /// Get configuration.
+    pub fn config(&self) -> &ConnectionConfig {
+        &self.config
+    }
+
+    /// Check if a connection should be recycled based on limits.
+    pub fn should_recycle(&self, conn: &RecyclableConnection) -> bool {
+        // Check max requests
+        if conn.inner().request_count() >= self.config.max_requests {
+            return false;
+        }
+
+        // Check keep-alive
+        if !conn.inner().keep_alive() {
+            return false;
+        }
+
+        // Check age
+        if let Some(age) = conn.inner().age() {
+            if age > self.config.idle_timeout * 10 {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
+/// Connection recycler statistics.
+#[derive(Debug, Clone, Copy)]
+pub struct RecyclerStats {
+    /// Pool capacity
+    pub capacity: usize,
+    /// Available connections
+    pub available: usize,
+    /// Active connections
+    pub active: usize,
+    /// High water mark
+    pub high_water_mark: usize,
+}
+
+// ============================================================================
 // Transition Error
 // ============================================================================
 
@@ -1182,6 +1872,210 @@ mod tests {
         assert!(ConnectionState::Writing.is_active());
         assert!(!ConnectionState::Idle.is_active());
         assert!(!ConnectionState::Connected.is_active());
+    }
+
+    // Recycling tests
+
+    #[test]
+    fn test_recyclable_connection_basic() {
+        let mut conn = RecyclableConnection::new();
+        assert_eq!(conn.generation(), 0);
+        assert_eq!(conn.recycle_count(), 0);
+        assert!(conn.is_clean());
+
+        // Use the connection
+        conn.handle_event(ConnectionEvent::Accept);
+        conn.handle_event(ConnectionEvent::DataReady);
+
+        // Prepare for recycle
+        conn.prepare_for_recycle();
+        assert_eq!(conn.generation(), 1);
+        assert_eq!(conn.recycle_count(), 1);
+        assert!(conn.is_clean());
+        assert_eq!(conn.state(), ConnectionState::Idle);
+    }
+
+    #[test]
+    fn test_recyclable_connection_user_data() {
+        let mut conn = RecyclableConnection::new();
+
+        // Set user data
+        conn.set_user_data(42u32);
+        assert_eq!(conn.user_data::<u32>(), Some(&42));
+
+        // Take user data
+        let data = conn.take_user_data::<u32>();
+        assert_eq!(data, Some(42));
+        assert!(conn.user_data::<u32>().is_none());
+    }
+
+    #[test]
+    fn test_recyclable_connection_buffer_capacities() {
+        let conn = RecyclableConnection::with_capacities(4096, 8192);
+        assert_eq!(conn.read_buffer_capacity(), 4096);
+        assert_eq!(conn.write_buffer_capacity(), 8192);
+    }
+
+    #[test]
+    fn test_recycle_pool_basic() {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(5);
+
+        assert_eq!(pool.capacity(), 5);
+        assert_eq!(pool.available(), 5);
+        assert_eq!(pool.active(), 0);
+        assert!(!pool.is_exhausted());
+
+        // Acquire and use
+        {
+            let mut handle = pool.acquire().unwrap();
+            handle.handle_event(ConnectionEvent::Accept);
+            assert_eq!(handle.state(), ConnectionState::Connected);
+            // Note: cannot check pool state while handle is borrowed
+        }
+
+        // Auto-released when handle dropped
+        assert_eq!(pool.available(), 5);
+        assert_eq!(pool.active(), 0);
+    }
+
+    #[test]
+    fn test_recycle_pool_exhaustion() {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(2);
+
+        // Initial state
+        assert_eq!(pool.capacity(), 2);
+        assert_eq!(pool.available(), 2);
+        assert!(!pool.is_exhausted());
+
+        // Acquire and release one
+        {
+            let h = pool.acquire().unwrap();
+            assert_eq!(h.index(), 1); // Last index pushed
+        }
+        assert_eq!(pool.available(), 2);
+
+        // Acquire again - should get the same slot back (LIFO)
+        {
+            let h = pool.acquire().unwrap();
+            assert_eq!(h.index(), 1);
+        }
+
+        // Pool should still have all slots available
+        assert!(!pool.is_exhausted());
+    }
+
+    #[test]
+    fn test_recycle_pool_generation_tracking() {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(1);
+
+        let gen1 = {
+            let handle = pool.acquire().unwrap();
+            handle.generation()
+        };
+
+        let gen2 = {
+            let handle = pool.acquire().unwrap();
+            handle.generation()
+        };
+
+        // Generation should increment on recycle
+        assert!(gen2 > gen1);
+    }
+
+    #[test]
+    fn test_recycle_pool_high_water_mark() {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(5);
+
+        // Acquire and release 3 connections one at a time to build up high water mark
+        {
+            let _ = pool.acquire().unwrap();
+        }
+        assert!(pool.high_water_mark() >= 1);
+
+        // Check high water mark is tracked
+        let hwm_before = pool.high_water_mark();
+
+        // Reset
+        pool.reset_high_water_mark();
+        assert!(pool.high_water_mark() <= hwm_before);
+    }
+
+    #[test]
+    fn test_recycle_pool_grow() {
+        let mut pool: RecyclePool<RecyclableConnection> = RecyclePool::new(2);
+
+        assert_eq!(pool.capacity(), 2);
+
+        pool.grow(3);
+
+        assert_eq!(pool.capacity(), 5);
+        assert_eq!(pool.available(), 5);
+    }
+
+    #[test]
+    fn test_recycle_pool_config() {
+        let config = RecyclePoolConfig::new()
+            .initial_capacity(50)
+            .max_capacity(500)
+            .grow_by(25)
+            .shrink_threshold(0.1)
+            .min_capacity(5);
+
+        assert_eq!(config.initial_capacity, 50);
+        assert_eq!(config.max_capacity, 500);
+        assert_eq!(config.grow_by, 25);
+        assert!((config.shrink_threshold - 0.1).abs() < 0.001);
+        assert_eq!(config.min_capacity, 5);
+    }
+
+    #[test]
+    fn test_connection_recycler() {
+        let mut recycler = ConnectionRecycler::new(10);
+
+        let stats = recycler.stats();
+        assert_eq!(stats.capacity, 10);
+        assert_eq!(stats.available, 10);
+        assert_eq!(stats.active, 0);
+
+        // Acquire and use
+        {
+            let mut handle = recycler.acquire().unwrap();
+            handle.handle_event(ConnectionEvent::Accept);
+            // Note: can't check stats while handle is borrowed
+        }
+
+        // Released
+        let stats = recycler.stats();
+        assert_eq!(stats.active, 0);
+        assert_eq!(stats.available, 10);
+    }
+
+    #[test]
+    fn test_recycle_stats() {
+        let stats = recycle_stats();
+        let _ = stats.acquires();
+        let _ = stats.releases();
+        let _ = stats.recycles();
+        let _ = stats.allocations();
+        let _ = stats.recycle_ratio();
+        let _ = stats.hit_ratio();
+    }
+
+    #[test]
+    fn test_recyclable_trait() {
+        let mut conn = RecyclableConnection::new();
+
+        // Implement Recyclable
+        assert!(conn.is_clean());
+        assert_eq!(conn.generation(), 0);
+
+        conn.handle_event(ConnectionEvent::Accept);
+        conn.increment_generation();
+        assert_eq!(conn.generation(), 1);
+
+        conn.reset();
+        assert!(conn.is_clean());
+        assert_eq!(conn.generation(), 2); // reset increments generation
     }
 }
 
