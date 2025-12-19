@@ -197,6 +197,9 @@ messaging-kafka = ["armature-messaging/kafka"]
 messaging-nats = ["armature-messaging/nats"]
 messaging-full = ["armature-messaging/full"]
 
+# Performance features
+simd-json = ["armature-core/simd-json"]
+
 [dev-dependencies]
 tokio-test = "0.4"
 criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
@@ -505,6 +508,10 @@ harness = false
 
 [[bench]]
 name = "simd_parser_benchmarks"
+harness = false
+
+[[bench]]
+name = "json_benchmarks"
 harness = false
 
 # Benchmark Examples

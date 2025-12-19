@@ -18,6 +18,9 @@ serde_json = "1.0"
 # SIMD-optimized HTTP parsing (uses SIMD on x86/x86_64 with std)
 httparse = "1.8"
 memchr = "2.7"  # SIMD-optimized byte search
+
+# Optional SIMD JSON - significantly faster on x86_64 with AVX2
+simd-json = { version = "0.14", optional = true }
 serde_urlencoded = "0.7"
 httpdate = "1.0"
 async-trait = "0.1"
@@ -50,6 +53,7 @@ rcgen = { version = "0.14", optional = true }
 [features]
 default = []
 self-signed-certs = ["rcgen"]
+simd-json = ["dep:simd-json"]
 
 [dev-dependencies]
 tokio-test = "0.4"

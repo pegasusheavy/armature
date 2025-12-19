@@ -85,9 +85,19 @@ impl HttpRequest {
         self.extensions.get_arc::<T>()
     }
 
-    /// Parse the request body as JSON
+    /// Parse the request body as JSON.
+    ///
+    /// With the `simd-json` feature enabled, this uses SIMD-accelerated parsing
+    /// which can be 2-3x faster on modern x86_64 CPUs.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let user: CreateUser = request.json()?;
+    /// ```
+    #[inline]
     pub fn json<T: for<'de> Deserialize<'de>>(&self) -> Result<T, crate::Error> {
-        serde_json::from_slice(&self.body).map_err(|e| crate::Error::Deserialization(e.to_string()))
+        crate::json::from_slice(&self.body).map_err(|e| crate::Error::Deserialization(e.to_string()))
     }
 
     /// Parse URL-encoded form data
@@ -169,9 +179,20 @@ impl HttpResponse {
         self
     }
 
+    /// Serialize a value as JSON and set it as the response body.
+    ///
+    /// With the `simd-json` feature enabled, this uses SIMD-accelerated serialization
+    /// which can be 1.5-2x faster on modern x86_64 CPUs.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// HttpResponse::ok().with_json(&user)?
+    /// ```
+    #[inline]
     pub fn with_json<T: Serialize>(mut self, value: &T) -> Result<Self, crate::Error> {
         self.body =
-            serde_json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
         self.headers
             .insert("Content-Type".to_string(), "application/json".to_string());
         Ok(self)
