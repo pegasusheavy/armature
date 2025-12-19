@@ -316,7 +316,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ✅ | `io_uring` Support | Use io_uring for async I/O on Linux 5.1+ | `armature-core/src/io_uring.rs` |
 | ✅ | `epoll` Tuning | Optimize epoll flags and batch sizes | `armature-core/src/epoll_tuning.rs` |
 | ✅ | Reduce `recv`/`send` Calls | Batch socket operations where possible | `armature-core/src/socket_batch.rs` |
-| 🟡 | `TCP_CORK` Usage | Cork TCP for header+body combining | `armature-core/io.rs` |
+| ✅ | `TCP_CORK` Usage | Cork TCP for header+body combining | `armature-core/src/socket_batch.rs` |
 
 ### Actix-specific Benchmark Comparison
 
@@ -370,7 +370,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **42** | ✅ |
+| **Recently Completed** | **43** | ✅ |
 
 ### Performance Target
 
