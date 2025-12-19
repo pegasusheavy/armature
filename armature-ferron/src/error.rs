@@ -202,4 +202,3 @@ mod tests {
         assert!(!FerronError::Config("test".into()).is_process_error());
     }
 }
-

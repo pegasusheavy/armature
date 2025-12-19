@@ -105,9 +105,10 @@ impl FerronManager {
 
     /// Register a backend and update configuration
     pub async fn register_backend(&self, service_name: &str, url: &str) -> Result<String> {
-        let registry = self.registry.as_ref().ok_or_else(|| {
-            FerronError::registry("Service registry not configured")
-        })?;
+        let registry = self
+            .registry
+            .as_ref()
+            .ok_or_else(|| FerronError::registry("Service registry not configured"))?;
 
         let id = registry.register(service_name, url).await?;
 
@@ -122,9 +123,10 @@ impl FerronManager {
 
     /// Deregister a backend and update configuration
     pub async fn deregister_backend(&self, service_name: &str, instance_id: &str) -> Result<()> {
-        let registry = self.registry.as_ref().ok_or_else(|| {
-            FerronError::registry("Service registry not configured")
-        })?;
+        let registry = self
+            .registry
+            .as_ref()
+            .ok_or_else(|| FerronError::registry("Service registry not configured"))?;
 
         registry.deregister(service_name, instance_id).await?;
 
@@ -140,9 +142,9 @@ impl FerronManager {
     /// Regenerate configuration from service registry
     async fn regenerate_config_from_registry(&self, registry: &ServiceRegistry) -> Result<()> {
         let mut config_guard = self.config.write().await;
-        let config = config_guard.as_mut().ok_or_else(|| {
-            FerronError::config("No base configuration set")
-        })?;
+        let config = config_guard
+            .as_mut()
+            .ok_or_else(|| FerronError::config("No base configuration set"))?;
 
         // Get all services and their URLs
         let services = registry.get_services().await;
@@ -267,13 +269,11 @@ impl FerronManagerBuilder {
 
     /// Build the FerronManager
     pub fn build(self) -> Result<FerronManager> {
-        let config_path = self.config_path.unwrap_or_else(|| {
-            PathBuf::from("/etc/ferron/ferron.conf")
-        });
+        let config_path = self
+            .config_path
+            .unwrap_or_else(|| PathBuf::from("/etc/ferron/ferron.conf"));
 
-        let binary_path = self.binary_path.unwrap_or_else(|| {
-            PathBuf::from("ferron")
-        });
+        let binary_path = self.binary_path.unwrap_or_else(|| PathBuf::from("ferron"));
 
         // Create process config
         let mut process_config = ProcessConfig::new(&binary_path, &config_path);
@@ -284,9 +284,9 @@ impl FerronManagerBuilder {
         }
 
         // Create health state if configured
-        let health_state = self.health_config.map(|config| {
-            Arc::new(HealthState::new(config))
-        });
+        let health_state = self
+            .health_config
+            .map(|config| Arc::new(HealthState::new(config)));
 
         // Write initial config if provided
         if let Some(ref config) = self.config {
@@ -343,10 +343,7 @@ pub mod helpers {
     }
 
     /// Generate configuration for an Armature application
-    pub fn armature_app_config(
-        domain: impl Into<String>,
-        app_port: u16,
-    ) -> Result<FerronConfig> {
+    pub fn armature_app_config(domain: impl Into<String>, app_port: u16) -> Result<FerronConfig> {
         use crate::config::{Location, RateLimitConfig};
 
         FerronConfig::builder()
@@ -361,14 +358,10 @@ pub mod helpers {
                     .rate_limit(RateLimitConfig::new(100).burst(200)),
             )
             // WebSocket support
-            .location(
-                Location::new("/ws")
-                    .proxy(format!("http://127.0.0.1:{}/ws", app_port)),
-            )
+            .location(Location::new("/ws").proxy(format!("http://127.0.0.1:{}/ws", app_port)))
             // Health endpoint (no rate limit)
             .location(
-                Location::new("/health")
-                    .proxy(format!("http://127.0.0.1:{}/health", app_port)),
+                Location::new("/health").proxy(format!("http://127.0.0.1:{}/health", app_port)),
             )
             // Security headers
             .header("X-Frame-Options", "DENY")
@@ -385,8 +378,7 @@ mod tests {
 
     #[test]
     fn test_reverse_proxy_config() {
-        let config = helpers::reverse_proxy_config("example.com", "http://localhost:3000")
-            .unwrap();
+        let config = helpers::reverse_proxy_config("example.com", "http://localhost:3000").unwrap();
 
         assert_eq!(config.domains, vec!["example.com"]);
         assert_eq!(config.backend, Some("http://localhost:3000".to_string()));
@@ -436,4 +428,3 @@ mod tests {
         assert!(result.is_ok());
     }
 }
-

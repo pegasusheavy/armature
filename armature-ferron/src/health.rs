@@ -421,7 +421,8 @@ mod tests {
         assert_eq!(healthy.response_time_ms, Some(50));
         assert_eq!(healthy.http_status, Some(200));
 
-        let unhealthy = HealthCheckResult::unhealthy("http://localhost:3000".into(), "Connection refused");
+        let unhealthy =
+            HealthCheckResult::unhealthy("http://localhost:3000".into(), "Connection refused");
         assert_eq!(unhealthy.status, HealthStatus::Unhealthy);
         assert!(unhealthy.error.is_some());
     }
@@ -435,4 +436,3 @@ mod tests {
         assert!(results.is_empty());
     }
 }
-
