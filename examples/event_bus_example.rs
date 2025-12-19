@@ -7,9 +7,18 @@ use armature_events::*;
 use async_trait::async_trait;
 use chrono::Utc;
 use std::any::Any;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
 use uuid::Uuid;
+
+/// Hash a value to create an opaque identifier for logging (avoids logging sensitive data)
+fn hash_for_logging<T: Hash>(value: &T) -> String {
+    let mut hasher = DefaultHasher::new();
+    value.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
+}
 
 // Define custom events
 #[derive(Debug, Clone)]
@@ -137,9 +146,9 @@ impl AnalyticsHandler {
 #[async_trait]
 impl EventHandler<UserCreatedEvent> for AnalyticsHandler {
     async fn handle(&self, event: &UserCreatedEvent) -> Result<(), EventHandlerError> {
-        // Mask user_id for logging (show only first 4 chars) to avoid sensitive data exposure
-        let masked_id = format!("{}***", &event.user_id.chars().take(4).collect::<String>());
-        println!("📊 Recording user creation in analytics: {}", masked_id);
+        // Use opaque hash for logging to avoid sensitive data exposure
+        let hashed_id = hash_for_logging(&event.user_id);
+        println!("📊 Recording user creation in analytics: {}", hashed_id);
         self.event_count.fetch_add(1, Ordering::SeqCst);
         Ok(())
     }
@@ -151,11 +160,11 @@ struct AuditHandler;
 #[async_trait]
 impl EventHandler<UserCreatedEvent> for AuditHandler {
     async fn handle(&self, event: &UserCreatedEvent) -> Result<(), EventHandlerError> {
-        // Mask user_id for logging to avoid sensitive data exposure
-        let masked_id = format!("{}***", &event.user_id.chars().take(4).collect::<String>());
+        // Use opaque hash for logging to avoid sensitive data exposure
+        let hashed_id = hash_for_logging(&event.user_id);
         println!(
             "📝 Audit log: User {} created at {}",
-            masked_id,
+            hashed_id,
             event.timestamp()
         );
         Ok(())
@@ -165,11 +174,11 @@ impl EventHandler<UserCreatedEvent> for AuditHandler {
 #[async_trait]
 impl EventHandler<UserDeletedEvent> for AuditHandler {
     async fn handle(&self, event: &UserDeletedEvent) -> Result<(), EventHandlerError> {
-        // Mask user_id for logging to avoid sensitive data exposure
-        let masked_id = format!("{}***", &event.user_id.chars().take(4).collect::<String>());
+        // Use opaque hash for logging to avoid sensitive data exposure
+        let hashed_id = hash_for_logging(&event.user_id);
         println!(
             "📝 Audit log: User {} deleted at {}",
-            masked_id,
+            hashed_id,
             event.timestamp()
         );
         Ok(())
