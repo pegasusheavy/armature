@@ -1,5 +1,6 @@
 //! Redis cache implementation.
 
+use armature_log::{debug, trace};
 use crate::config::CacheConfig;
 use crate::error::{CacheError, CacheResult};
 use crate::traits::CacheStore;
@@ -34,6 +35,7 @@ impl RedisCache {
     /// }
     /// ```
     pub async fn new(config: CacheConfig) -> CacheResult<Self> {
+        debug!("Connecting to Redis cache: {}", config.url);
         let client =
             Client::open(config.url.as_str()).map_err(|e| CacheError::Connection(e.to_string()))?;
 
@@ -41,6 +43,7 @@ impl RedisCache {
             .await
             .map_err(|e| CacheError::Connection(e.to_string()))?;
 
+        debug!("Redis cache connection established");
         Ok(Self { connection, config })
     }
 
@@ -59,14 +62,17 @@ impl RedisCache {
 impl CacheStore for RedisCache {
     async fn get_json(&self, key: &str) -> CacheResult<Option<String>> {
         let key = self.build_key(key);
+        trace!("Cache GET: {}", key);
         let mut conn = self.connection.clone();
 
         let value: Option<String> = conn.get(&key).await?;
+        trace!("Cache {} for: {}", if value.is_some() { "HIT" } else { "MISS" }, key);
         Ok(value)
     }
 
     async fn set_json(&self, key: &str, value: String, ttl: Option<Duration>) -> CacheResult<()> {
         let key = self.build_key(key);
+        trace!("Cache SET: {} (ttl: {:?})", key, ttl);
         let mut conn = self.connection.clone();
 
         let ttl = ttl.or(self.config.default_ttl);
