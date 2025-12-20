@@ -31,7 +31,7 @@ fuzz_target!(|data: FuzzHeaders| {
             }
         }
     }
-    
+
     // Test 2: Build headers from pairs
     let mut headers2: HashMap<String, String> = HashMap::new();
     for (key, value) in &data.pairs {
@@ -40,9 +40,9 @@ fuzz_target!(|data: FuzzHeaders| {
             headers2.insert(key_lower, value.clone());
         }
     }
-    
+
     // Test 3: Parse common header values
-    
+
     // Content-Type parsing
     if let Some(ct) = headers.get("content-type") {
         // Extract mime type and parameters
@@ -59,7 +59,7 @@ fuzz_target!(|data: FuzzHeaders| {
             }
         }
     }
-    
+
     // Accept header parsing
     if let Some(accept) = headers.get("accept") {
         // Parse media types with quality values
@@ -78,12 +78,12 @@ fuzz_target!(|data: FuzzHeaders| {
             }
         }
     }
-    
+
     // Content-Length parsing
     if let Some(cl) = headers.get("content-length") {
         let _ = cl.trim().parse::<u64>();
     }
-    
+
     // Authorization parsing
     if let Some(auth) = headers.get("authorization") {
         let parts: Vec<&str> = auth.splitn(2, ' ').collect();
@@ -94,7 +94,7 @@ fuzz_target!(|data: FuzzHeaders| {
             let _ = credentials.len();
         }
     }
-    
+
     // Cookie parsing
     if let Some(cookie) = headers.get("cookie") {
         for pair in cookie.split(';') {
@@ -104,7 +104,7 @@ fuzz_target!(|data: FuzzHeaders| {
             }
         }
     }
-    
+
     // Cache-Control parsing
     if let Some(cc) = headers.get("cache-control") {
         for directive in cc.split(',') {
@@ -117,7 +117,7 @@ fuzz_target!(|data: FuzzHeaders| {
             }
         }
     }
-    
+
     // Test 4: Header validation (check for invalid characters)
     for (key, value) in &headers {
         // Check for control characters

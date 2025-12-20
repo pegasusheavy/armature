@@ -45,6 +45,7 @@
 
 ### Integrations
 - **OpenSearch**: `armature-opensearch` crate with client, queries, bulk ops, index management
+- **TOON**: `armature-toon` crate for LLM-optimized serialization (30-60% token reduction)
 - **Publishing**: Automated crates.io publishing scripts with dependency ordering
 
 ---
@@ -110,8 +111,8 @@
 | Benchmarking | 2 | 7 |
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
-| Integrations | - | 2 |
-| **Total** | **15** | **85** |
+| Integrations | - | 3 |
+| **Total** | **15** | **86** |
 
 ### Performance Status
 

@@ -82,12 +82,12 @@ fuzz_target!(|data: FuzzRequest| {
     let _ = request.method.as_str();
     let _ = request.path.len();
     let _ = request.body.len();
-    
+
     // Test header access
     for (key, _) in &request.headers {
         let _ = request.headers.get(key);
     }
-    
+
     // Test query parsing if present
     if let Some(query) = &request.query {
         // Parse query string manually - should handle malformed input

@@ -58,10 +58,10 @@ fuzz_target!(|data: FuzzRouting| {
     // Limit route count to prevent OOM
     let max_routes = 100;
     let routes: Vec<_> = data.routes.into_iter().take(max_routes).collect();
-    
+
     // Create router
     let mut router = Router::new();
-    
+
     // Register routes - should handle arbitrary patterns
     for route in &routes {
         // Normalize pattern to start with /
@@ -70,12 +70,12 @@ fuzz_target!(|data: FuzzRouting| {
         } else {
             format!("/{}", route.pattern)
         };
-        
+
         // Skip extremely long patterns
         if pattern.len() > 1000 {
             continue;
         }
-        
+
         // Try to add route - may fail for invalid patterns but should not panic
         let _ = router.add_route(
             route.method.to_http_method(),
@@ -83,7 +83,7 @@ fuzz_target!(|data: FuzzRouting| {
             dummy_handler,
         );
     }
-    
+
     // Match paths - should handle arbitrary input
     for (method, path) in &data.match_paths {
         // Normalize path
@@ -92,12 +92,12 @@ fuzz_target!(|data: FuzzRouting| {
         } else {
             format!("/{}", path)
         };
-        
+
         // Skip extremely long paths
         if path.len() > 10000 {
             continue;
         }
-        
+
         // Match should not panic
         let _ = router.match_route(method.to_http_method(), &path);
     }
