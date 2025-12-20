@@ -105,60 +105,60 @@ clean_pgo() {
 
 pgo_generate() {
     check_llvm_tools
-    
+
     log_info "Step 1: Building instrumented binary for PGO..."
     mkdir -p "${PGO_DIR}"
-    
+
     # Build with profile generation
     log_info "Building with profile generation enabled..."
     RUSTFLAGS="-Cprofile-generate=${PGO_DIR}" cargo build --profile pgo-generate
-    
+
     log_success "Instrumented build complete"
     log_info "Step 2: Running workload to collect profile data..."
-    
+
     # Run the workload
     log_info "Running: ${WORKLOAD_CMD}"
     RUSTFLAGS="-Cprofile-generate=${PGO_DIR}" eval "${WORKLOAD_CMD}" || true
-    
+
     # Check for profile data
     PROFRAW_COUNT=$(find "${PGO_DIR}" -name "*.profraw" 2>/dev/null | wc -l)
     if [ "${PROFRAW_COUNT}" -eq 0 ]; then
         log_error "No profile data generated. Ensure the workload ran correctly."
         exit 1
     fi
-    
+
     log_success "Collected ${PROFRAW_COUNT} profile data files"
-    
+
     # Merge profile data
     log_info "Step 3: Merging profile data..."
     llvm-profdata merge -o "${PROFILE_DATA}" "${PGO_DIR}"/*.profraw
-    
+
     log_success "Profile data merged to: ${PROFILE_DATA}"
     log_info "Profile data size: $(du -h "${PROFILE_DATA}" | cut -f1)"
 }
 
 pgo_build() {
     check_llvm_tools
-    
+
     if [ ! -f "${PROFILE_DATA}" ]; then
         log_error "Profile data not found at: ${PROFILE_DATA}"
         log_info "Run with --generate first, or set PGO_DIR to existing data location"
         exit 1
     fi
-    
+
     log_info "Building with PGO optimization..."
     log_info "Using profile data: ${PROFILE_DATA}"
-    
+
     RUSTFLAGS="-Cprofile-use=${PROFILE_DATA}" cargo build --profile pgo-use
-    
+
     log_success "PGO-optimized build complete!"
-    
+
     # Show binary info
     if [ -f "target/pgo-use/armature" ]; then
         BINARY_SIZE=$(du -h "target/pgo-use/armature" | cut -f1)
         log_info "Binary size: ${BINARY_SIZE}"
     fi
-    
+
     echo ""
     log_success "PGO build completed successfully!"
     echo "  Binary location: target/pgo-use/"
@@ -170,10 +170,10 @@ pgo_build() {
 pgo_all() {
     log_info "Running full PGO workflow..."
     echo ""
-    
+
     pgo_generate
     echo ""
-    
+
     pgo_build
 }
 

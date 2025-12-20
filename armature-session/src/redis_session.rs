@@ -1,5 +1,6 @@
 //! Redis session storage implementation.
 
+use armature_log::{debug, info, trace};
 use crate::config::SessionConfig;
 use crate::error::{SessionError, SessionResult};
 use crate::traits::{Session, SessionStore, generate_session_id};
@@ -61,6 +62,9 @@ impl RedisSessionStore {
     /// # }
     /// ```
     pub async fn new(config: SessionConfig) -> SessionResult<Self> {
+        info!("Initializing Redis session store");
+        debug!("Session namespace: {}", config.namespace);
+
         let client = redis::Client::open(config.url.as_str())
             .map_err(|e| SessionError::Connection(e.to_string()))?;
 
@@ -68,6 +72,7 @@ impl RedisSessionStore {
             .await
             .map_err(|e| SessionError::Connection(e.to_string()))?;
 
+        info!("Redis session store ready");
         Ok(Self { conn, config })
     }
 
