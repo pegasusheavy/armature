@@ -1,15 +1,16 @@
 # Logging Guide
 
-Comprehensive guide to Armature's logging system.
+Comprehensive guide to Armature's logging system with JSON output by default and configurable pretty printing for development.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
+- [Environment Variables](#environment-variables)
+- [Programmatic Configuration](#programmatic-configuration)
 - [Log Formats](#log-formats)
 - [Log Levels](#log-levels)
-- [Output Destinations](#output-destinations)
 - [Structured Logging](#structured-logging)
 - [HTTP Request Logging](#http-request-logging)
 - [Best Practices](#best-practices)
@@ -20,16 +21,16 @@ Comprehensive guide to Armature's logging system.
 
 ## Overview
 
-Armature provides a powerful, highly configurable logging system built on the `tracing` ecosystem. The logging system is designed for production use with features like:
+Armature provides a powerful, environment-configurable logging system built for production use with features like:
 
-- **Multiple Formats:** JSON, Pretty, Plain, Compact
-- **Multiple Outputs:** STDOUT, STDERR, File, Rolling Files
-- **Log Levels:** TRACE, DEBUG, INFO, WARN, ERROR
-- **Structured Logging:** Key-value pairs for context
-- **HTTP Middleware:** Automatic request/response logging
-- **Low Overhead:** Asynchronous, non-blocking logging
+- **JSON by Default**: Production-ready structured logging out of the box
+- **Pretty Printing**: Human-readable format for development
+- **Environment Configuration**: Switch formats without code changes
+- **Runtime Configuration**: Change settings programmatically
+- **Zero-Cost When Disabled**: Debug macros compile to no-ops
+- **Presets**: Built-in configurations for development and production
 
-**Default Configuration:** JSON format to STDOUT at INFO level
+**Default Configuration:** JSON format to STDERR at INFO level
 
 ---
 
@@ -38,74 +39,109 @@ Armature provides a powerful, highly configurable logging system built on the `t
 ### Basic Logging
 
 ```rust
-use armature_core::*;
+use armature_log::{debug, info, warn, error, trace};
 
-#[tokio::main]
-async fn main() {
-    // Initialize with defaults (JSON to STDOUT)
-    let _guard = Application::init_logging();
-
-    info!("Application started");
+fn main() {
+    // Logs are automatically initialized on first use
+    info!("Application started on port {}", 8080);
+    debug!("Debug information");
     warn!("Warning message");
     error!("Error occurred");
 }
 ```
 
-### Custom Configuration
+**Default JSON Output:**
+```json
+{"timestamp":"2024-12-20T12:00:00Z","level":"INFO","target":"my_app","message":"Application started on port 8080"}
+```
 
-```rust
-use armature_core::*;
+### Switch to Pretty Logging
 
-#[tokio::main]
-async fn main() {
-    let config = LogConfig::new()
-        .level(LogLevel::Debug)
-        .format(LogFormat::Pretty)
-        .with_colors(true);
+```bash
+# Development - Pretty format with colors
+ARMATURE_LOG_FORMAT=pretty cargo run
+```
 
-    let _guard = Application::init_logging_with_config(config);
-
-    debug!("Debug information");
-    info!("Application running");
-}
+**Pretty Output:**
+```
+2024-12-20 12:00:00.123 INFO  my_app Application started on port 8080
 ```
 
 ---
 
 ## Configuration
 
-### LogConfig
+### Environment Variables (Recommended)
 
-The `LogConfig` struct provides a fluent API for configuring logging:
+The easiest way to configure logging is via environment variables:
 
-```rust
-let config = LogConfig::new()
-    .level(LogLevel::Info)           // Set log level
-    .format(LogFormat::Json)         // Set output format
-    .output(LogOutput::Stdout)       // Set output destination
-    .with_timestamps(true)           // Include timestamps
-    .with_thread_ids(false)          // Include thread IDs
-    .with_targets(true)              // Include module paths
-    .with_file_line(false)           // Include file/line numbers
-    .with_spans(false)               // Include span information
-    .with_colors(false);             // Enable ANSI colors
+| Variable | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `ARMATURE_LOG_FORMAT` | `json`, `pretty`, `compact` | `json` | Output format |
+| `ARMATURE_LOG_LEVEL` | `trace`, `debug`, `info`, `warn`, `error` | `info` | Minimum log level |
+| `ARMATURE_LOG_COLOR` | `1`, `true`, `0`, `false` | auto-detect | Enable ANSI colors |
+| `ARMATURE_DEBUG` | `1`, `true` | `false` | Enable debug mode |
+| `ARMATURE_LOG_TIMESTAMPS` | `1`, `0` | `1` | Include timestamps |
+| `ARMATURE_LOG_MODULE` | `1`, `0` | `1` | Include module path |
 
-let _guard = config.init();
+**Examples:**
+
+```bash
+# Development
+ARMATURE_LOG_FORMAT=pretty ARMATURE_LOG_LEVEL=debug cargo run
+
+# Production
+ARMATURE_LOG_FORMAT=json ARMATURE_LOG_LEVEL=info cargo run
+
+# Quiet mode
+ARMATURE_LOG_LEVEL=warn cargo run
 ```
 
-### Configuration Options
+### Programmatic Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `level` | `LogLevel` | `Info` | Minimum log level to display |
-| `format` | `LogFormat` | `Json` | Output format |
-| `output` | `LogOutput` | `Stdout` | Output destination |
-| `timestamps` | `bool` | `true` | Include timestamps in logs |
-| `thread_ids` | `bool` | `false` | Include thread IDs |
-| `targets` | `bool` | `true` | Include module paths |
-| `file_line` | `bool` | `false` | Include file and line numbers |
-| `spans` | `bool` | `false` | Include tracing span information |
-| `colors` | `bool` | `false` | Enable ANSI color codes |
+Use the fluent API for runtime configuration:
+
+```rust
+use armature_log::{configure, Format, Level};
+
+// Configure logging
+configure()
+    .format(Format::Pretty)
+    .level(Level::Debug)
+    .color(true)
+    .timestamps(true)
+    .apply();
+```
+
+### Direct Setters
+
+```rust
+use armature_log::{set_format, set_level, Format, Level};
+
+// Change format at runtime
+set_format(Format::Pretty);
+set_format(Format::Json);
+
+// Change level at runtime
+set_level(Level::Debug);
+```
+
+### Presets
+
+Use built-in presets for common configurations:
+
+```rust
+use armature_log;
+
+// Development: Pretty + Debug + Colors
+armature_log::preset_development();
+
+// Production: JSON + Info + No colors
+armature_log::preset_production();
+
+// Quiet: JSON + Warn only
+armature_log::preset_quiet();
+```
 
 ---
 
@@ -116,76 +152,69 @@ let _guard = config.init();
 Machine-readable, structured format ideal for production and log aggregators.
 
 ```json
-{"timestamp":"2024-01-01T12:00:00.123Z","level":"INFO","target":"my_app","fields":{"message":"User logged in","user_id":123}}
+{"timestamp":"2024-12-20T12:00:00.123Z","level":"INFO","target":"my_app","message":"User logged in"}
 ```
 
 **Use Cases:**
 - Production environments
-- Log aggregation (ELK, Splunk, Datadog)
+- Log aggregation (ELK, Splunk, Datadog, Grafana Loki)
 - Automated log parsing
-- Cloud environments
+- Cloud environments (AWS CloudWatch, GCP Logging)
 
-**Configuration:**
+**Enable:**
+```bash
+ARMATURE_LOG_FORMAT=json cargo run
+```
+
+Or in code:
 ```rust
-LogConfig::new().format(LogFormat::Json)
+armature_log::set_format(armature_log::Format::Json);
 ```
 
 ### Pretty Format
 
-Formatted, colored output for development.
+Formatted, colored output for development with human-readable timestamps.
 
 ```
-2024-01-01T12:00:00.123Z  INFO my_app: User logged in
-    user_id: 123
-    ip_address: "192.168.1.1"
+2024-12-20 12:00:00.123 INFO  my_app User logged in
+2024-12-20 12:00:00.124 DEBUG armature_core::routing Matched route: GET /api/users
+2024-12-20 12:00:00.125 WARN  my_app Rate limit approaching
 ```
 
 **Use Cases:**
 - Local development
 - Debugging
 - Interactive terminal use
+- Quick troubleshooting
 
-**Configuration:**
+**Enable:**
+```bash
+ARMATURE_LOG_FORMAT=pretty cargo run
+```
+
+Or in code:
 ```rust
-LogConfig::new()
-    .format(LogFormat::Pretty)
-    .with_colors(true)
-```
-
-### Plain Format
-
-Simple, human-readable format.
-
-```
-2024-01-01T12:00:00.123Z INFO my_app: User logged in
-```
-
-**Use Cases:**
-- Simple applications
-- Log files without parsing
-- Quick debugging
-
-**Configuration:**
-```rust
-LogConfig::new().format(LogFormat::Plain)
+armature_log::preset_development();
 ```
 
 ### Compact Format
 
-Minimal output format.
+Minimal single-line output for space efficiency.
 
 ```
-INFO User logged in
+12:00:00 I my_app: User logged in
+12:00:00 D armature_core::routing: Matched route
+12:00:00 W my_app: Rate limit approaching
 ```
 
 **Use Cases:**
 - Low-volume logging
-- Development quick-checks
-- Performance-critical paths
+- CI/CD pipelines
+- Space-constrained environments
 
-**Configuration:**
-```rust
-LogConfig::new().format(LogFormat::Compact)
+**Enable:**
+```bash
+ARMATURE_LOG_FORMAT=compact cargo run
 ```
 
 ---
@@ -204,18 +233,20 @@ LogConfig::new().format(LogFormat::Compact)
 
 ### Setting Log Level
 
-```rust
-// Configuration
-LogConfig::new().level(LogLevel::Debug)
+```bash
+# Via environment variable
+ARMATURE_LOG_LEVEL=debug cargo run
+```
 
-// Or use environment variable
-// RUST_LOG=debug cargo run
+```rust
+// Via code
+armature_log::set_level(armature_log::Level::Debug);
 ```
 
 ### Logging Macros
 
 ```rust
-use armature_core::*;
+use armature_log::{trace, debug, info, warn, error};
 
 trace!("Entering function");
 debug!("Processing item {}", id);
@@ -224,51 +255,13 @@ warn!("Rate limit approaching: {}/100", count);
 error!("Failed to connect to database: {}", err);
 ```
 
----
+### With Target
 
-## Output Destinations
-
-### STDOUT (Default)
+Specify a custom target (module path) for filtering:
 
 ```rust
-LogConfig::new().output(LogOutput::Stdout)
-```
-
-### STDERR
-
-```rust
-LogConfig::new().output(LogOutput::Stderr)
-```
-
-### File
-
-```rust
-LogConfig::new().output(LogOutput::File("app.log".to_string()))
-```
-
-### Rolling Files
-
-Automatic file rotation based on time.
-
-```rust
-LogConfig::new().output(LogOutput::RollingFile {
-    directory: "logs".to_string(),
-    prefix: "armature".to_string(),
-    rotation: Rotation::Daily,
-})
-```
-
-**Rotation Options:**
-- `Rotation::Minutely` - Rotate every minute (testing)
-- `Rotation::Hourly` - Rotate every hour
-- `Rotation::Daily` - Rotate daily
-- `Rotation::Never` - Never rotate
-
-**Example File Names:**
-```
-logs/armature.2024-01-01
-logs/armature.2024-01-02
-logs/armature.2024-01-03
+debug!(target: "armature::router", "Matching route: {}", path);
+info!(target: "database", "Query executed in {}ms", duration);
 ```
 
 ---
@@ -291,12 +284,10 @@ info!(
 **JSON Output:**
 ```json
 {
-  "timestamp": "2024-01-01T12:00:00.123Z",
+  "timestamp": "2024-12-20T12:00:00.123Z",
   "level": "INFO",
-  "message": "User authentication successful",
-  "user_id": 123,
-  "action": "login",
-  "ip_address": "192.168.1.1"
+  "target": "my_app",
+  "message": "User authentication successful"
 }
 ```
 
@@ -304,96 +295,54 @@ info!(
 
 ```rust
 // Strings
-info!(name = "Alice", "User created");
+info!("User created: {}", name);
 
 // Numbers
-info!(count = 42, duration_ms = 150, "Query completed");
+info!("Query completed in {}ms, {} rows", duration_ms, row_count);
 
-// Display format
-info!(error = %err, "Operation failed");
-
-// Debug format
-info!(config = ?my_config, "Configuration loaded");
-```
-
-### Multiple Fields
-
-```rust
-error!(
-    operation = "database_query",
-    table = "users",
-    query_id = 123,
-    duration_ms = 1500,
-    error_code = "TIMEOUT",
-    error = %err,
-    "Database query timeout"
-);
+// With error context
+error!("Operation failed: {}", err);
 ```
 
 ---
 
 ## HTTP Request Logging
 
+Armature automatically adds logging to HTTP request handling when using `armature-core`.
+
 ### Automatic Request Logging
 
-Use the `LoggingMiddleware` to automatically log HTTP requests and responses.
-
 ```rust
-use armature_core::*;
+use armature_core::Application;
 
-let mut chain = MiddlewareChain::new();
-chain.use_middleware(LoggingMiddleware::new());
-
-// Logs:
-// INFO method="GET" path="/api/users" status=200 duration_ms=45 "HTTP request completed"
+let app = Application::new();
+// Logging is automatically enabled
 ```
 
-### Configuration
-
-```rust
-let logging = LoggingMiddleware::new()
-    .with_request_body(true)   // Log request bodies
-    .with_response_body(true)  // Log response bodies
-    .with_max_body_size(1024); // Max body size to log
-
-chain.use_middleware(logging);
-```
-
-### Example Logs
-
+**Example Logs:**
 ```json
-{
-  "timestamp": "2024-01-01T12:00:00.123Z",
-  "level": "INFO",
-  "message": "HTTP request completed",
-  "method": "POST",
-  "path": "/api/users",
-  "status": 201,
-  "duration_ms": 123,
-  "body_size": 256
-}
-```
-
-### Error Logging
-
-```json
-{
-  "timestamp": "2024-01-01T12:00:05.456Z",
-  "level": "ERROR",
-  "message": "Request failed",
-  "method": "GET",
-  "path": "/api/data",
-  "status": 500,
-  "duration_ms": 12,
-  "error": "Database connection failed"
-}
+{"timestamp":"2024-12-20T12:00:00Z","level":"INFO","target":"armature_core::application","message":"HTTP server listening with pipelining enabled"}
+{"timestamp":"2024-12-20T12:00:01Z","level":"DEBUG","target":"armature_core::routing","message":"Matching route: /api/users"}
+{"timestamp":"2024-12-20T12:00:01Z","level":"TRACE","target":"armature_core::routing","message":"Route matched: GET /api/users"}
 ```
 
 ---
 
 ## Best Practices
 
-### 1. Use Appropriate Log Levels
+### 1. Use Environment Variables for Format
+
+```bash
+# .env.development
+ARMATURE_LOG_FORMAT=pretty
+ARMATURE_LOG_LEVEL=debug
+
+# .env.production
+ARMATURE_LOG_FORMAT=json
+ARMATURE_LOG_LEVEL=info
+```
+
+### 2. Use Appropriate Log Levels
 
 ```rust
 // ✅ Good
@@ -404,89 +353,39 @@ error!("Failed to save user: {}", err);           // Actual error
 // ❌ Bad
 info!("Database error occurred");                 // Should be ERROR
 error!("User clicked button");                    // Should be DEBUG or none
-debug!("Critical payment processing failed");     // Should be ERROR
-```
-
-### 2. Add Context with Structured Logging
-
-```rust
-// ✅ Good - provides context
-error!(
-    user_id = user.id,
-    order_id = order.id,
-    payment_method = "credit_card",
-    error = %err,
-    "Payment processing failed"
-);
-
-// ❌ Bad - missing context
-error!("Payment failed");
 ```
 
 ### 3. Don't Log Sensitive Data
 
 ```rust
 // ❌ Bad - logs sensitive data
-info!(password = %user.password, "User logged in");
-info!(credit_card = %card_number, "Payment processed");
+info!("User logged in with password: {}", password);
 
-// ✅ Good - masks or omits sensitive data
-info!(user_id = user.id, "User logged in");
-info!(card_last_4 = %last_4_digits, "Payment processed");
+// ✅ Good - omits sensitive data
+info!("User {} logged in", user_id);
 ```
 
-### 4. Use Consistent Field Names
+### 4. Initialize Logging Early (Optional)
 
 ```rust
-// ✅ Good - consistent naming
-info!(user_id = 123, "Action performed");
-info!(user_id = 456, "Another action");
-
-// ❌ Bad - inconsistent naming
-info!(userId = 123, "Action performed");
-info!(user_identifier = 456, "Another action");
-```
-
-### 5. Log at Application Boundaries
-
-```rust
-// Log when:
-// - Request received
-// - Request completed
-// - External service called
-// - External service responded
-// - Database operation performed
-// - Critical state change
-
-info!(method = "GET", path = %path, "Request received");
-// ... process request ...
-info!(method = "GET", path = %path, status = 200, "Request completed");
-```
-
-### 6. Don't Log in Loops (Usually)
-
-```rust
-// ❌ Bad - logs 1000 times
-for item in items {
-    debug!("Processing item {}", item.id);
-}
-
-// ✅ Good - log once
-debug!("Processing {} items", items.len());
-// ... process items ...
-info!("Processed {} items successfully", processed_count);
-```
-
-### 7. Initialize Logging Early
-
-```rust
-#[tokio::main]
-async fn main() {
-    // Initialize logging FIRST
-    let _guard = Application::init_logging();
+fn main() {
+    // Explicitly initialize logging (optional)
+    armature_log::init();
 
     info!("Application starting");
-    // ... rest of application ...
+}
+```
+
+### 5. Use Presets for Consistency
+
+```rust
+fn main() {
+    // Use preset based on environment
+    if cfg!(debug_assertions) {
+        armature_log::preset_development();
+    } else {
+        armature_log::preset_production();
+    }
 }
 ```
 
@@ -498,10 +397,10 @@ async fn main() {
 
 Armature's logging system is designed for minimal overhead:
 
-- **Async writes:** Non-blocking I/O
 - **Lazy evaluation:** Only evaluates log statements that will be output
-- **Efficient formatting:** Optimized for JSON output
-- **No locks:** Lock-free write path
+- **Atomic checks:** Fast level checks using atomics
+- **No allocation when filtered:** Filtered logs don't allocate
+- **JSON serialization:** Efficient with serde_json
 
 ### Benchmarks
 
@@ -509,22 +408,18 @@ Armature's logging system is designed for minimal overhead:
 |-----------|------|----------|
 | Filtered out log (TRACE when INFO) | ~5ns | Negligible |
 | Simple info! message | ~200ns | Very low |
-| Structured log (5 fields) | ~500ns | Low |
 | JSON formatting | ~1μs | Low |
 
 ### Tips for Performance
 
 1. **Use appropriate log levels** - DEBUG/TRACE disabled in production
 2. **Avoid expensive operations** - Don't compute values if log is filtered
-3. **Use lazy evaluation** - Use closures for expensive computations
-4. **Batch logging** - Log summaries instead of individual items
 
 ```rust
-// ✅ Good - lazy evaluation
-debug!("Expensive computation: {}", || expensive_fn());
-
-// ❌ Bad - always computed
-debug!("Expensive computation: {}", expensive_fn());
+// ✅ Good - value only computed if debug is enabled
+if armature_log::is_level_enabled(armature_log::Level::Debug) {
+    debug!("Expensive computation: {}", expensive_fn());
+}
 ```
 
 ---
@@ -533,79 +428,69 @@ debug!("Expensive computation: {}", expensive_fn());
 
 ### Production Configuration
 
-```rust
-use armature_core::*;
-
-#[tokio::main]
-async fn main() {
-    let config = LogConfig::new()
-        .level(LogLevel::Info)
-        .format(LogFormat::Json)
-        .output(LogOutput::RollingFile {
-            directory: "/var/log/myapp".to_string(),
-            prefix: "app".to_string(),
-            rotation: Rotation::Daily,
-        })
-        .with_timestamps(true)
-        .with_targets(true);
-
-    let _guard = config.init();
-
-    info!("Production application started");
-    // ... application code ...
-}
+```bash
+# Docker/K8s environment
+ARMATURE_LOG_FORMAT=json
+ARMATURE_LOG_LEVEL=info
+ARMATURE_LOG_TIMESTAMPS=1
+ARMATURE_LOG_MODULE=1
 ```
 
 ### Development Configuration
 
-```rust
-let config = LogConfig::new()
-    .level(LogLevel::Debug)
-    .format(LogFormat::Pretty)
-    .output(LogOutput::Stdout)
-    .with_colors(true)
-    .with_file_line(true);
-
-let _guard = config.init();
+```bash
+# Local development
+ARMATURE_LOG_FORMAT=pretty
+ARMATURE_LOG_LEVEL=debug
+ARMATURE_LOG_COLOR=1
 ```
 
-### Environment-Based Configuration
+Or in code:
 
 ```rust
-use std::env;
+fn main() {
+    #[cfg(debug_assertions)]
+    armature_log::preset_development();
 
-let log_level = match env::var("LOG_LEVEL").unwrap_or_default().as_str() {
-    "trace" => LogLevel::Trace,
-    "debug" => LogLevel::Debug,
-    "warn" => LogLevel::Warn,
-    "error" => LogLevel::Error,
-    _ => LogLevel::Info,
-};
+    #[cfg(not(debug_assertions))]
+    armature_log::preset_production();
 
-let config = LogConfig::new()
-    .level(log_level)
-    .format(if env::var("LOG_JSON").is_ok() {
-        LogFormat::Json
-    } else {
-        LogFormat::Pretty
-    });
-
-let _guard = config.init();
+    info!("Application started");
+}
 ```
 
-### Custom Filter
+### CI/CD Configuration
+
+```bash
+# Compact format for CI logs
+ARMATURE_LOG_FORMAT=compact
+ARMATURE_LOG_LEVEL=info
+ARMATURE_LOG_COLOR=0
+```
+
+### Complete Example
 
 ```rust
-// Advanced: Custom environment filter
-let config = LogConfig::new()
-    .with_env_filter("myapp=debug,hyper=info,tokio=warn");
+use armature_log::{debug, info, warn, error, configure, Format, Level};
 
-let _guard = config.init();
+fn main() {
+    // Configure based on environment
+    if std::env::var("DEVELOPMENT").is_ok() {
+        configure()
+            .format(Format::Pretty)
+            .level(Level::Debug)
+            .color(true)
+            .apply();
+    }
 
-// Now:
-// - myapp logs at DEBUG and above
-// - hyper logs at INFO and above
-// - tokio logs at WARN and above
+    info!("Application starting");
+
+    // Your application code
+    match process_request() {
+        Ok(_) => info!("Request processed successfully"),
+        Err(e) => error!("Request failed: {}", e),
+    }
+}
 ```
 
 ---
@@ -614,40 +499,38 @@ let _guard = config.init();
 
 ### Key Features
 
-✅ **Highly Configurable** - Multiple formats, outputs, and levels
-✅ **JSON Default** - Production-ready out of the box
-✅ **Structured Logging** - Rich context with key-value pairs
-✅ **HTTP Middleware** - Automatic request logging
-✅ **Low Overhead** - Async, non-blocking logging
-✅ **Production Ready** - Battle-tested tracing ecosystem
+✅ **JSON by Default** - Production-ready structured logging
+✅ **Pretty Printing** - Human-readable development output
+✅ **Environment Configuration** - Switch formats via env vars
+✅ **Runtime Configuration** - Change settings in code
+✅ **Zero-Cost** - No overhead when disabled
+✅ **Presets** - Built-in dev/prod configurations
 
 ### Quick Reference
 
-```rust
-// Initialize
-let _guard = Application::init_logging();
-
-// Log messages
-trace!("Very detailed");
-debug!("Development info");
-info!("General information");
-warn!("Potential issue");
-error!("Failure occurred");
-
-// Structured logging
-info!(user_id = 123, action = "login", "User authenticated");
-
-// HTTP logging
-chain.use_middleware(LoggingMiddleware::new());
+```bash
+# Environment Variables
+ARMATURE_LOG_FORMAT=pretty|json|compact
+ARMATURE_LOG_LEVEL=trace|debug|info|warn|error
+ARMATURE_LOG_COLOR=1|0
+ARMATURE_DEBUG=1
 ```
 
-### Next Steps
+```rust
+// Programmatic Configuration
+armature_log::preset_development();
+armature_log::preset_production();
+armature_log::set_format(Format::Pretty);
+armature_log::set_level(Level::Debug);
 
-- See `examples/comprehensive_logging.rs` for complete examples
-- Read `armature-core/src/logging.rs` for implementation details
-- Check out the [tracing documentation](https://docs.rs/tracing) for advanced features
+// Logging Macros
+trace!("...");
+debug!("...");
+info!("...");
+warn!("...");
+error!("...");
+```
 
 ---
 
 **Happy logging!** 📝
-

@@ -111,13 +111,19 @@ armature dev
 
 | Guide | Description |
 |-------|-------------|
-| [Structured Logging](logging-guide.md) | JSON logging with tracing |
+| [Structured Logging](logging-guide.md) | JSON logging, pretty printing, env config |
 | [Debug Logging](debug-logging-guide.md) | Development logging |
 | [OpenTelemetry](opentelemetry-guide.md) | Distributed tracing and metrics |
 | [Prometheus Metrics](metrics-guide.md) | Custom metrics, /metrics endpoint |
 | [Health Checks](health-check-guide.md) | Liveness, readiness, startup probes |
 | [Error Correlation](error-correlation-guide.md) | Request ID tracking |
 | [Audit Logging](audit-guide.md) | Who did what, when |
+
+### Data & Search
+
+| Guide | Description |
+|-------|-------------|
+| [OpenSearch](opensearch-guide.md) | Full-text search, indexing, aggregations |
 
 ### Cloud Providers
 
@@ -173,6 +179,12 @@ Armature provides first-class integrations with major cloud providers:
 |-------|-------------|
 | [vs Node.js](armature-vs-nodejs-benchmark.md) | Performance comparison with Express, NestJS |
 | [vs Next.js](armature-vs-nextjs-benchmark.md) | Performance comparison with Next.js |
+
+### Development & Contributing
+
+| Guide | Description |
+|-------|-------------|
+| [Publishing to crates.io](publishing-guide.md) | Publishing workspace crates |
 
 ## Quick Example
 
