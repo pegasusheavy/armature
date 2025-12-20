@@ -183,6 +183,7 @@ pub mod response_pipeline;
 pub mod websocket;
 pub mod worker;
 pub mod write_coalesce;
+pub mod zero_cost;
 
 // Re-export commonly used types
 pub use application::*;
