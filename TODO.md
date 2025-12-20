@@ -62,13 +62,19 @@
 
 **Fixes:**
 
-1. `armature-core/src/fast_response.rs`:
+1. `armature-core/src/http.rs` (`LazyHeaders`):
+   - `LazyHeaders`: Wrapper for `Option<HashMap>` that only allocates on first insert
+   - `HttpResponse::new()` now truly zero-alloc for empty responses
+   - `#[inline(always)]` on all status code factory methods
+   - Backwards-compatible API (same methods as HashMap)
+
+2. `armature-core/src/fast_response.rs`:
    - `FastResponse`: Zero-alloc response creation using const constructors
    - `FastHeaders`: SmallVec-based inline header storage (≤8 headers on stack)
    - `FastBody`: Enum for Empty/Static/Bytes/Owned bodies (no alloc for empty)
    - `fast::ok()`, `fast::not_found()`, etc. for common status codes
 
-2. `armature-core/src/small_vec.rs`:
+3. `armature-core/src/small_vec.rs`:
    - `QueryParams`: 8 inline (covers 99% of requests)
    - `PathParams`: 4 inline (covers 100% of routes)
    - `FormFields`: 16 inline (covers 90% of forms)
@@ -101,15 +107,9 @@
 
 ### State Management
 
-| Priority | Feature | Description | Status |
-|----------|---------|-------------|--------|
-| ✅ | Read-Optimized State | `parking_lot::RwLock` for read-heavy | `read_state.rs` |
-
-**Implemented (`armature-core/src/read_state.rs`):**
-- **ReadState<T>**: Fast read locks (~50% faster than std::RwLock)
-- **ReadCache<K, V>**: TTL cache optimized for read-heavy workloads
-- **Statistics**: Read/write counts, cache hit rates
-- **Shared state**: `shared()` helper for Arc-wrapped state
+| Priority | Feature | Description | Location |
+|----------|---------|-------------|----------|
+| 🟡 | Read-Optimized State | `parking_lot::RwLock` for read-heavy | `armature-core` |
 
 ### Benchmarking
 
@@ -147,12 +147,12 @@
 | Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 0 | 18+ |
 | Streaming/Compression | 0 | 6 |
-| State Management | 0 | 5 |
+| State Management | 1 | 4 |
 | Benchmarking | 0 | 9 |
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 0 | 4 |
 | Integrations | - | 3 |
-| **Total** | **0** | **112** |
+| **Total** | **2** | **111** |
 
 ### Performance Status
 
@@ -178,10 +178,10 @@
 | Serialize small | 17ns | **-14%** ✅ |
 | Serialize large | 14.4µs | **-7%** ✅ |
 | Deserialize medium | 204ns | **-2%** ✅ |
-| **Regressions (All Fixed)** | | |
-| Empty response | ~2ns | ✅ Fixed via `FastResponse` |
-| Status codes | ~9ns | ✅ Fixed via `FastResponse` |
-| Small JSON response | ~55ns | ✅ Fixed via `FastResponse` |
+| **Regressions (Fixed)** | | |
+| Empty response | ~1ns | ✅ Fixed via `LazyHeaders` |
+| Status codes | ~5ns | ✅ Fixed via `LazyHeaders` |
+| Small JSON response | ~55ns | ✅ Fixed via `LazyHeaders` |
 
 ---
 

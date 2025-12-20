@@ -569,9 +569,11 @@ impl CachedResponse {
 
     /// Convert to an HttpResponse.
     pub fn to_response(&self) -> HttpResponse {
-        let mut response = HttpResponse::new(self.response.status);
-        response.headers = self.response.headers.clone();
-        response.body = self.response.body.clone();
+        let mut response = HttpResponse::from_parts(
+            self.response.status,
+            self.response.headers.clone(),
+            self.response.body.clone(),
+        );
 
         // Add Age header
         response.headers.insert(

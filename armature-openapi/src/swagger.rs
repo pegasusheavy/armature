@@ -91,45 +91,27 @@ pub fn swagger_ui_response(config: &SwaggerConfig) -> Result<HttpResponse, Error
         spec = spec_json_escaped
     );
 
-    Ok(HttpResponse {
-        status: 200,
-        headers: {
-            let mut headers = std::collections::HashMap::new();
-            headers.insert("content-type".to_string(), "text/html".to_string());
-            headers
-        },
-        body: html.into_bytes(),
-    })
+    Ok(HttpResponse::ok()
+        .with_header("content-type".to_string(), "text/html".to_string())
+        .with_body(html.into_bytes()))
 }
 
 /// Generate a response for the OpenAPI spec JSON endpoint
 pub fn spec_json_response(config: &SwaggerConfig) -> Result<HttpResponse, Error> {
     let spec_json = config.spec_json()?;
 
-    Ok(HttpResponse {
-        status: 200,
-        headers: {
-            let mut headers = std::collections::HashMap::new();
-            headers.insert("content-type".to_string(), "application/json".to_string());
-            headers
-        },
-        body: spec_json.into_bytes(),
-    })
+    Ok(HttpResponse::ok()
+        .with_header("content-type".to_string(), "application/json".to_string())
+        .with_body(spec_json.into_bytes()))
 }
 
 /// Generate a response for the OpenAPI spec YAML endpoint
 pub fn spec_yaml_response(config: &SwaggerConfig) -> Result<HttpResponse, Error> {
     let spec_yaml = config.spec_yaml()?;
 
-    Ok(HttpResponse {
-        status: 200,
-        headers: {
-            let mut headers = std::collections::HashMap::new();
-            headers.insert("content-type".to_string(), "application/x-yaml".to_string());
-            headers
-        },
-        body: spec_yaml.into_bytes(),
-    })
+    Ok(HttpResponse::ok()
+        .with_header("content-type".to_string(), "application/x-yaml".to_string())
+        .with_body(spec_yaml.into_bytes()))
 }
 
 #[cfg(test)]
