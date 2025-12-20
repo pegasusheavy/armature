@@ -60,6 +60,7 @@ Only features that are **not yet completed**.
 | ✅ Tower/HTTP Crate Compatibility | Tower Service, http crate types, Hyper 1.0 adapter | `armature-core/src/tower_compat.rs` |
 | ✅ Memory Optimizations | SmallVec headers, CompactString paths, object pools | `armature-core/src/memory_opt.rs` |
 | ✅ Zero-Cost Abstractions | Const generic extractors, static dispatch middleware | `armature-core/src/zero_cost.rs` |
+| ✅ Route Parameter Optimization | Zero-alloc params, wildcard patterns | `armature-core/src/route_params.rs` |
 
 ---
 
@@ -110,8 +111,8 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 |----------|---------|-------------|--------|
 | ✅ | Replace Trie with `matchit` | Use `matchit` crate (same as Axum) for route matching | `armature-core/src/router.rs` |
 | ✅ | Compile-time Route Validation | Validate routes at compile time, not runtime | `armature-macro/src/route_validation.rs` |
-| 🟠 | Route Parameter Extraction | Zero-allocation parameter extraction like Axum | `armature-core/routing.rs` |
-| 🟠 | Wildcard/Catch-all Optimization | Optimize `*path` and `/*rest` patterns | `armature-core/routing.rs` |
+| ✅ | Route Parameter Extraction | Zero-allocation parameter extraction like Axum | `armature-core/src/route_params.rs` |
+| ✅ | Wildcard/Catch-all Optimization | Optimize `*path` and `/*rest` patterns | `armature-core/src/route_params.rs` |
 
 ### Zero-Cost Abstractions (Critical - Axum's strength)
 
@@ -375,7 +376,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **59** | ✅ |
+| **Recently Completed** | **61** | ✅ |
 
 ### Performance Target
 
