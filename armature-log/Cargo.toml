@@ -12,12 +12,12 @@ keywords = ["logging", "debug", "tracing", "armature"]
 categories = ["development-tools::debugging"]
 
 [features]
-default = []
+default = ["json"]
 # Enable tracing integration
 tracing = ["dep:tracing"]
 # Enable colored output
 color = ["dep:colored"]
-# Enable JSON logging format
+# Enable JSON logging format (enabled by default for structured logging)
 json = ["dep:serde_json", "dep:serde"]
 
 [dependencies]

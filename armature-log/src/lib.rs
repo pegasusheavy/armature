@@ -169,8 +169,8 @@ impl Default for LogConfig {
         Self {
             debug: false,
             level: Level::Info,
-            format: Format::Pretty,
-            color: true,
+            format: Format::Json,
+            color: false, // JSON output doesn't use colors
             timestamps: true,
             module_path: true,
         }
@@ -192,7 +192,7 @@ impl LogConfig {
         let format = env::var("ARMATURE_LOG_FORMAT")
             .ok()
             .and_then(|s| Format::from_str(&s))
-            .unwrap_or(Format::Pretty);
+            .unwrap_or(Format::Json);
 
         let color = env::var("ARMATURE_LOG_COLOR")
             .map(|v| v == "1" || v.to_lowercase() == "true")
@@ -388,15 +388,34 @@ fn log_json(level: Level, target: &str, message: &str) {
 
 #[cfg(not(feature = "json"))]
 fn log_json(level: Level, target: &str, message: &str) {
-    // Fallback without serde
+    // Fallback without serde - manually escape JSON strings
     let timestamp = chrono::Utc::now().to_rfc3339();
     eprintln!(
         r#"{{"timestamp":"{}","level":"{}","target":"{}","message":"{}"}}"#,
         timestamp,
         level.as_str(),
-        target.replace('"', "\\\""),
-        message.replace('"', "\\\"")
+        escape_json(target),
+        escape_json(message)
     );
+}
+
+#[cfg(not(feature = "json"))]
+fn escape_json(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => result.push_str("\\\""),
+            '\\' => result.push_str("\\\\"),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '\t' => result.push_str("\\t"),
+            c if c.is_control() => {
+                result.push_str(&format!("\\u{:04x}", c as u32));
+            }
+            c => result.push(c),
+        }
+    }
+    result
 }
 
 // ============================================================================
