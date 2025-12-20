@@ -37,18 +37,13 @@
 - **Benchmarks**: TechEmpower suite, framework comparisons, CI regression tests
 - **Infrastructure**: Grafana dashboards, Ferron reverse proxy, all CI passing
 
+### Compiler Optimizations
+- **Build Profiles**: PGO, LTO (thin/fat), release-native, profiling
+- **Cargo Config**: target-cpu aliases, codegen-units=1, PGO workflow script
+
 ---
 
 ## Remaining Work
-
-### Compiler Optimizations
-
-| Priority | Feature | Description | Location |
-|----------|---------|-------------|----------|
-| 🟠 | Profile-Guided Optimization | Add PGO build profile | `Cargo.toml` |
-| 🟠 | LTO Thin/Fat Modes | Benchmark LTO impact | `Cargo.toml` |
-| 🟡 | Target-specific Tuning | `-C target-cpu=native` | `Cargo.toml` |
-| 🟡 | Codegen Units = 1 | Single codegen unit | `Cargo.toml` |
 
 ### Buffer & Connection Tuning
 
@@ -77,7 +72,6 @@
 |----------|---------|-------------|----------|
 | 🟡 | Flame Graph CI | Auto-generate flamegraphs | `.github/workflows/` |
 | 🟡 | Database Benchmark | Single/multiple query tests | `benches/database/` |
-| 🟡 | PGO Build Profile | Profile-guided optimization | `Cargo.toml` |
 
 ### Internationalization
 
@@ -94,13 +88,13 @@
 
 | Category | Remaining | Completed |
 |----------|-----------|-----------|
-| Compiler Optimizations | 4 | - |
+| Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 3 | 15+ |
 | Streaming/Compression | 2 | 4 |
 | State Management | 1 | 4 |
-| Benchmarking | 3 | 6 |
+| Benchmarking | 2 | 7 |
 | Internationalization | 4 | - |
-| **Total** | **17** | **69** |
+| **Total** | **12** | **73** |
 
 ### Performance Status
 
