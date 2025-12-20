@@ -165,6 +165,7 @@ pub mod read_buffer;
 pub mod response_buffer;
 pub mod route_constraint;
 pub mod route_group;
+pub mod route_params;
 pub mod route_registry;
 pub mod routing;
 pub mod runtime_config;
