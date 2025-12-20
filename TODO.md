@@ -58,13 +58,22 @@
 |----------|-------|--------|--------|
 | ✅ | Response Creation Overhead | +9% empty, +23% status codes | Fixed via `FastResponse` |
 | ✅ | Small JSON Response Allocation | +7% for small JSON responses | Fixed via `FastResponse` |
-| 🟡 | Vec Small Allocation | +7% regression on small vectors | `armature-core` |
+| ✅ | Vec Small Allocation | +7% regression on small vectors | Fixed via `small_vec.rs` |
 
-**Fix:** Added `armature-core/src/fast_response.rs` with:
-- `FastResponse`: Zero-alloc response creation using const constructors
-- `FastHeaders`: SmallVec-based inline header storage (≤8 headers on stack)
-- `FastBody`: Enum for Empty/Static/Bytes/Owned bodies (no alloc for empty)
-- `fast::ok()`, `fast::not_found()`, etc. for common status codes
+**Fixes:**
+
+1. `armature-core/src/fast_response.rs`:
+   - `FastResponse`: Zero-alloc response creation using const constructors
+   - `FastHeaders`: SmallVec-based inline header storage (≤8 headers on stack)
+   - `FastBody`: Enum for Empty/Static/Bytes/Owned bodies (no alloc for empty)
+   - `fast::ok()`, `fast::not_found()`, etc. for common status codes
+
+2. `armature-core/src/small_vec.rs`:
+   - `QueryParams`: 8 inline (covers 99% of requests)
+   - `PathParams`: 4 inline (covers 100% of routes)
+   - `FormFields`: 16 inline (covers 90% of forms)
+   - `Cookies`: 8 inline (covers 98% of requests)
+   - `SmallStrings`, `SmallPairs`, `SmallBytes` type aliases
 
 ### Buffer & Connection Tuning
 
@@ -128,7 +137,7 @@
 
 | Category | Remaining | Completed |
 |----------|-----------|-----------|
-| Performance Regressions | 1 | 2 |
+| Performance Regressions | 0 | 3 |
 | Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 0 | 18+ |
 | Streaming/Compression | 0 | 6 |
@@ -137,7 +146,7 @@
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 0 | 4 |
 | Integrations | - | 3 |
-| **Total** | **3** | **106** |
+| **Total** | **2** | **111** |
 
 ### Performance Status
 

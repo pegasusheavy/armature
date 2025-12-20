@@ -148,6 +148,7 @@ pub mod guard;
 pub mod handler;
 pub mod headers;
 pub mod health;
+pub mod small_vec;
 pub mod json;
 pub mod simd_parser;
 pub mod hmr;
