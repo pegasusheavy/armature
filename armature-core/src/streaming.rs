@@ -57,7 +57,7 @@ use futures_util::Stream;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Duration;
@@ -1267,6 +1267,248 @@ impl BackpressureConfig {
         self
     }
 }
+
+/// Backpressure controller for flow control with slow clients.
+///
+/// Manages the flow of data to slow consumers by tracking buffer levels
+/// and pausing/resuming production based on watermarks.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use armature_core::streaming::{BackpressureController, BackpressureConfig};
+///
+/// let config = BackpressureConfig::new()
+///     .high_watermark(100)
+///     .low_watermark(20);
+///
+/// let mut controller = BackpressureController::new(config);
+///
+/// // Producer loop
+/// loop {
+///     // Wait if backpressure is applied
+///     controller.wait_if_paused().await;
+///
+///     // Check if we can send
+///     if controller.can_send() {
+///         // Send data...
+///         controller.record_send(chunk_size);
+///     }
+/// }
+///
+/// // Consumer acknowledged data
+/// controller.record_ack(bytes_consumed);
+/// ```
+#[derive(Debug)]
+pub struct BackpressureController {
+    config: BackpressureConfig,
+    /// Current buffer level (bytes pending)
+    buffer_level: AtomicUsize,
+    /// Whether production is paused
+    is_paused: AtomicBool,
+    /// Notification for resume
+    resume_notify: Arc<tokio::sync::Notify>,
+    /// Statistics
+    stats: BackpressureStats,
+}
+
+/// Statistics for backpressure monitoring.
+#[derive(Debug, Default)]
+pub struct BackpressureStats {
+    /// Total bytes sent
+    pub bytes_sent: AtomicU64,
+    /// Total bytes acknowledged
+    pub bytes_acked: AtomicU64,
+    /// Number of times paused
+    pub pause_count: AtomicU64,
+    /// Number of times resumed
+    pub resume_count: AtomicU64,
+    /// Number of dropped chunks (if using drop strategy)
+    pub dropped_chunks: AtomicU64,
+    /// Number of dropped bytes
+    pub dropped_bytes: AtomicU64,
+}
+
+impl BackpressureController {
+    /// Create a new backpressure controller.
+    pub fn new(config: BackpressureConfig) -> Self {
+        Self {
+            config,
+            buffer_level: AtomicUsize::new(0),
+            is_paused: AtomicBool::new(false),
+            resume_notify: Arc::new(tokio::sync::Notify::new()),
+            stats: BackpressureStats::default(),
+        }
+    }
+
+    /// Create with default configuration.
+    pub fn default_controller() -> Self {
+        Self::new(BackpressureConfig::default())
+    }
+
+    /// Check if data can be sent without blocking.
+    #[inline]
+    pub fn can_send(&self) -> bool {
+        !self.is_paused.load(Ordering::Acquire)
+    }
+
+    /// Check if currently paused.
+    #[inline]
+    pub fn is_paused(&self) -> bool {
+        self.is_paused.load(Ordering::Acquire)
+    }
+
+    /// Get current buffer level.
+    #[inline]
+    pub fn buffer_level(&self) -> usize {
+        self.buffer_level.load(Ordering::Acquire)
+    }
+
+    /// Get buffer utilization (0.0 - 1.0+).
+    pub fn buffer_utilization(&self) -> f64 {
+        let level = self.buffer_level() as f64;
+        let max = self.config.max_buffer as f64;
+        level / max
+    }
+
+    /// Record data being sent (increases buffer level).
+    pub fn record_send(&self, bytes: usize) {
+        let new_level = self.buffer_level.fetch_add(bytes, Ordering::AcqRel) + bytes;
+        self.stats.bytes_sent.fetch_add(bytes as u64, Ordering::Relaxed);
+
+        // Check if we should pause
+        if new_level >= self.config.high_watermark {
+            if !self.is_paused.swap(true, Ordering::AcqRel) {
+                self.stats.pause_count.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+    }
+
+    /// Record data being acknowledged by consumer (decreases buffer level).
+    pub fn record_ack(&self, bytes: usize) {
+        let old_level = self.buffer_level.fetch_sub(bytes.min(self.buffer_level()), Ordering::AcqRel);
+        let new_level = old_level.saturating_sub(bytes);
+        self.stats.bytes_acked.fetch_add(bytes as u64, Ordering::Relaxed);
+
+        // Check if we should resume
+        if new_level <= self.config.low_watermark {
+            if self.is_paused.swap(false, Ordering::AcqRel) {
+                self.stats.resume_count.fetch_add(1, Ordering::Relaxed);
+                self.resume_notify.notify_waiters();
+            }
+        }
+    }
+
+    /// Wait until not paused (for async producers).
+    pub async fn wait_if_paused(&self) {
+        while self.is_paused() {
+            self.resume_notify.notified().await;
+        }
+    }
+
+    /// Try to send data, handling backpressure according to strategy.
+    ///
+    /// Returns:
+    /// - `Ok(true)` if data was accepted
+    /// - `Ok(false)` if data was dropped (drop strategies)
+    /// - `Err` if strategy is Error and buffer is full
+    pub fn try_send(&self, bytes: usize) -> Result<bool, BackpressureError> {
+        let current = self.buffer_level();
+
+        match self.config.strategy {
+            BackpressureStrategy::PauseResume => {
+                if current < self.config.max_buffer {
+                    self.record_send(bytes);
+                    Ok(true)
+                } else {
+                    // Will be unblocked when consumer catches up
+                    Ok(false)
+                }
+            }
+            BackpressureStrategy::Block => {
+                // Always accept, let wait_if_paused handle blocking
+                self.record_send(bytes);
+                Ok(true)
+            }
+            BackpressureStrategy::DropOldest | BackpressureStrategy::DropNewest => {
+                if current + bytes > self.config.max_buffer {
+                    self.stats.dropped_chunks.fetch_add(1, Ordering::Relaxed);
+                    self.stats.dropped_bytes.fetch_add(bytes as u64, Ordering::Relaxed);
+                    Ok(false)
+                } else {
+                    self.record_send(bytes);
+                    Ok(true)
+                }
+            }
+            BackpressureStrategy::Error => {
+                if current + bytes > self.config.max_buffer {
+                    Err(BackpressureError::BufferFull {
+                        current,
+                        max: self.config.max_buffer,
+                    })
+                } else {
+                    self.record_send(bytes);
+                    Ok(true)
+                }
+            }
+        }
+    }
+
+    /// Reset the controller state.
+    pub fn reset(&self) {
+        self.buffer_level.store(0, Ordering::Release);
+        self.is_paused.store(false, Ordering::Release);
+        self.resume_notify.notify_waiters();
+    }
+
+    /// Get statistics.
+    pub fn stats(&self) -> &BackpressureStats {
+        &self.stats
+    }
+
+    /// Get a snapshot of current state.
+    pub fn snapshot(&self) -> BackpressureSnapshot {
+        BackpressureSnapshot {
+            buffer_level: self.buffer_level(),
+            is_paused: self.is_paused(),
+            utilization: self.buffer_utilization(),
+            bytes_sent: self.stats.bytes_sent.load(Ordering::Relaxed),
+            bytes_acked: self.stats.bytes_acked.load(Ordering::Relaxed),
+            pause_count: self.stats.pause_count.load(Ordering::Relaxed),
+            dropped_chunks: self.stats.dropped_chunks.load(Ordering::Relaxed),
+        }
+    }
+}
+
+/// Snapshot of backpressure state.
+#[derive(Debug, Clone)]
+pub struct BackpressureSnapshot {
+    pub buffer_level: usize,
+    pub is_paused: bool,
+    pub utilization: f64,
+    pub bytes_sent: u64,
+    pub bytes_acked: u64,
+    pub pause_count: u64,
+    pub dropped_chunks: u64,
+}
+
+/// Error when backpressure buffer is full.
+#[derive(Debug, Clone)]
+pub enum BackpressureError {
+    BufferFull { current: usize, max: usize },
+}
+
+impl std::fmt::Display for BackpressureError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::BufferFull { current, max } => {
+                write!(f, "Backpressure buffer full: {} / {} bytes", current, max)
+            }
+        }
+    }
+}
+
+impl std::error::Error for BackpressureError {}
 
 // ============================================================================
 // Chunk Optimization

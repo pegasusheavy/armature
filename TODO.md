@@ -81,10 +81,14 @@
 
 ### Streaming & Compression
 
-| Priority | Feature | Description | Location |
-|----------|---------|-------------|----------|
-| 🟡 | Backpressure Handling | Flow control for slow clients | `armature-core` |
-| 🟡 | Streaming Compression | Compress chunks as generated | `armature-compression` |
+| Priority | Feature | Description | Status |
+|----------|---------|-------------|--------|
+| ✅ | Backpressure Handling | Flow control for slow clients | `streaming.rs` |
+| ✅ | Streaming Compression | Compress chunks as generated | `armature-compression` |
+
+**Implemented:**
+- **BackpressureController**: High/low watermarks, pause/resume, drop strategies, async wait
+- **StreamingCompressor**: gzip/brotli/zstd, incremental compression, configurable flush intervals
 
 ### State Management
 
@@ -117,13 +121,13 @@
 | Performance Regressions | 1 | 2 |
 | Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 0 | 18+ |
-| Streaming/Compression | 2 | 4 |
+| Streaming/Compression | 0 | 6 |
 | State Management | 1 | 4 |
 | Benchmarking | 2 | 7 |
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
 | Integrations | - | 3 |
-| **Total** | **11** | **91** |
+| **Total** | **9** | **96** |
 
 ### Performance Status
 

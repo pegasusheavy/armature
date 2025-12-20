@@ -188,15 +188,10 @@ mod tests {
     use std::collections::HashMap;
 
     fn create_response(body: &str, content_type: &str) -> HttpResponse {
-        let mut headers = HashMap::new();
-        headers.insert("Content-Type".to_string(), content_type.to_string());
-        headers.insert("Content-Length".to_string(), body.len().to_string());
-
-        HttpResponse {
-            status: 200,
-            headers,
-            body: body.as_bytes().to_vec(),
-        }
+        HttpResponse::new(200)
+            .with_header("Content-Type".to_string(), content_type.to_string())
+            .with_header("Content-Length".to_string(), body.len().to_string())
+            .with_body(body.as_bytes().to_vec())
     }
 
     #[test]
