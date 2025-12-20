@@ -37,6 +37,7 @@
 - **Benchmarks**: TechEmpower suite, framework comparisons, CI regression tests
 - **Infrastructure**: Grafana dashboards, Ferron reverse proxy, all CI passing
 - **Logging**: `armature-log` crate with JSON default, env config, runtime config
+- **Fuzzing**: 8 fuzz targets (HTTP, routing, JSON, URLs, headers, params), cargo-fuzz setup
 
 ### Compiler Optimizations
 - **Build Profiles**: PGO, LTO (thin/fat), release-native, profiling
@@ -107,9 +108,10 @@
 | Streaming/Compression | 2 | 4 |
 | State Management | 1 | 4 |
 | Benchmarking | 2 | 7 |
+| Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
 | Integrations | - | 2 |
-| **Total** | **15** | **77** |
+| **Total** | **15** | **85** |
 
 ### Performance Status
 

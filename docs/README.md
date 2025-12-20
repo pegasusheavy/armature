@@ -164,6 +164,7 @@ Armature provides first-class integrations with major cloud providers:
 | [Test Coverage](testing-coverage.md) | Coverage reporting |
 | [Testing Best Practices](testing-documentation.md) | Testing patterns |
 | [Documentation Testing](documentation-testing.md) | Doc example testing |
+| [Fuzzing Guide](fuzzing-guide.md) | Fuzz testing with cargo-fuzz |
 
 ### Architecture
 
