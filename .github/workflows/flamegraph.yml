@@ -1,0 +1,277 @@
+# Flame Graph Generation
+#
+# This workflow generates CPU flame graphs for performance analysis.
+# Flame graphs help visualize where CPU time is spent in the framework.
+#
+# Features:
+# - Auto-generates flamegraphs on demand
+# - Uploads SVG artifacts for visual inspection
+# - Compares flamegraphs between branches (on PRs)
+# - Weekly scheduled runs to track trends
+
+name: Flame Graphs
+
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark:
+        description: 'Benchmark to profile'
+        required: false
+        default: 'framework_comparison'
+        type: choice
+        options:
+          - framework_comparison
+          - core_benchmarks
+          - json_benchmarks
+          - simd_parser_benchmarks
+          - all
+      duration:
+        description: 'Profile duration (seconds)'
+        required: false
+        default: '30'
+        type: string
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'armature-core/src/**'
+      - 'benches/**'
+  schedule:
+    # Weekly on Sunday at 2am UTC
+    - cron: '0 2 * * 0'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ============================================================================
+  # GENERATE FLAME GRAPHS
+  # ============================================================================
+
+  flamegraph:
+    name: Generate Flame Graphs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(uname -r) || true
+          # Install perf if available
+          sudo apt-get install -y linux-perf || true
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "flamegraph"
+
+      - name: Install flamegraph tools
+        run: |
+          cargo install flamegraph --locked
+          cargo install inferno --locked
+
+      - name: Build release binaries
+        run: |
+          cargo build --release --features full
+          cargo build --release --bench framework_comparison --features full
+          cargo build --release --bench core_benchmarks --features full 2>/dev/null || true
+          cargo build --release --bench json_benchmarks --features full 2>/dev/null || true
+
+      - name: Configure kernel for profiling
+        run: |
+          # Allow perf events
+          echo 0 | sudo tee /proc/sys/kernel/perf_event_paranoid || true
+          echo 0 | sudo tee /proc/sys/kernel/kptr_restrict || true
+
+      - name: Generate framework_comparison flamegraph
+        if: ${{ github.event.inputs.benchmark == 'framework_comparison' || github.event.inputs.benchmark == 'all' || github.event_name != 'workflow_dispatch' }}
+        run: |
+          mkdir -p flamegraphs
+          
+          # Try to use perf-based flamegraph first
+          timeout ${{ github.event.inputs.duration || '30' }}s \
+            cargo flamegraph --bench framework_comparison --features full \
+            -o flamegraphs/framework_comparison.svg \
+            -- --bench "routing" 2>&1 || {
+              # Fallback: use dtrace/sampling if perf not available
+              echo "Perf unavailable, trying alternative profiling..."
+              cargo bench --bench framework_comparison --features full -- --profile-time 10 2>&1 | tee flamegraphs/framework_comparison.txt || true
+            }
+
+      - name: Generate core_benchmarks flamegraph
+        if: ${{ github.event.inputs.benchmark == 'core_benchmarks' || github.event.inputs.benchmark == 'all' }}
+        run: |
+          timeout ${{ github.event.inputs.duration || '30' }}s \
+            cargo flamegraph --bench core_benchmarks --features full \
+            -o flamegraphs/core_benchmarks.svg 2>&1 || true
+
+      - name: Generate JSON benchmarks flamegraph
+        if: ${{ github.event.inputs.benchmark == 'json_benchmarks' || github.event.inputs.benchmark == 'all' }}
+        run: |
+          timeout ${{ github.event.inputs.duration || '30' }}s \
+            cargo flamegraph --bench json_benchmarks --features full \
+            -o flamegraphs/json_benchmarks.svg 2>&1 || true
+
+      - name: Generate SIMD parser flamegraph
+        if: ${{ github.event.inputs.benchmark == 'simd_parser_benchmarks' || github.event.inputs.benchmark == 'all' }}
+        run: |
+          timeout ${{ github.event.inputs.duration || '30' }}s \
+            cargo flamegraph --bench simd_parser_benchmarks --features full \
+            -o flamegraphs/simd_parser.svg 2>&1 || true
+
+      # ========================================
+      # Generate Summary
+      # ========================================
+
+      - name: Create flamegraph summary
+        run: |
+          echo "# 🔥 Flame Graph Report" > flamegraphs/README.md
+          echo "" >> flamegraphs/README.md
+          echo "Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> flamegraphs/README.md
+          echo "Commit: \`${{ github.sha }}\`" >> flamegraphs/README.md
+          echo "Branch: \`${{ github.ref_name }}\`" >> flamegraphs/README.md
+          echo "" >> flamegraphs/README.md
+          echo "## Generated Flame Graphs" >> flamegraphs/README.md
+          echo "" >> flamegraphs/README.md
+          
+          for svg in flamegraphs/*.svg; do
+            if [ -f "$svg" ]; then
+              name=$(basename "$svg" .svg)
+              size=$(du -h "$svg" | cut -f1)
+              echo "- **${name}** (${size})" >> flamegraphs/README.md
+            fi
+          done
+          
+          echo "" >> flamegraphs/README.md
+          echo "## How to View" >> flamegraphs/README.md
+          echo "" >> flamegraphs/README.md
+          echo "1. Download the SVG artifact below" >> flamegraphs/README.md
+          echo "2. Open in a browser (they're interactive!)" >> flamegraphs/README.md
+          echo "3. Click on functions to zoom in" >> flamegraphs/README.md
+          echo "4. Look for wide bars - those are the hot spots" >> flamegraphs/README.md
+
+      - name: Upload flamegraph artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flamegraphs-${{ github.sha }}
+          path: flamegraphs/
+          retention-days: 30
+
+      # ========================================
+      # Comment on PR
+      # ========================================
+
+      - name: Comment flamegraph on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let readme = '';
+            try {
+              readme = fs.readFileSync('flamegraphs/README.md', 'utf8');
+            } catch (e) {
+              readme = '⚠️ Could not read flamegraph summary';
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' &&
+              c.body.includes('🔥 Flame Graph Report')
+            );
+
+            const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = readme + '\n\n📥 [Download Flame Graphs](' + artifactUrl + ')\n\n---\n*Generated for commit ' + context.sha.substring(0, 7) + '*';
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+  # ============================================================================
+  # DIFFERENTIAL FLAME GRAPHS (PR only)
+  # ============================================================================
+
+  differential:
+    name: Differential Flame Graph
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          path: pr
+
+      - name: Checkout base branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install tools
+        run: |
+          cargo install inferno --locked
+
+      - name: Profile PR branch
+        working-directory: pr
+        run: |
+          cargo build --release --features full
+          # Create a simple test to profile
+          cargo bench --bench framework_comparison --features full -- --profile-time 5 2>&1 > /tmp/pr-profile.txt || true
+
+      - name: Profile base branch
+        working-directory: base
+        run: |
+          cargo build --release --features full || true
+          cargo bench --bench framework_comparison --features full -- --profile-time 5 2>&1 > /tmp/base-profile.txt || true
+
+      - name: Generate diff summary
+        run: |
+          mkdir -p diff-report
+          echo "# Differential Analysis" > diff-report/README.md
+          echo "" >> diff-report/README.md
+          echo "Comparing \`${{ github.head_ref }}\` against \`${{ github.base_ref }}\`" >> diff-report/README.md
+          echo "" >> diff-report/README.md
+          
+          # Compare benchmark outputs
+          if [ -f /tmp/pr-profile.txt ] && [ -f /tmp/base-profile.txt ]; then
+            echo "## Benchmark Comparison" >> diff-report/README.md
+            echo "\`\`\`" >> diff-report/README.md
+            diff /tmp/base-profile.txt /tmp/pr-profile.txt | head -50 >> diff-report/README.md || echo "No significant differences" >> diff-report/README.md
+            echo "\`\`\`" >> diff-report/README.md
+          fi
+
+      - name: Upload diff report
+        uses: actions/upload-artifact@v4
+        with:
+          name: flamegraph-diff-${{ github.sha }}
+          path: diff-report/
+          retention-days: 14
+

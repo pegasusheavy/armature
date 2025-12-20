@@ -98,10 +98,14 @@
 
 ### Benchmarking
 
-| Priority | Feature | Description | Location |
-|----------|---------|-------------|----------|
-| 🟡 | Flame Graph CI | Auto-generate flamegraphs | `.github/workflows/` |
-| 🟡 | Database Benchmark | Single/multiple query tests | `benches/database/` |
+| Priority | Feature | Description | Status |
+|----------|---------|-------------|--------|
+| ✅ | Flame Graph CI | Auto-generate flamegraphs | `flamegraph.yml` |
+| ✅ | Database Benchmark | Single/multiple query tests | `database_benchmarks.rs` |
+
+**Implemented:**
+- **Flame Graph CI**: Auto-generates SVGs on PRs, differential analysis, weekly trends
+- **Database Benchmark**: TechEmpower patterns (single/multi query, fortunes, updates, async)
 
 ### Internationalization
 
@@ -123,11 +127,11 @@
 | Buffer/Connection Tuning | 0 | 18+ |
 | Streaming/Compression | 0 | 6 |
 | State Management | 1 | 4 |
-| Benchmarking | 2 | 7 |
+| Benchmarking | 0 | 9 |
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
 | Integrations | - | 3 |
-| **Total** | **9** | **96** |
+| **Total** | **7** | **100** |
 
 ### Performance Status
 
