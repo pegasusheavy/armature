@@ -61,6 +61,7 @@ Only features that are **not yet completed**.
 | ✅ Memory Optimizations | SmallVec headers, CompactString paths, object pools | `armature-core/src/memory_opt.rs` |
 | ✅ Zero-Cost Abstractions | Const generic extractors, static dispatch middleware | `armature-core/src/zero_cost.rs` |
 | ✅ Route Parameter Optimization | Zero-alloc params, wildcard patterns | `armature-core/src/route_params.rs` |
+| ✅ Connection Tuning | HTTP/2 priority, TCP tuning, keep-alive | `armature-core/src/connection_tuning.rs` |
 
 ---
 
@@ -95,9 +96,9 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟡 | HTTP/2 Priority | Optimize HTTP/2 stream prioritization | `armature-core` |
-| 🟡 | TCP_NODELAY Tuning | Fine-tune TCP settings for low latency | `armature-core` |
-| 🟡 | Connection Keep-Alive | Optimize keep-alive timeout handling | `armature-core` |
+| ✅ | HTTP/2 Priority | Optimize HTTP/2 stream prioritization | `armature-core/src/connection_tuning.rs` |
+| ✅ | TCP_NODELAY Tuning | Fine-tune TCP settings for low latency | `armature-core/src/connection_tuning.rs` |
+| ✅ | Connection Keep-Alive | Optimize keep-alive timeout handling | `armature-core/src/connection_tuning.rs` |
 
 ---
 
@@ -376,7 +377,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **61** | ✅ |
+| **Recently Completed** | **64** | ✅ |
 
 ### Performance Target
 
