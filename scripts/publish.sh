@@ -163,11 +163,11 @@ get_workspace_members() {
 get_workspace_deps() {
     local crate=$1
     local cargo_toml="$crate/Cargo.toml"
-    
+
     if [[ ! -f "$cargo_toml" ]]; then
         return
     fi
-    
+
     # Extract path dependencies that are workspace members
     grep -E 'path\s*=\s*"\.\./armature-' "$cargo_toml" 2>/dev/null | \
         sed 's/.*path\s*=\s*"\.\.\/\(armature-[^"]*\)".*/\1/' | \
@@ -178,48 +178,48 @@ get_workspace_deps() {
 compute_publish_order() {
     local members
     members=$(get_workspace_members)
-    
+
     declare -A in_degree
     declare -A deps
     declare -a order
-    
+
     # Initialize
     for crate in $members; do
         in_degree[$crate]=0
         deps[$crate]=""
     done
-    
+
     # Build dependency graph
     for crate in $members; do
         local crate_deps
         crate_deps=$(get_workspace_deps "$crate")
         deps[$crate]="$crate_deps"
-        
+
         for dep in $crate_deps; do
             if [[ -n "${in_degree[$dep]+x}" ]]; then
                 ((in_degree[$crate]++))
             fi
         done
     done
-    
+
     # Kahn's algorithm for topological sort
     local queue=()
-    
+
     # Find all crates with no dependencies
     for crate in $members; do
         if [[ ${in_degree[$crate]} -eq 0 ]]; then
             queue+=("$crate")
         fi
     done
-    
+
     while [[ ${#queue[@]} -gt 0 ]]; do
         # Sort queue for deterministic order
         IFS=$'\n' sorted_queue=($(sort <<<"${queue[*]}")); unset IFS
         local current="${sorted_queue[0]}"
         queue=("${sorted_queue[@]:1}")
-        
+
         order+=("$current")
-        
+
         # For each crate that depends on current
         for crate in $members; do
             if [[ "${deps[$crate]}" == *"$current"* ]]; then
@@ -230,7 +230,7 @@ compute_publish_order() {
             fi
         done
     done
-    
+
     # Check for cycles
     local total_members
     total_members=$(echo "$members" | wc -w)
@@ -238,7 +238,7 @@ compute_publish_order() {
         log_error "Circular dependency detected!"
         exit 1
     fi
-    
+
     echo "${order[@]}"
 }
 
@@ -251,7 +251,7 @@ check_crate() {
     local crate=$1
     local cargo_toml="$crate/Cargo.toml"
     local errors=()
-    
+
     # Check Cargo.toml exists
     if [[ ! -f "$cargo_toml" ]]; then
         errors+=("Cargo.toml not found")
@@ -260,19 +260,19 @@ check_crate() {
         if ! grep -q '^name\s*=' "$cargo_toml" && ! grep -q 'name.workspace' "$cargo_toml"; then
             errors+=("Missing 'name' field")
         fi
-        
+
         if ! grep -q 'version' "$cargo_toml"; then
             errors+=("Missing 'version' field")
         fi
-        
+
         if ! grep -q 'license' "$cargo_toml"; then
             errors+=("Missing 'license' field")
         fi
-        
+
         if ! grep -q 'description' "$cargo_toml"; then
             errors+=("Missing 'description' field")
         fi
-        
+
         # Check for path dependencies (warning - will need conversion)
         local path_deps
         path_deps=$(grep -cE 'path\s*=\s*"\.\./armature-' "$cargo_toml" 2>/dev/null) || path_deps=0
@@ -280,12 +280,12 @@ check_crate() {
             errors+=("$path_deps path deps (run prepare-publish.sh)")
         fi
     fi
-    
+
     # Check src/lib.rs or src/main.rs exists
     if [[ ! -f "$crate/src/lib.rs" && ! -f "$crate/src/main.rs" ]]; then
         errors+=("Missing src/lib.rs or src/main.rs")
     fi
-    
+
     if [[ ${#errors[@]} -gt 0 ]]; then
         echo "WARN: ${errors[*]}"
         return 0  # Don't fail on warnings
@@ -299,18 +299,18 @@ check_crate() {
 check_all_crates() {
     log_info "Checking all crates for publish readiness..."
     echo ""
-    
+
     local publish_order
     publish_order=$(compute_publish_order)
-    
+
     local failed=0
     local passed=0
     local warned=0
-    
+
     for crate in $publish_order; do
         local result
         result=$(check_crate "$crate")
-        
+
         if [[ "$result" == "OK" ]]; then
             echo -e "  ${GREEN}✓${NC} $crate"
             passed=$((passed + 1))
@@ -322,10 +322,10 @@ check_all_crates() {
             failed=$((failed + 1))
         fi
     done
-    
+
     echo ""
     echo "Results: $passed ready, $warned warnings, $failed failed"
-    
+
     if [[ $failed -gt 0 ]]; then
         return 1
     fi
@@ -339,30 +339,30 @@ check_all_crates() {
 # Publish a single crate
 publish_crate() {
     local crate=$1
-    
+
     log_info "Publishing $crate..."
-    
+
     cd "$PROJECT_ROOT/$crate"
-    
+
     local publish_args=()
     if [[ "$NO_VERIFY" == "true" ]]; then
         publish_args+=("--no-verify")
     fi
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         log_info "[DRY RUN] Would publish: cargo publish ${publish_args[*]}"
     else
         cargo publish "${publish_args[@]}"
         log_success "$crate published successfully"
     fi
-    
+
     cd "$PROJECT_ROOT"
 }
 
 # Check if crate should be skipped
 should_skip() {
     local crate=$1
-    
+
     for skip in "${SKIP_CRATES[@]}"; do
         if [[ "$crate" == "$skip" ]]; then
             return 0
@@ -374,10 +374,10 @@ should_skip() {
 # Main publish function
 publish_all() {
     log_info "Computing publish order..."
-    
+
     local publish_order
     publish_order=$(compute_publish_order)
-    
+
     echo ""
     log_info "Publish order:"
     local i=1
@@ -390,17 +390,17 @@ publish_all() {
         ((i++))
     done
     echo ""
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         log_info "Dry run complete. No packages were published."
         return 0
     fi
-    
+
     if [[ "$CHECK_ONLY" == "true" ]]; then
         check_all_crates
         return $?
     fi
-    
+
     # Confirm before publishing
     if [[ -z "$SINGLE_CRATE" ]]; then
         echo -e "${YELLOW}This will publish ${#publish_order[@]} crates to crates.io.${NC}"
@@ -411,12 +411,12 @@ publish_all() {
             return 0
         fi
     fi
-    
+
     # Publish crates
     local started=false
     local published=0
     local skipped=0
-    
+
     for crate in $publish_order; do
         # Handle --from flag
         if [[ -n "$FROM_CRATE" && "$started" == "false" ]]; then
@@ -428,34 +428,34 @@ publish_all() {
                 continue
             fi
         fi
-        
+
         # Handle --single flag
         if [[ -n "$SINGLE_CRATE" && "$crate" != "$SINGLE_CRATE" ]]; then
             continue
         fi
-        
+
         # Handle --skip flag
         if should_skip "$crate"; then
             log_warn "Skipping $crate (--skip)"
             ((skipped++))
             continue
         fi
-        
+
         publish_crate "$crate"
         ((published++))
-        
+
         # Exit if single crate mode
         if [[ -n "$SINGLE_CRATE" ]]; then
             break
         fi
-        
+
         # Delay between publishes to allow crates.io to index
         if [[ "$DRY_RUN" != "true" && $published -lt ${#publish_order[@]} ]]; then
             log_info "Waiting ${PUBLISH_DELAY}s for crates.io to index..."
             sleep $PUBLISH_DELAY
         fi
     done
-    
+
     echo ""
     log_success "Publishing complete!"
     echo "  Published: $published"
