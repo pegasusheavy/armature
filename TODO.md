@@ -54,11 +54,17 @@
 
 ### Performance Regressions (from December 2024 benchmarks)
 
-| Priority | Issue | Impact | Location |
-|----------|-------|--------|----------|
-| 🟠 | Response Creation Overhead | +9% empty, +23% status codes | `armature-core/response.rs` |
-| 🟠 | Small JSON Response Allocation | +7% for small JSON responses | `armature-core/response.rs` |
+| Priority | Issue | Impact | Status |
+|----------|-------|--------|--------|
+| ✅ | Response Creation Overhead | +9% empty, +23% status codes | Fixed via `FastResponse` |
+| ✅ | Small JSON Response Allocation | +7% for small JSON responses | Fixed via `FastResponse` |
 | 🟡 | Vec Small Allocation | +7% regression on small vectors | `armature-core` |
+
+**Fix:** Added `armature-core/src/fast_response.rs` with:
+- `FastResponse`: Zero-alloc response creation using const constructors
+- `FastHeaders`: SmallVec-based inline header storage (≤8 headers on stack)
+- `FastBody`: Enum for Empty/Static/Bytes/Owned bodies (no alloc for empty)
+- `fast::ok()`, `fast::not_found()`, etc. for common status codes
 
 ### Buffer & Connection Tuning
 
@@ -103,7 +109,7 @@
 
 | Category | Remaining | Completed |
 |----------|-----------|-----------|
-| Performance Regressions | 3 | - |
+| Performance Regressions | 1 | 2 |
 | Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 3 | 15+ |
 | Streaming/Compression | 2 | 4 |
@@ -112,7 +118,7 @@
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
 | Integrations | - | 3 |
-| **Total** | **15** | **86** |
+| **Total** | **14** | **88** |
 
 ### Performance Status
 
