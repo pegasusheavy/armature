@@ -53,11 +53,13 @@ mod algorithm;
 mod config;
 mod error;
 mod middleware;
+pub mod streaming;
 
 pub use algorithm::CompressionAlgorithm;
 pub use config::{CompressionConfig, CompressionConfigBuilder};
 pub use error::CompressionError;
 pub use middleware::CompressionMiddleware;
+pub use streaming::{StreamingCompressor, StreamingConfig, AsyncStreamingCompressor, CompressionStats};
 
 /// Result type for compression operations
 pub type Result<T> = std::result::Result<T, CompressionError>;
