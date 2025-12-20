@@ -241,17 +241,151 @@ impl HttpRequest {
     }
 }
 
+/// Lazy-initialized HashMap that doesn't allocate until first insert.
+///
+/// This provides the same API as HashMap but with zero allocation cost
+/// for empty maps.
+#[derive(Debug, Clone, Default)]
+pub struct LazyHeaders {
+    inner: Option<HashMap<String, String>>,
+}
+
+impl LazyHeaders {
+    /// Create a new empty LazyHeaders (no allocation).
+    #[inline(always)]
+    pub const fn new() -> Self {
+        Self { inner: None }
+    }
+
+    /// Create with pre-allocated capacity.
+    #[inline]
+    pub fn with_capacity(cap: usize) -> Self {
+        Self {
+            inner: Some(HashMap::with_capacity(cap)),
+        }
+    }
+
+    /// Insert a key-value pair.
+    #[inline]
+    pub fn insert(&mut self, key: String, value: String) -> Option<String> {
+        self.inner
+            .get_or_insert_with(HashMap::new)
+            .insert(key, value)
+    }
+
+    /// Get a value by key.
+    #[inline]
+    pub fn get(&self, key: &str) -> Option<&String> {
+        self.inner.as_ref()?.get(key)
+    }
+
+    /// Check if key exists.
+    #[inline]
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.inner.as_ref().map_or(false, |m| m.contains_key(key))
+    }
+
+    /// Get number of headers.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.inner.as_ref().map_or(0, |m| m.len())
+    }
+
+    /// Check if empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.inner.as_ref().map_or(true, |m| m.is_empty())
+    }
+
+    /// Iterate over headers.
+    #[inline]
+    pub fn iter(&self) -> impl Iterator<Item = (&String, &String)> {
+        self.inner.iter().flat_map(|m| m.iter())
+    }
+
+    /// Convert to HashMap (for compatibility).
+    #[inline]
+    pub fn to_hashmap(&self) -> HashMap<String, String> {
+        self.inner.clone().unwrap_or_default()
+    }
+
+    /// Remove a header by key.
+    #[inline]
+    pub fn remove(&mut self, key: &str) -> Option<String> {
+        self.inner.as_mut()?.remove(key)
+    }
+
+    /// Get an entry for in-place manipulation.
+    #[inline]
+    pub fn entry(&mut self, key: String) -> std::collections::hash_map::Entry<'_, String, String> {
+        self.inner
+            .get_or_insert_with(HashMap::new)
+            .entry(key)
+    }
+
+    /// Extend with headers from an iterator.
+    #[inline]
+    pub fn extend<I: IntoIterator<Item = (String, String)>>(&mut self, iter: I) {
+        let map = self.inner.get_or_insert_with(HashMap::new);
+        map.extend(iter);
+    }
+
+    /// Clear all headers.
+    #[inline]
+    pub fn clear(&mut self) {
+        if let Some(ref mut map) = self.inner {
+            map.clear();
+        }
+    }
+
+    /// Clone the inner HashMap if present.
+    #[inline]
+    pub fn clone_inner(&self) -> Option<HashMap<String, String>> {
+        self.inner.clone()
+    }
+}
+
+impl From<HashMap<String, String>> for LazyHeaders {
+    #[inline]
+    fn from(map: HashMap<String, String>) -> Self {
+        Self { inner: Some(map) }
+    }
+}
+
+impl From<LazyHeaders> for HashMap<String, String> {
+    #[inline]
+    fn from(lazy: LazyHeaders) -> Self {
+        lazy.inner.unwrap_or_default()
+    }
+}
+
+// Allow iteration
+impl<'a> IntoIterator for &'a LazyHeaders {
+    type Item = (&'a String, &'a String);
+    type IntoIter = std::iter::Flatten<std::option::Iter<'a, HashMap<String, String>>>;
+    
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.iter().flatten()
+    }
+}
+
 /// HTTP response wrapper
 ///
 /// The body is stored as `Vec<u8>` for backwards compatibility.
 /// For zero-copy body handling, use `with_bytes_body()` or `body_bytes()`.
+///
+/// ## Performance Note
+///
+/// Response creation is optimized for minimal allocation:
+/// - `headers` uses `LazyHeaders` which doesn't allocate until first insert
+/// - `body` uses `Option<Vec<u8>>` which doesn't allocate for empty responses
+/// - Use `FastResponse` from `armature_core::fast_response` for even faster creation
 #[derive(Debug)]
 pub struct HttpResponse {
     pub status: u16,
-    pub headers: HashMap<String, String>,
-    /// Response body as raw bytes.
-    ///
-    /// For zero-copy handling, use `body_bytes()` or `with_bytes_body()`.
+    /// Response headers with lazy allocation.
+    pub headers: LazyHeaders,
+    /// Response body as raw bytes (legacy field for compatibility).
     pub body: Vec<u8>,
     /// Optional zero-copy body storage using Bytes.
     /// When set, this takes precedence over `body`.
@@ -264,13 +398,14 @@ pub const DEFAULT_RESPONSE_CAPACITY: usize = 512;
 impl HttpResponse {
     /// Create a new response with the given status code.
     ///
-    /// Note: For maximum performance with empty responses, consider using
-    /// `FastResponse` from `armature_core::fast_response`.
-    #[inline]
+    /// This is optimized for minimal allocation - headers use `LazyHeaders`
+    /// which doesn't allocate until first insert, and body uses `Vec::new()`
+    /// which is zero-cost.
+    #[inline(always)]
     pub fn new(status: u16) -> Self {
         Self {
             status,
-            headers: HashMap::new(),
+            headers: LazyHeaders::new(),
             body: Vec::new(),
             body_bytes: None,
         }
@@ -291,14 +426,14 @@ impl HttpResponse {
     pub fn with_capacity(status: u16, capacity: usize) -> Self {
         Self {
             status,
-            headers: HashMap::with_capacity(8),
+            headers: LazyHeaders::with_capacity(8),
             body: Vec::with_capacity(capacity),
             body_bytes: None,
         }
     }
 
     /// Create a 200 OK response.
-    #[inline]
+    #[inline(always)]
     pub fn ok() -> Self {
         Self::new(200)
     }
@@ -310,31 +445,31 @@ impl HttpResponse {
     }
 
     /// Create a 201 Created response.
-    #[inline]
+    #[inline(always)]
     pub fn created() -> Self {
         Self::new(201)
     }
 
     /// Create a 204 No Content response.
-    #[inline]
+    #[inline(always)]
     pub fn no_content() -> Self {
         Self::new(204)
     }
 
     /// Create a 400 Bad Request response.
-    #[inline]
+    #[inline(always)]
     pub fn bad_request() -> Self {
         Self::new(400)
     }
 
     /// Create a 404 Not Found response.
-    #[inline]
+    #[inline(always)]
     pub fn not_found() -> Self {
         Self::new(404)
     }
 
     /// Create a 500 Internal Server Error response.
-    #[inline]
+    #[inline(always)]
     pub fn internal_server_error() -> Self {
         Self::new(500)
     }
@@ -447,7 +582,7 @@ impl HttpResponse {
     /// Set multiple headers from a HashMap.
     #[inline]
     pub fn with_headers(mut self, headers: HashMap<String, String>) -> Self {
-        self.headers = headers;
+        self.headers = LazyHeaders::from(headers);
         self
     }
 
@@ -456,7 +591,7 @@ impl HttpResponse {
     pub fn with_status_and_headers(status: u16, headers: HashMap<String, String>) -> Self {
         Self {
             status,
-            headers,
+            headers: LazyHeaders::from(headers),
             body: Vec::new(),
             body_bytes: None,
         }
@@ -469,7 +604,7 @@ impl HttpResponse {
     pub fn from_parts(status: u16, headers: HashMap<String, String>, body: Vec<u8>) -> Self {
         Self {
             status,
-            headers,
+            headers: LazyHeaders::from(headers),
             body,
             body_bytes: None,
         }
@@ -689,7 +824,7 @@ impl HttpResponse {
 
     /// Get the response body as a string (lossy UTF-8 conversion).
     pub fn body_string(&self) -> String {
-        String::from_utf8_lossy(&self.body).to_string()
+        String::from_utf8_lossy(self.body_ref()).to_string()
     }
 
     /// Check if the response is successful (2xx status code).

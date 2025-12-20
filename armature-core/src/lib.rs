@@ -138,7 +138,6 @@ pub mod connection_manager;
 pub mod connection_tuning;
 pub mod container;
 pub mod cow_state;
-pub mod read_state;
 pub mod epoll_tuning;
 pub mod error;
 pub mod extensions;

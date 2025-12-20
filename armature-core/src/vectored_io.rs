@@ -369,7 +369,7 @@ impl Default for VectoredResponse {
 impl From<crate::HttpResponse> for ResponseChunks {
     fn from(response: crate::HttpResponse) -> Self {
         let status = response.status;
-        let headers = response.headers.clone();
+        let headers = response.headers.to_hashmap();
         let body = response.into_body_bytes();
         Self::new(status, &headers, body)
     }
@@ -391,9 +391,10 @@ impl crate::HttpResponse {
     /// and returns the slices. For repeated use, prefer `into_chunks()`.
     #[inline]
     pub fn to_vectored(&self) -> ResponseChunks {
+        let headers = self.headers.to_hashmap();
         ResponseChunks::new(
             self.status,
-            &self.headers,
+            &headers,
             self.body_bytes(),
         )
     }

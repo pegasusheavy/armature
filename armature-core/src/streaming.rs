@@ -802,7 +802,7 @@ impl StreamingResponse {
         }
 
         let mut response = HttpResponse::new(self.status);
-        response.headers = self.headers;
+        response.headers = self.headers.into();
         response.body = body;
         Ok(response)
     }
