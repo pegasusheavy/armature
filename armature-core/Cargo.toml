@@ -31,6 +31,7 @@ simd-json = { version = "0.14", optional = true }
 # Arena allocator for per-request batch allocations
 bumpalo = { version = "3.16", features = ["collections"] }
 serde_urlencoded = "0.7"
+urlencoding = "2.1"  # Fast URL encoding/decoding
 httpdate = "1.0"
 async-trait = "0.1"
 flate2 = "1.0.17"
