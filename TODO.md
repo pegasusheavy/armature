@@ -55,6 +55,7 @@ Only features that are **not yet completed**.
 | ✅ State Locality | Cache-line alignment, hot/cold separation, prefetching | `armature-core/src/cache_local.rs` |
 | ✅ Epoll Tuning | Optimized epoll flags, batch sizing, socket options | `armature-core/src/epoll_tuning.rs` |
 | ✅ Batched Socket Operations | readv/writev, TCP_CORK, send coalescing | `armature-core/src/socket_batch.rs` |
+| ✅ Worker Load Balancing | Round-robin, least-connections, weighted, power-of-two | `armature-core/src/load_balancer.rs` |
 
 ---
 
@@ -281,7 +282,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ✅ | Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/src/worker.rs` |
 | ✅ | CPU Core Affinity | Pin worker threads to CPU cores for cache locality | `armature-core/src/worker.rs` |
 | ✅ | NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/src/numa.rs` |
-| 🟡 | Worker Load Balancing | Round-robin or least-connections distribution | `armature-core/worker.rs` |
+| ✅ | Worker Load Balancing | Round-robin or least-connections distribution | `armature-core/src/load_balancer.rs` |
 
 ### Connection State Machine
 
@@ -370,7 +371,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **44** | ✅ |
+| **Recently Completed** | **45** | ✅ |
 
 ### Performance Target
 
