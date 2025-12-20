@@ -154,6 +154,7 @@ pub mod io_uring;
 pub mod lifecycle;
 pub mod load_balancer;
 pub mod logging;
+pub mod memory_opt;
 pub mod middleware;
 pub mod module;
 pub mod numa;
