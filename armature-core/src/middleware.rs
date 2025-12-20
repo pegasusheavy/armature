@@ -1,5 +1,6 @@
 // Middleware system for request/response processing
 
+use crate::logging::{debug, trace};
 use crate::{Error, HttpRequest, HttpResponse};
 use async_trait::async_trait;
 use std::collections::HashMap;
@@ -49,6 +50,12 @@ impl MiddlewareChain {
 
     /// Execute the middleware chain with a handler
     pub async fn apply(&self, req: HttpRequest, handler: HandlerFn) -> Result<HttpResponse, Error> {
+        debug!(
+            middleware_count = self.middlewares.len(),
+            path = %req.path,
+            method = %req.method,
+            "Executing middleware chain"
+        );
         self.execute_from(0, req, handler).await
     }
 
@@ -60,12 +67,14 @@ impl MiddlewareChain {
     ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
         if index >= self.middlewares.len() {
             // No more middleware, call the handler
+            trace!("Middleware chain complete, calling handler");
             handler(req)
         } else {
             let middleware = self.middlewares[index].clone();
             let chain = self.clone();
             let handler_clone = handler.clone();
 
+            trace!(middleware_index = index, "Executing middleware");
             Box::pin(async move {
                 middleware
                     .handle(

@@ -5,6 +5,7 @@
 // - Inline dispatch: Hot paths use #[inline(always)]
 // - Zero-cost abstractions: Minimal runtime overhead
 
+use crate::logging::{debug, trace};
 use crate::handler::{BoxedHandler, IntoHandler};
 use crate::route_constraint::RouteConstraints;
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
@@ -200,6 +201,8 @@ impl Router {
     /// inlined by the compiler.
     #[inline]
     pub async fn route(&self, mut request: HttpRequest) -> Result<HttpResponse, Error> {
+        debug!("Routing request: {} {}", request.method, request.path);
+
         // Parse query parameters from path
         let (path, query_string) = request
             .path
@@ -208,6 +211,7 @@ impl Router {
             .unwrap_or((&request.path, None));
 
         if let Some(query) = query_string {
+            trace!("Parsing query string: {}", query);
             request.query_params = parse_query_string(query);
         }
 
@@ -218,8 +222,11 @@ impl Router {
             }
 
             if let Some(params) = match_path(&route.path, path) {
+                debug!("Route matched: {} {} -> {}", request.method, path, route.path);
+
                 // Validate route constraints if present
                 if let Some(constraints) = &route.constraints {
+                    trace!("Validating route constraints");
                     constraints.validate(&params)?;
                 }
 
@@ -227,10 +234,12 @@ impl Router {
 
                 // Handler dispatch - the BoxedHandler.call() is optimized
                 // to allow the compiler to inline the actual handler body
+                trace!("Dispatching handler");
                 return route.handler.call(request).await;
             }
         }
 
+        debug!("No route found for {} {}", request.method, path);
         Err(Error::RouteNotFound(format!("{} {}", request.method, path)))
     }
 }

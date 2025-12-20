@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "armature-log",
     "armature-core",
     "armature-macro",
     "armature-graphql",

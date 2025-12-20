@@ -8,6 +8,7 @@
 // The design follows Axum's approach: use traits with associated types for the Future,
 // then type-erase at storage time while keeping invocation monomorphized.
 
+use crate::logging::trace;
 use crate::{Error, HttpRequest, HttpResponse};
 use std::future::Future;
 use std::marker::PhantomData;
@@ -134,6 +135,7 @@ impl BoxedHandler {
         &self,
         req: HttpRequest,
     ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
+        trace!(path = %req.path, method = %req.method, "Handler dispatch");
         self.inner.call(req)
     }
 }

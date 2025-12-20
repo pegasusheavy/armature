@@ -488,6 +488,91 @@ impl Default for LogConfig {
     }
 }
 
+impl LogConfig {
+    /// Create logging configuration from environment variables.
+    ///
+    /// Checks the following environment variables:
+    /// - `ARMATURE_DEBUG=1` - Enable debug level logging
+    /// - `ARMATURE_LOG_LEVEL=trace|debug|info|warn|error` - Set log level
+    /// - `ARMATURE_LOG_FORMAT=json|pretty|plain|compact` - Set output format
+    /// - `ARMATURE_LOG_COLOR=1|0` - Enable/disable colors
+    /// - `ARMATURE_LOG_TIMESTAMPS=1|0` - Enable/disable timestamps
+    /// - `ARMATURE_LOG_TARGETS=1|0` - Enable/disable module targets
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use armature_core::logging::LogConfig;
+    /// // With ARMATURE_DEBUG=1 set in environment
+    /// let config = LogConfig::from_env();
+    /// // config.level will be LogLevel::Debug
+    /// ```
+    pub fn from_env() -> Self {
+        let debug_enabled = std::env::var("ARMATURE_DEBUG")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(false);
+
+        let level = std::env::var("ARMATURE_LOG_LEVEL")
+            .ok()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "trace" => Some(LogLevel::Trace),
+                "debug" => Some(LogLevel::Debug),
+                "info" => Some(LogLevel::Info),
+                "warn" | "warning" => Some(LogLevel::Warn),
+                "error" => Some(LogLevel::Error),
+                _ => None,
+            })
+            .unwrap_or(if debug_enabled { LogLevel::Debug } else { LogLevel::Info });
+
+        let format = std::env::var("ARMATURE_LOG_FORMAT")
+            .ok()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "json" => Some(LogFormat::Json),
+                "pretty" => Some(LogFormat::Pretty),
+                "plain" => Some(LogFormat::Plain),
+                "compact" => Some(LogFormat::Compact),
+                _ => None,
+            })
+            .unwrap_or(if debug_enabled { LogFormat::Pretty } else { LogFormat::Json });
+
+        let colors = std::env::var("ARMATURE_LOG_COLOR")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(debug_enabled); // Enable colors in debug mode
+
+        let timestamps = std::env::var("ARMATURE_LOG_TIMESTAMPS")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(true);
+
+        let targets = std::env::var("ARMATURE_LOG_TARGETS")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(true);
+
+        let file_line = std::env::var("ARMATURE_LOG_FILE_LINE")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(debug_enabled); // Show file/line in debug mode
+
+        Self {
+            level,
+            format,
+            output: LogOutput::Stderr, // Use stderr for logs (stdout for app output)
+            timestamps,
+            thread_ids: false,
+            targets,
+            file_line,
+            spans: debug_enabled, // Show spans in debug mode
+            colors,
+            env_filter: None,
+        }
+    }
+
+    /// Check if debug mode is enabled via ARMATURE_DEBUG environment variable.
+    pub fn is_debug_enabled() -> bool {
+        std::env::var("ARMATURE_DEBUG")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(false)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

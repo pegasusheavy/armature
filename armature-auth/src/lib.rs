@@ -181,6 +181,7 @@ pub use providers::{
 };
 
 use armature_jwt::JwtManager;
+use armature_log::{debug, trace};
 use std::sync::Arc;
 
 /// Authentication service for managing user authentication.
@@ -215,6 +216,7 @@ pub struct AuthService {
 impl AuthService {
     /// Create a new authentication service
     pub fn new() -> Self {
+        debug!("Creating new AuthService");
         Self {
             jwt_manager: None,
             password_hasher: PasswordHasher::default(),
@@ -223,6 +225,7 @@ impl AuthService {
 
     /// Create with JWT manager
     pub fn with_jwt(jwt_manager: JwtManager) -> Self {
+        debug!("Creating AuthService with JWT manager");
         Self {
             jwt_manager: Some(Arc::new(jwt_manager)),
             password_hasher: PasswordHasher::default(),
@@ -231,17 +234,20 @@ impl AuthService {
 
     /// Set password hasher
     pub fn with_password_hasher(mut self, hasher: PasswordHasher) -> Self {
+        debug!("Setting password hasher");
         self.password_hasher = hasher;
         self
     }
 
     /// Hash a password
     pub fn hash_password(&self, password: &str) -> Result<String> {
+        trace!("Hashing password");
         self.password_hasher.hash(password)
     }
 
     /// Verify a password
     pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
+        trace!("Verifying password");
         self.password_hasher.verify(password, hash)
     }
 
@@ -252,10 +258,13 @@ impl AuthService {
 
     /// Validate authentication
     pub fn validate<T: AuthUser>(&self, user: &T) -> Result<()> {
+        debug!("Validating user authentication");
         if !user.is_active() {
+            debug!("User is inactive");
             return Err(AuthError::InactiveUser);
         }
 
+        trace!("User validation successful");
         Ok(())
     }
 }

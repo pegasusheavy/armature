@@ -7,6 +7,9 @@ description = "Cache management for Armature framework"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+# Logging
+armature-log = { path = "../armature-log" }
+
 # Core dependencies
 async-trait = "0.1"
 thiserror = "2.0"
