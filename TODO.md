@@ -59,6 +59,7 @@ Only features that are **not yet completed**.
 | ✅ Async Runtime Optimization | Task spawning control, LocalSet, work-stealing tuning | `armature-core/src/runtime_config.rs` |
 | ✅ Tower/HTTP Crate Compatibility | Tower Service, http crate types, Hyper 1.0 adapter | `armature-core/src/tower_compat.rs` |
 | ✅ Memory Optimizations | SmallVec headers, CompactString paths, object pools | `armature-core/src/memory_opt.rs` |
+| ✅ Zero-Cost Abstractions | Const generic extractors, static dispatch middleware | `armature-core/src/zero_cost.rs` |
 
 ---
 
@@ -118,8 +119,8 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 |----------|---------|-------------|--------|
 | ✅ | Inline Handler Dispatch | Handler trait with monomorphization and `#[inline]` hints | `armature-core/src/handler.rs` |
 | ✅ | Remove Runtime Type Checks | Zero-cost `State<T>` extractor with `Extensions` | `armature-core/src/extractors.rs` |
-| 🟠 | Const Generic Extractors | Use const generics for zero-cost extractor chains | `armature-core/extractors.rs` |
-| 🟠 | Static Dispatch Middleware | Replace `Box<dyn>` with static dispatch where possible | `armature-core/middleware.rs` |
+| ✅ | Const Generic Extractors | Use const generics for zero-cost extractor chains | `armature-core/src/zero_cost.rs` |
+| ✅ | Static Dispatch Middleware | Replace `Box<dyn>` with static dispatch where possible | `armature-core/src/zero_cost.rs` |
 
 ### Memory & Allocation (Axum minimizes allocations)
 
@@ -374,7 +375,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **57** | ✅ |
+| **Recently Completed** | **59** | ✅ |
 
 ### Performance Target
 
