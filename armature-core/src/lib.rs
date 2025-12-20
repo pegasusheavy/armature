@@ -170,6 +170,7 @@ pub mod route_params;
 pub mod route_registry;
 pub mod routing;
 pub mod runtime_config;
+pub mod serialization_pool;
 pub mod shutdown;
 pub mod socket_batch;
 pub mod sse;

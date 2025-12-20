@@ -62,6 +62,7 @@ Only features that are **not yet completed**.
 | ✅ Zero-Cost Abstractions | Const generic extractors, static dispatch middleware | `armature-core/src/zero_cost.rs` |
 | ✅ Route Parameter Optimization | Zero-alloc params, wildcard patterns | `armature-core/src/route_params.rs` |
 | ✅ Connection Tuning | HTTP/2 priority, TCP tuning, keep-alive | `armature-core/src/connection_tuning.rs` |
+| ✅ Serialization Pool | Zero-copy responses, pooled serialization buffers | `armature-core/src/serialization_pool.rs` |
 
 ---
 
@@ -89,8 +90,8 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | SIMD JSON | Added optional `simd-json` feature flag | `armature-core/src/json.rs` |
-| 🟡 | Zero-Copy Responses | Use `Bytes` for zero-copy response bodies | `armature-core` |
-| 🟡 | Pre-allocated Buffers | Buffer pool for response serialization | `armature-core` |
+| ✅ | Zero-Copy Responses | Use `Bytes` for zero-copy response bodies | `armature-core/src/body.rs` |
+| ✅ | Pre-allocated Buffers | Buffer pool for response serialization | `armature-core/src/serialization_pool.rs` |
 
 ### Connection Handling
 
@@ -377,7 +378,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **64** | ✅ |
+| **Recently Completed** | **66** | ✅ |
 
 ### Performance Target
 
