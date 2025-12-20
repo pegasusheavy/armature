@@ -120,6 +120,7 @@
 [1mFor more information about this error, try `rustc --explain E0133`.[0m
 [1m[33mwarning[0m: `armature-core` (lib) generated 14 warnings (run `cargo fix --lib -p armature-core` to apply 8 suggestions)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
+[1m[92m   Compiling[0m armature-validation v0.1.0 (/home/runner/work/armature/armature/armature-validation)
 [1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
    [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
     [1m[94m|[0m
@@ -134,6 +135,8 @@
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
+[1m[92m   Compiling[0m armature-metrics v0.1.0 (/home/runner/work/armature/armature/armature-metrics)
+[1m[92m   Compiling[0m armature-tenancy v0.1.0 (/home/runner/work/armature/armature/armature-tenancy)
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
    [1m[94m|[0m
@@ -300,3 +303,4 @@
     [1m[94m= [0mand 18 other candidates
 
 [1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
