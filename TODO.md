@@ -109,12 +109,18 @@
 
 ### Internationalization
 
-| Priority | Feature | Description | Location |
-|----------|---------|-------------|----------|
-| 🟠 | i18n Support | Message translation | `armature-i18n` |
-| 🟠 | Locale Detection | Accept-Language parsing | `armature-i18n` |
-| 🟡 | Pluralization | Plural rules support | `armature-i18n` |
-| 🟡 | Date/Number Formatting | Locale-aware formatting | `armature-i18n` |
+| Priority | Feature | Description | Status |
+|----------|---------|-------------|--------|
+| ✅ | i18n Support | Message translation | `armature-i18n` |
+| ✅ | Locale Detection | Accept-Language parsing | `locale.rs` |
+| ✅ | Pluralization | Plural rules support | `plural.rs` |
+| ✅ | Date/Number Formatting | Locale-aware formatting | `format.rs` |
+
+**Implemented (`armature-i18n` crate):**
+- **I18n**: Thread-safe translation with locale fallback, JSON/Fluent support
+- **Locale**: BCP 47 parsing, Accept-Language negotiation, match scoring
+- **Pluralization**: CLDR rules for 10+ language families (English, French, Slavic, Arabic, etc.)
+- **Formatting**: Numbers, currencies, dates, percentages with locale-aware separators
 
 ---
 
@@ -129,9 +135,9 @@
 | State Management | 1 | 4 |
 | Benchmarking | 0 | 9 |
 | Testing & Fuzzing | - | 8 |
-| Internationalization | 4 | - |
+| Internationalization | 0 | 4 |
 | Integrations | - | 3 |
-| **Total** | **7** | **100** |
+| **Total** | **3** | **106** |
 
 ### Performance Status
 
