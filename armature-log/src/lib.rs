@@ -1,37 +1,88 @@
 //! Armature Logging Framework
 //!
-//! Provides structured logging for the Armature framework with support for
-//! the `ARMATURE_DEBUG` environment variable.
+//! Provides structured logging for the Armature framework with JSON output
+//! by default, and configurable pretty-printing for development.
 //!
 //! # Features
 //!
-//! - **Environment-controlled**: `ARMATURE_DEBUG=1` enables debug logging
+//! - **JSON by default**: Production-ready structured logging
+//! - **Pretty printing**: Human-readable output for development
+//! - **Environment-controlled**: Configure via environment variables
 //! - **Zero-cost when disabled**: Debug macros compile to no-ops in release
-//! - **Structured logging**: Support for key-value pairs
-//! - **Multiple backends**: Works with `log` and optionally `tracing`
+//! - **Runtime configurable**: Change format/level at runtime
 //!
-//! # Usage
+//! # Quick Start
 //!
 //! ```rust
-//! use armature_log::{debug, info, warn, error, trace};
+//! use armature_log::{debug, info, warn, error};
 //!
-//! // Simple logging
-//! debug!("Processing request");
+//! // Default: JSON output
 //! info!("Server started on port {}", 8080);
-//! warn!("Connection pool low");
-//! error!("Failed to connect to database");
+//! // {"timestamp":"2024-12-20T12:00:00Z","level":"INFO","target":"my_app","message":"Server started on port 8080"}
 //!
-//! // With target (module path)
-//! let path = "/api/users";
-//! debug!(target: "armature::router", "Matching route: {}", path);
+//! // With target
+//! debug!(target: "armature::router", "Matching route: {}", "/api/users");
+//! ```
+//!
+//! # Switching to Pretty Logging
+//!
+//! ## Option 1: Environment Variable (Recommended)
+//!
+//! ```bash
+//! # Pretty format for development
+//! ARMATURE_LOG_FORMAT=pretty cargo run
+//!
+//! # JSON format for production (default)
+//! cargo run
+//!
+//! # Compact format
+//! ARMATURE_LOG_FORMAT=compact cargo run
+//! ```
+//!
+//! ## Option 2: Programmatic Configuration
+//!
+//! ```rust,no_run
+//! use armature_log::{configure, Format, Level};
+//!
+//! // Configure for development
+//! configure()
+//!     .format(Format::Pretty)
+//!     .level(Level::Debug)
+//!     .color(true)
+//!     .apply();
+//!
+//! // Or use presets
+//! armature_log::preset_development();  // Pretty + Debug + Colors
+//! armature_log::preset_production();   // JSON + Info
 //! ```
 //!
 //! # Environment Variables
 //!
-//! - `ARMATURE_DEBUG=1` - Enable debug logging
-//! - `ARMATURE_LOG_LEVEL=debug|info|warn|error` - Set log level
-//! - `ARMATURE_LOG_FORMAT=pretty|json|compact` - Set output format
-//! - `ARMATURE_LOG_COLOR=1|0` - Enable/disable colors
+//! | Variable | Values | Default | Description |
+//! |----------|--------|---------|-------------|
+//! | `ARMATURE_DEBUG` | `1`, `true` | `false` | Enable debug logging |
+//! | `ARMATURE_LOG_LEVEL` | `trace`, `debug`, `info`, `warn`, `error` | `info` | Minimum log level |
+//! | `ARMATURE_LOG_FORMAT` | `json`, `pretty`, `compact` | `json` | Output format |
+//! | `ARMATURE_LOG_COLOR` | `1`, `true`, `0`, `false` | auto-detect | Enable ANSI colors |
+//! | `ARMATURE_LOG_TIMESTAMPS` | `1`, `0` | `1` | Include timestamps |
+//! | `ARMATURE_LOG_MODULE` | `1`, `0` | `1` | Include module path |
+//!
+//! # Output Formats
+//!
+//! ## JSON (Default)
+//! ```text
+//! {"timestamp":"2024-12-20T12:00:00Z","level":"INFO","target":"my_app","message":"Server started"}
+//! ```
+//!
+//! ## Pretty
+//! ```text
+//! 2024-12-20 12:00:00.123 INFO  my_app Server started
+//! ```
+//!
+//! ## Compact
+//! ```text
+//! 12:00:00 I my_app: Server started
+//! ```
 
 use once_cell::sync::Lazy;
 use std::env;
@@ -113,13 +164,14 @@ impl std::fmt::Display for Level {
 
 /// Output format for log messages.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
 pub enum Format {
     /// Pretty format with colors (default for TTY)
-    Pretty,
+    Pretty = 0,
     /// Compact single-line format
-    Compact,
+    Compact = 1,
     /// JSON format for structured logging
-    Json,
+    Json = 2,
 }
 
 impl Format {
@@ -242,7 +294,12 @@ mod atty {
 /// This is called automatically when first log macro is used,
 /// but can be called explicitly for eager initialization.
 pub fn init() {
-    Lazy::force(&CONFIG);
+    let config = Lazy::force(&CONFIG);
+    // Initialize runtime atomics from config
+    LOG_FORMAT.store(config.format as u8, Ordering::SeqCst);
+    LOG_COLOR.store(config.color, Ordering::SeqCst);
+    LOG_TIMESTAMPS.store(config.timestamps, Ordering::SeqCst);
+    LOG_MODULE_PATH.store(config.module_path, Ordering::SeqCst);
 }
 
 /// Check if debug logging is enabled.
@@ -288,6 +345,236 @@ pub fn config() -> &'static LogConfig {
 }
 
 // ============================================================================
+// Runtime Configuration
+// ============================================================================
+
+use std::sync::atomic::AtomicU8 as AtomicFormat;
+
+/// Global format setting (can be changed at runtime).
+static LOG_FORMAT: AtomicFormat = AtomicFormat::new(Format::Json as u8);
+
+/// Global color setting.
+static LOG_COLOR: AtomicBool = AtomicBool::new(false);
+
+/// Global timestamps setting.
+static LOG_TIMESTAMPS: AtomicBool = AtomicBool::new(true);
+
+/// Global module path setting.
+static LOG_MODULE_PATH: AtomicBool = AtomicBool::new(true);
+
+/// Get the current log format.
+pub fn current_format() -> Format {
+    match LOG_FORMAT.load(Ordering::Relaxed) {
+        0 => Format::Pretty,
+        1 => Format::Compact,
+        _ => Format::Json,
+    }
+}
+
+/// Set log format at runtime.
+///
+/// # Example
+///
+/// ```rust
+/// use armature_log::{set_format, Format};
+///
+/// // Switch to pretty format for development
+/// set_format(Format::Pretty);
+///
+/// // Switch back to JSON for production
+/// set_format(Format::Json);
+/// ```
+pub fn set_format(format: Format) {
+    LOG_FORMAT.store(format as u8, Ordering::SeqCst);
+    // Also update color based on format
+    if format == Format::Pretty {
+        LOG_COLOR.store(atty::is(atty::Stream::Stderr), Ordering::SeqCst);
+    } else if format == Format::Json {
+        LOG_COLOR.store(false, Ordering::SeqCst);
+    }
+}
+
+/// Set whether colors are enabled.
+pub fn set_color(enabled: bool) {
+    LOG_COLOR.store(enabled, Ordering::SeqCst);
+}
+
+/// Set whether timestamps are included.
+pub fn set_timestamps(enabled: bool) {
+    LOG_TIMESTAMPS.store(enabled, Ordering::SeqCst);
+}
+
+/// Set whether module path is included.
+pub fn set_module_path(enabled: bool) {
+    LOG_MODULE_PATH.store(enabled, Ordering::SeqCst);
+}
+
+/// Configuration builder for fluent API.
+///
+/// # Example
+///
+/// ```rust
+/// use armature_log::{configure, Format, Level};
+///
+/// configure()
+///     .format(Format::Pretty)
+///     .level(Level::Debug)
+///     .color(true)
+///     .timestamps(true)
+///     .apply();
+/// ```
+#[derive(Debug, Clone)]
+pub struct ConfigBuilder {
+    format: Option<Format>,
+    level: Option<Level>,
+    color: Option<bool>,
+    timestamps: Option<bool>,
+    module_path: Option<bool>,
+    debug: Option<bool>,
+}
+
+impl ConfigBuilder {
+    /// Create a new configuration builder.
+    pub fn new() -> Self {
+        Self {
+            format: None,
+            level: None,
+            color: None,
+            timestamps: None,
+            module_path: None,
+            debug: None,
+        }
+    }
+
+    /// Set the output format.
+    pub fn format(mut self, format: Format) -> Self {
+        self.format = Some(format);
+        self
+    }
+
+    /// Set the log level.
+    pub fn level(mut self, level: Level) -> Self {
+        self.level = Some(level);
+        self
+    }
+
+    /// Enable or disable colors.
+    pub fn color(mut self, enabled: bool) -> Self {
+        self.color = Some(enabled);
+        self
+    }
+
+    /// Enable or disable timestamps.
+    pub fn timestamps(mut self, enabled: bool) -> Self {
+        self.timestamps = Some(enabled);
+        self
+    }
+
+    /// Enable or disable module path in output.
+    pub fn module_path(mut self, enabled: bool) -> Self {
+        self.module_path = Some(enabled);
+        self
+    }
+
+    /// Enable or disable debug mode.
+    pub fn debug(mut self, enabled: bool) -> Self {
+        self.debug = Some(enabled);
+        self
+    }
+
+    /// Apply the configuration.
+    pub fn apply(self) {
+        if let Some(format) = self.format {
+            set_format(format);
+        }
+        if let Some(level) = self.level {
+            set_level(level);
+        }
+        if let Some(color) = self.color {
+            set_color(color);
+        }
+        if let Some(timestamps) = self.timestamps {
+            set_timestamps(timestamps);
+        }
+        if let Some(module_path) = self.module_path {
+            set_module_path(module_path);
+        }
+        if let Some(debug) = self.debug {
+            set_debug(debug);
+        }
+    }
+}
+
+impl Default for ConfigBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Create a configuration builder.
+///
+/// # Example
+///
+/// ```rust
+/// use armature_log::{configure, Format, Level};
+///
+/// // Development config
+/// configure()
+///     .format(Format::Pretty)
+///     .level(Level::Debug)
+///     .color(true)
+///     .apply();
+/// ```
+pub fn configure() -> ConfigBuilder {
+    ConfigBuilder::new()
+}
+
+/// Apply development preset: Pretty format, Debug level, colors enabled.
+///
+/// # Example
+///
+/// ```rust
+/// armature_log::preset_development();
+/// ```
+pub fn preset_development() {
+    configure()
+        .format(Format::Pretty)
+        .level(Level::Debug)
+        .color(true)
+        .timestamps(true)
+        .module_path(true)
+        .debug(true)
+        .apply();
+}
+
+/// Apply production preset: JSON format, Info level, no colors.
+///
+/// # Example
+///
+/// ```rust
+/// armature_log::preset_production();
+/// ```
+pub fn preset_production() {
+    configure()
+        .format(Format::Json)
+        .level(Level::Info)
+        .color(false)
+        .timestamps(true)
+        .module_path(true)
+        .debug(false)
+        .apply();
+}
+
+/// Apply quiet preset: JSON format, Warn level only.
+pub fn preset_quiet() {
+    configure()
+        .format(Format::Json)
+        .level(Level::Warn)
+        .color(false)
+        .apply();
+}
+
+// ============================================================================
 // Log Output
 // ============================================================================
 
@@ -298,39 +585,65 @@ pub fn log(level: Level, target: &str, message: &str) {
         return;
     }
 
-    let config = config();
+    // Use runtime-configurable format instead of static config
+    let format = current_format();
+    let color = LOG_COLOR.load(Ordering::Relaxed);
+    let timestamps = LOG_TIMESTAMPS.load(Ordering::Relaxed);
+    let module_path = LOG_MODULE_PATH.load(Ordering::Relaxed);
 
-    match config.format {
-        Format::Pretty => log_pretty(level, target, message, config),
-        Format::Compact => log_compact(level, target, message, config),
+    match format {
+        Format::Pretty => log_pretty_runtime(level, target, message, color, timestamps, module_path),
+        Format::Compact => log_compact_runtime(level, target, message, timestamps, module_path),
         Format::Json => log_json(level, target, message),
     }
 }
 
+#[allow(dead_code)]
 fn log_pretty(level: Level, target: &str, message: &str, config: &LogConfig) {
+    log_pretty_runtime(level, target, message, config.color, config.timestamps, config.module_path);
+}
+
+#[allow(dead_code)]
+fn log_compact(level: Level, target: &str, message: &str, config: &LogConfig) {
+    log_compact_runtime(level, target, message, config.timestamps, config.module_path);
+}
+
+// Runtime-configurable versions
+
+fn log_pretty_runtime(
+    level: Level,
+    target: &str,
+    message: &str,
+    color: bool,
+    timestamps: bool,
+    module_path: bool,
+) {
     let mut stderr = std::io::stderr().lock();
 
     // Timestamp
-    if config.timestamps {
+    if timestamps {
         let now = chrono::Local::now();
         let _ = write!(stderr, "{} ", now.format("%Y-%m-%d %H:%M:%S%.3f"));
     }
 
     // Level
     #[cfg(feature = "color")]
-    if config.color {
+    if color {
         let _ = write!(stderr, "{:5} ", level.colored());
     } else {
         let _ = write!(stderr, "{:5} ", level.as_str());
     }
 
     #[cfg(not(feature = "color"))]
-    let _ = write!(stderr, "{:5} ", level.as_str());
+    {
+        let _ = color; // suppress warning
+        let _ = write!(stderr, "{:5} ", level.as_str());
+    }
 
     // Target
-    if config.module_path && !target.is_empty() {
+    if module_path && !target.is_empty() {
         #[cfg(feature = "color")]
-        if config.color {
+        if color {
             use colored::Colorize;
             let _ = write!(stderr, "{} ", target.dimmed());
         } else {
@@ -345,17 +658,23 @@ fn log_pretty(level: Level, target: &str, message: &str, config: &LogConfig) {
     let _ = writeln!(stderr, "{}", message);
 }
 
-fn log_compact(level: Level, target: &str, message: &str, config: &LogConfig) {
+fn log_compact_runtime(
+    level: Level,
+    target: &str,
+    message: &str,
+    timestamps: bool,
+    module_path: bool,
+) {
     let mut stderr = std::io::stderr().lock();
 
-    if config.timestamps {
+    if timestamps {
         let now = chrono::Local::now();
         let _ = write!(stderr, "{} ", now.format("%H:%M:%S"));
     }
 
     let _ = write!(stderr, "{} ", level.as_str().chars().next().unwrap_or('?'));
 
-    if config.module_path && !target.is_empty() {
+    if module_path && !target.is_empty() {
         let _ = write!(stderr, "{}: ", target);
     }
 

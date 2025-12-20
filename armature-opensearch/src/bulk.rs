@@ -42,7 +42,7 @@ impl<T: Document> BulkOperation<T> {
     /// Convert to bulk request lines.
     pub fn to_bulk_lines(&self) -> Result<Vec<Value>> {
         let index = T::index_name();
-        
+
         match self {
             BulkOperation::Index { id, doc } => {
                 Ok(vec![

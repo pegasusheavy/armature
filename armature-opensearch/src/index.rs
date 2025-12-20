@@ -38,7 +38,7 @@ impl IndexManager {
         if status == opensearch::http::StatusCode::BAD_REQUEST {
             let body: Value = response.json().await?;
             let error_type = body["error"]["type"].as_str().unwrap_or("");
-            
+
             if error_type == "resource_already_exists_exception" {
                 return Err(OpenSearchError::IndexExists(name.to_string()));
             }
@@ -246,7 +246,7 @@ impl IndexManager {
             .await?;
 
         let indices: Vec<Value> = response.json().await?;
-        
+
         Ok(indices.into_iter().map(|v| IndexInfo {
             name: v["index"].as_str().unwrap_or("").to_string(),
             health: v["health"].as_str().unwrap_or("").to_string(),
