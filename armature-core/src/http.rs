@@ -263,6 +263,10 @@ pub const DEFAULT_RESPONSE_CAPACITY: usize = 512;
 
 impl HttpResponse {
     /// Create a new response with the given status code.
+    ///
+    /// Note: For maximum performance with empty responses, consider using
+    /// `FastResponse` from `armature_core::fast_response`.
+    #[inline]
     pub fn new(status: u16) -> Self {
         Self {
             status,
@@ -294,6 +298,7 @@ impl HttpResponse {
     }
 
     /// Create a 200 OK response.
+    #[inline]
     pub fn ok() -> Self {
         Self::new(200)
     }
@@ -304,22 +309,32 @@ impl HttpResponse {
         Self::with_capacity(200, DEFAULT_RESPONSE_CAPACITY)
     }
 
+    /// Create a 201 Created response.
+    #[inline]
     pub fn created() -> Self {
         Self::new(201)
     }
 
+    /// Create a 204 No Content response.
+    #[inline]
     pub fn no_content() -> Self {
         Self::new(204)
     }
 
+    /// Create a 400 Bad Request response.
+    #[inline]
     pub fn bad_request() -> Self {
         Self::new(400)
     }
 
+    /// Create a 404 Not Found response.
+    #[inline]
     pub fn not_found() -> Self {
         Self::new(404)
     }
 
+    /// Create a 500 Internal Server Error response.
+    #[inline]
     pub fn internal_server_error() -> Self {
         Self::new(500)
     }

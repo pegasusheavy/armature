@@ -141,6 +141,7 @@ pub mod epoll_tuning;
 pub mod error;
 pub mod extensions;
 pub mod extractors;
+pub mod fast_response;
 pub mod form;
 pub mod guard;
 pub mod handler;
