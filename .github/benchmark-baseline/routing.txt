@@ -1,5 +1,5 @@
 [1m[92m    Updating[0m crates.io index
-[1m[92m     Locking[0m 1046 packages to latest compatible versions
+[1m[92m     Locking[0m 1084 packages to latest compatible versions
 [1m[92m      Adding[0m azure_core v0.21.0 [1m[33m(available: v0.30.1)[0m
 [1m[92m      Adding[0m azure_data_cosmos v0.21.0 [1m[33m(available: v0.29.0)[0m
 [1m[92m      Adding[0m azure_identity v0.21.0 [1m[33m(available: v0.30.0)[0m
@@ -9,12 +9,20 @@
 [1m[92m      Adding[0m console v0.15.11 [1m[33m(available: v0.16.2)[0m
 [1m[92m      Adding[0m crc-fast v1.6.0 [1m[33m(available: v1.8.2)[0m
 [1m[92m      Adding[0m dashmap v5.5.3 [1m[33m(available: v6.1.0)[0m
+[1m[92m      Adding[0m fluent v0.16.1 [1m[33m(available: v0.17.0)[0m
+[1m[92m      Adding[0m fluent-bundle v0.15.3 [1m[33m(available: v0.16.0)[0m
+[1m[92m      Adding[0m fluent-syntax v0.11.1 [1m[33m(available: v0.12.0)[0m
 [1m[92m      Adding[0m generic-array v0.14.7 [1m[33m(available: v0.14.9)[0m
 [1m[92m      Adding[0m google-cloud-googleapis v0.15.0 [1m[33m(available: v0.16.1)[0m
 [1m[92m      Adding[0m google-cloud-pubsub v0.28.1 [1m[33m(available: v0.30.0)[0m
 [1m[92m      Adding[0m google-cloud-storage v0.22.1 [1m[33m(available: v1.5.0)[0m
 [1m[92m      Adding[0m graphql_client v0.14.0 [1m[33m(available: v0.15.0)[0m
 [1m[92m      Adding[0m handlebars v4.5.0 [1m[33m(available: v6.3.2)[0m
+[1m[92m      Adding[0m icu_calendar v1.5.2 [1m[33m(available: v2.1.1)[0m
+[1m[92m      Adding[0m icu_datetime v1.5.1 [1m[33m(available: v2.1.1)[0m
+[1m[92m      Adding[0m icu_decimal v1.5.0 [1m[33m(available: v2.1.1)[0m
+[1m[92m      Adding[0m icu_locid v1.5.0 [1m[33m(available: v2.0.0)[0m
+[1m[92m      Adding[0m icu_plurals v1.5.0 [1m[33m(available: v2.1.1)[0m
 [1m[92m      Adding[0m jsonwebtoken v9.3.1 [1m[33m(available: v10.2.0)[0m
 [1m[92m      Adding[0m kdl v4.7.1 [1m[33m(available: v6.5.0)[0m
 [1m[92m      Adding[0m lambda_http v0.13.0 [1m[33m(available: v1.0.2)[0m
@@ -42,8 +50,8 @@
 [1m[92m   Compiling[0m armature-events v0.1.0 (/home/runner/work/armature/armature/armature-events)
 [1m[92m   Compiling[0m armature-messaging v0.1.0 (/home/runner/work/armature/armature/armature-messaging)
 [1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
-[1m[92m   Compiling[0m armature-cache v0.1.0 (/home/runner/work/armature/armature/armature-cache)
 [1m[92m   Compiling[0m armature-macro v0.1.0 (/home/runner/work/armature/armature/armature-macro)
+[1m[92m   Compiling[0m armature-cache v0.1.0 (/home/runner/work/armature/armature/armature-cache)
 [1m[92m   Compiling[0m armature-eventsourcing v0.1.0 (/home/runner/work/armature/armature/armature-eventsourcing)
 [1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
   [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
@@ -99,6 +107,8 @@
 [1m[92m   Compiling[0m armature-cqrs v0.1.0 (/home/runner/work/armature/armature/armature-cqrs)
 [1m[92m   Compiling[0m armature-storage v0.1.0 (/home/runner/work/armature/armature/armature-storage)
 [1m[92m   Compiling[0m armature-distributed v0.1.0 (/home/runner/work/armature/armature/armature-distributed)
+[1m[92m   Compiling[0m armature-discovery v0.1.0 (/home/runner/work/armature/armature/armature-discovery)
+[1m[92m   Compiling[0m armature-http-client v0.1.0 (/home/runner/work/armature/armature/armature-http-client)
 [1m[33mwarning[0m[1m: variable does not need to be mutable[0m
    [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
     [1m[94m|[0m
@@ -118,7 +128,6 @@
     [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
 
-[1m[92m   Compiling[0m armature-http-client v0.1.0 (/home/runner/work/armature/armature/armature-http-client)
 [1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
    [1m[94m--> [0marmature-core/src/numa.rs:549:13
     [1m[94m|[0m
@@ -134,7 +143,6 @@
     [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
     [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
 
-[1m[92m   Compiling[0m armature-discovery v0.1.0 (/home/runner/work/armature/armature/armature-discovery)
 [1m[33mwarning[0m[1m: field `config` is never read[0m
    [1m[94m--> [0marmature-core/src/body_parser.rs:528:5
     [1m[94m|[0m
@@ -208,7 +216,7 @@
     [1m[94m= [0m[1mnote[0m: `ConnectionState` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
 
 [1m[92m   Compiling[0m armature-jwt v0.1.0 (/home/runner/work/armature/armature/armature-jwt)
-[1m[92m   Compiling[0m armature-opentelemetry v0.1.0 (/home/runner/work/armature/armature/armature-opentelemetry)
+[1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[33mwarning[0m[1m: unused import: `warn`[0m
   [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
    [1m[94m|[0m
@@ -216,27 +224,6 @@
    [1m[94m|[0m                                        [1m[33m^^^^[0m
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-auth v0.1.0 (/home/runner/work/armature/armature/armature-auth)
-[1m[92m   Compiling[0m armature-webhooks v0.1.0 (/home/runner/work/armature/armature/armature-webhooks)
-[1m[92m   Compiling[0m armature-validation v0.1.0 (/home/runner/work/armature/armature/armature-validation)
-[1m[92m   Compiling[0m armature-acme v0.1.0 (/home/runner/work/armature/armature/armature-acme)
-[1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
-[1m[92m   Compiling[0m armature-config v0.1.0 (/home/runner/work/armature/armature/armature-config)
-[1m[92m   Compiling[0m armature-testing v0.1.0 (/home/runner/work/armature/armature/armature-testing)
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
@@ -405,6 +392,6 @@
 
 [1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
 [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
+[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
 [1mFor more information about this error, try `rustc --explain E0133`.[0m
 [1m[33mwarning[0m: `armature-core` (lib) generated 18 warnings (run `cargo fix --lib -p armature-core` to apply 10 suggestions)
