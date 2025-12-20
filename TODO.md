@@ -279,7 +279,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | Per-Worker State | Thread-local state to avoid Arc contention | `armature-core/src/worker.rs` |
-| 🟠 | CPU Core Affinity | Pin worker threads to CPU cores for cache locality | `armature-core/runtime.rs` |
+| ✅ | CPU Core Affinity | Pin worker threads to CPU cores for cache locality | `armature-core/src/worker.rs` |
 | ✅ | NUMA-Aware Allocation | Allocate memory on same NUMA node as worker | `armature-core/src/numa.rs` |
 | 🟡 | Worker Load Balancing | Round-robin or least-connections distribution | `armature-core/worker.rs` |
 
@@ -370,7 +370,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **43** | ✅ |
+| **Recently Completed** | **44** | ✅ |
 
 ### Performance Target
 
