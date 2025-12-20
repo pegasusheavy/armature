@@ -19,6 +19,7 @@ pub use schema_builder::*;
 pub use schema_docs::*;
 
 use armature_core::Error as ArmatureError;
+use armature_log::{debug, info};
 use std::sync::Arc;
 
 /// GraphQL schema wrapper
@@ -33,6 +34,7 @@ where
     Subscription: async_graphql::SubscriptionType + 'static,
 {
     pub fn new(schema: Schema<Query, Mutation, Subscription>) -> Self {
+        info!("Initializing GraphQL schema");
         Self {
             schema: Arc::new(schema),
         }

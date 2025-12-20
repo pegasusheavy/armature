@@ -12,6 +12,9 @@ keywords = ["grpc", "protobuf", "rpc", "server", "client"]
 categories = ["network-programming", "asynchronous"]
 
 [dependencies]
+# Logging
+armature-log = { path = "../armature-log" }
+
 # gRPC
 tonic = { version = "0.13", features = ["gzip", "zstd"] }
 prost = "0.13"

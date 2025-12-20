@@ -1,5 +1,6 @@
 //! Cron job scheduler.
 
+use armature_log::{debug, error, info, trace, warn};
 use crate::error::{CronError, CronResult};
 use crate::expression::CronExpression;
 use crate::job::{Job, JobContext};
@@ -53,6 +54,8 @@ impl CronScheduler {
 
     /// Create a new scheduler with custom configuration.
     pub fn with_config(config: SchedulerConfig) -> Self {
+        info!("Initializing cron scheduler");
+        debug!("Scheduler config - tick_interval: {:?}, max_concurrent: {}", config.tick_interval, config.max_concurrent_jobs);
         Self {
             jobs: Arc::new(RwLock::new(HashMap::new())),
             config,
@@ -95,6 +98,7 @@ impl CronScheduler {
     {
         let name = name.into();
         let expr = CronExpression::parse(expression)?;
+        info!("Adding cron job '{}' with schedule '{}'", name, expression);
 
         let jobs = self.jobs.clone();
         let name_clone = name.clone();
@@ -102,11 +106,13 @@ impl CronScheduler {
         tokio::spawn(async move {
             let mut jobs = jobs.write().await;
             if jobs.contains_key(&name_clone) {
+                warn!("Job '{}' already exists, skipping", name_clone);
                 return;
             }
 
             let job = Job::new(name_clone.clone(), expr, function);
-            jobs.insert(name_clone, job);
+            jobs.insert(name_clone.clone(), job);
+            debug!("Job '{}' registered successfully", name_clone);
         });
 
         Ok(())
@@ -150,10 +156,13 @@ impl CronScheduler {
     pub async fn start(&mut self) -> CronResult<()> {
         let mut running = self.running.write().await;
         if *running {
+            warn!("Cron scheduler already running");
             return Err(CronError::SchedulerAlreadyRunning);
         }
         *running = true;
         drop(running);
+
+        info!("Cron scheduler started");
 
         let jobs = self.jobs.clone();
         let running = self.running.clone();

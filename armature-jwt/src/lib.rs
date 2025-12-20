@@ -75,6 +75,8 @@ pub use token::{Token, TokenPair};
 // Re-export jsonwebtoken types
 pub use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 
+use armature_log::{debug, info, trace, warn};
+
 /// JWT service for token management
 #[derive(Clone)]
 pub struct JwtManager {
@@ -96,6 +98,8 @@ impl JwtManager {
     /// # }
     /// ```
     pub fn new(config: JwtConfig) -> Result<Self> {
+        info!("Initializing JWT manager");
+        debug!("JWT algorithm: {:?}", config.algorithm);
         let service = JwtService::new(config)?;
         Ok(Self { service })
     }
@@ -116,6 +120,7 @@ impl JwtManager {
     /// # }
     /// ```
     pub fn sign<T: serde::Serialize>(&self, claims: &T) -> Result<String> {
+        trace!("Signing JWT token");
         self.service.sign(claims)
     }
 
@@ -138,7 +143,17 @@ impl JwtManager {
     /// # }
     /// ```
     pub fn verify<T: serde::de::DeserializeOwned>(&self, token: &str) -> Result<T> {
-        self.service.verify(token)
+        trace!("Verifying JWT token");
+        match self.service.verify(token) {
+            Ok(claims) => {
+                trace!("JWT token verified successfully");
+                Ok(claims)
+            }
+            Err(e) => {
+                debug!("JWT verification failed: {}", e);
+                Err(e)
+            }
+        }
     }
 
     /// Generate a token pair (access + refresh)
@@ -146,10 +161,12 @@ impl JwtManager {
         &self,
         claims: &T,
     ) -> Result<TokenPair> {
+        debug!("Generating JWT token pair");
         self.service.generate_token_pair(claims)
     }
 
     /// Refresh an access token using a refresh token
+    #[allow(dead_code)]
     pub fn refresh_token<T: serde::de::DeserializeOwned + serde::Serialize + Clone>(
         &self,
         refresh_token: &str,

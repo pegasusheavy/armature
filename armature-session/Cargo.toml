@@ -9,6 +9,9 @@ keywords = ["session", "storage", "redis", "memcached", "couchdb"]
 categories = ["web-programming", "caching"]
 
 [dependencies]
+# Logging
+armature-log = { path = "../armature-log" }
+
 # Core dependencies
 async-trait = "0.1"
 thiserror = "2.0"

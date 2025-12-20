@@ -1,5 +1,6 @@
 //! Worker implementation for processing jobs.
 
+use armature_log::{debug, error, info, trace, warn};
 use crate::error::{QueueError, QueueResult};
 use crate::job::{Job, JobId};
 use crate::queue::Queue;
@@ -59,6 +60,8 @@ impl Worker {
 
     /// Create a worker with custom configuration.
     pub fn with_config(queue: Queue, config: WorkerConfig) -> Self {
+        info!("Creating worker with concurrency: {}", config.concurrency);
+        debug!("Worker config - poll_interval: {:?}, job_timeout: {:?}", config.poll_interval, config.job_timeout);
         Self {
             queue,
             handlers: Arc::new(RwLock::new(HashMap::new())),
@@ -113,17 +116,13 @@ impl Worker {
     pub async fn start(&mut self) -> QueueResult<()> {
         let mut running = self.running.write().await;
         if *running {
+            warn!("Worker already running");
             return Err(QueueError::WorkerAlreadyRunning);
         }
         *running = true;
         drop(running);
 
-        if self.config.log_execution {
-            println!(
-                "[WORKER] Starting with concurrency: {}",
-                self.config.concurrency
-            );
-        }
+        info!("Starting worker with {} concurrent processors", self.config.concurrency);
 
         // Start worker tasks
         for i in 0..self.config.concurrency {
