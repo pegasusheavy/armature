@@ -365,7 +365,7 @@ impl LoadBalancer {
         // Pick two random workers
         let idx1 = self.next_random() as usize % n;
         let mut idx2 = self.next_random() as usize % n;
-        
+
         // Ensure different workers
         if idx2 == idx1 {
             idx2 = (idx2 + 1) % n;
@@ -417,7 +417,7 @@ impl LoadBalancer {
 
         let conns: Vec<f64> = self.workers.iter().map(|w| w.connections() as f64).collect();
         let mean = conns.iter().sum::<f64>() / conns.len() as f64;
-        
+
         if mean == 0.0 {
             return 0.0;
         }

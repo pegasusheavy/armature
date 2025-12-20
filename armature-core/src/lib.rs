@@ -166,6 +166,7 @@ pub mod route_constraint;
 pub mod route_group;
 pub mod route_registry;
 pub mod routing;
+pub mod runtime_config;
 pub mod shutdown;
 pub mod socket_batch;
 pub mod sse;
