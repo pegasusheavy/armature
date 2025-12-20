@@ -68,11 +68,16 @@
 
 ### Buffer & Connection Tuning
 
-| Priority | Feature | Description | Location |
-|----------|---------|-------------|----------|
-| 🟡 | Buffer Size Auto-Tuning | Dynamic adjustment based on traffic | `armature-core` |
-| 🟡 | Adaptive Keep-Alive | Adjust based on server load | `armature-core` |
-| 🟡 | Idle Connection Culling | Drop idle connections under pressure | `armature-core` |
+| Priority | Feature | Description | Status |
+|----------|---------|-------------|--------|
+| ✅ | Buffer Size Auto-Tuning | Dynamic adjustment based on traffic | `connection_manager.rs` |
+| ✅ | Adaptive Keep-Alive | Adjust based on server load | `connection_manager.rs` |
+| ✅ | Idle Connection Culling | Drop idle connections under pressure | `connection_manager.rs` |
+
+**Implemented via `ConnectionManager`:**
+- **Buffer Auto-Tuning**: Tracks buffer usage history, computes p95 optimal size
+- **Adaptive Keep-Alive**: Reduces timeout as load increases, configurable thresholds
+- **Idle Culling**: Drops oldest idle connections under memory/connection pressure
 
 ### Streaming & Compression
 
@@ -111,14 +116,14 @@
 |----------|-----------|-----------|
 | Performance Regressions | 1 | 2 |
 | Compiler Optimizations | - | 4 |
-| Buffer/Connection Tuning | 3 | 15+ |
+| Buffer/Connection Tuning | 0 | 18+ |
 | Streaming/Compression | 2 | 4 |
 | State Management | 1 | 4 |
 | Benchmarking | 2 | 7 |
 | Testing & Fuzzing | - | 8 |
 | Internationalization | 4 | - |
 | Integrations | - | 3 |
-| **Total** | **14** | **88** |
+| **Total** | **11** | **91** |
 
 ### Performance Status
 
