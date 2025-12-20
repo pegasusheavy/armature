@@ -263,7 +263,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ✅ | HTTP/1.1 Pipelining | Process multiple requests per connection without waiting | `armature-core/src/pipeline.rs` |
 | ✅ | Request Batching | Batch-read multiple requests from socket buffer | `armature-core/src/batch.rs` |
 | ✅ | Response Pipelining | Queue responses for batch-write to socket | `armature-core/src/response_pipeline.rs` |
-| 🟠 | Vectored I/O (writev) | Use `writev()` to send headers+body in single syscall | `armature-core/http.rs` |
+| ✅ | Vectored I/O (writev) | Use `writev()` to send headers+body in single syscall | `armature-core/src/vectored_io.rs` |
 
 ### Buffer Management (Actix's key advantage)
 
@@ -371,7 +371,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **45** | ✅ |
+| **Recently Completed** | **46** | ✅ |
 
 ### Performance Target
 
