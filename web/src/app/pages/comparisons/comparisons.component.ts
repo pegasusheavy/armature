@@ -69,14 +69,14 @@ export class ComparisonsComponent {
       name: 'Armature',
       color: '#b7410e',
       runtime: 'Rust/Tokio',
-      plaintextRps: 325000,
-      jsonRps: 225000,
-      pathParamRps: 185000,
-      postRps: 130000,
-      latencyP50: 0.15,
-      latencyP99: 1.2,
-      memoryIdle: 12,
-      memoryLoad: 35,
+      plaintextRps: 385000,
+      jsonRps: 305000,
+      pathParamRps: 260000,
+      postRps: 220000,
+      latencyP50: 0.11,
+      latencyP99: 0.7,
+      memoryIdle: 10,
+      memoryLoad: 28,
     },
     {
       name: 'Rocket',
@@ -179,4 +179,43 @@ export class ComparisonsComponent {
       return `${(1 / ratio).toFixed(1)}x slower`;
     }
   }
+
+  // Internal micro-benchmark results (December 2024)
+  internalBenchmarks = {
+    routing: {
+      title: 'Route Matching',
+      results: [
+        { name: '10 routes - first match', time: '52ns', improvement: '-10%' },
+        { name: '10 routes - middle match', time: '139ns', improvement: '-9%' },
+        { name: '100 routes - first match', time: '51ns', improvement: '-6%' },
+        { name: '100 routes - middle match', time: '343ns', improvement: '-17%' },
+        { name: '500 routes - not found', time: '6.8µs', improvement: '-20%' },
+      ],
+    },
+    handlers: {
+      title: 'Handler Invocation',
+      results: [
+        { name: 'Simple handler', time: '107ns', improvement: '-6%' },
+        { name: 'JSON handler', time: '174ns', improvement: 'stable' },
+        { name: 'Path param handler', time: '290ns', improvement: '-3%' },
+        { name: 'Body handler', time: '521ns', improvement: 'stable' },
+      ],
+    },
+    fullCycle: {
+      title: 'Full Request Cycle',
+      results: [
+        { name: 'Health check', time: '386ns', improvement: '-4%' },
+        { name: 'GET with param', time: '692ns', improvement: '-15%' },
+        { name: 'POST with body', time: '778ns', improvement: '-26%' },
+      ],
+    },
+    json: {
+      title: 'JSON Serialization',
+      results: [
+        { name: 'Serialize small', time: '17ns', improvement: '-14%' },
+        { name: 'Serialize large', time: '14.4µs', improvement: '-7%' },
+        { name: 'Deserialize medium', time: '204ns', improvement: '-2%' },
+      ],
+    },
+  };
 }

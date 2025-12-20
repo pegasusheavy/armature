@@ -9,7 +9,7 @@
 
 ## Completed Work Summary
 
-**69 performance optimizations implemented** across the following areas:
+**73 performance optimizations implemented** across the following areas:
 
 ### Core Performance (Axum/Actix-competitive)
 - **Routing**: `matchit` O(log n) router, route cache with LRU + static fast path, compile-time validation
@@ -36,14 +36,27 @@
 - **Profiling**: CPU flamegraphs, `pprof` integration, profiling guide
 - **Benchmarks**: TechEmpower suite, framework comparisons, CI regression tests
 - **Infrastructure**: Grafana dashboards, Ferron reverse proxy, all CI passing
+- **Logging**: `armature-log` crate with JSON default, env config, runtime config
 
 ### Compiler Optimizations
 - **Build Profiles**: PGO, LTO (thin/fat), release-native, profiling
 - **Cargo Config**: target-cpu aliases, codegen-units=1, PGO workflow script
 
+### Integrations
+- **OpenSearch**: `armature-opensearch` crate with client, queries, bulk ops, index management
+- **Publishing**: Automated crates.io publishing scripts with dependency ordering
+
 ---
 
 ## Remaining Work
+
+### Performance Regressions (from December 2024 benchmarks)
+
+| Priority | Issue | Impact | Location |
+|----------|-------|--------|----------|
+| 🟠 | Response Creation Overhead | +9% empty, +23% status codes | `armature-core/response.rs` |
+| 🟠 | Small JSON Response Allocation | +7% for small JSON responses | `armature-core/response.rs` |
+| 🟡 | Vec Small Allocation | +7% regression on small vectors | `armature-core` |
 
 ### Buffer & Connection Tuning
 
@@ -88,13 +101,15 @@
 
 | Category | Remaining | Completed |
 |----------|-----------|-----------|
+| Performance Regressions | 3 | - |
 | Compiler Optimizations | - | 4 |
 | Buffer/Connection Tuning | 3 | 15+ |
 | Streaming/Compression | 2 | 4 |
 | State Management | 1 | 4 |
 | Benchmarking | 2 | 7 |
 | Internationalization | 4 | - |
-| **Total** | **12** | **73** |
+| Integrations | - | 2 |
+| **Total** | **15** | **77** |
 
 ### Performance Status
 
@@ -103,6 +118,27 @@
 | Axum parity | ✅ Achieved (routing, zero-cost abstractions) |
 | Actix-competitive | ✅ Core optimizations complete |
 | TechEmpower ready | ✅ Benchmark suite implemented |
+
+### Latest Benchmark Results (December 2024)
+
+| Benchmark | Time | Change |
+|-----------|------|--------|
+| **Full Cycle** | | |
+| Health check | 386ns | **-4%** ✅ |
+| GET with param | 692ns | **-15%** ✅ |
+| POST with body | 778ns | **-26%** ✅ |
+| **Routing (100 routes)** | | |
+| First match | 51ns | **-6%** ✅ |
+| Middle match | 343ns | **-17%** ✅ |
+| Not found | 1.3µs | **-16%** ✅ |
+| **JSON Operations** | | |
+| Serialize small | 17ns | **-14%** ✅ |
+| Serialize large | 14.4µs | **-7%** ✅ |
+| Deserialize medium | 204ns | **-2%** ✅ |
+| **Regressions** | | |
+| Empty response | 2.2ns | +9% ⚠️ |
+| Status codes | 11ns | +23% ⚠️ |
+| Small JSON response | 59ns | +7% ⚠️ |
 
 ---
 
