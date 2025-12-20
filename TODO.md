@@ -56,6 +56,7 @@ Only features that are **not yet completed**.
 | ✅ Epoll Tuning | Optimized epoll flags, batch sizing, socket options | `armature-core/src/epoll_tuning.rs` |
 | ✅ Batched Socket Operations | readv/writev, TCP_CORK, send coalescing | `armature-core/src/socket_batch.rs` |
 | ✅ Worker Load Balancing | Round-robin, least-connections, weighted, power-of-two | `armature-core/src/load_balancer.rs` |
+| ✅ Async Runtime Optimization | Task spawning control, LocalSet, work-stealing tuning | `armature-core/src/runtime_config.rs` |
 
 ---
 
@@ -141,10 +142,10 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Reduce Task Spawning | Inline simple handlers instead of spawning tasks | `armature-core` |
-| 🟠 | `tokio::task::LocalSet` Option | Single-threaded mode for maximum cache locality | `armature-core` |
-| 🟡 | Custom Executor Tuning | Expose tokio runtime configuration | `armature-core` |
-| 🟡 | Work-Stealing Optimization | Tune work-stealing for HTTP workloads | `armature-core` |
+| ✅ | Reduce Task Spawning | Inline simple handlers instead of spawning tasks | `armature-core/src/runtime_config.rs` |
+| ✅ | `tokio::task::LocalSet` Option | Single-threaded mode for maximum cache locality | `armature-core/src/runtime_config.rs` |
+| ✅ | Custom Executor Tuning | Expose tokio runtime configuration | `armature-core/src/runtime_config.rs` |
+| ✅ | Work-Stealing Optimization | Tune work-stealing for HTTP workloads | `armature-core/src/runtime_config.rs` |
 
 ### Benchmark Infrastructure
 
@@ -371,7 +372,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **46** | ✅ |
+| **Recently Completed** | **50** | ✅ |
 
 ### Performance Target
 
