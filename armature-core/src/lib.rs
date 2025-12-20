@@ -165,6 +165,7 @@ pub mod resilience;
 pub mod read_buffer;
 pub mod response_buffer;
 pub mod route_constraint;
+pub mod route_cache;
 pub mod route_group;
 pub mod route_params;
 pub mod route_registry;

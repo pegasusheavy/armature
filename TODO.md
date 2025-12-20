@@ -63,6 +63,7 @@ Only features that are **not yet completed**.
 | ✅ Route Parameter Optimization | Zero-alloc params, wildcard patterns | `armature-core/src/route_params.rs` |
 | ✅ Connection Tuning | HTTP/2 priority, TCP tuning, keep-alive | `armature-core/src/connection_tuning.rs` |
 | ✅ Serialization Pool | Zero-copy responses, pooled serialization buffers | `armature-core/src/serialization_pool.rs` |
+| ✅ Route Cache | LRU cache + static fast path for route matching | `armature-core/src/route_cache.rs` |
 
 ---
 
@@ -74,9 +75,9 @@ Based on CPU profiling analysis (flamegraph from `examples/profiling_server.rs`)
 
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
-| 🟠 | Route Matching Cache | Cache compiled routes to avoid repeated trie traversal | `armature-core/routing.rs` |
-| 🟠 | Static Route Fast Path | Bypass trie for exact-match static routes using HashMap | `armature-core/routing.rs` |
-| 🟡 | Header Map Optimization | Use `smallvec` or pre-allocated headers for common cases | `armature-core` |
+| ✅ | Route Matching Cache | LRU cache for recently matched routes | `armature-core/src/route_cache.rs` |
+| ✅ | Static Route Fast Path | O(1) HashMap lookup for static routes | `armature-core/src/route_cache.rs` |
+| ✅ | Header Map Optimization | SmallVec headers (12 inline) already implemented | `armature-core/src/headers.rs` |
 
 ### HTTP Parsing (~7% CPU)
 
@@ -378,7 +379,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **66** | ✅ |
+| **Recently Completed** | **69** | ✅ |
 
 ### Performance Target
 
