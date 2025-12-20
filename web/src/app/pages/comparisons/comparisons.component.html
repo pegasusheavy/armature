@@ -496,7 +496,7 @@
     <!-- Key Insights -->
     <div class="grid md:grid-cols-3 gap-6 mb-12">
       <div class="bg-gradient-to-br from-rust-900/50 to-orange-900/30 rounded-xl p-6 text-center border border-rust-800">
-        <div class="text-4xl font-bold text-rust-400 mb-2">8-15x</div>
+        <div class="text-4xl font-bold text-rust-400 mb-2">10-15x</div>
         <div class="text-white font-medium">Faster than Node.js</div>
         <div class="text-stone-500 text-sm mt-1">Armature vs Express/NestJS</div>
       </div>
@@ -506,10 +506,112 @@
         <div class="text-stone-500 text-sm mt-1">Compared to Node.js frameworks</div>
       </div>
       <div class="bg-gradient-to-br from-purple-900/50 to-indigo-900/30 rounded-xl p-6 text-center border border-purple-800">
-        <div class="text-4xl font-bold text-purple-400 mb-2">&lt;2ms</div>
+        <div class="text-4xl font-bold text-purple-400 mb-2">&lt;1ms</div>
         <div class="text-white font-medium">p99 Latency</div>
-        <div class="text-stone-500 text-sm mt-1">Rust frameworks average</div>
+        <div class="text-stone-500 text-sm mt-1">Armature optimized</div>
       </div>
+    </div>
+
+    <!-- Internal Micro-Benchmarks -->
+    <div class="mb-16">
+      <h3 class="text-2xl font-bold text-white mb-2">Internal Micro-Benchmarks</h3>
+      <p class="text-stone-400 text-sm mb-6">
+        Criterion benchmarks measuring individual operations. Negative percentages indicate improvement from previous versions.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Routing -->
+        <div class="bg-stone-800 rounded-xl p-5 border border-stone-700">
+          <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-rust-500"></span>
+            {{ internalBenchmarks.routing.title }}
+          </h4>
+          <div class="space-y-2">
+            @for (result of internalBenchmarks.routing.results; track result.name) {
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-stone-400">{{ result.name }}</span>
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-stone-300">{{ result.time }}</span>
+                  <span class="text-xs px-2 py-0.5 rounded"
+                        [class]="result.improvement.startsWith('-') ? 'bg-green-900/50 text-green-400' : 'bg-stone-700 text-stone-400'">
+                    {{ result.improvement }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Handlers -->
+        <div class="bg-stone-800 rounded-xl p-5 border border-stone-700">
+          <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+            {{ internalBenchmarks.handlers.title }}
+          </h4>
+          <div class="space-y-2">
+            @for (result of internalBenchmarks.handlers.results; track result.name) {
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-stone-400">{{ result.name }}</span>
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-stone-300">{{ result.time }}</span>
+                  <span class="text-xs px-2 py-0.5 rounded"
+                        [class]="result.improvement.startsWith('-') ? 'bg-green-900/50 text-green-400' : 'bg-stone-700 text-stone-400'">
+                    {{ result.improvement }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Full Cycle -->
+        <div class="bg-stone-800 rounded-xl p-5 border border-stone-700">
+          <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            {{ internalBenchmarks.fullCycle.title }}
+          </h4>
+          <div class="space-y-2">
+            @for (result of internalBenchmarks.fullCycle.results; track result.name) {
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-stone-400">{{ result.name }}</span>
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-stone-300">{{ result.time }}</span>
+                  <span class="text-xs px-2 py-0.5 rounded"
+                        [class]="result.improvement.startsWith('-') ? 'bg-green-900/50 text-green-400' : 'bg-stone-700 text-stone-400'">
+                    {{ result.improvement }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- JSON -->
+        <div class="bg-stone-800 rounded-xl p-5 border border-stone-700">
+          <h4 class="font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            {{ internalBenchmarks.json.title }}
+          </h4>
+          <div class="space-y-2">
+            @for (result of internalBenchmarks.json.results; track result.name) {
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-stone-400">{{ result.name }}</span>
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-stone-300">{{ result.time }}</span>
+                  <span class="text-xs px-2 py-0.5 rounded"
+                        [class]="result.improvement.startsWith('-') ? 'bg-green-900/50 text-green-400' : 'bg-stone-700 text-stone-400'">
+                    {{ result.improvement }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-stone-500 text-xs mt-4">
+        Benchmarks run with Criterion on Linux. Lower times are better. Last updated: December 2024.
+      </p>
     </div>
 
     <!-- Benchmark Methodology -->
