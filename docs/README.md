@@ -125,6 +125,12 @@ armature dev
 |-------|-------------|
 | [OpenSearch](opensearch-guide.md) | Full-text search, indexing, aggregations |
 
+### Serialization & AI
+
+| Guide | Description |
+|-------|-------------|
+| [TOON Format](toon-guide.md) | Token-optimized serialization for LLM applications |
+
 ### Cloud Providers
 
 | Guide | Description |

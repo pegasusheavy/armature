@@ -22,10 +22,10 @@ struct FuzzResponse {
 fuzz_target!(|data: FuzzResponse| {
     // Clamp status code to valid HTTP range
     let status = data.status.clamp(100, 599);
-    
+
     // Create response - should not panic
     let mut response = HttpResponse::new(status, Bytes::from(data.body.clone()));
-    
+
     // Add headers - should handle arbitrary header names/values
     for (key, value) in &data.headers {
         // Skip obviously invalid headers (empty names)
@@ -33,18 +33,18 @@ fuzz_target!(|data: FuzzResponse| {
             response.headers.insert(key.clone(), value.clone());
         }
     }
-    
+
     // Test accessors
     let _ = response.status;
     let _ = response.body.len();
     let _ = response.headers.len();
-    
+
     // Test common response builders
     let _ = HttpResponse::ok();
     let _ = HttpResponse::not_found();
     let _ = HttpResponse::internal_server_error();
     let _ = HttpResponse::bad_request();
-    
+
     // Test JSON response with arbitrary body
     if !data.body.is_empty() {
         // Try to interpret body as JSON - should not panic

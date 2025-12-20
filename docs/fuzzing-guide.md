@@ -175,20 +175,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust nightly
         uses: dtolnay/rust-action@nightly
-        
+
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz
-        
+
       - name: Run fuzz tests
         run: |
           cd fuzz
           for target in fuzz_http_request fuzz_routing fuzz_json; do
             cargo +nightly fuzz run "$target" -- -max_total_time=300
           done
-          
+
       - name: Upload crash artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -237,11 +237,11 @@ fuzz_target!(|data: FuzzInput| {
     if data.field1.len() > 10000 || data.field2.len() > 100000 {
         return;
     }
-    
+
     // Call the code under test
     // Should NOT panic for any valid Arbitrary input
     let result = your_function(&data.field1, &data.field2);
-    
+
     // Optionally verify invariants
     if let Ok(output) = result {
         assert!(output.len() <= data.field1.len() * 2);
@@ -262,13 +262,13 @@ struct ComplexInput {
     number: u32,
     text: String,
     bytes: Vec<u8>,
-    
+
     // Optionals
     maybe: Option<String>,
-    
+
     // Enums
     choice: Choice,
-    
+
     // Nested
     nested: Box<NestedInput>,
 }
@@ -304,7 +304,7 @@ fuzz_target!(|data: FuzzInput| {
     // Code should handle all inputs without panicking
     // Errors are expected and OK
     let _ = parse_input(&data.raw);
-    
+
     // DON'T use unwrap() - this will cause false positives
     // BAD: let result = parse_input(&data.raw).unwrap();
 });

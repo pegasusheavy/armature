@@ -22,15 +22,15 @@ struct FuzzUrl {
 fuzz_target!(|data: FuzzUrl| {
     // Test 1: Path normalization
     let path = &data.path;
-    
+
     // Split path into segments - should handle arbitrary input
     let segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
     let _ = segments.len();
-    
+
     // Test path traversal detection
     let has_traversal = segments.iter().any(|s| *s == ".." || *s == ".");
     let _ = has_traversal;
-    
+
     // Test 2: URL decoding
     // Simulate percent-decoding
     let mut decoded = String::new();
@@ -49,7 +49,7 @@ fuzz_target!(|data: FuzzUrl| {
         }
     }
     let _ = decoded;
-    
+
     // Test 3: Query string parsing
     if let Some(query) = &data.query {
         // Parse query parameters
@@ -63,7 +63,7 @@ fuzz_target!(|data: FuzzUrl| {
         }
         let _ = params.len();
     }
-    
+
     // Test 4: Full URL reconstruction
     let mut full_url = data.path.clone();
     if let Some(query) = &data.query {
@@ -75,13 +75,13 @@ fuzz_target!(|data: FuzzUrl| {
         full_url.push_str(fragment);
     }
     let _ = full_url.len();
-    
+
     // Test 5: Path prefix matching
     let test_prefixes = ["/api", "/v1", "/users", "/"];
     for prefix in &test_prefixes {
         let _ = data.path.starts_with(prefix);
     }
-    
+
     // Test 6: Path suffix matching
     let test_suffixes = [".json", ".xml", ".html", "/"];
     for suffix in &test_suffixes {

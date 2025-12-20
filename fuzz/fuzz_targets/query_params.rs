@@ -22,7 +22,7 @@ struct FuzzQuery {
 fn url_decode(s: &str) -> String {
     let mut result = String::new();
     let mut chars = s.chars().peekable();
-    
+
     while let Some(c) = chars.next() {
         match c {
             '%' => {
@@ -43,19 +43,19 @@ fn url_decode(s: &str) -> String {
             _ => result.push(c),
         }
     }
-    
+
     result
 }
 
 /// Parse query string into key-value pairs.
 fn parse_query(query: &str) -> Vec<(String, String)> {
     let mut params = Vec::new();
-    
+
     for pair in query.split('&') {
         if pair.is_empty() {
             continue;
         }
-        
+
         if let Some((key, value)) = pair.split_once('=') {
             let key = url_decode(key);
             let value = url_decode(value);
@@ -66,7 +66,7 @@ fn parse_query(query: &str) -> Vec<(String, String)> {
             params.push((key, String::new()));
         }
     }
-    
+
     params
 }
 
@@ -74,19 +74,19 @@ fuzz_target!(|data: FuzzQuery| {
     // Test 1: Parse raw query string
     let params = parse_query(&data.raw);
     let _ = params.len();
-    
+
     // Test 2: Build HashMap from params
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
     for (key, value) in &params {
         map.entry(key.clone()).or_default().push(value.clone());
     }
-    
+
     // Test 3: Look for common parameter names
     let common_params = ["page", "limit", "offset", "sort", "order", "filter", "q", "search"];
     for param in &common_params {
         let _ = map.get(*param);
     }
-    
+
     // Test 4: Parse numeric parameters
     for (key, values) in &map {
         for value in values {
@@ -98,7 +98,7 @@ fuzz_target!(|data: FuzzQuery| {
         }
         let _ = key.len();
     }
-    
+
     // Test 5: Build query string from structured params
     let mut built_query = String::new();
     for (i, (key, value)) in data.params.iter().enumerate() {
@@ -112,27 +112,27 @@ fuzz_target!(|data: FuzzQuery| {
         built_query.push('=');
         built_query.push_str(&encoded_value);
     }
-    
+
     // Test 6: Re-parse built query
     let reparsed = parse_query(&built_query);
     let _ = reparsed.len();
-    
+
     // Test 7: Handle edge cases
     // Empty query
     let _ = parse_query("");
-    
+
     // Just &
     let _ = parse_query("&");
-    
+
     // Multiple &
     let _ = parse_query("&&&&");
-    
+
     // Key with empty value
     let _ = parse_query("key=");
-    
+
     // Empty key with value
     let _ = parse_query("=value");
-    
+
     // Multiple = signs
     let _ = parse_query("key=value=extra");
 });
