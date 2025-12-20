@@ -165,7 +165,15 @@
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-graphql v0.1.0 (/home/runner/work/armature/armature/armature-graphql)
+[1m[33mwarning[0m[1m: unused import: `debug`[0m
+  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
+   [1m[94m|[0m
+[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
+   [1m[94m|[0m                    [1m[33m^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
 [1m[92m   Compiling[0m armature-acme v0.1.0 (/home/runner/work/armature/armature/armature-acme)
 [1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
  [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
@@ -175,8 +183,10 @@
   [1m[94m|[0m
   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
+[1m[92m   Compiling[0m armature-config v0.1.0 (/home/runner/work/armature/armature/armature-config)
 [1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
+[1m[92m   Compiling[0m armature-queue v0.1.0 (/home/runner/work/armature/armature/armature-queue)
 [1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
  [1m[94m--> [0marmature-queue/src/queue.rs:3:33
   [1m[94m|[0m
@@ -190,42 +200,6 @@
   [1m[94m|[0m
 [1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
   [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-
-[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-metrics v0.1.0 (/home/runner/work/armature/armature/armature-metrics)
-[1m[33mwarning[0m[1m: unused import: `debug`[0m
-  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
-   [1m[94m|[0m                    [1m[33m^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
   [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
@@ -394,4 +368,4 @@
 
 [1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
 [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
-[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
+[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
