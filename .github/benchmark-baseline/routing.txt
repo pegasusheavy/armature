@@ -44,11 +44,11 @@
 [1m[92m   Compiling[0m serde_json v1.0.145
 [1m[92m   Compiling[0m serde_urlencoded v0.7.1
 [1m[92m   Compiling[0m compact_str v0.8.1
-[1m[92m   Compiling[0m async-graphql-value v7.0.17
-[1m[92m   Compiling[0m tracing-subscriber v0.3.22
 [1m[92m   Compiling[0m armature-log v0.1.0 (/home/runner/work/armature/armature/armature-log)
+[1m[92m   Compiling[0m tracing-subscriber v0.3.22
 [1m[92m   Compiling[0m reqwest v0.12.26
 [1m[92m   Compiling[0m axum v0.8.8
+[1m[92m   Compiling[0m async-graphql-value v7.0.17
 [1m[92m   Compiling[0m redis v1.0.1
 [1m[92m   Compiling[0m tracing-appender v0.2.4
 [1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
@@ -183,10 +183,10 @@
 [1m[92m   Compiling[0m sqlx-core v0.8.6
 [1m[92m   Compiling[0m async-graphql-derive v7.0.17
 [1m[92m   Compiling[0m sqlx-postgres v0.8.6
-[1m[92m   Compiling[0m armature-redis v0.1.0 (/home/runner/work/armature/armature/armature-redis)
 [1mFor more information about this error, try `rustc --explain E0133`.[0m
-[1m[92m   Compiling[0m tonic-prost v0.14.2
 [1m[33mwarning[0m: `armature-core` (lib) generated 15 warnings (run `cargo fix --lib -p armature-core` to apply 9 suggestions)
+[1m[92m   Compiling[0m armature-redis v0.1.0 (/home/runner/work/armature/armature/armature-redis)
+[1m[92m   Compiling[0m tonic-prost v0.14.2
 [1m[92m   Compiling[0m handlebars v5.1.2
 [1m[92m   Compiling[0m opentelemetry-proto v0.31.0
 [1m[92m   Compiling[0m sqlx-macros-core v0.8.6
@@ -209,6 +209,7 @@
 [1m[92m   Compiling[0m oauth2 v5.0.0
 [1m[92m   Compiling[0m tinytemplate v1.2.1
 [1m[92m   Compiling[0m serde_yaml v0.9.34+deprecated
+[1m[92m   Compiling[0m sqlx v0.8.6
 [1m[92m   Compiling[0m armature-auth v0.1.0 (/home/runner/work/armature/armature/armature-auth)
 [1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
