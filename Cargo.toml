@@ -215,14 +215,92 @@ ctrlc = "3.4"
 pprof = { version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] }
 inferno = "0.12"
 
-# Profiling configuration
-[profile.profiling]
-inherits = "release"
-debug = true  # Enable debug symbols for better stack traces
+# =============================================================================
+# Build Profiles
+# =============================================================================
+#
+# Available profiles:
+#   - release        : Production build with thin LTO (default)
+#   - release-fat    : Maximum optimization with fat LTO
+#   - release-native : Native CPU optimizations for benchmarks
+#   - profiling      : Release with debug symbols for profiling
+#   - pgo-generate   : Generate PGO profile data
+#   - pgo-use        : Use PGO profile data for optimization
+#
+# Usage:
+#   cargo build --profile release-fat
+#   cargo bench --profile release-native
+#
+# PGO workflow:
+#   1. cargo build --profile pgo-generate
+#   2. ./target/pgo-generate/your-binary  # Run representative workload
+#   3. llvm-profdata merge -o merged.profdata /tmp/pgo-*.profraw
+#   4. RUSTFLAGS="-Cprofile-use=$(pwd)/merged.profdata" cargo build --profile pgo-use
+#
+# =============================================================================
 
+# Standard release: thin LTO, single codegen unit
 [profile.release]
 lto = "thin"
 codegen-units = 1
+opt-level = 3
+strip = "symbols"
+
+# Maximum optimization: fat LTO, slower compile but faster runtime
+# Use for final production builds where compile time doesn't matter
+[profile.release-fat]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+opt-level = 3
+panic = "abort"  # Smaller binary, no unwinding
+
+# Native CPU: enables target-cpu=native via build.rs
+# Best for benchmarks on the build machine
+[profile.release-native]
+inherits = "release"
+lto = "thin"
+codegen-units = 1
+opt-level = 3
+
+# Profiling: release with debug symbols
+# Use with: cargo flamegraph --profile profiling
+[profile.profiling]
+inherits = "release"
+debug = true  # Enable debug symbols for better stack traces
+strip = "none"
+
+# PGO Generate: build to collect profile data
+# Step 1: Build with this profile
+# Step 2: Run representative workload
+# Profile data written to /tmp/pgo-*.profraw
+[profile.pgo-generate]
+inherits = "release"
+lto = "thin"
+codegen-units = 1
+opt-level = 3
+
+# PGO Use: build using collected profile data
+# Requires: RUSTFLAGS="-Cprofile-use=path/to/merged.profdata"
+# Can provide 10-20% performance improvement
+[profile.pgo-use]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+opt-level = 3
+panic = "abort"
+
+# Development with optimizations (faster iteration than release)
+[profile.dev-opt]
+inherits = "dev"
+opt-level = 2
+
+# Benchmark profile: optimized for accurate benchmarking
+[profile.bench]
+lto = "thin"
+codegen-units = 1
+opt-level = 3
+debug = false
 
 # Armature crates for examples and benchmarks
 [dev-dependencies.armature-validation]
