@@ -11,6 +11,9 @@ tokio = { version = "1.35", features = ["full"] }
 hyper = { version = "1.1", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full", "tokio"] }
 http-body-util = "0.1"
+http = "1.1"
+tower = { version = "0.5", features = ["util"] }
+tower-service = "0.3"
 bytes = "1.5"
 smallvec = { version = "1.13", features = ["union", "const_generics"] }
 serde = { version = "1.0", features = ["derive"] }

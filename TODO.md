@@ -57,6 +57,7 @@ Only features that are **not yet completed**.
 | ✅ Batched Socket Operations | readv/writev, TCP_CORK, send coalescing | `armature-core/src/socket_batch.rs` |
 | ✅ Worker Load Balancing | Round-robin, least-connections, weighted, power-of-two | `armature-core/src/load_balancer.rs` |
 | ✅ Async Runtime Optimization | Task spawning control, LocalSet, work-stealing tuning | `armature-core/src/runtime_config.rs` |
+| ✅ Tower/HTTP Crate Compatibility | Tower Service, http crate types, Hyper 1.0 adapter | `armature-core/src/tower_compat.rs` |
 
 ---
 
@@ -134,9 +135,9 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | Direct Hyper Body Passthrough | Zero-copy Bytes-based body handling | `armature-core/src/body.rs` |
-| 🟠 | Native `http` Crate Types | Use `http::Request`/`Response` directly | `armature-core` |
-| 🟠 | Tower Service Compatibility | Implement `tower::Service` for composability | `armature-core` |
-| 🟡 | Hyper 1.0 Full Support | Ensure all Hyper 1.0 features are utilized | `armature-core` |
+| ✅ | Native `http` Crate Types | Use `http::Request`/`Response` directly | `armature-core/src/tower_compat.rs` |
+| ✅ | Tower Service Compatibility | Implement `tower::Service` for composability | `armature-core/src/tower_compat.rs` |
+| ✅ | Hyper 1.0 Full Support | Ensure all Hyper 1.0 features are utilized | `armature-core/src/tower_compat.rs` |
 
 ### Async Runtime Optimization
 
@@ -372,7 +373,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **50** | ✅ |
+| **Recently Completed** | **53** | ✅ |
 
 ### Performance Target
 
