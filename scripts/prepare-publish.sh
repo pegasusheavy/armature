@@ -143,17 +143,17 @@ restore_backups() {
         log_error "No backup directory found at $BACKUP_DIR"
         exit 1
     fi
-    
+
     log_info "Restoring Cargo.toml files from backup..."
-    
+
     local members
     members=$(get_workspace_members)
     local restored=0
-    
+
     for crate in $members; do
         local backup="$BACKUP_DIR/$crate/Cargo.toml"
         local target="$crate/Cargo.toml"
-        
+
         if [[ -f "$backup" ]]; then
             if [[ "$DRY_RUN" == "true" ]]; then
                 log_info "[DRY RUN] Would restore: $target"
@@ -163,7 +163,7 @@ restore_backups() {
             fi
         fi
     done
-    
+
     # Restore root Cargo.toml if backed up
     if [[ -f "$BACKUP_DIR/Cargo.toml" ]]; then
         if [[ "$DRY_RUN" == "true" ]]; then
@@ -173,7 +173,7 @@ restore_backups() {
             ((restored++))
         fi
     fi
-    
+
     if [[ "$DRY_RUN" != "true" ]]; then
         rm -rf "$BACKUP_DIR"
         log_success "Restored $restored files"
@@ -188,7 +188,7 @@ restore_backups() {
 backup_file() {
     local file=$1
     local backup_path="$BACKUP_DIR/$(dirname "$file")"
-    
+
     mkdir -p "$backup_path"
     cp "$file" "$BACKUP_DIR/$file"
 }
@@ -197,22 +197,22 @@ backup_file() {
 convert_path_to_version() {
     local file=$1
     local version=$2
-    
+
     # Pattern: armature-xxx = { path = "../armature-xxx" }
     # or: armature-xxx = { path = "../armature-xxx", ... }
-    
+
     # Simple case: just path
     sed -i.tmp -E "s/(armature-[a-z-]+)\s*=\s*\{\s*path\s*=\s*\"[^\"]+\"\s*\}/\1 = { version = \"$version\" }/g" "$file"
-    
+
     # With features: path = "...", features = [...]
     sed -i.tmp -E "s/(armature-[a-z-]+)\s*=\s*\{\s*path\s*=\s*\"[^\"]+\",\s*(features\s*=\s*\[[^\]]*\])\s*\}/\1 = { version = \"$version\", \2 }/g" "$file"
-    
+
     # With optional: path = "...", optional = true
     sed -i.tmp -E "s/(armature-[a-z-]+)\s*=\s*\{\s*path\s*=\s*\"[^\"]+\",\s*(optional\s*=\s*true)\s*\}/\1 = { version = \"$version\", \2 }/g" "$file"
-    
+
     # Reverse order: features first
     sed -i.tmp -E "s/(armature-[a-z-]+)\s*=\s*\{\s*(features\s*=\s*\[[^\]]*\]),\s*path\s*=\s*\"[^\"]+\"\s*\}/\1 = { version = \"$version\", \2 }/g" "$file"
-    
+
     # Clean up temp files
     rm -f "$file.tmp"
 }
@@ -221,12 +221,12 @@ convert_path_to_version() {
 set_version() {
     local file=$1
     local version=$2
-    
+
     # If using workspace version
     if grep -q 'version.workspace\s*=\s*true' "$file"; then
         return
     fi
-    
+
     # If version = "x.y.z" exists, update it
     if grep -q '^version\s*=' "$file"; then
         sed -i.tmp -E "s/^version\s*=\s*\"[^\"]+\"/version = \"$version\"/" "$file"
@@ -239,14 +239,14 @@ prepare_crate() {
     local crate=$1
     local version=$2
     local cargo_toml="$crate/Cargo.toml"
-    
+
     if [[ ! -f "$cargo_toml" ]]; then
         log_warn "Skipping $crate: Cargo.toml not found"
         return
     fi
-    
+
     log_info "Preparing $crate..."
-    
+
     if [[ "$DRY_RUN" == "true" ]]; then
         log_info "[DRY RUN] Would convert path deps to version = \"$version\""
         # Show what would change
@@ -262,22 +262,22 @@ prepare_crate() {
 prepare_all() {
     log_info "Preparing workspace for publishing version $VERSION..."
     echo ""
-    
+
     # Create backup directory
     if [[ "$DRY_RUN" != "true" ]]; then
         mkdir -p "$BACKUP_DIR"
         backup_file "Cargo.toml"
     fi
-    
+
     local members
     members=$(get_workspace_members)
     local prepared=0
-    
+
     for crate in $members; do
         prepare_crate "$crate" "$VERSION"
         ((prepared++))
     done
-    
+
     echo ""
     if [[ "$DRY_RUN" == "true" ]]; then
         log_info "Dry run complete. $prepared crates would be prepared."

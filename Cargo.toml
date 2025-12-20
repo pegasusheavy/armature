@@ -46,6 +46,7 @@ members = [
     "armature-cloudrun",
     "armature-azure-functions",
     "armature-ferron",
+    "armature-opensearch",
 ]
 exclude = [
     "templates/*",
