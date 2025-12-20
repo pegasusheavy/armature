@@ -58,6 +58,7 @@ Only features that are **not yet completed**.
 | ✅ Worker Load Balancing | Round-robin, least-connections, weighted, power-of-two | `armature-core/src/load_balancer.rs` |
 | ✅ Async Runtime Optimization | Task spawning control, LocalSet, work-stealing tuning | `armature-core/src/runtime_config.rs` |
 | ✅ Tower/HTTP Crate Compatibility | Tower Service, http crate types, Hyper 1.0 adapter | `armature-core/src/tower_compat.rs` |
+| ✅ Memory Optimizations | SmallVec headers, CompactString paths, object pools | `armature-core/src/memory_opt.rs` |
 
 ---
 
@@ -125,10 +126,10 @@ Goal: Achieve comparable performance to Axum on standard benchmarks (TechEmpower
 | Priority | Feature | Description | Module |
 |----------|---------|-------------|--------|
 | ✅ | Arena Allocator for Requests | Per-request arena to batch deallocations (~6x faster) | `armature-core/src/arena.rs` |
-| 🟠 | `SmallVec` for Headers | Use `SmallVec<[_; 16]>` for typical header counts | `armature-core` |
-| 🟠 | `CompactString` for Paths | Use `compact_str` for short route paths | `armature-core/routing.rs` |
-| 🟠 | Pre-sized Response Buffers | Avoid reallocations during response building | `armature-core/response.rs` |
-| 🟡 | Object Pool for Requests | Reuse request/response objects across connections | `armature-core` |
+| ✅ | `SmallVec` for Headers | Use `SmallVec<[_; 16]>` for typical header counts | `armature-core/src/memory_opt.rs` |
+| ✅ | `CompactString` for Paths | Use `compact_str` for short route paths | `armature-core/src/memory_opt.rs` |
+| ✅ | Pre-sized Response Buffers | Avoid reallocations during response building | `armature-core/src/memory_opt.rs` |
+| ✅ | Object Pool for Requests | Reuse request/response objects across connections | `armature-core/src/memory_opt.rs` |
 
 ### Hyper Integration (Axum is thin layer over Hyper)
 
@@ -373,7 +374,7 @@ Goal: Match Actix-web's TechEmpower-leading performance through low-level optimi
 | ↳ Actix Benchmarks | 1 | 🟡 |
 | Internationalization | 4 | 🟠/🟡 |
 | **Total Remaining** | **79** | |
-| **Recently Completed** | **53** | ✅ |
+| **Recently Completed** | **57** | ✅ |
 
 ### Performance Target
 
