@@ -151,7 +151,7 @@ impl OpenSearchClient {
             .await?;
 
         let status = response.status_code();
-        
+
         if status == opensearch::http::StatusCode::NOT_FOUND {
             return Ok(None);
         }
@@ -194,7 +194,7 @@ impl OpenSearchClient {
             .await?;
 
         let status = response.status_code();
-        
+
         if status == opensearch::http::StatusCode::NOT_FOUND {
             return Err(OpenSearchError::DocumentNotFound {
                 index: index.to_string(),
@@ -232,7 +232,7 @@ impl OpenSearchClient {
             .await?;
 
         let status = response.status_code();
-        
+
         if status == opensearch::http::StatusCode::NOT_FOUND {
             return Err(OpenSearchError::DocumentNotFound {
                 index: index.to_string(),
@@ -265,7 +265,7 @@ impl OpenSearchClient {
             .await?;
 
         let status = response.status_code();
-        
+
         if status == opensearch::http::StatusCode::NOT_FOUND {
             return Ok(false);
         }

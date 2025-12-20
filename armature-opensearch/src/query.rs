@@ -143,7 +143,7 @@ impl MatchQuery {
 
     fn to_json(&self) -> Value {
         let mut query = json!({ "query": self.query });
-        
+
         if let Some(op) = &self.operator {
             query["operator"] = json!(op);
         }
@@ -263,7 +263,7 @@ impl RangeQuery {
 
     fn to_json(&self) -> Value {
         let mut range = serde_json::Map::new();
-        
+
         if let Some(v) = &self.gt { range.insert("gt".to_string(), v.clone()); }
         if let Some(v) = &self.gte { range.insert("gte".to_string(), v.clone()); }
         if let Some(v) = &self.lt { range.insert("lt".to_string(), v.clone()); }
@@ -401,7 +401,7 @@ impl QueryStringQuery {
 
     fn to_json(&self) -> Value {
         let mut qs = json!({ "query": self.query });
-        
+
         if let Some(df) = &self.default_field {
             qs["default_field"] = json!(df);
         }

@@ -323,7 +323,7 @@ impl SearchBuilder {
     /// Count matching documents.
     pub async fn count(self) -> Result<u64> {
         let indices: Vec<&str> = self.indices.iter().map(|s| s.as_str()).collect();
-        
+
         let body = if let Some(query) = &self.query {
             json!({ "query": query })
         } else {
