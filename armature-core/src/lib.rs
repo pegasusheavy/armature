@@ -134,6 +134,7 @@ pub mod body_parser;
 pub mod buffer_pool;
 pub mod cache_local;
 pub mod connection;
+pub mod connection_tuning;
 pub mod container;
 pub mod cow_state;
 pub mod epoll_tuning;
