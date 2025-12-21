@@ -181,7 +181,7 @@ impl DatabaseConfig {
     /// Convert to SeaORM ConnectOptions.
     pub fn to_connect_options(&self) -> sea_orm::ConnectOptions {
         let mut options = sea_orm::ConnectOptions::new(&self.database_url);
-        
+
         options
             .max_connections(self.max_connections)
             .min_connections(self.min_connections)

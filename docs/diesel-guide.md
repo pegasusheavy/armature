@@ -104,15 +104,15 @@ let config = DieselConfig::new("postgres://localhost/mydb")
     // Pool settings
     .pool_size(20)
     .min_idle(5)
-    
+
     // Timeouts
     .connect_timeout(Duration::from_secs(30))
     .max_lifetime(Duration::from_secs(30 * 60))
     .idle_timeout(Duration::from_secs(10 * 60))
-    
+
     // Connection testing
     .test_on_checkout(true)
-    
+
     // PostgreSQL settings
     .application_name("my-app")
     .ssl_mode("require");
