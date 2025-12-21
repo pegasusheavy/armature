@@ -129,14 +129,14 @@ done
 
 ### Seed Corpus
 
-Create initial test cases in `fuzz/corpus/<target>/`:
+Create initial test cases in `armature-fuzz/corpus/<target>/`:
 
 ```bash
-mkdir -p fuzz/corpus/fuzz_http_request
+mkdir -p armature-fuzz/corpus/fuzz_http_request
 
 # Add seed files
-echo 'GET /api/users HTTP/1.1' > fuzz/corpus/fuzz_http_request/simple_get
-echo 'POST /api/users HTTP/1.1\nContent-Type: application/json\n\n{"name":"test"}' > fuzz/corpus/fuzz_http_request/post_json
+echo 'GET /api/users HTTP/1.1' > armature-fuzz/corpus/fuzz_http_request/simple_get
+echo 'POST /api/users HTTP/1.1\nContent-Type: application/json\n\n{"name":"test"}' > armature-fuzz/corpus/fuzz_http_request/post_json
 ```
 
 ### Minimizing Corpus
@@ -152,7 +152,7 @@ cargo +nightly fuzz cmin fuzz_http_request
 The corpus directory can be committed to version control:
 
 ```bash
-git add fuzz/corpus/
+git add armature-fuzz/corpus/
 git commit -m "Add fuzz corpus"
 ```
 
@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fuzz-crashes
-          path: fuzz/artifacts/
+          path: armature-fuzz/artifacts/
 ```
 
 ### OSS-Fuzz Integration
@@ -377,7 +377,7 @@ cargo +nightly fuzz cmin fuzz_http_request
 ### Directory Structure
 
 ```
-fuzz/
+armature-fuzz/
 ├── Cargo.toml           # Fuzz crate manifest
 ├── fuzz_targets/        # Fuzz target source files
 │   ├── http_request.rs
