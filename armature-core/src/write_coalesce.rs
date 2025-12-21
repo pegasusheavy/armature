@@ -51,7 +51,7 @@
 //! socket.write_all(&data).await?;
 //! ```
 
-use bytes::{Bytes, BytesMut, BufMut};
+use bytes::{Bytes, BytesMut};
 use std::io::IoSlice;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};

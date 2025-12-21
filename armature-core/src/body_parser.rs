@@ -38,7 +38,7 @@
 //! Hyper Body → Pooled Buffer (reused) → Parse directly
 //! ```
 
-use crate::buffer_pool::{acquire_buffer_for_bytes, BufferSize, PooledBuffer};
+use crate::buffer_pool::acquire_buffer_for_bytes;
 use crate::Error;
 use bytes::{BufMut, Bytes, BytesMut};
 use http_body_util::BodyExt;
@@ -525,6 +525,7 @@ impl StreamingBody {
 /// avoiding unnecessary I/O.
 pub struct LazyBody {
     state: LazyBodyState,
+    #[allow(dead_code)] // Reserved for future streaming configuration
     config: StreamingConfig,
 }
 

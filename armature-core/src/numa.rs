@@ -56,7 +56,7 @@
 //!
 //! Expected throughput improvement: 5-15% on multi-socket systems.
 
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
 
 // ============================================================================
@@ -546,7 +546,8 @@ impl NumaAllocator {
         use std::alloc::{dealloc, Layout};
 
         if let Ok(layout) = Layout::from_size_align(size, 64) {
-            dealloc(ptr, layout);
+            // SAFETY: caller guarantees ptr was allocated with this size/alignment
+            unsafe { dealloc(ptr, layout) };
             self.stats.record_deallocation(size);
         }
     }

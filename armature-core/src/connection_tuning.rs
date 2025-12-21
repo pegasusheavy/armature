@@ -17,7 +17,6 @@ use std::collections::HashMap;
 use std::io;
 use std::net::TcpStream;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[cfg(unix)]

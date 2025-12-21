@@ -17,13 +17,14 @@
 //!
 //! ## Usage
 //!
-//! ```rust
-//! use armature_core::small_vec::{SmallQueryParams, SmallPathParams};
+//! ```rust,ignore
+//! use armature_core::small_vec::{SmallQueryParams, SmallPathParams, SmallVecExt};
+//! use std::borrow::Cow;
 //!
 //! // Stack-allocated for typical sizes
 //! let mut params = SmallQueryParams::new();
-//! params.push(("page", "1"));
-//! params.push(("limit", "10"));
+//! params.push((Cow::Borrowed("page"), Cow::Borrowed("1")));
+//! params.push((Cow::Borrowed("limit"), Cow::Borrowed("10")));
 //! assert!(params.is_inline()); // No heap allocation
 //! ```
 

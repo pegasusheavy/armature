@@ -19,8 +19,8 @@ use bytes::{Bytes, BytesMut};
 use compact_str::CompactString;
 use smallvec::SmallVec;
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 
 // ============================================================================
 // SmallVec Headers

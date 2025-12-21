@@ -135,8 +135,8 @@ pub fn compare_formats<T: Serialize>(value: &T) -> Result<FormatComparison> {
     let toon_chars = toon_string.len();
 
     // Rough token estimate (GPT models use ~4 chars per token on average)
-    let json_tokens_estimate = (json_chars + 3) / 4;
-    let toon_tokens_estimate = (toon_chars + 3) / 4;
+    let json_tokens_estimate = json_chars.div_ceil(4);
+    let toon_tokens_estimate = toon_chars.div_ceil(4);
 
     let reduction_percent = if json_chars > 0 {
         ((json_chars - toon_chars) as f64 / json_chars as f64) * 100.0
@@ -170,14 +170,14 @@ impl TokenCounter {
     pub fn add<T: Serialize>(&mut self, value: &T) -> Result<()> {
         let toon = to_string(value)?;
         self.total_chars += toon.len();
-        self.total_tokens_estimate += (toon.len() + 3) / 4;
+        self.total_tokens_estimate += toon.len().div_ceil(4);
         Ok(())
     }
 
     /// Add raw TOON string to the counter.
     pub fn add_raw(&mut self, toon: &str) {
         self.total_chars += toon.len();
-        self.total_tokens_estimate += (toon.len() + 3) / 4;
+        self.total_tokens_estimate += toon.len().div_ceil(4);
     }
 
     /// Get total character count.

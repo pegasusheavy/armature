@@ -306,7 +306,7 @@ impl KeepaliveConfig {
 /// Apply socket options based on configuration.
 #[cfg(target_os = "linux")]
 pub fn configure_socket(fd: std::os::unix::io::RawFd, config: &EpollConfig) -> std::io::Result<()> {
-    use std::io::{Error, ErrorKind};
+    use std::io::Error;
 
     // Helper for setsockopt
     fn setsockopt<T>(fd: i32, level: i32, name: i32, value: &T) -> std::io::Result<()> {

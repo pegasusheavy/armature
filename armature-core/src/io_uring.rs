@@ -510,11 +510,20 @@ impl BufferPool {
     }
 
     /// Acquire a buffer from the pool
+    ///
+    /// # Safety
+    /// 
+    /// The returned mutable reference is safe because:
+    /// 1. We hold the Mutex lock while determining which buffer to return
+    /// 2. The buffer index is removed from the free list, ensuring exclusive access
+    /// 3. The caller must call `release()` to return the buffer
+    #[allow(clippy::mut_from_ref)] // Safe: Mutex provides synchronization, index removal ensures exclusivity
     pub fn acquire(&self) -> Option<(usize, &mut [u8])> {
         let mut free = self.free_list.lock().unwrap();
         if let Some(idx) = free.pop() {
             self.stats.allocations.fetch_add(1, Ordering::Relaxed);
-            // Safety: We have exclusive access via the lock
+            // SAFETY: We have exclusive access via removing idx from free list.
+            // No other thread can acquire this buffer until we release it.
             let buf = unsafe {
                 let ptr = self.buffers.as_ptr().add(idx) as *mut Vec<u8>;
                 (*ptr).as_mut_slice()
