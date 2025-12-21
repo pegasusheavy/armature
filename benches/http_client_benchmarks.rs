@@ -3,12 +3,12 @@
 
 //! HTTP Client benchmarks for armature-http-client
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 use std::time::Duration;
 
 use armature_http_client::{
-    BackoffStrategy, CircuitBreaker, CircuitBreakerConfig, HttpClientConfig, RetryConfig,
-};
+    BackoffStrategy, CircuitBreaker, CircuitBreakerConfig, HttpClientConfig, RetryConfig};
 
 fn retry_config_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("retry_config");
@@ -50,13 +50,11 @@ fn backoff_calculation_benchmark(c: &mut Criterion) {
     let exponential = BackoffStrategy::Exponential {
         initial: Duration::from_millis(100),
         max: Duration::from_secs(30),
-        multiplier: 2.0,
-    };
+        multiplier: 2.0};
 
     let linear = BackoffStrategy::Linear {
         delay: Duration::from_millis(100),
-        max: Duration::from_secs(30),
-    };
+        max: Duration::from_secs(30)};
 
     let constant = BackoffStrategy::Constant(Duration::from_millis(500));
 

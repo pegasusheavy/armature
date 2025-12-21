@@ -171,7 +171,7 @@ mod tests {
 
         // Save event
         store
-            .save_events("agg-1", &[event.clone()], None)
+            .save_events("agg-1", std::slice::from_ref(&event), None)
             .await
             .unwrap();
 
@@ -194,7 +194,7 @@ mod tests {
 
         // Save first event
         store
-            .save_events("agg-1", &[event.clone()], Some(0))
+            .save_events("agg-1", std::slice::from_ref(&event), Some(0))
             .await
             .unwrap();
 

@@ -7,7 +7,8 @@
 //! Benchmarks for circuit breakers, retry strategies, bulkheads, timeouts, and fallbacks.
 
 use armature_core::resilience::*;
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -102,8 +103,7 @@ fn bench_bulkhead(c: &mut Criterion) {
                 name: "test".to_string(),
                 max_concurrent: 10,
                 max_wait: Duration::from_secs(5),
-                queue_size: None,
-            })
+                queue_size: None})
         })
     });
 
@@ -112,8 +112,7 @@ fn bench_bulkhead(c: &mut Criterion) {
         name: "test".to_string(),
         max_concurrent: 100,
         max_wait: Duration::from_secs(5),
-        queue_size: None,
-    });
+        queue_size: None});
 
     group.bench_function("stats", |b| b.iter(|| black_box(bulkhead.stats())));
 
@@ -123,8 +122,7 @@ fn bench_bulkhead(c: &mut Criterion) {
             name: "test".to_string(),
             max_concurrent: concurrency,
             max_wait: Duration::from_secs(5),
-            queue_size: None,
-        });
+            queue_size: None});
 
         group.bench_with_input(
             BenchmarkId::new("call_success", concurrency),
@@ -235,8 +233,7 @@ fn bench_combined_patterns(c: &mut Criterion) {
             name: "test".to_string(),
             max_concurrent: 100,
             max_wait: Duration::from_secs(5),
-            queue_size: None,
-        });
+            queue_size: None});
         let timeout = Timeout::with_duration(Duration::from_secs(30));
 
         b.to_async(&runtime).iter(|| async {

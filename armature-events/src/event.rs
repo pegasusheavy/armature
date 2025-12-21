@@ -185,12 +185,14 @@ mod tests {
     use super::*;
 
     #[derive(Debug, Clone)]
+    #[allow(dead_code)]
     struct TestEvent {
         metadata: EventMetadata,
         data: String,
     }
 
     impl TestEvent {
+        #[allow(dead_code)]
         fn new(data: String) -> Self {
             Self {
                 metadata: EventMetadata::new("test_event"),

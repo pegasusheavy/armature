@@ -5,7 +5,8 @@
 
 //! Storage benchmarks for armature-storage
 
-use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use std::hint::black_box;
 use std::sync::Arc;
 
 use armature_storage::{FileInfo, FileValidator, LocalStorage, LocalStorageConfig, UploadedFile};

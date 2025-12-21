@@ -2,7 +2,8 @@
 
 #![allow(deprecated)]
 
-use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use std::hint::black_box;
 use std::time::Duration;
 
 use armature_ratelimit::{Algorithm, RateLimiter};
@@ -18,8 +19,7 @@ fn token_bucket_benchmark(c: &mut Criterion) {
         RateLimiter::builder()
             .algorithm(Algorithm::TokenBucket {
                 capacity: 1_000_000,
-                refill_rate: 100_000.0,
-            })
+                refill_rate: 100_000.0})
             .build()
             .await
             .unwrap()
@@ -45,8 +45,7 @@ fn fixed_window_benchmark(c: &mut Criterion) {
         RateLimiter::builder()
             .algorithm(Algorithm::FixedWindow {
                 max_requests: 1_000_000,
-                window: Duration::from_secs(3600),
-            })
+                window: Duration::from_secs(3600)})
             .build()
             .await
             .unwrap()
@@ -72,8 +71,7 @@ fn sliding_window_benchmark(c: &mut Criterion) {
         RateLimiter::builder()
             .algorithm(Algorithm::SlidingWindowLog {
                 max_requests: 1_000_000,
-                window: Duration::from_secs(3600),
-            })
+                window: Duration::from_secs(3600)})
             .build()
             .await
             .unwrap()
@@ -100,22 +98,19 @@ fn algorithm_comparison(c: &mut Criterion) {
             "token_bucket",
             Algorithm::TokenBucket {
                 capacity: 1_000_000,
-                refill_rate: 100_000.0,
-            },
+                refill_rate: 100_000.0},
         ),
         (
             "fixed_window",
             Algorithm::FixedWindow {
                 max_requests: 1_000_000,
-                window: Duration::from_secs(3600),
-            },
+                window: Duration::from_secs(3600)},
         ),
         (
             "sliding_window",
             Algorithm::SlidingWindowLog {
                 max_requests: 1_000_000,
-                window: Duration::from_secs(3600),
-            },
+                window: Duration::from_secs(3600)},
         ),
     ];
 
@@ -148,8 +143,7 @@ fn multi_key_benchmark(c: &mut Criterion) {
         RateLimiter::builder()
             .algorithm(Algorithm::TokenBucket {
                 capacity: 1_000_000,
-                refill_rate: 100_000.0,
-            })
+                refill_rate: 100_000.0})
             .build()
             .await
             .unwrap()
@@ -185,8 +179,7 @@ fn reset_benchmark(c: &mut Criterion) {
         RateLimiter::builder()
             .algorithm(Algorithm::TokenBucket {
                 capacity: 100,
-                refill_rate: 10.0,
-            })
+                refill_rate: 10.0})
             .build()
             .await
             .unwrap()

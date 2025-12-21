@@ -264,14 +264,12 @@ async fn test_metrics_handler() {
 
 #[test]
 fn test_request_metrics_middleware_new() {
-    let middleware = RequestMetricsMiddleware::new();
+    let _middleware = RequestMetricsMiddleware::new();
     // Just ensure it can be created
-    drop(middleware);
 }
 
 #[test]
 fn test_request_metrics_middleware_without_path() {
-    let middleware = RequestMetricsMiddleware::without_path();
+    let _middleware = RequestMetricsMiddleware::without_path();
     // Just ensure it can be created
-    drop(middleware);
 }
