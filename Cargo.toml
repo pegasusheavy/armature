@@ -49,6 +49,8 @@ members = [
     "armature-opensearch",
     "armature-toon",
     "armature-i18n",
+    "armature-diesel",
+    "armature-seaorm",
 ]
 exclude = [
     "templates/*",

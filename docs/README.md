@@ -119,6 +119,13 @@ armature dev
 | [Error Correlation](error-correlation-guide.md) | Request ID tracking |
 | [Audit Logging](audit-guide.md) | Who did what, when |
 
+### Database
+
+| Guide | Description |
+|-------|-------------|
+| [Diesel Integration](diesel-guide.md) | Async Diesel with connection pooling |
+| [SeaORM Integration](seaorm-guide.md) | SeaORM with active record pattern |
+
 ### Data & Search
 
 | Guide | Description |
