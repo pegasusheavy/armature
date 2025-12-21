@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use armature_macro::*;
 use std::sync::Arc;
 use std::time::Duration;
@@ -66,7 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/static/*".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let server = basic_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/static");
@@ -74,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .serve(&HttpRequest::new("GET".to_string(), path.to_string()))
                     .await
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -89,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/app/*".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let server = spa_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/app");
@@ -98,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 spa_req.headers = req.headers.clone();
                 server.serve(&spa_req).await
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -115,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/cdn/*".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let server = cdn_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/cdn");
@@ -123,7 +124,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 cdn_req.headers = req.headers.clone();
                 server.serve(&cdn_req).await
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -138,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/dev/*".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let server = dev_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/dev");
@@ -146,7 +147,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .serve(&HttpRequest::new("GET".to_string(), path.to_string()))
                     .await
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -170,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/custom/*".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let server = custom_server.clone();
             Box::pin(async move {
                 let path = req.path.trim_start_matches("/custom");
@@ -178,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 custom_req.headers = req.headers.clone();
                 server.serve(&custom_req).await
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -186,14 +187,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/data".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async {
                 HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "This is an API endpoint, not a static asset",
                     "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
                 }))
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -201,7 +202,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async {
                 let html = r#"
 <!DOCTYPE html>
@@ -322,7 +323,7 @@ curl -H "Accept-Encoding: gzip" http://localhost:3000/static/script.js --output 
                     .with_header("Content-Type".to_string(), "text/html".to_string())
                     .with_body(html.as_bytes().to_vec()))
             })
-        }),
+        })),
         constraints: None,
     });
 

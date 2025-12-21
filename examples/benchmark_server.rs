@@ -30,6 +30,7 @@
 #![allow(clippy::needless_question_mark)]
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::Level;
@@ -149,13 +150,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async {
                 Ok(HttpResponse::ok()
                     .with_header("Content-Type".to_string(), "text/plain".to_string())
                     .with_body(b"Hello, World!".to_vec()))
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -163,13 +164,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/json".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async {
                 Ok(HttpResponse::ok().with_json(&JsonResponse {
                     message: "Hello, World!",
                 })?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -177,7 +178,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let id = req
                     .path_params
@@ -191,7 +192,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     email: format!("user{}@example.com", id),
                 })?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -199,7 +200,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/api/users".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let payload: CreateUserRequest = req.json()?;
 
@@ -212,7 +213,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     created: true,
                 })?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -220,14 +221,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/health".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "status": "healthy",
                     "framework": "armature"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -235,7 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/data".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let size = req
                     .query_params
@@ -265,7 +266,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     },
                 })?)
             })
-        }),
+        })),
         constraints: None,
     });
 

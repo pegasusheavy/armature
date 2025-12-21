@@ -1,6 +1,7 @@
 #![allow(deprecated)]
 #![allow(clippy::needless_question_mark)]
 
+use armature_core::handler::from_legacy_handler;
 use armature_core::*;
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::collections::HashMap;
@@ -92,7 +93,9 @@ fn bench_routing(c: &mut Criterion) {
     group.bench_function("route_creation", |b| {
         use std::sync::Arc;
         b.iter(|| {
-            let handler: HandlerFn = Arc::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) }));
+            let handler = from_legacy_handler(Arc::new(|_req: HttpRequest| {
+                Box::pin(async { Ok(HttpResponse::ok()) })
+            }));
 
             let route = Route {
                 method: HttpMethod::GET,

@@ -26,6 +26,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -63,7 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v1.apply_prefix("/users/:id"),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let id = req.path_params.get("id").unwrap();
 
@@ -74,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "id_type": "integer"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(v1_user_constraints),
     });
     info!("  ✓ GET {} (id: integer)", v1.apply_prefix("/users/:id"));
@@ -86,7 +87,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v1.apply_prefix("/posts/:page/comments"),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let page = req.path_params.get("page").unwrap();
 
@@ -100,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "page: 1-1000"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(v1_posts_constraints),
     });
     info!(
@@ -118,7 +119,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v2.apply_prefix("/users/:uuid"),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let uuid = req.path_params.get("uuid").unwrap();
 
@@ -129,7 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "id_type": "uuid"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(v2_user_constraints),
     });
     info!("  ✓ GET {} (uuid: UUID)", v2.apply_prefix("/users/:uuid"));
@@ -148,7 +149,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v2.apply_prefix("/products/:status"),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let status = req.path_params.get("status").unwrap();
 
@@ -162,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "status: active|inactive|pending|archived"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(v2_products_constraints),
     });
     info!(
@@ -177,7 +178,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v2.apply_prefix("/search/:query"),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let query = req.path_params.get("query").unwrap();
 
@@ -191,7 +192,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "query: 3-50 chars"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(v2_search_constraints),
     });
     info!(
@@ -203,7 +204,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Route Groups + Constraints API",
@@ -226,7 +227,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

@@ -8,6 +8,7 @@
 //! and inject it as a service!
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use armature_macro::*;
 use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};
@@ -325,10 +326,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let ctrl = home_ctrl.clone();
             Box::pin(async move { ctrl.index(req).await })
-        }),
+        })),
         constraints: None,
     });
 
@@ -340,10 +341,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let ctrl = users_ctrl.clone();
             Box::pin(async move { ctrl.list(req).await })
-        }),
+        })),
         constraints: None,
     });
 
@@ -355,10 +356,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let ctrl = user_ctrl.clone();
             Box::pin(async move { ctrl.show(req).await })
-        }),
+        })),
         constraints: None,
     });
 

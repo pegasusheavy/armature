@@ -27,6 +27,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -46,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let id = req.path_params.get("id").unwrap();
                 info!("✓ Valid user ID: {}", id);
@@ -57,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "integer"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(constraints),
     });
 
@@ -68,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/resources/:uuid".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let uuid = req.path_params.get("uuid").unwrap();
                 info!("✓ Valid UUID: {}", uuid);
@@ -79,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "uuid"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(uuid_constraints),
     });
 
@@ -90,7 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:name/posts".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let name = req.path_params.get("name").unwrap();
                 info!("✓ Valid username: {}", name);
@@ -104,7 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "alphabetic"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(alpha_constraints),
     });
 
@@ -115,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/posts/:page/comments".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let page = req.path_params.get("page").unwrap();
                 info!("✓ Valid page number: {}", page);
@@ -126,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "range (>= 1)"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(range_constraints),
     });
 
@@ -145,7 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/products/:status".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let status = req.path_params.get("status").unwrap();
                 info!("✓ Valid status: {}", status);
@@ -159,7 +160,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "enum (active, inactive, pending, archived)"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(enum_constraints),
     });
 
@@ -172,7 +173,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/:version/users/:id".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let version = req.path_params.get("version").unwrap();
                 let id = req.path_params.get("id").unwrap();
@@ -185,7 +186,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraints": "version: alphanumeric, id: integer"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(multi_constraints),
     });
 
@@ -196,7 +197,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/notify/:email".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let email = req.path_params.get("email").unwrap();
                 info!("✓ Valid email: {}", email);
@@ -207,7 +208,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "email format"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(email_constraints),
     });
 
@@ -219,7 +220,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/codes/:code".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let code = req.path_params.get("code").unwrap();
                 info!("✓ Valid code: {}", code);
@@ -230,7 +231,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "length (3-10 chars)"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(length_constraints),
     });
 
@@ -241,7 +242,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/shipping/:zip".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 let zip = req.path_params.get("zip").unwrap();
                 info!("✓ Valid ZIP code: {}", zip);
@@ -253,7 +254,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "constraint": "custom (5-digit ZIP)"
                 }))?)
             })
-        }),
+        })),
         constraints: Some(zip_constraints),
     });
 
@@ -261,7 +262,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Route Constraints Example API",
@@ -285,7 +286,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

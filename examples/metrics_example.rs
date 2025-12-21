@@ -21,6 +21,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use armature_metrics::*;
 use std::sync::Arc;
 
@@ -52,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let page_views = page_views.clone();
             Box::pin(async move {
                 // Increment page views counter
@@ -68,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -76,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/users".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let active_users = active_users.clone();
             let api_latency = api_latency.clone();
 
@@ -104,7 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ]
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -112,7 +113,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/posts".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 // Simulate some work
                 tokio::time::sleep(tokio::time::Duration::from_millis(30)).await;
@@ -124,7 +125,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ]
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

@@ -14,6 +14,7 @@
 
 use armature_audit::*;
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -94,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/api/payment".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let logger = audit_for_payment.clone();
             Box::pin(async move {
                 let body_str = String::from_utf8_lossy(&req.body);
@@ -122,7 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "transaction_id": "txn_abc123"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -130,7 +131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/user/:id/data".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let logger = audit_for_gdpr.clone();
             Box::pin(async move {
                 let user_id = req.path_params.get("id").unwrap();
@@ -159,7 +160,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -167,7 +168,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/audit/recent".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let backend = memory_for_query.clone();
             Box::pin(async move {
                 // Query recent audit events
@@ -181,7 +182,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "events": events
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -189,7 +190,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Advanced Audit Example",
@@ -206,7 +207,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

@@ -13,6 +13,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use armature_metrics::*;
 use std::sync::Arc;
 
@@ -70,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/users".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let db_connections = db_connections_users.clone();
             let db_query_duration = db_query_duration_users.clone();
 
@@ -104,7 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ]
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -117,7 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/api/orders".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let orders_total = orders_total_clone.clone();
             let revenue_total = revenue_total_clone.clone();
             let http_errors = http_errors_clone.clone();
@@ -152,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     Err(Error::BadRequest("Payment failed".to_string()))
                 }
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -163,7 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/cart".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let cart_size = cart_size_clone.clone();
 
             Box::pin(async move {
@@ -178,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "segment": segment
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -194,7 +195,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Advanced Metrics Example",
@@ -214,7 +215,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

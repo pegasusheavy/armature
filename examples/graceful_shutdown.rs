@@ -24,6 +24,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -92,7 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/fast".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let tracker = tracker_fast.clone();
             Box::pin(async move {
                 // Track this connection
@@ -108,7 +109,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "active_connections": tracker.active_count()
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -117,7 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/slow".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let tracker = tracker_slow.clone();
             Box::pin(async move {
                 // Track this connection
@@ -139,7 +140,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "duration": "5s"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -149,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/status".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let tracker = tracker_status.clone();
             let shutdown = shutdown_status.clone();
             Box::pin(async move {
@@ -159,7 +160,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "shutting_down": shutdown.is_shutting_down()
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -167,7 +168,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Graceful Shutdown Example",
@@ -179,7 +180,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "instructions": "Press Ctrl+C to trigger graceful shutdown"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

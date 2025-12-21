@@ -22,6 +22,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -94,14 +95,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: public.apply_prefix("/health"),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "status": "healthy",
                     "group": "public"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -109,21 +110,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v1.apply_prefix("/users"),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "users": ["alice", "bob", "charlie"],
                     "version": "v1"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
     router.add_route(Route {
         method: HttpMethod::GET,
         path: v1.apply_prefix("/posts"),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "posts": [
@@ -133,7 +134,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "version": "v1"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -141,7 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: admin.apply_prefix("/users"),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "users": [
@@ -153,14 +154,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "version": "v1"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
     router.add_route(Route {
         method: HttpMethod::GET,
         path: admin.apply_prefix("/stats"),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "total_users": 3,
@@ -169,7 +170,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "group": "admin"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
