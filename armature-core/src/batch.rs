@@ -65,7 +65,7 @@ pub struct BatchConfig {
 impl Default for BatchConfig {
     fn default() -> Self {
         Self {
-            buffer_size: 65536,        // 64KB
+            buffer_size: 65536, // 64KB
             max_requests: 32,
             parse_timeout_ms: 10,      // 10ms max wait
             min_batch_size: 1,         // Process at least 1
@@ -85,7 +85,7 @@ impl BatchConfig {
     /// High-throughput configuration for batch processing
     pub fn high_throughput() -> Self {
         Self {
-            buffer_size: 131072,       // 128KB
+            buffer_size: 131072, // 128KB
             max_requests: 64,
             parse_timeout_ms: 20,
             min_batch_size: 4,
@@ -98,11 +98,11 @@ impl BatchConfig {
     /// Low-latency configuration (minimal batching)
     pub fn low_latency() -> Self {
         Self {
-            buffer_size: 16384,        // 16KB
+            buffer_size: 16384, // 16KB
             max_requests: 8,
             parse_timeout_ms: 1,
             min_batch_size: 1,
-            max_request_size: 524288,  // 512KB
+            max_request_size: 524288, // 512KB
             max_headers: 64,
             adaptive_batching: false,
         }
@@ -111,11 +111,11 @@ impl BatchConfig {
     /// Memory-efficient configuration
     pub fn memory_efficient() -> Self {
         Self {
-            buffer_size: 32768,        // 32KB
+            buffer_size: 32768, // 32KB
             max_requests: 16,
             parse_timeout_ms: 5,
             min_batch_size: 2,
-            max_request_size: 524288,  // 512KB
+            max_request_size: 524288, // 512KB
             max_headers: 50,
             adaptive_batching: true,
         }
@@ -250,10 +250,7 @@ impl OwnedParsedRequest {
 
     /// Convert to HttpRequest
     pub fn to_http_request(&self) -> crate::HttpRequest {
-        let mut req = crate::HttpRequest::new(
-            self.method.clone(),
-            self.path.clone(),
-        );
+        let mut req = crate::HttpRequest::new(self.method.clone(), self.path.clone());
 
         for (name, value) in &self.headers {
             if let Ok(v) = std::str::from_utf8(value) {
@@ -320,10 +317,7 @@ impl<'a> ParsedRequest<'a> {
 
     /// Convert to owned HttpRequest
     pub fn to_http_request(&self) -> crate::HttpRequest {
-        let mut req = crate::HttpRequest::new(
-            self.method.to_string(),
-            self.path.to_string(),
-        );
+        let mut req = crate::HttpRequest::new(self.method.to_string(), self.path.to_string());
 
         for (name, value) in &self.headers {
             if let Ok(v) = std::str::from_utf8(value) {
@@ -466,12 +460,12 @@ impl BatchParser {
 
         match req.parse(buffer) {
             Ok(httparse::Status::Complete(header_len)) => {
-                let method = req.method.ok_or_else(|| {
-                    BatchParseError::InvalidSyntax("Missing method".to_string())
-                })?;
-                let path = req.path.ok_or_else(|| {
-                    BatchParseError::InvalidSyntax("Missing path".to_string())
-                })?;
+                let method = req
+                    .method
+                    .ok_or_else(|| BatchParseError::InvalidSyntax("Missing method".to_string()))?;
+                let path = req
+                    .path
+                    .ok_or_else(|| BatchParseError::InvalidSyntax("Missing path".to_string()))?;
                 let version = match req.version {
                     Some(0) => "1.0",
                     Some(1) => "1.1",
@@ -783,9 +777,11 @@ impl BatchReader {
                 method: r.method.to_string(),
                 path: r.path.to_string(),
                 version: r.version.to_string(),
-                headers: r.headers.iter().map(|(k, v)| {
-                    (k.to_string(), v.to_vec())
-                }).collect(),
+                headers: r
+                    .headers
+                    .iter()
+                    .map(|(k, v)| (k.to_string(), v.to_vec()))
+                    .collect(),
                 body: Bytes::copy_from_slice(r.body),
                 bytes_consumed: r.bytes_consumed,
             })
@@ -959,8 +955,10 @@ mod tests {
         let http_req = result.requests[0].to_http_request();
         assert_eq!(http_req.method, "POST");
         assert_eq!(http_req.path, "/api/data");
-        assert_eq!(http_req.headers.get("Content-Type"), Some(&"application/json".to_string()));
+        assert_eq!(
+            http_req.headers.get("Content-Type"),
+            Some(&"application/json".to_string())
+        );
         assert_eq!(http_req.body_ref(), b"{\"key\":\"val\"}");
     }
 }
-

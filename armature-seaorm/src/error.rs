@@ -50,4 +50,3 @@ impl From<serde_json::Error> for SeaOrmError {
         SeaOrmError::Serialization(err.to_string())
     }
 }
-

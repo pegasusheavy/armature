@@ -5,8 +5,8 @@
 // - Inline dispatch: Hot paths use #[inline(always)]
 // - Zero-cost abstractions: Minimal runtime overhead
 
-use crate::logging::{debug, trace};
 use crate::handler::{BoxedHandler, IntoHandler};
+use crate::logging::{debug, trace};
 use crate::route_constraint::RouteConstraints;
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use std::collections::HashMap;
@@ -27,9 +27,7 @@ use std::sync::Arc;
 /// let h = handler(my_async_fn);
 /// ```
 pub type HandlerFn = Arc<
-    dyn Fn(
-            HttpRequest,
-        ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+    dyn Fn(HttpRequest) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
         + Send
         + Sync,
 >;
@@ -71,11 +69,7 @@ impl Route {
 
     /// Create a route from a legacy HandlerFn for backwards compatibility.
     #[inline]
-    pub fn from_legacy(
-        method: HttpMethod,
-        path: impl Into<String>,
-        handler: HandlerFn,
-    ) -> Self {
+    pub fn from_legacy(method: HttpMethod, path: impl Into<String>, handler: HandlerFn) -> Self {
         Self {
             method,
             path: path.into(),
@@ -222,7 +216,10 @@ impl Router {
             }
 
             if let Some(params) = match_path(&route.path, path) {
-                debug!("Route matched: {} {} -> {}", request.method, path, route.path);
+                debug!(
+                    "Route matched: {} {} -> {}",
+                    request.method, path, route.path
+                );
 
                 // Validate route constraints if present
                 if let Some(constraints) = &route.constraints {
@@ -411,9 +408,8 @@ mod tests {
     #[test]
     fn test_route_creation_legacy() {
         // Test legacy handler compatibility
-        let legacy_handler: HandlerFn = Arc::new(|_req| {
-            Box::pin(async move { Ok(HttpResponse::ok()) })
-        });
+        let legacy_handler: HandlerFn =
+            Arc::new(|_req| Box::pin(async move { Ok(HttpResponse::ok()) }));
         let route = Route::from_legacy(HttpMethod::GET, "/users", legacy_handler);
         assert_eq!(route.method, HttpMethod::GET);
         assert_eq!(route.path, "/users");
@@ -460,11 +456,11 @@ mod tests {
 
     #[test]
     fn test_route_with_constraints() {
-        let constraints = RouteConstraints::new()
-            .add("id", Box::new(crate::route_constraint::IntConstraint));
+        let constraints =
+            RouteConstraints::new().add("id", Box::new(crate::route_constraint::IntConstraint));
 
-        let route = Route::new(HttpMethod::GET, "/users/:id", test_handler)
-            .with_constraints(constraints);
+        let route =
+            Route::new(HttpMethod::GET, "/users/:id", test_handler).with_constraints(constraints);
 
         assert!(route.constraints.is_some());
     }

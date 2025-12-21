@@ -27,8 +27,8 @@
 //!     .service(service);
 //! ```
 
-use crate::http::{HttpRequest, HttpResponse};
 use crate::headers::HeaderMap as ArmatureHeaderMap;
+use crate::http::{HttpRequest, HttpResponse};
 use bytes::Bytes;
 use http::{HeaderMap, HeaderName, HeaderValue, Request, Response, StatusCode};
 use http_body_util::Full;
@@ -36,8 +36,8 @@ use std::collections::HashMap;
 use std::convert::Infallible;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::task::{Context, Poll};
 use tower_service::Service;
 
@@ -90,9 +90,7 @@ impl FromHttpRequest for HttpRequest {
         let query_params: HashMap<String, String> = req
             .uri()
             .query()
-            .map(|q| {
-                serde_urlencoded::from_str(q).unwrap_or_default()
-            })
+            .map(|q| serde_urlencoded::from_str(q).unwrap_or_default())
             .unwrap_or_default();
 
         // Convert headers
@@ -137,8 +135,7 @@ pub trait IntoHttpResponse {
 
 impl IntoHttpResponse for HttpResponse {
     fn into_http_response(self) -> Response<Full<Bytes>> {
-        let status = StatusCode::from_u16(self.status)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
         let mut builder = Response::builder().status(status);
 
@@ -229,11 +226,8 @@ impl ArmatureHeaderMapExt for ArmatureHeaderMap {
 // ============================================================================
 
 /// Handler function type for Tower service.
-pub type BoxedHandler = Box<
-    dyn Fn(HttpRequest) -> Pin<Box<dyn Future<Output = HttpResponse> + Send>>
-        + Send
-        + Sync,
->;
+pub type BoxedHandler =
+    Box<dyn Fn(HttpRequest) -> Pin<Box<dyn Future<Output = HttpResponse> + Send>> + Send + Sync>;
 
 /// Tower-compatible service wrapping an Armature handler.
 pub struct ArmatureService<H> {
@@ -608,4 +602,3 @@ mod tests {
         let _ = stats.hyper_calls();
     }
 }
-

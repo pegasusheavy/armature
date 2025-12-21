@@ -38,7 +38,8 @@ impl FluentBundle {
     pub fn new(locale: &Locale) -> Result<Self> {
         use unic_langid::LanguageIdentifier;
 
-        let lang_id: LanguageIdentifier = locale.tag()
+        let lang_id: LanguageIdentifier = locale
+            .tag()
             .parse()
             .map_err(|e| I18nError::InvalidLocale(format!("{}: {}", locale.tag(), e)))?;
 
@@ -62,25 +63,26 @@ impl FluentBundle {
     /// Add a Fluent resource (.ftl content).
     #[cfg(feature = "fluent")]
     pub fn add_resource(&mut self, source: &str) -> Result<()> {
-        let resource = fluent_bundle::FluentResource::try_new(source.to_string())
-            .map_err(|(_, errors)| {
+        let resource =
+            fluent_bundle::FluentResource::try_new(source.to_string()).map_err(|(_, errors)| {
                 I18nError::FluentError(
-                    errors.into_iter()
+                    errors
+                        .into_iter()
                         .map(|e| format!("{:?}", e))
                         .collect::<Vec<_>>()
-                        .join(", ")
+                        .join(", "),
                 )
             })?;
 
-        self.bundle.add_resource(resource)
-            .map_err(|errors| {
-                I18nError::FluentError(
-                    errors.into_iter()
-                        .map(|e| format!("{:?}", e))
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )
-            })?;
+        self.bundle.add_resource(resource).map_err(|errors| {
+            I18nError::FluentError(
+                errors
+                    .into_iter()
+                    .map(|e| format!("{:?}", e))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            )
+        })?;
 
         Ok(())
     }
@@ -109,17 +111,18 @@ impl FluentBundle {
     pub fn format(&self, key: &str, args: Option<&HashMap<String, FluentValue>>) -> Result<String> {
         use fluent_bundle::FluentArgs;
 
-        let msg = self.bundle.get_message(key)
+        let msg = self
+            .bundle
+            .get_message(key)
             .ok_or_else(|| I18nError::MessageNotFound {
                 key: key.to_string(),
                 locale: self.locale.tag(),
             })?;
 
-        let pattern = msg.value()
-            .ok_or_else(|| I18nError::MessageNotFound {
-                key: key.to_string(),
-                locale: self.locale.tag(),
-            })?;
+        let pattern = msg.value().ok_or_else(|| I18nError::MessageNotFound {
+            key: key.to_string(),
+            locale: self.locale.tag(),
+        })?;
 
         let mut errors = vec![];
 
@@ -131,18 +134,17 @@ impl FluentBundle {
             fa
         });
 
-        let result = self.bundle.format_pattern(
-            pattern,
-            fluent_args.as_ref(),
-            &mut errors,
-        );
+        let result = self
+            .bundle
+            .format_pattern(pattern, fluent_args.as_ref(), &mut errors);
 
         if !errors.is_empty() {
             return Err(I18nError::FluentError(
-                errors.into_iter()
+                errors
+                    .into_iter()
                     .map(|e| format!("{:?}", e))
                     .collect::<Vec<_>>()
-                    .join(", ")
+                    .join(", "),
             ));
         }
 
@@ -152,7 +154,9 @@ impl FluentBundle {
     /// Format a message (fallback).
     #[cfg(not(feature = "fluent"))]
     pub fn format(&self, key: &str, args: Option<&HashMap<String, FluentValue>>) -> Result<String> {
-        let msg = self.messages.get(key)
+        let msg = self
+            .messages
+            .get(key)
             .ok_or_else(|| I18nError::MessageNotFound {
                 key: key.to_string(),
                 locale: self.locale.tag(),
@@ -284,4 +288,3 @@ mod tests {
         let _f: FluentValue = 3.5.into();
     }
 }
-

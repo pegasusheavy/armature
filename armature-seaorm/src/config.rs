@@ -110,23 +110,21 @@ impl DatabaseConfig {
         let mut config = Self::new(database_url);
 
         if let Ok(max) = std::env::var("DATABASE_MAX_CONNECTIONS") {
-            config.max_connections = max
-                .parse()
-                .map_err(|_| crate::SeaOrmError::Config("Invalid DATABASE_MAX_CONNECTIONS".into()))?;
+            config.max_connections = max.parse().map_err(|_| {
+                crate::SeaOrmError::Config("Invalid DATABASE_MAX_CONNECTIONS".into())
+            })?;
         }
 
         if let Ok(min) = std::env::var("DATABASE_MIN_CONNECTIONS") {
-            config.min_connections = min
-                .parse()
-                .map_err(|_| crate::SeaOrmError::Config("Invalid DATABASE_MIN_CONNECTIONS".into()))?;
+            config.min_connections = min.parse().map_err(|_| {
+                crate::SeaOrmError::Config("Invalid DATABASE_MIN_CONNECTIONS".into())
+            })?;
         }
 
         if let Ok(timeout) = std::env::var("DATABASE_CONNECT_TIMEOUT") {
-            config.connect_timeout = Duration::from_secs(
-                timeout
-                    .parse()
-                    .map_err(|_| crate::SeaOrmError::Config("Invalid DATABASE_CONNECT_TIMEOUT".into()))?,
-            );
+            config.connect_timeout = Duration::from_secs(timeout.parse().map_err(|_| {
+                crate::SeaOrmError::Config("Invalid DATABASE_CONNECT_TIMEOUT".into())
+            })?);
         }
 
         if let Ok(logging) = std::env::var("DATABASE_SQLX_LOGGING") {
@@ -224,4 +222,3 @@ mod humantime_serde {
         Ok(Duration::from_secs(secs))
     }
 }
-

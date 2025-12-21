@@ -27,4 +27,3 @@ impl From<serde_toon::Error> for ToonError {
         ToonError::SerializeError(err.to_string())
     }
 }
-

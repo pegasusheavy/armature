@@ -69,14 +69,13 @@ pub use sea_query;
 
 /// Prelude module for commonly used types.
 pub mod prelude {
+    pub use super::TransactionExt;
     pub use super::{Database, DatabaseConfig, SeaOrmError, SeaOrmResult};
     pub use super::{Paginate, Paginated, PaginationOptions};
     pub use super::{QueryBuilder, QueryExt};
-    pub use super::TransactionExt;
     pub use sea_orm::entity::prelude::*;
     pub use sea_orm::{
-        ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, ModelTrait,
-        PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set,
+        ActiveModelTrait, ColumnTrait, EntityTrait, IntoActiveModel, ModelTrait, PaginatorTrait,
+        QueryFilter, QueryOrder, QuerySelect, Set,
     };
 }
-

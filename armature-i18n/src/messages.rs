@@ -166,7 +166,8 @@ impl Messages {
             let path = entry.path();
 
             if path.extension().is_some_and(|ext| ext == "json") {
-                let stem = path.file_stem()
+                let stem = path
+                    .file_stem()
                     .and_then(|s| s.to_str())
                     .ok_or_else(|| I18nError::ParseError("Invalid filename".to_string()))?;
 
@@ -238,22 +239,25 @@ impl I18n {
 
         // Try exact locale
         if let Some(bundle) = messages.get_bundle(locale)
-            && let Some(msg) = bundle.get(key) {
-                return msg.to_string();
-            }
+            && let Some(msg) = bundle.get(key)
+        {
+            return msg.to_string();
+        }
 
         // Try fallback locale
         if let Some(ref fallback) = self.fallback_locale
             && let Some(bundle) = messages.get_bundle(fallback)
-                && let Some(msg) = bundle.get(key) {
-                    return msg.to_string();
-                }
+            && let Some(msg) = bundle.get(key)
+        {
+            return msg.to_string();
+        }
 
         // Try default locale
         if let Some(bundle) = messages.get_bundle(&self.default_locale)
-            && let Some(msg) = bundle.get(key) {
-                return msg.to_string();
-            }
+            && let Some(msg) = bundle.get(key)
+        {
+            return msg.to_string();
+        }
 
         // Return key as fallback
         key.to_string()
@@ -283,21 +287,29 @@ impl I18n {
     /// Translate with pluralization.
     ///
     /// Selects the appropriate plural form based on the count.
-    pub fn t_plural(&self, key: &str, count: impl Into<f64> + Copy + std::fmt::Display, locale: &Locale) -> String {
+    pub fn t_plural(
+        &self,
+        key: &str,
+        count: impl Into<f64> + Copy + std::fmt::Display,
+        locale: &Locale,
+    ) -> String {
         let n = count.into();
         let category = plural_category(n, locale);
         let messages = self.messages.read();
 
         // Try to get plural form
-        let msg = messages.get_bundle(locale)
+        let msg = messages
+            .get_bundle(locale)
             .and_then(|b| b.get_plural(key, category))
             .or_else(|| {
-                self.fallback_locale.as_ref()
+                self.fallback_locale
+                    .as_ref()
                     .and_then(|fb| messages.get_bundle(fb))
                     .and_then(|b| b.get_plural(key, category))
             })
             .or_else(|| {
-                messages.get_bundle(&self.default_locale)
+                messages
+                    .get_bundle(&self.default_locale)
                     .and_then(|b| b.get_plural(key, category))
             })
             .map(|s| s.to_string())
@@ -311,7 +323,8 @@ impl I18n {
     pub fn has(&self, key: &str, locale: &Locale) -> bool {
         let messages = self.messages.read();
 
-        messages.get_bundle(locale)
+        messages
+            .get_bundle(locale)
             .map(|b| b.has(key))
             .unwrap_or(false)
     }
@@ -423,8 +436,13 @@ mod tests {
         let bundle = MessageBundle::from_json(json).unwrap();
 
         assert_eq!(bundle.get("hello"), Some("Hello!"));
-        assert_eq!(bundle.get_plural("items", PluralCategory::One), Some("{n} item"));
-        assert_eq!(bundle.get_plural("items", PluralCategory::Other), Some("{n} items"));
+        assert_eq!(
+            bundle.get_plural("items", PluralCategory::One),
+            Some("{n} item")
+        );
+        assert_eq!(
+            bundle.get_plural("items", PluralCategory::Other),
+            Some("{n} items")
+        );
     }
 }
-

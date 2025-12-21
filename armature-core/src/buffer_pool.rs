@@ -201,7 +201,8 @@ impl PoolStats {
     #[inline]
     pub fn record_miss(&self, bytes: usize) {
         self.misses.fetch_add(1, Ordering::Relaxed);
-        self.bytes_allocated.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_allocated
+            .fetch_add(bytes as u64, Ordering::Relaxed);
     }
 
     /// Record a return to pool
@@ -346,7 +347,10 @@ impl ThreadLocalPool {
                 SizePool::new(BufferSize::Medium.capacity(), config.max_per_size),
                 SizePool::new(BufferSize::Large.capacity(), config.max_per_size),
                 SizePool::new(BufferSize::Huge.capacity(), config.max_per_size),
-                SizePool::new(BufferSize::Custom(1024 * 1024).capacity(), config.max_per_size / 4), // Fewer custom buffers
+                SizePool::new(
+                    BufferSize::Custom(1024 * 1024).capacity(),
+                    config.max_per_size / 4,
+                ), // Fewer custom buffers
             ],
             config,
         }
@@ -738,4 +742,3 @@ mod tests {
         assert!(config.collect_stats);
     }
 }
-

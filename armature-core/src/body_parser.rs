@@ -38,8 +38,8 @@
 //! Hyper Body → Pooled Buffer (reused) → Parse directly
 //! ```
 
-use crate::buffer_pool::acquire_buffer_for_bytes;
 use crate::Error;
+use crate::buffer_pool::acquire_buffer_for_bytes;
 use bytes::{BufMut, Bytes, BytesMut};
 use http_body_util::BodyExt;
 use hyper::body::Incoming as IncomingBody;
@@ -77,7 +77,8 @@ impl BodyCollectorStats {
     #[inline]
     pub fn record_collection(&self, bytes: usize, from_pool: bool) {
         self.collections.fetch_add(1, Ordering::Relaxed);
-        self.bytes_collected.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_collected
+            .fetch_add(bytes as u64, Ordering::Relaxed);
         if from_pool {
             self.pool_hits.fetch_add(1, Ordering::Relaxed);
         } else {
@@ -204,10 +205,7 @@ impl BodyCollector {
     /// This provides more control over the buffer but requires
     /// manual management.
     #[inline]
-    pub async fn collect_into(
-        body: IncomingBody,
-        buf: &mut BytesMut,
-    ) -> Result<usize, Error> {
+    pub async fn collect_into(body: IncomingBody, buf: &mut BytesMut) -> Result<usize, Error> {
         let collected = body
             .collect()
             .await
@@ -297,8 +295,7 @@ impl CollectedBody {
     #[inline]
     pub fn parse_json<T: DeserializeOwned>(&self) -> Result<T, Error> {
         BODY_STATS.record_json_parse();
-        crate::json::from_slice(&self.inner)
-            .map_err(|e| Error::Deserialization(e.to_string()))
+        crate::json::from_slice(&self.inner).map_err(|e| Error::Deserialization(e.to_string()))
     }
 
     /// Parse as JSON with mutable buffer for simd-json
@@ -312,8 +309,7 @@ impl CollectedBody {
         #[cfg(feature = "simd-json")]
         {
             let mut data = self.inner.to_vec();
-            simd_json::from_slice(&mut data)
-                .map_err(|e| Error::Deserialization(e.to_string()))
+            simd_json::from_slice(&mut data).map_err(|e| Error::Deserialization(e.to_string()))
         }
 
         #[cfg(not(feature = "simd-json"))]
@@ -415,8 +411,8 @@ pub struct StreamingConfig {
 impl Default for StreamingConfig {
     fn default() -> Self {
         Self {
-            chunk_size: 16384,     // 16KB chunks
-            max_size: 10485760,    // 10MB max
+            chunk_size: 16384,  // 16KB chunks
+            max_size: 10485760, // 10MB max
             use_pool: true,
         }
     }
@@ -578,9 +574,9 @@ impl LazyBody {
 
         // Need to collect - take the body
         if let LazyBodyState::Pending(body_opt) = &mut self.state {
-            let body = body_opt.take().ok_or_else(|| {
-                Error::Internal("Body already consumed".to_string())
-            })?;
+            let body = body_opt
+                .take()
+                .ok_or_else(|| Error::Internal("Body already consumed".to_string()))?;
 
             match BodyCollector::collect_pooled(body).await {
                 Ok(collected) => {
@@ -676,7 +672,12 @@ pub fn has_body(method: &hyper::Method, headers: &hyper::HeaderMap) -> bool {
     // Check Transfer-Encoding: chunked
     headers
         .get(hyper::header::TRANSFER_ENCODING)
-        .map(|v| v.to_str().ok().map(|s| s.contains("chunked")).unwrap_or(false))
+        .map(|v| {
+            v.to_str()
+                .ok()
+                .map(|s| s.contains("chunked"))
+                .unwrap_or(false)
+        })
         .unwrap_or(false)
 }
 
@@ -754,4 +755,3 @@ mod tests {
         assert!(stats.collections() >= initial);
     }
 }
-

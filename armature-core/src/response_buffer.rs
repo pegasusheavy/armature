@@ -316,10 +316,11 @@ impl ResponseBuilder {
     /// Set body from JSON.
     #[inline]
     pub fn body_json<T: serde::Serialize>(mut self, value: &T) -> Result<Self, crate::Error> {
-        let json = crate::json::to_vec(value)
-            .map_err(|e| crate::Error::Serialization(e.to_string()))?;
+        let json =
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
         self.body.write(&json);
-        self.headers.push(("Content-Type".to_string(), "application/json".to_string()));
+        self.headers
+            .push(("Content-Type".to_string(), "application/json".to_string()));
         Ok(self)
     }
 
@@ -450,7 +451,13 @@ mod tests {
             .build();
 
         assert_eq!(response.status, 200);
-        assert!(response.headers.get("Content-Type").unwrap().contains("json"));
+        assert!(
+            response
+                .headers
+                .get("Content-Type")
+                .unwrap()
+                .contains("json")
+        );
     }
 
     #[test]
@@ -488,4 +495,3 @@ mod tests {
         assert_eq!(buf.as_slice(), b"Hello, World!");
     }
 }
-

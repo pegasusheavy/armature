@@ -120,7 +120,7 @@ impl CoalesceConfig {
             flush_threshold: 32768,
             max_buffer_size: MAX_COALESCE_BUFFER,
             bypass_threshold: 131072, // 128KB
-            flush_timeout_us: 500,     // Longer timeout for more batching
+            flush_timeout_us: 500,    // Longer timeout for more batching
             use_tcp_cork: true,
             collect_stats: false,
         }
@@ -276,12 +276,13 @@ impl WriteCoalescer {
 
         // Timeout (if enabled)
         if self.config.flush_timeout_us > 0
-            && let Some(first_time) = self.first_write_time {
-                let elapsed_us = first_time.elapsed().as_micros() as u64;
-                if elapsed_us >= self.config.flush_timeout_us {
-                    return true;
-                }
+            && let Some(first_time) = self.first_write_time
+        {
+            let elapsed_us = first_time.elapsed().as_micros() as u64;
+            if elapsed_us >= self.config.flush_timeout_us {
+                return true;
             }
+        }
 
         false
     }
@@ -319,7 +320,9 @@ impl WriteCoalescer {
     /// Get remaining capacity before flush threshold.
     #[inline]
     pub fn remaining_capacity(&self) -> usize {
-        self.config.flush_threshold.saturating_sub(self.buffer.len())
+        self.config
+            .flush_threshold
+            .saturating_sub(self.buffer.len())
     }
 
     /// Take the buffered data, resetting the coalescer.
@@ -694,22 +697,26 @@ impl CoalesceStats {
     #[inline]
     pub fn record_coalesce(&self, bytes: usize) {
         self.coalesced.fetch_add(1, Ordering::Relaxed);
-        self.bytes_coalesced.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_coalesced
+            .fetch_add(bytes as u64, Ordering::Relaxed);
     }
 
     /// Record a bypassed write.
     #[inline]
     pub fn record_bypass(&self, bytes: usize) {
         self.bypassed.fetch_add(1, Ordering::Relaxed);
-        self.bytes_bypassed.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_bypassed
+            .fetch_add(bytes as u64, Ordering::Relaxed);
     }
 
     /// Record a flush.
     #[inline]
     pub fn record_flush(&self, writes: usize, _bytes: usize) {
         self.flushes.fetch_add(1, Ordering::Relaxed);
-        self.writes_per_flush_sum.fetch_add(writes as u64, Ordering::Relaxed);
-        self.max_writes_per_flush.fetch_max(writes, Ordering::Relaxed);
+        self.writes_per_flush_sum
+            .fetch_add(writes as u64, Ordering::Relaxed);
+        self.max_writes_per_flush
+            .fetch_max(writes, Ordering::Relaxed);
     }
 
     /// Get total coalesced writes.
@@ -972,4 +979,3 @@ mod tests {
         assert!(coalescer.len() < 10000);
     }
 }
-

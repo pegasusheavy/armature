@@ -369,10 +369,8 @@ where
 
 impl<'a> IntoIterator for &'a HeaderMap {
     type Item = (&'a String, &'a String);
-    type IntoIter = std::iter::Map<
-        std::slice::Iter<'a, Header>,
-        fn(&'a Header) -> (&'a String, &'a String),
-    >;
+    type IntoIter =
+        std::iter::Map<std::slice::Iter<'a, Header>, fn(&'a Header) -> (&'a String, &'a String)>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.inner.iter().map(|h| (&h.name, &h.value))
@@ -438,8 +436,14 @@ mod tests {
         headers.insert("Accept", "text/html");
 
         assert_eq!(headers.len(), 2);
-        assert_eq!(headers.get("Content-Type"), Some(&"application/json".to_string()));
-        assert_eq!(headers.get("content-type"), Some(&"application/json".to_string())); // case insensitive
+        assert_eq!(
+            headers.get("Content-Type"),
+            Some(&"application/json".to_string())
+        );
+        assert_eq!(
+            headers.get("content-type"),
+            Some(&"application/json".to_string())
+        ); // case insensitive
     }
 
     #[test]
@@ -450,7 +454,10 @@ mod tests {
 
         assert_eq!(old, Some("text/plain".to_string()));
         assert_eq!(headers.len(), 1);
-        assert_eq!(headers.get("Content-Type"), Some(&"application/json".to_string()));
+        assert_eq!(
+            headers.get("Content-Type"),
+            Some(&"application/json".to_string())
+        );
     }
 
     #[test]
@@ -512,7 +519,10 @@ mod tests {
         headers.insert("Connection", "keep-alive");
         headers.insert("Transfer-Encoding", "chunked");
 
-        assert_eq!(headers.content_type(), Some(&"application/json".to_string()));
+        assert_eq!(
+            headers.content_type(),
+            Some(&"application/json".to_string())
+        );
         assert_eq!(headers.content_length(), Some(100));
         assert!(headers.is_keep_alive());
         assert!(headers.is_chunked());
@@ -535,7 +545,10 @@ mod tests {
         headers.insert("Content-Type", "application/json");
 
         let map = headers.to_hash_map();
-        assert_eq!(map.get("Content-Type"), Some(&"application/json".to_string()));
+        assert_eq!(
+            map.get("Content-Type"),
+            Some(&"application/json".to_string())
+        );
     }
 
     #[test]
@@ -558,4 +571,3 @@ mod tests {
         assert_eq!(&headers["Content-Type"], "application/json");
     }
 }
-

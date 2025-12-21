@@ -230,7 +230,6 @@ impl AuditBackend for MultiBackend {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[tokio::test]
     async fn test_memory_backend() {

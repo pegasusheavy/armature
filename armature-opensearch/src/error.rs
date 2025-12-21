@@ -68,4 +68,3 @@ pub enum OpenSearchError {
 
 /// Result type alias for OpenSearch operations.
 pub type Result<T> = std::result::Result<T, OpenSearchError>;
-

@@ -42,4 +42,3 @@ pub enum I18nError {
     #[error("Invalid plural category: {0}")]
     InvalidPluralCategory(String),
 }
-

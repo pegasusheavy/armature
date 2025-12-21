@@ -29,9 +29,9 @@
 
 use armature_core::*;
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
-use std::hint::black_box;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::hint::black_box;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -41,7 +41,8 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SmallPayload {
-    message: String}
+    message: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct MediumPayload {
@@ -50,12 +51,14 @@ struct MediumPayload {
     email: String,
     active: bool,
     created_at: String,
-    tags: Vec<String>}
+    tags: Vec<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct LargePayload {
     users: Vec<UserRecord>,
-    metadata: PayloadMetadata}
+    metadata: PayloadMetadata,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UserRecord {
@@ -64,25 +67,29 @@ struct UserRecord {
     email: String,
     role: String,
     permissions: Vec<String>,
-    profile: UserProfile}
+    profile: UserProfile,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct UserProfile {
     avatar: String,
     bio: String,
     location: String,
-    website: String}
+    website: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct PayloadMetadata {
     total: u64,
     page: u32,
     per_page: u32,
-    pages: u32}
+    pages: u32,
+}
 
 fn create_small_payload() -> SmallPayload {
     SmallPayload {
-        message: "Hello, World!".to_string()}
+        message: "Hello, World!".to_string(),
+    }
 }
 
 fn create_medium_payload() -> MediumPayload {
@@ -96,7 +103,8 @@ fn create_medium_payload() -> MediumPayload {
             "developer".to_string(),
             "rust".to_string(),
             "web".to_string(),
-        ]}
+        ],
+    }
 }
 
 fn create_large_payload() -> LargePayload {
@@ -115,7 +123,9 @@ fn create_large_payload() -> LargePayload {
                 avatar: format!("https://example.com/avatars/{}.png", i),
                 bio: "A passionate developer working on exciting projects.".to_string(),
                 location: "San Francisco, CA".to_string(),
-                website: format!("https://user{}.dev", i)}})
+                website: format!("https://user{}.dev", i),
+            },
+        })
         .collect();
 
     LargePayload {
@@ -124,7 +134,9 @@ fn create_large_payload() -> LargePayload {
             total: 1000,
             page: 1,
             per_page: 100,
-            pages: 10}}
+            pages: 10,
+        },
+    }
 }
 
 // =============================================================================
@@ -323,7 +335,8 @@ fn generate_routes(count: usize) -> Vec<(String, String)> {
             1 => format!("/api/{}/:id", resource),
             2 => format!("/api/v1/{}/:id/related", resource),
             3 => format!("/api/v2/{}/nested/:id/deep", resource),
-            _ => unreachable!()};
+            _ => unreachable!(),
+        };
         routes.push((method, path));
     }
 
@@ -345,7 +358,8 @@ fn bench_routing_performance(c: &mut Criterion) {
                 "PUT" => HttpMethod::PUT,
                 "DELETE" => HttpMethod::DELETE,
                 "PATCH" => HttpMethod::PATCH,
-                _ => HttpMethod::GET};
+                _ => HttpMethod::GET,
+            };
             // Use the optimized Route::new for monomorphized handler dispatch
             async fn bench_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
                 Ok(HttpResponse::ok())
@@ -436,14 +450,16 @@ fn bench_middleware_creation(c: &mut Criterion) {
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 struct SimpleService {
-    name: String}
+    name: String,
+}
 
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 struct ComplexService {
     id: u64,
     name: String,
-    config: HashMap<String, String>}
+    config: HashMap<String, String>,
+}
 
 fn bench_dependency_injection(c: &mut Criterion) {
     let mut group = c.benchmark_group("dependency_injection");
@@ -456,7 +472,8 @@ fn bench_dependency_injection(c: &mut Criterion) {
         b.iter(|| {
             let container = Container::new();
             container.singleton(SimpleService {
-                name: "test".to_string()});
+                name: "test".to_string(),
+            });
             black_box(container);
         })
     });
@@ -472,7 +489,8 @@ fn bench_dependency_injection(c: &mut Criterion) {
             container.singleton(ComplexService {
                 id: 1,
                 name: "complex".to_string(),
-                config});
+                config,
+            });
             black_box(container);
         })
     });
@@ -480,7 +498,8 @@ fn bench_dependency_injection(c: &mut Criterion) {
     // Service resolution
     let container = Container::new();
     container.singleton(SimpleService {
-        name: "test".to_string()});
+        name: "test".to_string(),
+    });
 
     group.bench_function("resolve_simple", |b| {
         b.iter(|| {
@@ -492,14 +511,16 @@ fn bench_dependency_injection(c: &mut Criterion) {
     // Multiple services resolution
     let multi_container = Container::new();
     multi_container.singleton(SimpleService {
-        name: "simple".to_string()});
+        name: "simple".to_string(),
+    });
 
     let mut config = HashMap::new();
     config.insert("key".to_string(), "value".to_string());
     multi_container.singleton(ComplexService {
         id: 1,
         name: "complex".to_string(),
-        config});
+        config,
+    });
 
     group.bench_function("resolve_multiple", |b| {
         b.iter(|| {

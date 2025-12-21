@@ -241,7 +241,9 @@ impl<const INDEX: usize> Extract for PathParam<INDEX> {
             .nth(INDEX)
             .cloned()
             .map(PathParam)
-            .ok_or_else(|| Error::RouteNotFound(format!("Path parameter at index {} not found", INDEX)))
+            .ok_or_else(|| {
+                Error::RouteNotFound(format!("Path parameter at index {} not found", INDEX))
+            })
     }
 }
 
@@ -273,7 +275,8 @@ impl Header {
 
     /// Get the header value or error if missing.
     pub fn required(self) -> Result<String, Error> {
-        self.value.ok_or_else(|| Error::Validation(format!("Required header '{}' not found", self.name)))
+        self.value
+            .ok_or_else(|| Error::Validation(format!("Required header '{}' not found", self.name)))
     }
 
     /// Get the header value or default.
@@ -302,7 +305,9 @@ impl Extract for ContentType {
 impl ContentType {
     /// Check if content type is JSON.
     pub fn is_json(&self) -> bool {
-        self.0.as_ref().is_some_and(|v| v.contains("application/json"))
+        self.0
+            .as_ref()
+            .is_some_and(|v| v.contains("application/json"))
     }
 
     /// Get raw value.
@@ -723,8 +728,7 @@ where
 
         Box::pin(async move {
             let mut resp = inner.call(req).await?;
-            resp.headers
-                .insert("x-request-id".to_string(), request_id);
+            resp.headers.insert("x-request-id".to_string(), request_id);
             Ok(resp)
         })
     }
@@ -924,17 +928,18 @@ pub fn middleware_stats() -> &'static ZeroCostStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
-    
 
     fn create_request() -> HttpRequest {
         let mut req = HttpRequest::new("GET".to_string(), "/api/users/123".to_string());
-        req.headers.insert("content-type".to_string(), "application/json".to_string());
-        req.headers.insert("authorization".to_string(), "Bearer token123".to_string());
+        req.headers
+            .insert("content-type".to_string(), "application/json".to_string());
+        req.headers
+            .insert("authorization".to_string(), "Bearer token123".to_string());
         req.body = br#"{"name":"test"}"#.to_vec();
         req.path_params.insert("id".to_string(), "123".to_string());
         req.query_params.insert("page".to_string(), "1".to_string());
-        req.query_params.insert("limit".to_string(), "10".to_string());
+        req.query_params
+            .insert("limit".to_string(), "10".to_string());
         req
     }
 
@@ -1049,4 +1054,3 @@ mod tests {
         let _ = middleware.middleware_calls();
     }
 }
-

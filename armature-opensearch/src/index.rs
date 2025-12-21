@@ -4,7 +4,7 @@ use crate::error::{OpenSearchError, Result};
 use armature_log::{debug, info};
 use opensearch::OpenSearch;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -26,7 +26,8 @@ impl IndexManager {
 
         let body = settings.to_json();
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .create(opensearch::indices::IndicesCreateParts::Index(name))
             .body(body)
@@ -44,14 +45,20 @@ impl IndexManager {
             }
 
             return Err(OpenSearchError::Internal(
-                body["error"]["reason"].as_str().unwrap_or("Unknown error").to_string()
+                body["error"]["reason"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string(),
             ));
         }
 
         if !status.is_success() {
             let body: Value = response.json().await?;
             return Err(OpenSearchError::Internal(
-                body["error"]["reason"].as_str().unwrap_or("Unknown error").to_string()
+                body["error"]["reason"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string(),
             ));
         }
 
@@ -62,7 +69,8 @@ impl IndexManager {
     pub async fn delete(&self, name: &str) -> Result<()> {
         info!("Deleting index: {}", name);
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .delete(opensearch::indices::IndicesDeleteParts::Index(&[name]))
             .send()
@@ -77,7 +85,10 @@ impl IndexManager {
         if !status.is_success() {
             let body: Value = response.json().await?;
             return Err(OpenSearchError::Internal(
-                body["error"]["reason"].as_str().unwrap_or("Unknown error").to_string()
+                body["error"]["reason"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string(),
             ));
         }
 
@@ -88,7 +99,8 @@ impl IndexManager {
     pub async fn exists(&self, name: &str) -> Result<bool> {
         debug!("Checking if index exists: {}", name);
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .exists(opensearch::indices::IndicesExistsParts::Index(&[name]))
             .send()
@@ -101,7 +113,8 @@ impl IndexManager {
     pub async fn get(&self, name: &str) -> Result<Value> {
         debug!("Getting index: {}", name);
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .get(opensearch::indices::IndicesGetParts::Index(&[name]))
             .send()
@@ -120,7 +133,8 @@ impl IndexManager {
     pub async fn put_mapping(&self, name: &str, mapping: Mapping) -> Result<()> {
         debug!("Updating mapping for index: {}", name);
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .put_mapping(opensearch::indices::IndicesPutMappingParts::Index(&[name]))
             .body(mapping.to_json())
@@ -130,7 +144,10 @@ impl IndexManager {
         if !response.status_code().is_success() {
             let body: Value = response.json().await?;
             return Err(OpenSearchError::Internal(
-                body["error"]["reason"].as_str().unwrap_or("Unknown error").to_string()
+                body["error"]["reason"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string(),
             ));
         }
 
@@ -141,7 +158,8 @@ impl IndexManager {
     pub async fn put_settings(&self, name: &str, settings: Value) -> Result<()> {
         debug!("Updating settings for index: {}", name);
 
-        let response = self.client
+        let response = self
+            .client
             .indices()
             .put_settings(opensearch::indices::IndicesPutSettingsParts::Index(&[name]))
             .body(settings)
@@ -151,7 +169,10 @@ impl IndexManager {
         if !response.status_code().is_success() {
             let body: Value = response.json().await?;
             return Err(OpenSearchError::Internal(
-                body["error"]["reason"].as_str().unwrap_or("Unknown error").to_string()
+                body["error"]["reason"]
+                    .as_str()
+                    .unwrap_or("Unknown error")
+                    .to_string(),
             ));
         }
 
@@ -216,7 +237,10 @@ impl IndexManager {
 
         self.client
             .indices()
-            .put_alias(opensearch::indices::IndicesPutAliasParts::IndexName(&[index], alias))
+            .put_alias(opensearch::indices::IndicesPutAliasParts::IndexName(
+                &[index],
+                alias,
+            ))
             .send()
             .await?;
 
@@ -229,7 +253,10 @@ impl IndexManager {
 
         self.client
             .indices()
-            .delete_alias(opensearch::indices::IndicesDeleteAliasParts::IndexName(&[index], &[alias]))
+            .delete_alias(opensearch::indices::IndicesDeleteAliasParts::IndexName(
+                &[index],
+                &[alias],
+            ))
             .send()
             .await?;
 
@@ -238,7 +265,8 @@ impl IndexManager {
 
     /// List all indices.
     pub async fn list(&self) -> Result<Vec<IndexInfo>> {
-        let response = self.client
+        let response = self
+            .client
             .cat()
             .indices(opensearch::cat::CatIndicesParts::None)
             .format("json")
@@ -247,13 +275,19 @@ impl IndexManager {
 
         let indices: Vec<Value> = response.json().await?;
 
-        Ok(indices.into_iter().map(|v| IndexInfo {
-            name: v["index"].as_str().unwrap_or("").to_string(),
-            health: v["health"].as_str().unwrap_or("").to_string(),
-            status: v["status"].as_str().unwrap_or("").to_string(),
-            docs_count: v["docs.count"].as_str().and_then(|s| s.parse().ok()).unwrap_or(0),
-            store_size: v["store.size"].as_str().unwrap_or("").to_string(),
-        }).collect())
+        Ok(indices
+            .into_iter()
+            .map(|v| IndexInfo {
+                name: v["index"].as_str().unwrap_or("").to_string(),
+                health: v["health"].as_str().unwrap_or("").to_string(),
+                status: v["status"].as_str().unwrap_or("").to_string(),
+                docs_count: v["docs.count"]
+                    .as_str()
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0),
+                store_size: v["store.size"].as_str().unwrap_or("").to_string(),
+            })
+            .collect())
     }
 }
 
@@ -634,4 +668,3 @@ pub struct IndexInfo {
     /// Store size.
     pub store_size: String,
 }
-

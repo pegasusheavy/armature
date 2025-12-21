@@ -1,10 +1,14 @@
-use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Route, Router};
 use armature_core::handler::from_legacy_handler;
-use std::sync::Arc;
-use std::pin::Pin;
+use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Route, Router};
 use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 
-type LegacyHandler = Arc<dyn Fn(HttpRequest) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> + Send + Sync>;
+type LegacyHandler = Arc<
+    dyn Fn(HttpRequest) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+        + Send
+        + Sync,
+>;
 
 #[tokio::test]
 async fn test_static_route() {

@@ -78,4 +78,3 @@ pub use diesel_async::pooled_connection::bb8;
 
 #[cfg(feature = "mobc")]
 pub use diesel_async::pooled_connection::mobc;
-

@@ -336,8 +336,7 @@ impl IoUringStats {
 
     /// Get pending operations
     pub fn pending(&self) -> u64 {
-        self.submissions()
-            .saturating_sub(self.completions())
+        self.submissions().saturating_sub(self.completions())
     }
 }
 
@@ -350,9 +349,10 @@ impl IoUringStats {
 pub fn is_available() -> bool {
     // Check kernel version >= 5.1
     if let Ok(version) = std::fs::read_to_string("/proc/version")
-        && let Some(ver) = parse_kernel_version(&version) {
-            return ver >= (5, 1);
-        }
+        && let Some(ver) = parse_kernel_version(&version)
+    {
+        return ver >= (5, 1);
+    }
     false
 }
 
@@ -604,7 +604,7 @@ impl TcpOptions {
             reuseaddr: true,
             reuseport: true,
             keepalive_secs: Some(120),
-            send_buffer: Some(262144),  // 256KB
+            send_buffer: Some(262144), // 256KB
             recv_buffer: Some(262144),
             backlog: 4096,
         }
@@ -782,4 +782,3 @@ mod tests {
         assert_eq!(IoOp::Read.opcode(), 22);
     }
 }
-

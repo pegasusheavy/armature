@@ -17,8 +17,8 @@
 //! - Work-stealing tuning: +5-10% for mixed workloads
 
 use std::future::Future;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::time::Duration;
 use tokio::runtime::{Builder, Runtime};
 use tokio::task::LocalSet;
@@ -199,9 +199,10 @@ impl RuntimeConfig {
         };
 
         if let Some(threads) = self.worker_threads
-            && !self.current_thread {
-                builder.worker_threads(threads);
-            }
+            && !self.current_thread
+        {
+            builder.worker_threads(threads);
+        }
 
         builder.thread_name(&self.thread_name);
 
@@ -242,8 +243,7 @@ impl RuntimeConfig {
 // ============================================================================
 
 /// Controls when tasks should be spawned vs inlined.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SpawnPolicy {
     /// Always spawn a new task (default Tokio behavior)
     Always,
@@ -255,7 +255,6 @@ pub enum SpawnPolicy {
     /// Spawn based on current load
     LoadBased,
 }
-
 
 /// Configuration for task spawning decisions.
 #[derive(Debug, Clone)]
@@ -377,11 +376,7 @@ impl HandlerMetrics {
         let spawned = self.spawned.load(Ordering::Relaxed) as f64;
         let inlined = self.inlined.load(Ordering::Relaxed) as f64;
         let total = spawned + inlined;
-        if total > 0.0 {
-            spawned / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { spawned / total } else { 0.0 }
     }
 }
 
@@ -408,8 +403,8 @@ impl SmartSpawner {
             SpawnPolicy::Always => true,
             SpawnPolicy::Never => false,
             SpawnPolicy::Adaptive => {
-                let duration = estimated_duration_us
-                    .unwrap_or_else(|| self.metrics.avg_duration_us());
+                let duration =
+                    estimated_duration_us.unwrap_or_else(|| self.metrics.avg_duration_us());
                 duration > self.config.duration_threshold_us
             }
             SpawnPolicy::LoadBased => {
@@ -740,11 +735,7 @@ impl RuntimeStats {
     pub fn spawn_ratio(&self) -> f64 {
         let spawned = self.tasks_spawned() as f64;
         let total = spawned + self.tasks_inlined() as f64;
-        if total > 0.0 {
-            spawned / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { spawned / total } else { 0.0 }
     }
 }
 
@@ -913,4 +904,3 @@ mod tests {
         assert!(runtime.is_ok());
     }
 }
-

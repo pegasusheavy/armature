@@ -333,11 +333,12 @@ impl<T> LocalStateCache<T> {
             let cached_version = *self.version.get();
 
             if cached_version == current_version
-                && let Some(ref value) = *self.value.get() {
-                    *self.hits.get() += 1;
-                    LOCALITY_STATS.record_cache_hit();
-                    return value;
-                }
+                && let Some(ref value) = *self.value.get()
+            {
+                *self.hits.get() += 1;
+                LOCALITY_STATS.record_cache_hit();
+                return value;
+            }
 
             // Cache miss - refresh
             *self.misses.get() += 1;
@@ -608,7 +609,9 @@ impl<const FIELDS: usize, const CAPACITY: usize> SoaStorage<FIELDS, CAPACITY> {
     pub fn new() -> Self {
         Self {
             data: std::array::from_fn(|_| {
-                Box::new(unsafe { MaybeUninit::<[MaybeUninit<f64>; CAPACITY]>::uninit().assume_init() })
+                Box::new(unsafe {
+                    MaybeUninit::<[MaybeUninit<f64>; CAPACITY]>::uninit().assume_init()
+                })
             }),
             len: AtomicUsize::new(0),
         }
@@ -666,12 +669,7 @@ impl<const FIELDS: usize, const CAPACITY: usize> SoaStorage<FIELDS, CAPACITY> {
     pub fn field_slice(&self, field: usize) -> &[f64] {
         assert!(field < FIELDS);
         let len = self.len();
-        unsafe {
-            std::slice::from_raw_parts(
-                self.data[field].as_ptr() as *const f64,
-                len,
-            )
-        }
+        unsafe { std::slice::from_raw_parts(self.data[field].as_ptr() as *const f64, len) }
     }
 
     /// Prefetch a field for upcoming access.
@@ -736,11 +734,7 @@ impl LocalityStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.cache_hits() as f64;
         let total = hits + self.cache_misses() as f64;
-        if total > 0.0 {
-            hits / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { hits / total } else { 0.0 }
     }
 }
 
@@ -916,4 +910,3 @@ mod tests {
         let _ = stats.hit_ratio();
     }
 }
-

@@ -87,7 +87,7 @@ impl NumberFormatter {
     /// Format a number for the given locale.
     pub fn format(&self, n: f64, locale: &Locale) -> String {
         let (decimal_sep, group_sep) = get_number_separators(locale);
-        
+
         // Format with appropriate decimal places
         let fraction_digits = if n.fract() == 0.0 {
             self.min_fraction_digits
@@ -195,7 +195,7 @@ impl CurrencyFormatter {
     /// Format a currency amount.
     pub fn format(&self, amount: f64, locale: &Locale) -> String {
         let (symbol, before) = get_currency_symbol(&self.currency_code, locale);
-        
+
         let formatted = NumberFormatter::new()
             .min_fraction_digits(2)
             .max_fraction_digits(2)
@@ -290,16 +290,32 @@ pub fn format_date(year: i32, month: u32, day: u32, locale: &Locale) -> String {
 }
 
 fn format_date_impl(year: i32, month: u32, day: u32, style: DateStyle, locale: &Locale) -> String {
-    let month_names_short = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    let month_names_long = ["January", "February", "March", "April", "May", "June",
-                            "July", "August", "September", "October", "November", "December"];
+    let month_names_short = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+    let month_names_long = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
 
     let month_idx = (month.saturating_sub(1) as usize).min(11);
 
     // Determine date order based on locale
     let is_dmy = matches!(locale.language.as_str(), "en" if locale.region.as_deref() == Some("GB"))
-        || matches!(locale.language.as_str(), "fr" | "de" | "es" | "it" | "pt" | "ru" | "pl");
+        || matches!(
+            locale.language.as_str(),
+            "fr" | "de" | "es" | "it" | "pt" | "ru" | "pl"
+        );
     let is_ymd = matches!(locale.language.as_str(), "ja" | "zh" | "ko");
 
     match style {
@@ -331,7 +347,13 @@ fn format_date_impl(year: i32, month: u32, day: u32, style: DateStyle, locale: &
     }
 }
 
-fn format_time_impl(hour: u32, minute: u32, second: u32, style: TimeStyle, locale: &Locale) -> String {
+fn format_time_impl(
+    hour: u32,
+    minute: u32,
+    second: u32,
+    style: TimeStyle,
+    locale: &Locale,
+) -> String {
     // Determine if 12-hour format
     let use_12h = matches!(locale.language.as_str(), "en");
 
@@ -395,13 +417,12 @@ fn format_time_impl(hour: u32, minute: u32, second: u32, style: TimeStyle, local
 fn get_number_separators(locale: &Locale) -> (&'static str, &'static str) {
     match locale.language.as_str() {
         // Comma decimal, period grouping
-        "de" | "es" | "it" | "pt" | "nl" | "da" | "sv" | "no" | "fi" |
-        "pl" | "cs" | "sk" | "hu" | "ro" | "bg" | "el" | "ru" | "uk" |
-        "tr" | "id" | "vi" => (",", "."),
-        
+        "de" | "es" | "it" | "pt" | "nl" | "da" | "sv" | "no" | "fi" | "pl" | "cs" | "sk"
+        | "hu" | "ro" | "bg" | "el" | "ru" | "uk" | "tr" | "id" | "vi" => (",", "."),
+
         // Comma decimal, space grouping (French-speaking)
         "fr" => (",", " "),
-        
+
         // Period decimal, comma grouping (default English-like)
         _ => (".", ","),
     }
@@ -411,13 +432,13 @@ fn get_number_separators(locale: &Locale) -> (&'static str, &'static str) {
 fn add_grouping(s: &str, sep: &str) -> String {
     let chars: Vec<char> = s.chars().collect();
     let len = chars.len();
-    
+
     if len <= 3 {
         return s.to_string();
     }
 
     let mut result = String::with_capacity(len + (len - 1) / 3);
-    
+
     for (i, c) in chars.iter().enumerate() {
         if i > 0 && (len - i).is_multiple_of(3) {
             result.push_str(sep);
@@ -433,8 +454,25 @@ fn get_currency_symbol(currency_code: &str, locale: &Locale) -> (String, bool) {
     // Symbol before amount (English-style)
     let symbol_before = !matches!(
         locale.language.as_str(),
-        "de" | "fr" | "es" | "it" | "pt" | "nl" | "da" | "sv" | "no" | "fi" |
-        "pl" | "cs" | "sk" | "hu" | "ro" | "bg" | "el" | "ru" | "uk" | "vi"
+        "de" | "fr"
+            | "es"
+            | "it"
+            | "pt"
+            | "nl"
+            | "da"
+            | "sv"
+            | "no"
+            | "fi"
+            | "pl"
+            | "cs"
+            | "sk"
+            | "hu"
+            | "ro"
+            | "bg"
+            | "el"
+            | "ru"
+            | "uk"
+            | "vi"
     );
 
     let symbol = match currency_code {
@@ -548,4 +586,3 @@ mod tests {
         assert_eq!(add_grouping("1234", " "), "1 234");
     }
 }
-

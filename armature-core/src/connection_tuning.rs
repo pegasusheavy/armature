@@ -30,15 +30,13 @@ use std::os::unix::io::AsRawFd;
 pub type StreamWeight = u8;
 
 /// Stream dependency for HTTP/2 priority tree.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct StreamDependency {
     /// Parent stream ID (0 = root)
     pub stream_id: u32,
     /// Whether this dependency is exclusive
     pub exclusive: bool,
 }
-
 
 /// HTTP/2 stream priority configuration.
 #[derive(Debug, Clone)]
@@ -157,14 +155,14 @@ impl ResourceType {
     /// Get recommended weight for this resource type.
     pub fn recommended_weight(&self) -> StreamWeight {
         match self {
-            Self::Html => 255,      // Highest priority
-            Self::Css => 220,       // Very high - blocks render
+            Self::Html => 255,       // Highest priority
+            Self::Css => 220,        // Very high - blocks render
             Self::JavaScript => 180, // High - often blocks render
-            Self::Font => 140,      // Medium-high - needed for FOUT prevention
-            Self::Xhr => 120,       // Medium - application data
-            Self::Image => 80,      // Medium-low - can load progressively
-            Self::Prefetch => 20,   // Low - speculative
-            Self::Other => 100,     // Default
+            Self::Font => 140,       // Medium-high - needed for FOUT prevention
+            Self::Xhr => 120,        // Medium - application data
+            Self::Image => 80,       // Medium-low - can load progressively
+            Self::Prefetch => 20,    // Low - speculative
+            Self::Other => 100,      // Default
         }
     }
 
@@ -236,10 +234,14 @@ impl PriorityManager {
         let group = resource_type.stream_group();
 
         // Create priority with group dependency
-        let dependency = self.group_roots.get(&group).map(|&root| StreamDependency {
-            stream_id: root,
-            exclusive: false,
-        }).unwrap_or_default();
+        let dependency = self
+            .group_roots
+            .get(&group)
+            .map(|&root| StreamDependency {
+                stream_id: root,
+                exclusive: false,
+            })
+            .unwrap_or_default();
 
         StreamPriority { weight, dependency }
     }
@@ -390,8 +392,8 @@ impl TcpConfig {
     #[cfg(unix)]
     pub fn apply(&self, stream: &TcpStream) -> io::Result<()> {
         use libc::{
-            setsockopt, IPPROTO_TCP, SOL_SOCKET, SO_KEEPALIVE, SO_RCVBUF, SO_REUSEADDR,
-            SO_SNDBUF, TCP_NODELAY,
+            IPPROTO_TCP, SO_KEEPALIVE, SO_RCVBUF, SO_REUSEADDR, SO_SNDBUF, SOL_SOCKET, TCP_NODELAY,
+            setsockopt,
         };
 
         let fd = stream.as_raw_fd();
@@ -517,7 +519,9 @@ impl TcpConfig {
             keepalive.apply_to_fd(fd);
         }
 
-        TCP_STATS.connections_configured.fetch_add(1, Ordering::Relaxed);
+        TCP_STATS
+            .connections_configured
+            .fetch_add(1, Ordering::Relaxed);
 
         Ok(())
     }
@@ -526,7 +530,9 @@ impl TcpConfig {
     #[cfg(not(unix))]
     pub fn apply(&self, stream: &TcpStream) -> io::Result<()> {
         stream.set_nodelay(self.nodelay)?;
-        TCP_STATS.connections_configured.fetch_add(1, Ordering::Relaxed);
+        TCP_STATS
+            .connections_configured
+            .fetch_add(1, Ordering::Relaxed);
         Ok(())
     }
 }
@@ -574,7 +580,7 @@ impl TcpKeepalive {
     /// Apply keepalive settings to file descriptor.
     #[cfg(target_os = "linux")]
     fn apply_to_fd(&self, fd: std::os::unix::io::RawFd) {
-        use libc::{setsockopt, IPPROTO_TCP};
+        use libc::{IPPROTO_TCP, setsockopt};
 
         const TCP_KEEPIDLE: libc::c_int = 4;
         const TCP_KEEPINTVL: libc::c_int = 5;
@@ -622,8 +628,7 @@ impl TcpKeepalive {
 // ============================================================================
 
 /// Keep-alive policy for connection management.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum KeepAlivePolicy {
     /// Always keep connections alive until timeout
     Always,
@@ -635,7 +640,6 @@ pub enum KeepAlivePolicy {
     #[default]
     Adaptive,
 }
-
 
 /// Connection keep-alive configuration.
 #[derive(Debug, Clone)]
@@ -781,15 +785,17 @@ impl ConnectionTracker {
 
         // Check max requests
         if let Some(max) = config.max_requests
-            && self.requests >= max {
-                return false;
-            }
+            && self.requests >= max
+        {
+            return false;
+        }
 
         // Check max age
         if let Some(max_age) = config.max_age
-            && self.age() > max_age {
-                return false;
-            }
+            && self.age() > max_age
+        {
+            return false;
+        }
 
         true
     }
@@ -822,12 +828,16 @@ impl AdaptiveKeepAlive {
     /// Register new connection.
     pub fn connection_opened(&self) -> bool {
         let count = self.active_connections.fetch_add(1, Ordering::Relaxed);
-        self.stats.connections_opened.fetch_add(1, Ordering::Relaxed);
+        self.stats
+            .connections_opened
+            .fetch_add(1, Ordering::Relaxed);
 
         if self.config.policy == KeepAlivePolicy::Adaptive {
             // Reject if over threshold
             if count >= self.config.adaptive_threshold {
-                self.stats.connections_rejected.fetch_add(1, Ordering::Relaxed);
+                self.stats
+                    .connections_rejected
+                    .fetch_add(1, Ordering::Relaxed);
                 self.active_connections.fetch_sub(1, Ordering::Relaxed);
                 return false;
             }
@@ -839,7 +849,9 @@ impl AdaptiveKeepAlive {
     /// Unregister connection.
     pub fn connection_closed(&self) {
         self.active_connections.fetch_sub(1, Ordering::Relaxed);
-        self.stats.connections_closed.fetch_add(1, Ordering::Relaxed);
+        self.stats
+            .connections_closed
+            .fetch_add(1, Ordering::Relaxed);
     }
 
     /// Check if keep-alive is allowed for current load.
@@ -963,7 +975,7 @@ impl Default for Http2Settings {
         Self {
             max_concurrent_streams: 128,
             initial_window_size: 65535, // 64KB - 1
-            max_frame_size: 16384,       // 16KB (minimum required)
+            max_frame_size: 16384,      // 16KB (minimum required)
             max_header_list_size: 16384,
             enable_push: false, // Server push is generally not recommended
             connection_window_size: 1024 * 1024, // 1MB
@@ -978,7 +990,7 @@ impl Http2Settings {
         Self {
             max_concurrent_streams: 256,
             initial_window_size: 1024 * 1024, // 1MB
-            max_frame_size: 65535,             // Max allowed
+            max_frame_size: 65535,            // Max allowed
             max_header_list_size: 65535,
             enable_push: false,
             connection_window_size: 16 * 1024 * 1024, // 16MB
@@ -1033,8 +1045,13 @@ mod tests {
     #[test]
     fn test_resource_type_weights() {
         assert!(ResourceType::Html.recommended_weight() > ResourceType::Css.recommended_weight());
-        assert!(ResourceType::Css.recommended_weight() > ResourceType::JavaScript.recommended_weight());
-        assert!(ResourceType::JavaScript.recommended_weight() > ResourceType::Image.recommended_weight());
+        assert!(
+            ResourceType::Css.recommended_weight() > ResourceType::JavaScript.recommended_weight()
+        );
+        assert!(
+            ResourceType::JavaScript.recommended_weight()
+                > ResourceType::Image.recommended_weight()
+        );
     }
 
     #[test]
@@ -1152,4 +1169,3 @@ mod tests {
         assert!(settings.initial_window_size > Http2Settings::default().initial_window_size);
     }
 }
-

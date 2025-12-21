@@ -12,8 +12,8 @@
 //! cargo run --example advanced_metrics
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use armature_metrics::*;
 use std::sync::Arc;
 

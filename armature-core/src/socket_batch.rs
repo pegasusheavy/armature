@@ -46,12 +46,12 @@ pub struct BatchSocketConfig {
 impl Default for BatchSocketConfig {
     fn default() -> Self {
         Self {
-            max_write_buffer: 64 * 1024,  // 64KB
-            max_iovec: 16,                 // IOV_MAX is typically 1024, but 16 is practical
-            min_batch_size: 1024,          // 1KB minimum before batching
+            max_write_buffer: 64 * 1024, // 64KB
+            max_iovec: 16,               // IOV_MAX is typically 1024, but 16 is practical
+            min_batch_size: 1024,        // 1KB minimum before batching
             use_cork: true,
             nodelay_after_uncork: true,
-            max_delay_us: 1000,            // 1ms max delay
+            max_delay_us: 1000, // 1ms max delay
         }
     }
 }
@@ -70,7 +70,7 @@ impl BatchSocketConfig {
             min_batch_size: 4096,
             use_cork: true,
             nodelay_after_uncork: false,
-            max_delay_us: 5000,  // 5ms acceptable delay
+            max_delay_us: 5000, // 5ms acceptable delay
         }
     }
 
@@ -79,7 +79,7 @@ impl BatchSocketConfig {
         Self {
             max_write_buffer: 16 * 1024,
             max_iovec: 8,
-            min_batch_size: 0,  // No batching delay
+            min_batch_size: 0, // No batching delay
             use_cork: false,
             nodelay_after_uncork: true,
             max_delay_us: 0,
@@ -813,18 +813,21 @@ pub struct SocketBatchStats {
 impl SocketBatchStats {
     fn record_writev(&self, buffers: usize, bytes: usize) {
         self.writev_calls.fetch_add(1, Ordering::Relaxed);
-        self.writev_buffers.fetch_add(buffers as u64, Ordering::Relaxed);
+        self.writev_buffers
+            .fetch_add(buffers as u64, Ordering::Relaxed);
         self.writev_bytes.fetch_add(bytes as u64, Ordering::Relaxed);
     }
 
     fn record_readv(&self, buffers: usize, bytes: usize) {
         self.readv_calls.fetch_add(1, Ordering::Relaxed);
-        self.readv_buffers.fetch_add(buffers as u64, Ordering::Relaxed);
+        self.readv_buffers
+            .fetch_add(buffers as u64, Ordering::Relaxed);
         self.readv_bytes.fetch_add(bytes as u64, Ordering::Relaxed);
     }
 
     fn record_write_batch(&self, count: usize, _bytes: usize) {
-        self.write_batches.fetch_add(count as u64, Ordering::Relaxed);
+        self.write_batches
+            .fetch_add(count as u64, Ordering::Relaxed);
     }
 
     fn record_read_batch(&self, count: usize, _bytes: usize) {
@@ -1049,4 +1052,3 @@ mod tests {
         let _ = stats.syscalls_saved();
     }
 }
-

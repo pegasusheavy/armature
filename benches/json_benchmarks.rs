@@ -7,7 +7,7 @@
 //!   cargo bench --bench json_benchmarks --features simd-json
 
 use armature_core::json;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use serde::{Deserialize, Serialize};
 use std::hint::black_box;
 
@@ -100,7 +100,11 @@ fn create_medium_payload() -> MediumPayload {
         last_name: "Doe".to_string(),
         age: 30,
         active: true,
-        roles: vec!["user".to_string(), "admin".to_string(), "moderator".to_string()],
+        roles: vec![
+            "user".to_string(),
+            "admin".to_string(),
+            "moderator".to_string(),
+        ],
         metadata: [
             ("signup_source".to_string(), "web".to_string()),
             ("referral".to_string(), "friend".to_string()),
@@ -315,7 +319,9 @@ fn bench_http_json(c: &mut Criterion) {
                 id: 99999,
                 ..medium.clone()
             };
-            HttpResponse::created().with_json(black_box(&response_data)).unwrap()
+            HttpResponse::created()
+                .with_json(black_box(&response_data))
+                .unwrap()
         })
     });
 
@@ -356,4 +362,3 @@ criterion_group!(
 );
 
 criterion_main!(json_benches);
-

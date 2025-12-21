@@ -1,6 +1,6 @@
 //! Document trait and helpers.
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 
 /// Trait for documents that can be indexed in OpenSearch.
 ///
@@ -67,4 +67,3 @@ pub struct DocumentWithMeta<T> {
     /// Document metadata.
     pub meta: DocumentMeta,
 }
-

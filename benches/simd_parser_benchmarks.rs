@@ -3,7 +3,7 @@
 //! Run with: cargo bench --bench simd_parser_benchmarks
 
 use armature_core::simd_parser::*;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 
 fn bench_query_string_parsing(c: &mut Criterion) {
@@ -81,9 +81,7 @@ fn bench_url_decode(c: &mut Criterion) {
 
     // No encoding (fast path)
     let plain = "hello_world_no_special_chars";
-    group.bench_function("plain/simd", |b| {
-        b.iter(|| url_decode(black_box(plain)))
-    });
+    group.bench_function("plain/simd", |b| b.iter(|| url_decode(black_box(plain))));
 
     // With percent encoding
     let encoded = "hello%20world%21%40%23%24%25%5E%26%2A%28%29";
@@ -204,4 +202,3 @@ criterion_group!(
 );
 
 criterion_main!(simd_benches);
-

@@ -197,7 +197,11 @@ impl PluralRules for RussianPlurals {
     }
 
     fn categories(&self) -> &[PluralCategory] {
-        &[PluralCategory::One, PluralCategory::Few, PluralCategory::Many]
+        &[
+            PluralCategory::One,
+            PluralCategory::Few,
+            PluralCategory::Many,
+        ]
     }
 }
 
@@ -231,7 +235,11 @@ impl PluralRules for PolishPlurals {
     }
 
     fn categories(&self) -> &[PluralCategory] {
-        &[PluralCategory::One, PluralCategory::Few, PluralCategory::Many]
+        &[
+            PluralCategory::One,
+            PluralCategory::Few,
+            PluralCategory::Many,
+        ]
     }
 }
 
@@ -259,7 +267,12 @@ impl PluralRules for CzechPlurals {
     }
 
     fn categories(&self) -> &[PluralCategory] {
-        &[PluralCategory::One, PluralCategory::Few, PluralCategory::Many, PluralCategory::Other]
+        &[
+            PluralCategory::One,
+            PluralCategory::Few,
+            PluralCategory::Many,
+            PluralCategory::Other,
+        ]
     }
 }
 
@@ -399,8 +412,10 @@ mod tests {
     #[test]
     fn test_plural_category_parse() {
         assert_eq!(PluralCategory::parse("one").unwrap(), PluralCategory::One);
-        assert_eq!(PluralCategory::parse("OTHER").unwrap(), PluralCategory::Other);
+        assert_eq!(
+            PluralCategory::parse("OTHER").unwrap(),
+            PluralCategory::Other
+        );
         assert!(PluralCategory::parse("invalid").is_err());
     }
 }
-

@@ -270,7 +270,8 @@ impl PayloadTracker {
 
         // Update sum of squares (capped to prevent overflow)
         let sq = (size as u64).saturating_mul(size as u64);
-        self.sum_squares.fetch_add(sq.min(u64::MAX / 2), Ordering::Relaxed);
+        self.sum_squares
+            .fetch_add(sq.min(u64::MAX / 2), Ordering::Relaxed);
 
         // Update min/max
         self.min_size.fetch_min(size, Ordering::Relaxed);
@@ -433,7 +434,8 @@ impl PayloadTracker {
         for counter in &self.histogram {
             counter.store(0, Ordering::Relaxed);
         }
-        self.cached_size.store(DEFAULT_INITIAL_BUFFER, Ordering::Relaxed);
+        self.cached_size
+            .store(DEFAULT_INITIAL_BUFFER, Ordering::Relaxed);
     }
 }
 
@@ -465,7 +467,10 @@ impl ContentCategory {
     pub fn from_content_type(content_type: &str) -> Self {
         let ct = content_type.to_lowercase();
 
-        if ct.contains("application/json") || ct.contains("application/xml") || ct.contains("text/xml") {
+        if ct.contains("application/json")
+            || ct.contains("application/xml")
+            || ct.contains("text/xml")
+        {
             Self::Api
         } else if ct.contains("text/html") {
             Self::Html
@@ -473,7 +478,11 @@ impl ContentCategory {
             Self::Form
         } else if ct.contains("multipart/form-data") {
             Self::Multipart
-        } else if ct.contains("application/octet-stream") || ct.contains("image/") || ct.contains("video/") || ct.contains("audio/") {
+        } else if ct.contains("application/octet-stream")
+            || ct.contains("image/")
+            || ct.contains("video/")
+            || ct.contains("audio/")
+        {
             Self::Binary
         } else if ct.contains("text/event-stream") || ct.contains("application/grpc") {
             Self::Streaming
@@ -486,13 +495,13 @@ impl ContentCategory {
     #[inline]
     pub const fn recommended_buffer_size(self) -> usize {
         match self {
-            Self::Api => SMALL_BUFFER,      // 4KB - most JSON is small
-            Self::Html => MEDIUM_BUFFER,    // 16KB - HTML varies
-            Self::Form => TINY_BUFFER,      // 256B - form data is small
-            Self::Multipart => LARGE_BUFFER, // 64KB - file uploads
-            Self::Binary => LARGE_BUFFER,   // 64KB - binary blobs
+            Self::Api => SMALL_BUFFER,        // 4KB - most JSON is small
+            Self::Html => MEDIUM_BUFFER,      // 16KB - HTML varies
+            Self::Form => TINY_BUFFER,        // 256B - form data is small
+            Self::Multipart => LARGE_BUFFER,  // 64KB - file uploads
+            Self::Binary => LARGE_BUFFER,     // 64KB - binary blobs
             Self::Streaming => MEDIUM_BUFFER, // 16KB - stream chunks
-            Self::Unknown => SMALL_BUFFER,  // 4KB - safe default
+            Self::Unknown => SMALL_BUFFER,    // 4KB - safe default
         }
     }
 
@@ -500,13 +509,13 @@ impl ContentCategory {
     #[inline]
     pub const fn streaming_threshold(self) -> usize {
         match self {
-            Self::Api => LARGE_BUFFER,       // 64KB - large JSON is rare
-            Self::Html => HUGE_BUFFER,       // 256KB - very long HTML
-            Self::Form => MEDIUM_BUFFER,     // 16KB - forms shouldn't be huge
-            Self::Multipart => MAX_BUFFER,   // 1MB - files can be large
-            Self::Binary => MAX_BUFFER,      // 1MB - binary uploads
+            Self::Api => LARGE_BUFFER,        // 64KB - large JSON is rare
+            Self::Html => HUGE_BUFFER,        // 256KB - very long HTML
+            Self::Form => MEDIUM_BUFFER,      // 16KB - forms shouldn't be huge
+            Self::Multipart => MAX_BUFFER,    // 1MB - files can be large
+            Self::Binary => MAX_BUFFER,       // 1MB - binary uploads
             Self::Streaming => MEDIUM_BUFFER, // 16KB - already streaming
-            Self::Unknown => LARGE_BUFFER,   // 64KB - safe default
+            Self::Unknown => LARGE_BUFFER,    // 64KB - safe default
         }
     }
 }
@@ -695,7 +704,8 @@ impl BufferSizingStats {
             self.perfect_fits.fetch_add(1, Ordering::Relaxed);
         } else {
             let wasted = allocated.saturating_sub(used);
-            self.bytes_wasted.fetch_add(wasted as u64, Ordering::Relaxed);
+            self.bytes_wasted
+                .fetch_add(wasted as u64, Ordering::Relaxed);
         }
     }
 
@@ -815,8 +825,14 @@ mod tests {
     #[test]
     fn test_size_for_content_type() {
         let config = ReadBufferConfig::default();
-        assert_eq!(config.size_for_content_type("application/json"), SMALL_BUFFER);
-        assert_eq!(config.size_for_content_type("multipart/form-data"), LARGE_BUFFER);
+        assert_eq!(
+            config.size_for_content_type("application/json"),
+            SMALL_BUFFER
+        );
+        assert_eq!(
+            config.size_for_content_type("multipart/form-data"),
+            LARGE_BUFFER
+        );
         assert_eq!(config.size_for_content_type("text/html"), MEDIUM_BUFFER);
     }
 
@@ -897,8 +913,14 @@ mod tests {
     #[test]
     fn test_content_category_buffer_sizes() {
         assert_eq!(ContentCategory::Api.recommended_buffer_size(), SMALL_BUFFER);
-        assert_eq!(ContentCategory::Html.recommended_buffer_size(), MEDIUM_BUFFER);
-        assert_eq!(ContentCategory::Multipart.recommended_buffer_size(), LARGE_BUFFER);
+        assert_eq!(
+            ContentCategory::Html.recommended_buffer_size(),
+            MEDIUM_BUFFER
+        );
+        assert_eq!(
+            ContentCategory::Multipart.recommended_buffer_size(),
+            LARGE_BUFFER
+        );
     }
 
     #[test]
@@ -927,12 +949,11 @@ mod tests {
     fn test_histogram() {
         let tracker = PayloadTracker::new();
 
-        tracker.record(100);    // bucket ~7 (2^7 = 128)
-        tracker.record(1000);   // bucket ~10 (2^10 = 1024)
-        tracker.record(10000);  // bucket ~14 (2^14 = 16384)
+        tracker.record(100); // bucket ~7 (2^7 = 128)
+        tracker.record(1000); // bucket ~10 (2^10 = 1024)
+        tracker.record(10000); // bucket ~14 (2^14 = 16384)
 
         let hist = tracker.histogram();
         assert!(!hist.is_empty());
     }
 }
-

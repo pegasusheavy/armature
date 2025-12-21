@@ -1,9 +1,9 @@
 //! Redis cache implementation.
 
-use armature_log::{debug, trace};
 use crate::config::CacheConfig;
 use crate::error::{CacheError, CacheResult};
 use crate::traits::CacheStore;
+use armature_log::{debug, trace};
 use async_trait::async_trait;
 use redis::{AsyncCommands, Client, aio::ConnectionManager};
 use std::time::Duration;
@@ -66,7 +66,11 @@ impl CacheStore for RedisCache {
         let mut conn = self.connection.clone();
 
         let value: Option<String> = conn.get(&key).await?;
-        trace!("Cache {} for: {}", if value.is_some() { "HIT" } else { "MISS" }, key);
+        trace!(
+            "Cache {} for: {}",
+            if value.is_some() { "HIT" } else { "MISS" },
+            key
+        );
         Ok(value)
     }
 

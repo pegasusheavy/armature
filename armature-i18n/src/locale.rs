@@ -54,7 +54,10 @@ impl Locale {
                 // Title case for script
                 let mut chars = s.chars();
                 match chars.next() {
-                    Some(first) => first.to_uppercase().chain(chars.flat_map(|c| c.to_lowercase())).collect(),
+                    Some(first) => first
+                        .to_uppercase()
+                        .chain(chars.flat_map(|c| c.to_lowercase()))
+                        .collect(),
                     None => String::new(),
                 }
             }),
@@ -72,7 +75,10 @@ impl Locale {
         let language = parts[0].to_lowercase();
 
         // Validate language code (2-3 letters)
-        if language.len() < 2 || language.len() > 3 || !language.chars().all(|c| c.is_ascii_alphabetic()) {
+        if language.len() < 2
+            || language.len() > 3
+            || !language.chars().all(|c| c.is_ascii_alphabetic())
+        {
             return Err(I18nError::InvalidLocale(tag.to_string()));
         }
 
@@ -303,7 +309,9 @@ impl LocaleBuilder {
 
     /// Build the locale.
     pub fn build(self) -> Result<Locale> {
-        let language = self.language.ok_or_else(|| I18nError::InvalidLocale("Missing language".to_string()))?;
+        let language = self
+            .language
+            .ok_or_else(|| I18nError::InvalidLocale("Missing language".to_string()))?;
         Ok(Locale::with_script(language, self.script, self.region))
     }
 }
@@ -336,7 +344,10 @@ impl PartialOrd for AcceptLanguageEntry {
 impl Ord for AcceptLanguageEntry {
     fn cmp(&self, other: &Self) -> Ordering {
         // Higher quality first
-        other.quality.partial_cmp(&self.quality).unwrap_or(Ordering::Equal)
+        other
+            .quality
+            .partial_cmp(&self.quality)
+            .unwrap_or(Ordering::Equal)
     }
 }
 
@@ -433,10 +444,7 @@ pub fn negotiate_locale<'a>(
 
 /// Find the best matching locale using scores.
 #[allow(dead_code)] // Public API for advanced locale negotiation
-pub fn best_match<'a>(
-    requested: &Locale,
-    available: &'a [Locale],
-) -> Option<&'a Locale> {
+pub fn best_match<'a>(requested: &Locale, available: &'a [Locale]) -> Option<&'a Locale> {
     let mut best: Option<(&Locale, u32)> = None;
 
     for locale in available {
@@ -525,9 +533,9 @@ mod tests {
         let en = Locale::en();
         let fr = Locale::fr();
 
-        assert_eq!(en_us.match_score(&en_us), 100);  // Exact
-        assert!(en_us.match_score(&en) > 0);         // Language match
-        assert_eq!(en_us.match_score(&fr), 0);       // No match
+        assert_eq!(en_us.match_score(&en_us), 100); // Exact
+        assert!(en_us.match_score(&en) > 0); // Language match
+        assert_eq!(en_us.match_score(&fr), 0); // No match
     }
 
     #[test]
@@ -541,4 +549,3 @@ mod tests {
         assert_eq!(locale.tag(), "en-US");
     }
 }
-

@@ -234,7 +234,8 @@ impl BufferHistory {
         let now = Instant::now();
 
         // Prune old samples
-        self.samples.retain(|s| now.duration_since(s.timestamp) < self.window);
+        self.samples
+            .retain(|s| now.duration_since(s.timestamp) < self.window);
 
         // Add new sample
         self.samples.push(BufferSample {
@@ -250,7 +251,8 @@ impl BufferHistory {
         }
 
         // Find p95 of successful buffer sizes
-        let mut successful: Vec<usize> = self.samples
+        let mut successful: Vec<usize> = self
+            .samples
             .iter()
             .filter(|s| s.was_sufficient)
             .map(|s| s.size)
@@ -338,7 +340,8 @@ impl LoadTracker {
     }
 
     fn set_memory_pressure(&self, pressure: usize) {
-        self.memory_pressure.store(pressure.min(100), Ordering::Relaxed);
+        self.memory_pressure
+            .store(pressure.min(100), Ordering::Relaxed);
     }
 
     fn load_factor(&self, max_connections: usize) -> f64 {
@@ -400,10 +403,8 @@ pub struct ConnectionManager {
 impl ConnectionManager {
     /// Create a new connection manager.
     pub fn new(config: ConnectionManagerConfig) -> Self {
-        let buffer_history = BufferHistory::new(
-            config.buffer_history_window,
-            config.initial_buffer_size,
-        );
+        let buffer_history =
+            BufferHistory::new(config.buffer_history_window, config.initial_buffer_size);
 
         Self {
             config,
@@ -431,7 +432,9 @@ impl ConnectionManager {
         // Check capacity
         let current = self.load.active_connections();
         if current >= self.config.max_connections {
-            self.stats.connections_rejected.fetch_add(1, Ordering::Relaxed);
+            self.stats
+                .connections_rejected
+                .fetch_add(1, Ordering::Relaxed);
             return None;
         }
 
@@ -444,7 +447,9 @@ impl ConnectionManager {
         }
 
         self.load.connection_opened();
-        self.stats.connections_opened.fetch_add(1, Ordering::Relaxed);
+        self.stats
+            .connections_opened
+            .fetch_add(1, Ordering::Relaxed);
 
         Some(id)
     }
@@ -454,42 +459,48 @@ impl ConnectionManager {
         let mut connections = self.connections.write().unwrap();
         if connections.remove(&id).is_some() {
             self.load.connection_closed();
-            self.stats.connections_closed.fetch_add(1, Ordering::Relaxed);
+            self.stats
+                .connections_closed
+                .fetch_add(1, Ordering::Relaxed);
         }
     }
 
     /// Mark a connection as active.
     pub fn mark_active(&self, id: ConnectionId) {
         if let Ok(mut connections) = self.connections.write()
-            && let Some(state) = connections.get_mut(&id) {
-                state.last_active = Instant::now();
-                state.requests += 1;
-            }
+            && let Some(state) = connections.get_mut(&id)
+        {
+            state.last_active = Instant::now();
+            state.requests += 1;
+        }
         self.load.record_request();
     }
 
     /// Record bytes read on a connection.
     pub fn record_bytes_read(&self, id: ConnectionId, bytes: u64) {
         if let Ok(mut connections) = self.connections.write()
-            && let Some(state) = connections.get_mut(&id) {
-                state.bytes_read += bytes;
-            }
+            && let Some(state) = connections.get_mut(&id)
+        {
+            state.bytes_read += bytes;
+        }
     }
 
     /// Record bytes written on a connection.
     pub fn record_bytes_written(&self, id: ConnectionId, bytes: u64) {
         if let Ok(mut connections) = self.connections.write()
-            && let Some(state) = connections.get_mut(&id) {
-                state.bytes_written += bytes;
-            }
+            && let Some(state) = connections.get_mut(&id)
+        {
+            state.bytes_written += bytes;
+        }
     }
 
     /// Set connection keep-alive status.
     pub fn set_keep_alive(&self, id: ConnectionId, keep_alive: bool) {
         if let Ok(mut connections) = self.connections.write()
-            && let Some(state) = connections.get_mut(&id) {
-                state.is_keep_alive = keep_alive;
-            }
+            && let Some(state) = connections.get_mut(&id)
+        {
+            state.is_keep_alive = keep_alive;
+        }
     }
 
     // ========================================================================
@@ -510,14 +521,17 @@ impl ConnectionManager {
     /// Recalculate optimal buffer size.
     fn adjust_buffer_size(&self) {
         let history = self.buffer_history.lock().unwrap();
-        let optimal = history.compute_optimal_size(
-            self.config.min_buffer_size,
-            self.config.max_buffer_size,
-        );
+        let optimal =
+            history.compute_optimal_size(self.config.min_buffer_size, self.config.max_buffer_size);
 
-        let previous = self.stats.current_buffer_size.swap(optimal, Ordering::Relaxed);
+        let previous = self
+            .stats
+            .current_buffer_size
+            .swap(optimal, Ordering::Relaxed);
         if previous != optimal {
-            self.stats.buffer_adjustments.fetch_add(1, Ordering::Relaxed);
+            self.stats
+                .buffer_adjustments
+                .fetch_add(1, Ordering::Relaxed);
         }
     }
 
@@ -536,7 +550,8 @@ impl ConnectionManager {
         if pressure < self.config.keep_alive_load_threshold {
             // Under threshold - use base or even extended timeout
             let extension = (1.0 - pressure / self.config.keep_alive_load_threshold) * 0.5;
-            let timeout_ms = self.config.base_keep_alive_timeout.as_millis() as f64 * (1.0 + extension);
+            let timeout_ms =
+                self.config.base_keep_alive_timeout.as_millis() as f64 * (1.0 + extension);
             let max_ms = self.config.max_keep_alive_timeout.as_millis() as f64;
             Duration::from_millis(timeout_ms.min(max_ms) as u64)
         } else {
@@ -598,8 +613,7 @@ impl ConnectionManager {
             idle_connections.sort_by(|a, b| b.1.cmp(&a.1));
 
             // Take up to batch size, but keep min connections
-            let max_cull = (current - self.config.min_connections)
-                .min(self.config.cull_batch_size);
+            let max_cull = (current - self.config.min_connections).min(self.config.cull_batch_size);
 
             idle_connections
                 .into_iter()
@@ -618,7 +632,9 @@ impl ConnectionManager {
             }
         }
 
-        self.stats.connections_culled.fetch_add(culled as u64, Ordering::Relaxed);
+        self.stats
+            .connections_culled
+            .fetch_add(culled as u64, Ordering::Relaxed);
         culled
     }
 
@@ -659,7 +675,9 @@ impl ConnectionManager {
 
         // Update keep-alive timeout stat
         let timeout = self.keep_alive_timeout();
-        self.stats.current_keep_alive_ms.store(timeout.as_millis() as u64, Ordering::Relaxed);
+        self.stats
+            .current_keep_alive_ms
+            .store(timeout.as_millis() as u64, Ordering::Relaxed);
 
         // Cull idle connections if under pressure
         self.cull_idle_connections();
@@ -864,4 +882,3 @@ mod tests {
         assert!(snapshot.buffer_size > 0);
     }
 }
-

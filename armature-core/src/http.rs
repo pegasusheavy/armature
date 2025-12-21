@@ -205,7 +205,8 @@ impl HttpRequest {
     /// ```
     #[inline]
     pub fn json<T: for<'de> Deserialize<'de>>(&self) -> Result<T, crate::Error> {
-        crate::json::from_slice(self.body_ref()).map_err(|e| crate::Error::Deserialization(e.to_string()))
+        crate::json::from_slice(self.body_ref())
+            .map_err(|e| crate::Error::Deserialization(e.to_string()))
     }
 
     /// Parse URL-encoded form data
@@ -318,9 +319,7 @@ impl LazyHeaders {
     /// Get an entry for in-place manipulation.
     #[inline]
     pub fn entry(&mut self, key: String) -> std::collections::hash_map::Entry<'_, String, String> {
-        self.inner
-            .get_or_insert_with(HashMap::new)
-            .entry(key)
+        self.inner.get_or_insert_with(HashMap::new).entry(key)
     }
 
     /// Extend with headers from an iterator.
@@ -363,7 +362,7 @@ impl From<LazyHeaders> for HashMap<String, String> {
 impl<'a> IntoIterator for &'a LazyHeaders {
     type Item = (&'a String, &'a String);
     type IntoIter = std::iter::Flatten<std::option::Iter<'a, HashMap<String, String>>>;
-    
+
     fn into_iter(self) -> Self::IntoIter {
         self.inner.iter().flatten()
     }
@@ -566,7 +565,8 @@ impl HttpResponse {
     /// ```
     #[inline]
     pub fn with_json<T: Serialize>(mut self, value: &T) -> Result<Self, crate::Error> {
-        let vec = crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
+        let vec =
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
         self.body_bytes = Some(Bytes::from(vec));
         self.body.clear();
         self.headers

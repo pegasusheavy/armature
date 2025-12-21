@@ -543,7 +543,6 @@ impl CircuitBreakerStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[tokio::test]
     async fn test_circuit_breaker_opens_after_failures() {

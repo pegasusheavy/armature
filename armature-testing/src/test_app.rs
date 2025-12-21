@@ -135,7 +135,8 @@ impl TestAppBuilder {
     {
         use armature_core::{HttpMethod, Route};
         // Use the optimized Route::new which enables handler monomorphization
-        self.router.add_route(Route::new(HttpMethod::GET, path, handler));
+        self.router
+            .add_route(Route::new(HttpMethod::GET, path, handler));
         self
     }
 

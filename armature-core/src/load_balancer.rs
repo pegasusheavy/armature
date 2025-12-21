@@ -17,16 +17,15 @@
 //! - Least Connections: O(n) workers, atomic reads
 //! - Power of Two: O(1), near-optimal load distribution
 
-use std::sync::atomic::{AtomicU32, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, AtomicUsize, Ordering};
 
 // ============================================================================
 // Load Balancing Strategy
 // ============================================================================
 
 /// Load balancing strategy for worker selection.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LoadBalanceStrategy {
     /// Simple round-robin rotation
     #[default]
@@ -42,7 +41,6 @@ pub enum LoadBalanceStrategy {
     /// Sticky: hash-based routing for session affinity
     Sticky,
 }
-
 
 // ============================================================================
 // Worker State
@@ -136,7 +134,8 @@ impl WorkerState {
     /// Set healthy status.
     #[inline]
     pub fn set_healthy(&self, healthy: bool) {
-        self.healthy.store(if healthy { 1 } else { 0 }, Ordering::Relaxed);
+        self.healthy
+            .store(if healthy { 1 } else { 0 }, Ordering::Relaxed);
     }
 
     /// Get pending requests.
@@ -412,7 +411,11 @@ impl LoadBalancer {
             return 0.0;
         }
 
-        let conns: Vec<f64> = self.workers.iter().map(|w| w.connections() as f64).collect();
+        let conns: Vec<f64> = self
+            .workers
+            .iter()
+            .map(|w| w.connections() as f64)
+            .collect();
         let mean = conns.iter().sum::<f64>() / conns.len() as f64;
 
         if mean == 0.0 {
@@ -725,8 +728,14 @@ mod tests {
 
         // Worker 1 (weight 2) should get ~2x the selections
         // Allow 20% variance
-        assert!(counts[1] > counts[0], "Worker 1 should get more than worker 0");
-        assert!(counts[1] > counts[2], "Worker 1 should get more than worker 2");
+        assert!(
+            counts[1] > counts[0],
+            "Worker 1 should get more than worker 0"
+        );
+        assert!(
+            counts[1] > counts[2],
+            "Worker 1 should get more than worker 2"
+        );
     }
 
     #[test]
@@ -858,4 +867,3 @@ mod tests {
         let _ = stats.active_connections();
     }
 }
-

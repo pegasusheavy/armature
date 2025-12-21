@@ -19,8 +19,8 @@ use bytes::{Bytes, BytesMut};
 use compact_str::CompactString;
 use smallvec::SmallVec;
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 // ============================================================================
 // SmallVec Headers
@@ -152,7 +152,9 @@ impl SmallHeaders {
     /// Iterate over headers.
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.headers.iter().map(|h| (h.name.as_str(), h.value.as_str()))
+        self.headers
+            .iter()
+            .map(|h| (h.name.as_str(), h.value.as_str()))
     }
 
     /// Clear all headers.
@@ -642,11 +644,7 @@ impl PoolStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 {
-            hits / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { hits / total } else { 0.0 }
     }
 }
 
@@ -695,7 +693,11 @@ impl PooledRequest {
     }
 
     /// Add header.
-    pub fn header(&mut self, name: impl Into<CompactString>, value: impl Into<CompactString>) -> &mut Self {
+    pub fn header(
+        &mut self,
+        name: impl Into<CompactString>,
+        value: impl Into<CompactString>,
+    ) -> &mut Self {
         self.headers.insert(name, value);
         self
     }
@@ -739,7 +741,11 @@ impl PooledResponse {
     }
 
     /// Add header.
-    pub fn header(&mut self, name: impl Into<CompactString>, value: impl Into<CompactString>) -> &mut Self {
+    pub fn header(
+        &mut self,
+        name: impl Into<CompactString>,
+        value: impl Into<CompactString>,
+    ) -> &mut Self {
         self.headers.insert(name, value);
         self
     }
@@ -776,9 +782,7 @@ pub fn init_pools(config: PoolConfig) {
 
 /// Acquire request from global pool.
 pub fn acquire_request() -> PooledObject<'static, PooledRequest> {
-    REQUEST_POOL
-        .get_or_init(ObjectPool::default_pool)
-        .acquire()
+    REQUEST_POOL.get_or_init(ObjectPool::default_pool).acquire()
 }
 
 /// Acquire response from global pool.
@@ -1103,4 +1107,3 @@ mod tests {
         let _ = stats.pool_hit_ratio();
     }
 }
-

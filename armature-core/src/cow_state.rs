@@ -101,7 +101,10 @@ impl<T> Snapshot<T> {
     /// Create from Arc with version.
     #[inline]
     pub(crate) fn from_arc(arc: Arc<T>, version: u64) -> Self {
-        Self { inner: arc, version }
+        Self {
+            inner: arc,
+            version,
+        }
     }
 
     /// Get the version number of this snapshot.
@@ -674,10 +677,11 @@ impl<T: Clone> CachedValue<T> {
         {
             let guard = self.value.read().unwrap();
             if let Some(ref entry) = *guard
-                && entry.created_at.elapsed() < self.ttl {
-                    COW_STATS.record_cache_hit();
-                    return Arc::clone(&entry.value);
-                }
+                && entry.created_at.elapsed() < self.ttl
+            {
+                COW_STATS.record_cache_hit();
+                return Arc::clone(&entry.value);
+            }
         }
 
         // Slow path: compute and store
@@ -686,9 +690,10 @@ impl<T: Clone> CachedValue<T> {
 
         // Double-check after acquiring write lock
         if let Some(ref entry) = *guard
-            && entry.created_at.elapsed() < self.ttl {
-                return Arc::clone(&entry.value);
-            }
+            && entry.created_at.elapsed() < self.ttl
+        {
+            return Arc::clone(&entry.value);
+        }
 
         let value = Arc::new(f());
         let version = guard.as_ref().map(|e| e.version + 1).unwrap_or(1);
@@ -710,10 +715,11 @@ impl<T: Clone> CachedValue<T> {
         {
             let guard = self.value.read().unwrap();
             if let Some(ref entry) = *guard
-                && entry.created_at.elapsed() < self.ttl {
-                    COW_STATS.record_cache_hit();
-                    return Arc::clone(&entry.value);
-                }
+                && entry.created_at.elapsed() < self.ttl
+            {
+                COW_STATS.record_cache_hit();
+                return Arc::clone(&entry.value);
+            }
         }
 
         // Slow path
@@ -823,11 +829,7 @@ impl CowStats {
     pub fn cache_hit_ratio(&self) -> f64 {
         let hits = self.cache_hits() as f64;
         let total = hits + self.cache_misses() as f64;
-        if total > 0.0 {
-            hits / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { hits / total } else { 0.0 }
     }
 
     /// Get read/write ratio.
@@ -1015,4 +1017,3 @@ mod tests {
         let _ = stats.read_write_ratio();
     }
 }
-

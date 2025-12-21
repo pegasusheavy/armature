@@ -553,9 +553,8 @@ mod tests {
         let req = HttpRequest::new("GET".to_string(), "/test".to_string());
 
         let handler = Arc::new(|_req: HttpRequest| {
-            Box::pin(async {
-                Ok(HttpResponse::ok())
-            }) as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+            Box::pin(async { Ok(HttpResponse::ok()) })
+                as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
         });
 
         let result = chain.apply(req, handler).await;
@@ -571,9 +570,7 @@ mod tests {
         let result = cors
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -594,9 +591,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -611,9 +606,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -630,9 +623,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -652,9 +643,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -712,9 +701,8 @@ mod tests {
         let req = HttpRequest::new("GET".to_string(), "/test".to_string());
 
         let handler = Arc::new(|_req: HttpRequest| {
-            Box::pin(async {
-                Ok(HttpResponse::ok())
-            }) as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+            Box::pin(async { Ok(HttpResponse::ok()) })
+                as Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
         });
 
         let result = chain.apply(req, handler).await;
@@ -740,9 +728,7 @@ mod tests {
         let result = cors
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -765,9 +751,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async { Ok(HttpResponse::ok()) })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 

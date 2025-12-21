@@ -25,8 +25,8 @@
 //! curl http://localhost:3000/api/v2/products/unknown  # Invalid status
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use std::sync::Arc;
 
 #[tokio::main]

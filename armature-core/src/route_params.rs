@@ -65,7 +65,10 @@ impl<'a> BorrowedParam<'a> {
     /// Convert to compact strings.
     #[inline]
     pub fn to_compact(&self) -> (CompactString, CompactString) {
-        (CompactString::new(self.name), CompactString::new(self.value))
+        (
+            CompactString::new(self.name),
+            CompactString::new(self.value),
+        )
     }
 }
 
@@ -116,10 +119,7 @@ impl<'a> Params<'a> {
     /// Get parameter by name.
     #[inline]
     pub fn get(&self, name: &str) -> Option<&str> {
-        self.params
-            .iter()
-            .find(|p| p.name == name)
-            .map(|p| p.value)
+        self.params.iter().find(|p| p.name == name).map(|p| p.value)
     }
 
     /// Get parameter and parse as type T.
@@ -256,11 +256,7 @@ impl<'a> PatternSegment<'a> {
         } else if segment == "**" || segment.starts_with('*') && segment.len() > 1 {
             Self {
                 segment_type: SegmentType::CatchAll,
-                value: if segment == "**" {
-                    "*"
-                } else {
-                    &segment[1..]
-                },
+                value: if segment == "**" { "*" } else { &segment[1..] },
             }
         } else {
             Self {
@@ -347,10 +343,8 @@ impl CompiledPattern {
         PARAMS_STATS.record_match_attempt();
 
         // Split path into segments
-        let path_segments: SmallVec<[&str; INLINE_SEGMENT_COUNT]> = path
-            .split('/')
-            .filter(|s| !s.is_empty())
-            .collect();
+        let path_segments: SmallVec<[&str; INLINE_SEGMENT_COUNT]> =
+            path.split('/').filter(|s| !s.is_empty()).collect();
 
         // Quick length check
         if self.catch_all_index.is_none() {
@@ -421,25 +415,18 @@ impl CompiledPattern {
 /// Zero-allocation route matcher.
 ///
 /// Uses borrowed strings and avoids HashMap allocation during matching.
-pub fn match_path_zero_alloc<'p, 'a>(
-    pattern: &'p str,
-    path: &'a str,
-) -> Option<Params<'a>>
+pub fn match_path_zero_alloc<'p, 'a>(pattern: &'p str, path: &'a str) -> Option<Params<'a>>
 where
     'p: 'a,
 {
     PARAMS_STATS.record_match_attempt();
 
     // Split into segments
-    let pattern_parts: SmallVec<[&str; INLINE_SEGMENT_COUNT]> = pattern
-        .split('/')
-        .filter(|s| !s.is_empty())
-        .collect();
+    let pattern_parts: SmallVec<[&str; INLINE_SEGMENT_COUNT]> =
+        pattern.split('/').filter(|s| !s.is_empty()).collect();
 
-    let path_parts: SmallVec<[&str; INLINE_SEGMENT_COUNT]> = path
-        .split('/')
-        .filter(|s| !s.is_empty())
-        .collect();
+    let path_parts: SmallVec<[&str; INLINE_SEGMENT_COUNT]> =
+        path.split('/').filter(|s| !s.is_empty()).collect();
 
     // Check for catch-all
     let has_catch_all = pattern_parts
@@ -607,11 +594,7 @@ impl ParamsStats {
         let inline = self.params_inline.load(Ordering::Relaxed) as f64;
         let heap = self.params_heap.load(Ordering::Relaxed) as f64;
         let total = inline + heap;
-        if total > 0.0 {
-            inline / total
-        } else {
-            1.0
-        }
+        if total > 0.0 { inline / total } else { 1.0 }
     }
 }
 
@@ -740,7 +723,8 @@ mod tests {
     #[test]
     fn test_zero_alloc_match_multiple() {
         let params =
-            match_path_zero_alloc("/users/:user_id/posts/:post_id", "/users/123/posts/456").unwrap();
+            match_path_zero_alloc("/users/:user_id/posts/:post_id", "/users/123/posts/456")
+                .unwrap();
         assert_eq!(params.get("user_id"), Some("123"));
         assert_eq!(params.get("post_id"), Some("456"));
     }
@@ -799,4 +783,3 @@ mod tests {
         let _ = stats.inline_ratio();
     }
 }
-

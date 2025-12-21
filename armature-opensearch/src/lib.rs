@@ -71,19 +71,17 @@ pub use client::OpenSearchClient;
 pub use config::{OpenSearchConfig, TlsConfig};
 pub use document::Document;
 pub use error::{OpenSearchError, Result};
-pub use index::{IndexManager, IndexSettings, Mapping, MappingField, FieldType};
-pub use query::{Query, QueryBuilder, BoolQuery, MatchQuery, TermQuery, RangeQuery};
-pub use search::{SearchBuilder, SearchResult, Hit, Aggregation, AggregationResult};
+pub use index::{FieldType, IndexManager, IndexSettings, Mapping, MappingField};
+pub use query::{BoolQuery, MatchQuery, Query, QueryBuilder, RangeQuery, TermQuery};
+pub use search::{Aggregation, AggregationResult, Hit, SearchBuilder, SearchResult};
 
 #[cfg(feature = "bulk-stream")]
-pub use bulk::{BulkOperation, BulkResponse, BulkItem};
+pub use bulk::{BulkItem, BulkOperation, BulkResponse};
 
 /// Prelude for common imports.
 pub mod prelude {
     pub use crate::{
-        OpenSearchClient, OpenSearchConfig, Document,
-        OpenSearchError, Result,
-        Query, QueryBuilder, SearchBuilder,
+        Document, OpenSearchClient, OpenSearchConfig, OpenSearchError, Query, QueryBuilder, Result,
+        SearchBuilder,
     };
 }
-
