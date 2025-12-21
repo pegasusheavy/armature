@@ -156,7 +156,7 @@ impl StreamingCompressor {
     /// Create a new streaming compressor.
     pub fn new(config: StreamingConfig) -> Result<Self> {
         let encoder = Self::create_encoder(&config)?;
-        
+
         Ok(Self {
             config,
             encoder,
@@ -191,7 +191,7 @@ impl StreamingCompressor {
 
         match algorithm {
             CompressionAlgorithm::None | CompressionAlgorithm::Auto => Ok(EncoderState::None),
-            
+
             #[cfg(feature = "gzip")]
             CompressionAlgorithm::Gzip => {
                 let level = config.level.clamp(1, 9);
@@ -201,7 +201,7 @@ impl StreamingCompressor {
                 );
                 Ok(EncoderState::Gzip(encoder))
             }
-            
+
             #[cfg(feature = "brotli")]
             CompressionAlgorithm::Brotli => {
                 let level = config.level.clamp(0, 11);
@@ -213,7 +213,7 @@ impl StreamingCompressor {
                 );
                 Ok(EncoderState::Brotli(encoder))
             }
-            
+
             #[cfg(feature = "zstd")]
             CompressionAlgorithm::Zstd => {
                 let level = config.level.clamp(1, 22) as i32;
@@ -223,7 +223,7 @@ impl StreamingCompressor {
                 ).map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 Ok(EncoderState::Zstd(encoder))
             }
-            
+
             #[allow(unreachable_patterns)]
             _ => Err(CompressionError::UnsupportedAlgorithm(format!(
                 "{:?} not available",
@@ -268,12 +268,12 @@ impl StreamingCompressor {
                 self.bytes_out += data.len() as u64;
                 Ok(Bytes::copy_from_slice(data))
             }
-            
+
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
                 encoder.write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
-                
+
                 // Flush if we've accumulated enough
                 if self.unflushed_bytes >= self.config.flush_interval {
                     self.flush_internal()
@@ -281,24 +281,24 @@ impl StreamingCompressor {
                     Ok(Bytes::new())
                 }
             }
-            
+
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(encoder) => {
                 encoder.write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
-                
+
                 if self.unflushed_bytes >= self.config.flush_interval {
                     self.flush_internal()
                 } else {
                     Ok(Bytes::new())
                 }
             }
-            
+
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
                 encoder.write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
-                
+
                 if self.unflushed_bytes >= self.config.flush_interval {
                     self.flush_internal()
                 } else {
@@ -318,7 +318,7 @@ impl StreamingCompressor {
 
         match &mut self.encoder {
             EncoderState::None => Ok(Bytes::new()),
-            
+
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
                 encoder.flush()
@@ -331,7 +331,7 @@ impl StreamingCompressor {
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
             }
-            
+
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(encoder) => {
                 encoder.flush()
@@ -344,7 +344,7 @@ impl StreamingCompressor {
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
             }
-            
+
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
                 encoder.flush()
@@ -369,7 +369,7 @@ impl StreamingCompressor {
 
         match self.encoder {
             EncoderState::None => Ok(Bytes::new()),
-            
+
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
                 let output = encoder.finish()
@@ -377,7 +377,7 @@ impl StreamingCompressor {
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
             }
-            
+
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(mut encoder) => {
                 encoder.flush()
@@ -386,7 +386,7 @@ impl StreamingCompressor {
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
             }
-            
+
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
                 let output = encoder.finish()
@@ -497,12 +497,12 @@ mod tests {
             .algorithm(CompressionAlgorithm::None);
 
         let mut compressor = StreamingCompressor::new(config).unwrap();
-        
+
         let data = b"Hello, World!";
         let compressed = compressor.compress_chunk(data).unwrap();
-        
+
         assert_eq!(compressed.as_ref(), data);
-        
+
         let final_chunk = compressor.finish().unwrap();
         assert!(final_chunk.is_empty());
     }
@@ -515,24 +515,24 @@ mod tests {
             .flush_interval(10); // Flush frequently for test
 
         let mut compressor = StreamingCompressor::new(config).unwrap();
-        
+
         let mut total_compressed = BytesMut::new();
-        
+
         // Send multiple chunks
         for _ in 0..10 {
             let data = b"Hello, World! This is a test chunk.\n";
             let compressed = compressor.compress_chunk(data).unwrap();
             total_compressed.extend_from_slice(&compressed);
         }
-        
+
         // Get stats before finishing (finish consumes self)
         let stats = compressor.stats();
         assert_eq!(stats.bytes_in, 10 * 36);
-        
+
         // Finish
         let final_chunk = compressor.finish().unwrap();
         total_compressed.extend_from_slice(&final_chunk);
-        
+
         // Should be smaller than original
         let original_size = 10 * 36; // 10 chunks * 36 bytes each
         assert!(total_compressed.len() < original_size);

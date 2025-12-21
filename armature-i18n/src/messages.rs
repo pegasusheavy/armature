@@ -153,7 +153,7 @@ impl Messages {
     /// - `locales/fr.json`
     pub fn load_from_dir(&mut self, dir: impl AsRef<Path>) -> Result<()> {
         let dir = dir.as_ref();
-        
+
         if !dir.exists() {
             return Err(I18nError::IoError(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
@@ -173,7 +173,7 @@ impl Messages {
                 let locale = Locale::parse(stem)?;
                 let content = fs::read_to_string(&path)?;
                 let bundle = MessageBundle::from_json(&content)?;
-                
+
                 self.add_bundle(&locale, bundle);
             }
         }
@@ -264,7 +264,7 @@ impl I18n {
     /// Replaces `{name}` placeholders with provided values.
     pub fn t_args(&self, key: &str, locale: &Locale, args: &[(&str, &str)]) -> String {
         let mut result = self.t(key, locale);
-        
+
         for (name, value) in args {
             let placeholder = format!("{{{}}}", name);
             result = result.replace(&placeholder, value);
@@ -310,7 +310,7 @@ impl I18n {
     /// Check if a message exists.
     pub fn has(&self, key: &str, locale: &Locale) -> bool {
         let messages = self.messages.read();
-        
+
         messages.get_bundle(locale)
             .map(|b| b.has(key))
             .unwrap_or(false)
@@ -421,7 +421,7 @@ mod tests {
         }"#;
 
         let bundle = MessageBundle::from_json(json).unwrap();
-        
+
         assert_eq!(bundle.get("hello"), Some("Hello!"));
         assert_eq!(bundle.get_plural("items", PluralCategory::One), Some("{n} item"));
         assert_eq!(bundle.get_plural("items", PluralCategory::Other), Some("{n} items"));

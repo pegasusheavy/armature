@@ -215,7 +215,7 @@ impl PluralRules for PolishPlurals {
         }
 
         let i = n.abs() as i64;
-        
+
         if i == 1 {
             return PluralCategory::One;
         }
@@ -250,7 +250,7 @@ impl PluralRules for CzechPlurals {
         }
 
         let i = n.abs() as i64;
-        
+
         match i {
             1 => PluralCategory::One,
             2..=4 => PluralCategory::Few,
@@ -280,7 +280,7 @@ impl PluralRules for WelshPlurals {
         }
 
         let i = n.abs() as i64;
-        
+
         match i {
             0 => PluralCategory::Zero,
             1 => PluralCategory::One,
