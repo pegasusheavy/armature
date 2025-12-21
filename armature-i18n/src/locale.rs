@@ -64,13 +64,13 @@ impl Locale {
     /// Parse from BCP 47 tag (e.g., "en-US", "zh-Hans-CN").
     pub fn parse(tag: &str) -> Result<Self> {
         let parts: Vec<&str> = tag.split(|c| c == '-' || c == '_').collect();
-        
+
         if parts.is_empty() || parts[0].is_empty() {
             return Err(I18nError::InvalidLocale(tag.to_string()));
         }
 
         let language = parts[0].to_lowercase();
-        
+
         // Validate language code (2-3 letters)
         if language.len() < 2 || language.len() > 3 || !language.chars().all(|c| c.is_ascii_alphabetic()) {
             return Err(I18nError::InvalidLocale(tag.to_string()));
@@ -131,12 +131,12 @@ impl Locale {
         if self.language != other.language {
             return false;
         }
-        
+
         // If other has no region, it matches any region of same language
         if other.region.is_none() {
             return true;
         }
-        
+
         // Otherwise require exact region match
         self.region == other.region
     }
@@ -172,7 +172,7 @@ impl Locale {
     }
 
     // Common locales
-    
+
     /// English (no region)
     pub fn en() -> Self {
         Self::new("en", None::<&str>)

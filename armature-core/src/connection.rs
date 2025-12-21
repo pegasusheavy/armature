@@ -226,7 +226,7 @@ pub enum TransitionAction {
 /// This eliminates branching by using array indexing instead of match statements.
 /// The table is const and will be embedded in the binary.
 const TRANSITION_TABLE: [[TransitionEntry; ConnectionEvent::COUNT]; ConnectionState::COUNT] = {
-    
+
     use ConnectionState as S;
     use TransitionAction as A;
 

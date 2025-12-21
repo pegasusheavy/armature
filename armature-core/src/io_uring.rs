@@ -512,7 +512,7 @@ impl BufferPool {
     /// Acquire a buffer from the pool
     ///
     /// # Safety
-    /// 
+    ///
     /// The returned mutable reference is safe because:
     /// 1. We hold the Mutex lock while determining which buffer to return
     /// 2. The buffer index is removed from the free list, ensuring exclusive access

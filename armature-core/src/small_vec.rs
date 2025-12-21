@@ -177,12 +177,12 @@ impl QueryParams {
     /// Parse from query string (e.g., "a=1&b=2").
     pub fn parse(query: &str) -> Self {
         let mut params = Self::new();
-        
+
         for part in query.split('&') {
             if part.is_empty() {
                 continue;
             }
-            
+
             if let Some((key, value)) = part.split_once('=') {
                 // URL decode
                 let key = urlencoding::decode(key).unwrap_or(Cow::Borrowed(key));
@@ -194,7 +194,7 @@ impl QueryParams {
                 params.push(key.into_owned(), String::new());
             }
         }
-        
+
         params
     }
 
@@ -369,19 +369,19 @@ impl FormFields {
     /// Parse from URL-encoded body.
     pub fn parse(body: &str) -> Self {
         let mut fields = Self::new();
-        
+
         for part in body.split('&') {
             if part.is_empty() {
                 continue;
             }
-            
+
             if let Some((key, value)) = part.split_once('=') {
                 let key = urlencoding::decode(key).unwrap_or(Cow::Borrowed(key));
                 let value = urlencoding::decode(value).unwrap_or(Cow::Borrowed(value));
                 fields.push(key.into_owned(), value.into_owned());
             }
         }
-        
+
         fields
     }
 }
@@ -463,18 +463,18 @@ impl Cookies {
     /// Parse from Cookie header value.
     pub fn parse(cookie_header: &str) -> Self {
         let mut cookies = Self::new();
-        
+
         for cookie in cookie_header.split(';') {
             let cookie = cookie.trim();
             if cookie.is_empty() {
                 continue;
             }
-            
+
             if let Some((name, value)) = cookie.split_once('=') {
                 cookies.push(name.trim().to_string(), value.trim().to_string());
             }
         }
-        
+
         cookies
     }
 }
@@ -495,7 +495,7 @@ impl fmt::Debug for Cookies {
 pub trait SmallVecExt<T> {
     /// Check if the SmallVec is still inline (not spilled to heap).
     fn is_inline(&self) -> bool;
-    
+
     /// Get stack usage in bytes.
     fn stack_size() -> usize;
 }
@@ -505,7 +505,7 @@ impl<T, const N: usize> SmallVecExt<T> for SmallVec<[T; N]> {
     fn is_inline(&self) -> bool {
         !self.spilled()
     }
-    
+
     #[inline]
     fn stack_size() -> usize {
         std::mem::size_of::<SmallVec<[T; N]>>()
@@ -542,15 +542,15 @@ mod tests {
     #[test]
     fn test_query_params_inline() {
         let mut params = QueryParams::new();
-        
+
         // Add typical number of params
         for i in 0..QUERY_PARAM_INLINE {
             params.push(format!("key{}", i), format!("value{}", i));
         }
-        
+
         assert!(params.is_inline());
         assert_eq!(params.len(), QUERY_PARAM_INLINE);
-        
+
         // One more should spill
         params.push("extra", "value");
         assert!(!params.is_inline());
@@ -559,7 +559,7 @@ mod tests {
     #[test]
     fn test_query_params_parse() {
         let params = QueryParams::parse("name=Alice&age=30&city=NYC");
-        
+
         assert_eq!(params.get("name"), Some("Alice"));
         assert_eq!(params.get("age"), Some("30"));
         assert_eq!(params.get("city"), Some("NYC"));
@@ -569,7 +569,7 @@ mod tests {
     #[test]
     fn test_query_params_url_decode() {
         let params = QueryParams::parse("name=Hello%20World&emoji=%F0%9F%98%80");
-        
+
         assert_eq!(params.get("name"), Some("Hello World"));
         assert_eq!(params.get("emoji"), Some("😀"));
     }
@@ -579,7 +579,7 @@ mod tests {
         let mut params = PathParams::new();
         params.push("id", "123");
         params.push("name", "test");
-        
+
         assert!(params.is_inline());
         assert_eq!(params.get("id"), Some("123"));
         assert_eq!(params.get_index(0), Some("123"));
@@ -588,19 +588,19 @@ mod tests {
     #[test]
     fn test_form_fields_inline() {
         let mut fields = FormFields::new();
-        
+
         // Add typical form fields
         for i in 0..FORM_FIELD_INLINE {
             fields.push(format!("field{}", i), format!("value{}", i));
         }
-        
+
         assert!(fields.is_inline());
     }
 
     #[test]
     fn test_cookies_parse() {
         let cookies = Cookies::parse("session=abc123; user=alice; theme=dark");
-        
+
         assert_eq!(cookies.get("session"), Some("abc123"));
         assert_eq!(cookies.get("user"), Some("alice"));
         assert_eq!(cookies.get("theme"), Some("dark"));
