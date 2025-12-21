@@ -1,3 +1,7 @@
+[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
+[1m[92m   Compiling[0m opentelemetry-http v0.31.0
+[1m[92m   Compiling[0m yasna v0.5.2
+[1m[92m   Compiling[0m serde_yaml v0.9.34+deprecated
 [1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
   [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
    [1m[94m|[0m
@@ -48,6 +52,9 @@
 [1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
    [1m[94m|[0m                              [1m[33m^^^^^^[0m
 
+[1m[92m   Compiling[0m rcgen v0.14.6
+[1m[92m   Compiling[0m opentelemetry-otlp v0.31.0
+[1m[92m   Compiling[0m sqlx-postgres v0.8.6
 [1m[33mwarning[0m[1m: variable does not need to be mutable[0m
    [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
     [1m[94m|[0m
@@ -67,6 +74,33 @@
     [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
 
+[1m[91merror[E0507][0m[1m: cannot move out of `f`, a captured variable in an `FnMut` closure[0m
+   [1m[94m--> [0marmature-core/src/read_state.rs:598:25
+    [1m[94m|[0m
+[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
+    [1m[94m|[0m                               [1m[94m-[0m [1m[94mcaptured outer variable[0m
+[1m[94m...[0m
+[1m[94m597[0m [1m[94m|[0m         self.inner.read().iter().for_each(|(k, v)| {
+    [1m[94m|[0m                                           [1m[94m--------[0m [1m[94mcaptured by this `FnMut` closure[0m
+[1m[94m598[0m [1m[94m|[0m             let mut f = f;
+    [1m[94m|[0m                         [1m[91m^[0m [1m[91mmove occurs because `f` has type `F`, which does not implement the `Copy` trait[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
+   [1m[94m--> [0m/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:821:12
+[1m[96mhelp[0m: if `F` implemented `Clone`, you could clone the value
+   [1m[94m--> [0marmature-core/src/read_state.rs:592:21
+    [1m[94m|[0m
+[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
+    [1m[94m|[0m                     [1m[96m^[0m [1m[96mconsider constraining this type parameter with `Clone`[0m
+[1m[94m...[0m
+[1m[94m598[0m [1m[94m|[0m             let mut f = f;
+    [1m[94m|[0m                         [1m[94m-[0m [1m[94myou could clone this value[0m
+[1m[96mhelp[0m: consider borrowing here
+    [1m[94m|[0m
+[1m[94m598[0m [1m[94m| [0m            let mut f = [92m&[0mf;
+    [1m[94m|[0m                         [92m+[0m
+
+[1m[92m   Compiling[0m sqlx-macros v0.8.6
 [1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
    [1m[94m--> [0marmature-core/src/numa.rs:549:13
     [1m[94m|[0m
@@ -82,340 +116,9 @@
     [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
     [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
 
-[1m[33mwarning[0m[1m: field `config` is never read[0m
-   [1m[94m--> [0marmature-core/src/body_parser.rs:528:5
-    [1m[94m|[0m
-[1m[94m526[0m [1m[94m|[0m pub struct LazyBody {
-    [1m[94m|[0m            [1m[94m--------[0m [1m[94mfield in this struct[0m
-[1m[94m527[0m [1m[94m|[0m     state: LazyBodyState,
-[1m[94m528[0m [1m[94m|[0m     config: StreamingConfig,
-    [1m[94m|[0m     [1m[33m^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: method `allocate` is never used[0m
-   [1m[94m--> [0marmature-core/src/buffer_pool.rs:325:8
-    [1m[94m|[0m
-[1m[94m294[0m [1m[94m|[0m impl SizePool {
-    [1m[94m|[0m [1m[94m-------------[0m [1m[94mmethod in this implementation[0m
-[1m[94m...[0m
-[1m[94m325[0m [1m[94m|[0m     fn allocate(&self) -> BytesMut {
-    [1m[94m|[0m        [1m[33m^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: field `config` is never read[0m
-   [1m[94m--> [0marmature-core/src/connection.rs:787:5
-    [1m[94m|[0m
-[1m[94m777[0m [1m[94m|[0m pub struct RecyclePool<T: Recyclable + Default> {
-    [1m[94m|[0m            [1m[94m-----------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m787[0m [1m[94m|[0m     config: RecyclePoolConfig,
-    [1m[94m|[0m     [1m[33m^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `RecyclePool` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1m[33mwarning[0m[1m: method `record_allocation` is never used[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1114:8
-     [1m[94m|[0m
-[1m[94m1092[0m [1m[94m|[0m impl RecycleStats {
-     [1m[94m|[0m [1m[94m-----------------[0m [1m[94mmethod in this implementation[0m
-[1m[94m...[0m
-[1m[94m1114[0m [1m[94m|[0m     fn record_allocation(&self) {
-     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: field `transitions` is never read[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1474:5
-     [1m[94m|[0m
-[1m[94m1460[0m [1m[94m|[0m pub struct ConnectionStats {
-     [1m[94m|[0m            [1m[94m---------------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m1474[0m [1m[94m|[0m     transitions: AtomicU64,
-     [1m[94m|[0m     [1m[33m^^^^^^^^^^^[0m
-     [1m[94m|[0m
-     [1m[94m= [0m[1mnote[0m: `ConnectionStats` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1m[33mwarning[0m[1m: field `batch_size` is never read[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1581:5
-     [1m[94m|[0m
-[1m[94m1577[0m [1m[94m|[0m pub struct StateMachineExecutor {
-     [1m[94m|[0m            [1m[94m--------------------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m1581[0m [1m[94m|[0m     batch_size: usize,
-     [1m[94m|[0m     [1m[33m^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: fields `id` and `created_at` are never read[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:174:5
-    [1m[94m|[0m
-[1m[94m173[0m [1m[94m|[0m struct ConnectionState {
-    [1m[94m|[0m        [1m[94m---------------[0m [1m[94mfields in this struct[0m
-[1m[94m174[0m [1m[94m|[0m     id: ConnectionId,
-    [1m[94m|[0m     [1m[33m^^[0m
-[1m[94m175[0m [1m[94m|[0m     created_at: Instant,
-    [1m[94m|[0m     [1m[33m^^^^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `ConnectionState` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1mFor more information about this error, try `rustc --explain E0133`.[0m
-[1m[33mwarning[0m: `armature-core` (lib) generated 18 warnings (run `cargo fix --lib -p armature-core` to apply 10 suggestions)
-[1m[33mwarning[0m[1m: unused import: `warn`[0m
-  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
-   [1m[94m|[0m
-[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-   [1m[94m|[0m                                        [1m[33m^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused import: `debug`[0m
-  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
-   [1m[94m|[0m                    [1m[33m^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
- [1m[94m--> [0marmature-queue/src/queue.rs:3:33
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-queue/src/worker.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-
-[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 15.02s
-[1m[92m     Running[0m benches/simd_parser_benchmarks.rs (target/release/deps/simd_parser_benchmarks-3a4dc72de8eb708b)
-Gnuplot not found, using plotters backend
-Benchmarking query_string/small/simd
-Benchmarking query_string/small/simd: Warming up for 3.0000 s
-Benchmarking query_string/small/simd: Collecting 100 samples in estimated 5.0001 s (24M iterations)
-Benchmarking query_string/small/simd: Analyzing
-query_string/small/simd time:   [206.51 ns 207.15 ns 208.44 ns]
-                        thrpt:  [109.81 MiB/s 110.49 MiB/s 110.84 MiB/s]
-Found 6 outliers among 100 measurements (6.00%)
-  3 (3.00%) high mild
-  3 (3.00%) high severe
-Benchmarking query_string/small/naive
-Benchmarking query_string/small/naive: Warming up for 3.0000 s
-Benchmarking query_string/small/naive: Collecting 100 samples in estimated 5.0007 s (22M iterations)
-Benchmarking query_string/small/naive: Analyzing
-query_string/small/naive
-                        time:   [224.89 ns 225.00 ns 225.12 ns]
-                        thrpt:  [101.67 MiB/s 101.72 MiB/s 101.77 MiB/s]
-Found 3 outliers among 100 measurements (3.00%)
-  3 (3.00%) high severe
-Benchmarking query_string/medium/simd
-Benchmarking query_string/medium/simd: Warming up for 3.0000 s
-Benchmarking query_string/medium/simd: Collecting 100 samples in estimated 5.0013 s (8.7M iterations)
-Benchmarking query_string/medium/simd: Analyzing
-query_string/medium/simd
-                        time:   [578.13 ns 578.66 ns 579.42 ns]
-                        thrpt:  [233.72 MiB/s 234.03 MiB/s 234.24 MiB/s]
-Found 8 outliers among 100 measurements (8.00%)
-  5 (5.00%) high mild
-  3 (3.00%) high severe
-Benchmarking query_string/medium/naive
-Benchmarking query_string/medium/naive: Warming up for 3.0000 s
-Benchmarking query_string/medium/naive: Collecting 100 samples in estimated 5.0037 s (5.1M iterations)
-Benchmarking query_string/medium/naive: Analyzing
-query_string/medium/naive
-                        time:   [968.53 ns 969.22 ns 970.32 ns]
-                        thrpt:  [139.56 MiB/s 139.72 MiB/s 139.82 MiB/s]
-Found 9 outliers among 100 measurements (9.00%)
-  1 (1.00%) low severe
-  1 (1.00%) low mild
-  2 (2.00%) high mild
-  5 (5.00%) high severe
-Benchmarking query_string/large/simd
-Benchmarking query_string/large/simd: Warming up for 3.0000 s
-Benchmarking query_string/large/simd: Collecting 100 samples in estimated 5.0056 s (2.4M iterations)
-Benchmarking query_string/large/simd: Analyzing
-query_string/large/simd time:   [2.0924 µs 2.0933 µs 2.0942 µs]
-                        thrpt:  [213.57 MiB/s 213.67 MiB/s 213.76 MiB/s]
-Found 4 outliers among 100 measurements (4.00%)
-  4 (4.00%) high severe
-Benchmarking query_string/large/naive
-Benchmarking query_string/large/naive: Warming up for 3.0000 s
-Benchmarking query_string/large/naive: Collecting 100 samples in estimated 5.0079 s (1.9M iterations)
-Benchmarking query_string/large/naive: Analyzing
-query_string/large/naive
-                        time:   [2.6486 µs 2.6513 µs 2.6554 µs]
-                        thrpt:  [168.44 MiB/s 168.70 MiB/s 168.87 MiB/s]
-Found 8 outliers among 100 measurements (8.00%)
-  1 (1.00%) low mild
-  3 (3.00%) high mild
-  4 (4.00%) high severe
-
-Benchmarking url_decode/plain/simd
-Benchmarking url_decode/plain/simd: Warming up for 3.0000 s
-Benchmarking url_decode/plain/simd: Collecting 100 samples in estimated 5.0002 s (113M iterations)
-Benchmarking url_decode/plain/simd: Analyzing
-url_decode/plain/simd   time:   [27.590 ns 27.928 ns 28.378 ns]
-Benchmarking url_decode/encoded/simd
-Benchmarking url_decode/encoded/simd: Warming up for 3.0000 s
-Benchmarking url_decode/encoded/simd: Collecting 100 samples in estimated 5.0001 s (72M iterations)
-Benchmarking url_decode/encoded/simd: Analyzing
-url_decode/encoded/simd time:   [69.680 ns 69.730 ns 69.777 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  2 (2.00%) low mild
-  2 (2.00%) high mild
-  1 (1.00%) high severe
-Benchmarking url_decode/plus_encoded/simd
-Benchmarking url_decode/plus_encoded/simd: Warming up for 3.0000 s
-Benchmarking url_decode/plus_encoded/simd: Collecting 100 samples in estimated 5.0000 s (52M iterations)
-Benchmarking url_decode/plus_encoded/simd: Analyzing
-url_decode/plus_encoded/simd
-                        time:   [95.905 ns 96.010 ns 96.113 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
-
-Benchmarking uri_split/with_query/simd
-Benchmarking uri_split/with_query/simd: Warming up for 3.0000 s
-Benchmarking uri_split/with_query/simd: Collecting 100 samples in estimated 5.0000 s (836M iterations)
-Benchmarking uri_split/with_query/simd: Analyzing
-uri_split/with_query/simd
-                        time:   [5.9118 ns 5.9142 ns 5.9170 ns]
-Found 8 outliers among 100 measurements (8.00%)
-  3 (3.00%) high mild
-  5 (5.00%) high severe
-Benchmarking uri_split/with_query/naive
-Benchmarking uri_split/with_query/naive: Warming up for 3.0000 s
-Benchmarking uri_split/with_query/naive: Collecting 100 samples in estimated 5.0001 s (312M iterations)
-Benchmarking uri_split/with_query/naive: Analyzing
-uri_split/with_query/naive
-                        time:   [15.884 ns 15.916 ns 15.949 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high mild
-Benchmarking uri_split/without_query/simd
-Benchmarking uri_split/without_query/simd: Warming up for 3.0000 s
-Benchmarking uri_split/without_query/simd: Collecting 100 samples in estimated 5.0000 s (864M iterations)
-Benchmarking uri_split/without_query/simd: Analyzing
-uri_split/without_query/simd
-                        time:   [4.9806 ns 5.0002 ns 5.0361 ns]
-Found 11 outliers among 100 measurements (11.00%)
-  3 (3.00%) high mild
-  8 (8.00%) high severe
-Benchmarking uri_split/without_query/naive
-Benchmarking uri_split/without_query/naive: Warming up for 3.0000 s
-Benchmarking uri_split/without_query/naive: Collecting 100 samples in estimated 5.0000 s (404M iterations)
-Benchmarking uri_split/without_query/naive: Analyzing
-uri_split/without_query/naive
-                        time:   [11.631 ns 11.638 ns 11.646 ns]
-Found 7 outliers among 100 measurements (7.00%)
-  1 (1.00%) low severe
-  2 (2.00%) high mild
-  4 (4.00%) high severe
-
-Benchmarking header_intern/common/content-type
-Benchmarking header_intern/common/content-type: Warming up for 3.0000 s
-Benchmarking header_intern/common/content-type: Collecting 100 samples in estimated 5.0001 s (57M iterations)
-Benchmarking header_intern/common/content-type: Analyzing
-header_intern/common/content-type
-                        time:   [86.799 ns 86.875 ns 86.957 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  4 (4.00%) high mild
-  1 (1.00%) high severe
-Benchmarking header_intern/common/authorization
-Benchmarking header_intern/common/authorization: Warming up for 3.0000 s
-Benchmarking header_intern/common/authorization: Collecting 100 samples in estimated 5.0004 s (56M iterations)
-Benchmarking header_intern/common/authorization: Analyzing
-header_intern/common/authorization
-                        time:   [89.920 ns 90.052 ns 90.181 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
-  1 (1.00%) high severe
-Benchmarking header_intern/custom/x-custom-header
-Benchmarking header_intern/custom/x-custom-header: Warming up for 3.0000 s
-Benchmarking header_intern/custom/x-custom-header: Collecting 100 samples in estimated 5.0002 s (51M iterations)
-Benchmarking header_intern/custom/x-custom-header: Analyzing
-header_intern/custom/x-custom-header
-                        time:   [104.16 ns 104.20 ns 104.24 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
-  2 (2.00%) high severe
-
-Benchmarking path_split/short/simd
-Benchmarking path_split/short/simd: Warming up for 3.0000 s
-Benchmarking path_split/short/simd: Collecting 100 samples in estimated 5.0001 s (129M iterations)
-Benchmarking path_split/short/simd: Analyzing
-path_split/short/simd   time:   [38.959 ns 39.119 ns 39.343 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  3 (3.00%) high severe
-Benchmarking path_split/medium/simd
-Benchmarking path_split/medium/simd: Warming up for 3.0000 s
-Benchmarking path_split/medium/simd: Collecting 100 samples in estimated 5.0004 s (42M iterations)
-Benchmarking path_split/medium/simd: Analyzing
-path_split/medium/simd  time:   [118.69 ns 118.89 ns 119.15 ns]
-Found 7 outliers among 100 measurements (7.00%)
-  5 (5.00%) high mild
-  2 (2.00%) high severe
-Benchmarking path_split/long/simd
-Benchmarking path_split/long/simd: Warming up for 3.0000 s
-Benchmarking path_split/long/simd: Collecting 100 samples in estimated 5.0000 s (20M iterations)
-Benchmarking path_split/long/simd: Analyzing
-path_split/long/simd    time:   [246.32 ns 246.75 ns 247.15 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
-
-Benchmarking path_params/single_param
-Benchmarking path_params/single_param: Warming up for 3.0000 s
-Benchmarking path_params/single_param: Collecting 100 samples in estimated 5.0004 s (34M iterations)
-Benchmarking path_params/single_param: Analyzing
-path_params/single_param
-                        time:   [144.92 ns 145.01 ns 145.10 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high severe
-Benchmarking path_params/multiple_params
-Benchmarking path_params/multiple_params: Warming up for 3.0000 s
-Benchmarking path_params/multiple_params: Collecting 100 samples in estimated 5.0010 s (12M iterations)
-Benchmarking path_params/multiple_params: Analyzing
-path_params/multiple_params
-                        time:   [431.28 ns 431.75 ns 432.36 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) low severe
-  1 (1.00%) low mild
-  1 (1.00%) high mild
-  2 (2.00%) high severe
-
+[1m[92m   Compiling[0m async-graphql-axum v7.0.17
+[1mSome errors have detailed explanations: E0133, E0507.[0m
+[1mFor more information about an error, try `rustc --explain E0133`.[0m
+[1m[33mwarning[0m: `armature-core` (lib) generated 11 warnings
+[1m[91merror[0m: could not compile `armature-core` (lib) due to 1 previous error; 11 warnings emitted
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
