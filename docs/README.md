@@ -7,7 +7,7 @@ Welcome to the Armature framework documentation! Armature is a batteries-include
 Armature provides everything you need to build production-ready APIs:
 
 - ✅ **98% Feature Complete** - Enterprise-ready with 150+ features implemented
-- 🚀 **High Performance** - Built on Tokio, 8-15x faster than Node.js
+- 🚀 **Actix-Competitive Performance** - 110+ optimizations, SIMD JSON, zero-alloc responses
 - 🔒 **Type-Safe** - Catch errors at compile time
 - 💉 **Dependency Injection** - Automatic service injection
 - 📦 **Modular Architecture** - Organize code into reusable modules
@@ -180,10 +180,11 @@ Armature provides first-class integrations with major cloud providers:
 | [Server Integration](server-integration.md) | Hyper, custom servers |
 | [Macros Deep Dive](macros-guide.md) | Understanding Armature macros |
 
-### Benchmarks
+### Performance & Benchmarks
 
 | Guide | Description |
 |-------|-------------|
+| [Performance Guide](performance-guide.md) | Optimization techniques, best practices, profiling |
 | [vs Node.js](armature-vs-nodejs-benchmark.md) | Performance comparison with Express, NestJS |
 | [vs Next.js](armature-vs-nextjs-benchmark.md) | Performance comparison with Next.js |
 
