@@ -38,8 +38,10 @@ CHECK_ONLY=false
 SINGLE_CRATE=""
 FROM_CRATE=""
 NO_VERIFY=false
+FORCE=false
 SKIP_CRATES=()
 PUBLISH_DELAY=30  # Delay between publishes to allow crates.io to index
+CRATES_IO_API="https://crates.io/api/v1/crates"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -73,6 +75,7 @@ OPTIONS:
     --from CRATE    Start publishing from the specified crate
     --skip CRATE    Skip the specified crate (can be repeated)
     --no-verify     Skip cargo publish verification step
+    --force         Publish even if version already exists on crates.io
     --help          Show this help message
 
 ENVIRONMENT:
@@ -130,6 +133,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-verify)
             NO_VERIFY=true
+            shift
+            ;;
+        --force)
+            FORCE=true
             shift
             ;;
         --help|-h)
@@ -251,6 +258,7 @@ check_crate() {
     local crate=$1
     local cargo_toml="$crate/Cargo.toml"
     local errors=()
+    local warnings=()
 
     # Check Cargo.toml exists
     if [[ ! -f "$cargo_toml" ]]; then
@@ -277,7 +285,7 @@ check_crate() {
         local path_deps
         path_deps=$(grep -cE 'path\s*=\s*"\.\./armature-' "$cargo_toml" 2>/dev/null) || path_deps=0
         if [[ $path_deps -gt 0 ]]; then
-            errors+=("$path_deps path deps (run prepare-publish.sh)")
+            warnings+=("$path_deps path deps (run prepare-publish.sh)")
         fi
     fi
 
@@ -286,8 +294,22 @@ check_crate() {
         errors+=("Missing src/lib.rs or src/main.rs")
     fi
 
+    # Check crates.io publication status
+    local version
+    version=$(get_crate_version "$crate")
+    if [[ -n "$version" ]]; then
+        local pub_status
+        pub_status=$(check_crates_io_version "$crate" "$version")
+        if [[ "$pub_status" == "published" ]]; then
+            warnings+=("v$version already on crates.io")
+        fi
+    fi
+
     if [[ ${#errors[@]} -gt 0 ]]; then
-        echo "WARN: ${errors[*]}"
+        echo "FAIL: ${errors[*]}"
+        return 1
+    elif [[ ${#warnings[@]} -gt 0 ]]; then
+        echo "WARN: ${warnings[*]}"
         return 0  # Don't fail on warnings
     else
         echo "OK"
@@ -333,14 +355,147 @@ check_all_crates() {
 }
 
 # =============================================================================
+# crates.io Version Checking
+# =============================================================================
+
+# Get the version from a crate's Cargo.toml
+get_crate_version() {
+    local crate=$1
+    local cargo_toml="$crate/Cargo.toml"
+
+    if [[ ! -f "$cargo_toml" ]]; then
+        echo ""
+        return
+    fi
+
+    # Check for workspace version
+    if grep -q 'version.workspace\s*=\s*true' "$cargo_toml"; then
+        # Get version from root Cargo.toml
+        grep -E '^version\s*=' "$PROJECT_ROOT/Cargo.toml" | head -1 | sed 's/.*"\([^"]*\)".*/\1/'
+    else
+        # Get version from crate's Cargo.toml
+        grep -E '^version\s*=' "$cargo_toml" | head -1 | sed 's/.*"\([^"]*\)".*/\1/'
+    fi
+}
+
+# Check if a specific version is published on crates.io
+# Returns: "published", "not_found", or "error"
+check_crates_io_version() {
+    local crate=$1
+    local version=$2
+
+    # Convert underscores to hyphens for crates.io lookup
+    local crate_name="${crate//_/-}"
+
+    # Query crates.io API
+    local response
+    local http_code
+
+    # Use curl with proper User-Agent (required by crates.io API)
+    response=$(curl -s -w "\n%{http_code}" \
+        -H "User-Agent: armature-publish-script/1.0" \
+        "$CRATES_IO_API/$crate_name" 2>/dev/null)
+
+    http_code=$(echo "$response" | tail -1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [[ "$http_code" == "404" ]]; then
+        echo "not_found"
+        return
+    fi
+
+    if [[ "$http_code" != "200" ]]; then
+        echo "error"
+        return
+    fi
+
+    # Check if the specific version exists
+    if echo "$body" | grep -q "\"num\":\"$version\""; then
+        echo "published"
+    else
+        echo "not_published"
+    fi
+}
+
+# Get all published versions for a crate
+get_published_versions() {
+    local crate=$1
+    local crate_name="${crate//_/-}"
+
+    local response
+    response=$(curl -s \
+        -H "User-Agent: armature-publish-script/1.0" \
+        "$CRATES_IO_API/$crate_name/versions" 2>/dev/null)
+
+    if [[ $? -ne 0 ]]; then
+        echo ""
+        return
+    fi
+
+    # Extract version numbers (requires jq or simple parsing)
+    echo "$response" | grep -oE '"num":"[^"]*"' | sed 's/"num":"//g; s/"//g' | head -10
+}
+
+# Check if crate needs publishing
+needs_publishing() {
+    local crate=$1
+    local version
+
+    version=$(get_crate_version "$crate")
+
+    if [[ -z "$version" ]]; then
+        log_error "Could not determine version for $crate"
+        return 1
+    fi
+
+    local status
+    status=$(check_crates_io_version "$crate" "$version")
+
+    case "$status" in
+        "published")
+            echo "already_published"
+            ;;
+        "not_found"|"not_published")
+            echo "needs_publish"
+            ;;
+        *)
+            echo "error"
+            ;;
+    esac
+}
+
+# =============================================================================
 # Publishing
 # =============================================================================
 
 # Publish a single crate
+# Returns: 0 = published, 1 = error, 2 = skipped (already published)
 publish_crate() {
     local crate=$1
 
-    log_info "Publishing $crate..."
+    # Get version
+    local version
+    version=$(get_crate_version "$crate")
+
+    if [[ -z "$version" ]]; then
+        log_error "Could not determine version for $crate"
+        return 1
+    fi
+
+    log_info "Publishing $crate v$version..."
+
+    # Check if already published (unless --force)
+    if [[ "$FORCE" != "true" ]]; then
+        local pub_status
+        pub_status=$(check_crates_io_version "$crate" "$version")
+
+        if [[ "$pub_status" == "published" ]]; then
+            log_warn "$crate v$version is already published on crates.io (use --force to republish)"
+            return 2
+        elif [[ "$pub_status" == "error" ]]; then
+            log_warn "Could not check crates.io for $crate, attempting publish anyway..."
+        fi
+    fi
 
     cd "$PROJECT_ROOT/$crate"
 
@@ -353,10 +508,11 @@ publish_crate() {
         log_info "[DRY RUN] Would publish: cargo publish ${publish_args[*]}"
     else
         cargo publish "${publish_args[@]}"
-        log_success "$crate published successfully"
+        log_success "$crate v$version published successfully"
     fi
 
     cd "$PROJECT_ROOT"
+    return 0
 }
 
 # Check if crate should be skipped
@@ -382,11 +538,32 @@ publish_all() {
     log_info "Publish order:"
     local i=1
     for crate in $publish_order; do
+        local version
+        version=$(get_crate_version "$crate")
         local status=""
+        local version_info=""
+
+        if [[ -n "$version" ]]; then
+            version_info=" (v$version)"
+
+            # Check crates.io status
+            local pub_status
+            pub_status=$(check_crates_io_version "$crate" "$version")
+
+            if [[ "$pub_status" == "published" ]]; then
+                status=" ${CYAN}[on crates.io]${NC}"
+            elif [[ "$pub_status" == "not_found" ]]; then
+                status=" ${GREEN}[new crate]${NC}"
+            elif [[ "$pub_status" == "not_published" ]]; then
+                status=" ${GREEN}[new version]${NC}"
+            fi
+        fi
+
         if should_skip "$crate"; then
             status=" ${YELLOW}(skip)${NC}"
         fi
-        echo -e "  $i. $crate$status"
+
+        echo -e "  $i. $crate$version_info$status"
         ((i++))
     done
     echo ""
@@ -416,6 +593,8 @@ publish_all() {
     local started=false
     local published=0
     local skipped=0
+    local already_published=0
+    local failed=0
 
     for crate in $publish_order; do
         # Handle --from flag
@@ -441,8 +620,23 @@ publish_all() {
             continue
         fi
 
+        # Publish the crate
+        local result
         publish_crate "$crate"
-        ((published++))
+        result=$?
+
+        case $result in
+            0)
+                ((published++))
+                ;;
+            1)
+                ((failed++))
+                log_error "Failed to publish $crate"
+                ;;
+            2)
+                ((already_published++))
+                ;;
+        esac
 
         # Exit if single crate mode
         if [[ -n "$SINGLE_CRATE" ]]; then
@@ -450,7 +644,8 @@ publish_all() {
         fi
 
         # Delay between publishes to allow crates.io to index
-        if [[ "$DRY_RUN" != "true" && $published -lt ${#publish_order[@]} ]]; then
+        # Only delay if we actually published something
+        if [[ "$DRY_RUN" != "true" && $result -eq 0 ]]; then
             log_info "Waiting ${PUBLISH_DELAY}s for crates.io to index..."
             sleep $PUBLISH_DELAY
         fi
@@ -459,7 +654,11 @@ publish_all() {
     echo ""
     log_success "Publishing complete!"
     echo "  Published: $published"
+    echo "  Already on crates.io: $already_published"
     echo "  Skipped: $skipped"
+    if [[ $failed -gt 0 ]]; then
+        echo -e "  ${RED}Failed: $failed${NC}"
+    fi
 }
 
 # =============================================================================
