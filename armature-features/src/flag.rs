@@ -398,7 +398,7 @@ mod tests {
         }
 
         // Should be close to 50%
-        assert!(enabled_count >= 40 && enabled_count <= 60);
+        assert!((40..=60).contains(&enabled_count));
     }
 
     #[test]

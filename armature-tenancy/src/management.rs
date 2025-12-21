@@ -954,8 +954,10 @@ mod tests {
     #[tokio::test]
     async fn test_limits() {
         let limits = TenantLimits::for_plan(TenantPlan::Free);
-        let mut usage = TenantUsage::default();
-        usage.users = 10; // Exceeds limit of 5
+        let usage = TenantUsage {
+            users: 10, // Exceeds limit of 5
+            ..Default::default()
+        };
 
         let violations = usage.exceeds_limits(&limits);
         assert!(!violations.is_empty());

@@ -2,7 +2,8 @@
 
 #![allow(deprecated)]
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 use armature_auth::{AuthService, PasswordHasher};
 use armature_jwt::{JwtConfig, JwtManager, StandardClaims};

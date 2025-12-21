@@ -7,7 +7,8 @@
 use armature_core::body::{RequestBody, ResponseBody};
 use armature_core::{HttpRequest, HttpResponse};
 use bytes::Bytes;
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use std::hint::black_box;
 
 // ============================================================================
 // Request Body Creation Benchmarks
@@ -89,14 +90,12 @@ fn bench_response_body_creation(c: &mut Criterion) {
     struct TestData {
         id: u64,
         name: String,
-        values: Vec<i32>,
-    }
+        values: Vec<i32>}
 
     let data = TestData {
         id: 12345,
         name: "Test User".to_string(),
-        values: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    };
+        values: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]};
 
     group.bench_function("from_json", |b| {
         b.iter(|| {
@@ -177,13 +176,11 @@ fn bench_http_response_body(c: &mut Criterion) {
     #[derive(serde::Serialize)]
     struct ApiResponse {
         success: bool,
-        data: Vec<i32>,
-    }
+        data: Vec<i32>}
 
     let data = ApiResponse {
         success: true,
-        data: vec![1, 2, 3, 4, 5],
-    };
+        data: vec![1, 2, 3, 4, 5]};
 
     group.bench_function("with_json", |b| {
         b.iter(|| {
@@ -236,13 +233,11 @@ fn bench_hyper_passthrough(c: &mut Criterion) {
     #[derive(serde::Serialize)]
     struct JsonResponse {
         message: String,
-        code: u32,
-    }
+        code: u32}
 
     let data = JsonResponse {
         message: "Success".to_string(),
-        code: 200,
-    };
+        code: 200};
 
     group.bench_function("json_to_hyper_body", |b| {
         b.iter(|| {

@@ -185,7 +185,7 @@ impl Middleware for CompressionMiddleware {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
+    
 
     fn create_response(body: &str, content_type: &str) -> HttpResponse {
         HttpResponse::new(200)

@@ -1,6 +1,6 @@
 // Tests for dependency injection system
 
-use armature_core::{Container, Provider};
+use armature_core::Container;
 
 #[derive(Clone)]
 struct ServiceA {

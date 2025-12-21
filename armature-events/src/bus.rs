@@ -267,6 +267,7 @@ mod tests {
     #[derive(Debug, Clone)]
     struct TestEvent {
         metadata: EventMetadata,
+        #[allow(dead_code)]
         message: String,
     }
 
