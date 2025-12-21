@@ -174,7 +174,6 @@
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
 [1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
-[1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
 [1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
  [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
   [1m[94m|[0m
@@ -183,6 +182,7 @@
   [1m[94m|[0m
   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
+[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
 [1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
  [1m[94m--> [0marmature-queue/src/queue.rs:3:33
   [1m[94m|[0m
@@ -197,20 +197,7 @@
 [1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
   [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
 
-[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
 [1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
 [1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
    [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
     [1m[94m|[0m
@@ -224,170 +211,64 @@
     [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
+[1m[33mwarning[0m[1m: field `pending` is never read[0m
+   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
+    [1m[94m|[0m
+[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
+    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
+[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
+[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
+    [1m[94m|[0m     [1m[33m^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
 [1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
-  [1m[94m--> [0marmature-openapi/src/swagger.rs:94:8
-   [1m[94m|[0m
-[1m[94m94[0m [1m[94m|[0m     Ok(HttpResponse {
-   [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
-[1m[96mhelp[0m: you might have meant to use an associated function to build this type
-   [1m[94m|[0m
-[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m95[0m [91m-         status: 200,[0m
-[1m[94m96[0m [91m-         headers: {[0m
-[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
-[1m[94m99[0m [91m-             headers[0m
-[1m[94m100[0m[91m-         },[0m
-[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
-[1m[94m102[0m[91m-     }[0m)
-[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
-   [1m[94m|[0m
-[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m95[0m [91m-         status: 200,[0m
-[1m[94m96[0m [91m-         headers: {[0m
-[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
-[1m[94m99[0m [91m-             headers[0m
-[1m[94m100[0m[91m-         },[0m
-[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
-[1m[94m102[0m[91m-     }[0m)
-[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::with_capacity(_, _)[0m)
-   [1m[94m|[0m
-[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m95[0m [91m-         status: 200,[0m
-[1m[94m96[0m [91m-         headers: {[0m
-[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
-[1m[94m99[0m [91m-             headers[0m
-[1m[94m100[0m[91m-         },[0m
-[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
-[1m[94m102[0m[91m-     }[0m)
-[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
-   [1m[94m|[0m
-[1m[94m94[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m95[0m [91m-         status: 200,[0m
-[1m[94m96[0m [91m-         headers: {[0m
-[1m[94m97[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m98[0m [91m-             headers.insert("content-type".to_string(), "text/html".to_string());[0m
-[1m[94m99[0m [91m-             headers[0m
-[1m[94m100[0m[91m-         },[0m
-[1m[94m101[0m[91m-         body: html.into_bytes(),[0m
-[1m[94m102[0m[91m-     }[0m)
-[1m[94m94[0m [92m+ [0m    Ok(HttpResponse[92m::ok_preallocated()[0m)
-   [1m[94m|[0m
-   [1m[94m= [0mand 18 other candidates
+[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
+[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.15s
+[1m[92m     Running[0m benches/security_benchmarks.rs (target/release/deps/security_benchmarks-c9a565c023e5d191)
+Gnuplot not found, using plotters backend
+{"timestamp":"2025-12-21T00:59:03.184281805+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign
+Benchmarking jwt/sign: Warming up for 3.0000 s
+Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0032 s (6.4M iterations)
+Benchmarking jwt/sign: Analyzing
+jwt/sign                time:   [788.36 ns 789.25 ns 790.17 ns]
+Found 13 outliers among 100 measurements (13.00%)
+  8 (8.00%) low mild
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+Benchmarking jwt/verify
+Benchmarking jwt/verify: Warming up for 3.0000 s
+Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0031 s (2.2M iterations)
+Benchmarking jwt/verify: Analyzing
+jwt/verify              time:   [2.2768 µs 2.2851 µs 2.2932 µs]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+{"timestamp":"2025-12-21T00:59:21.622070551+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign_HS256
+Benchmarking jwt/sign_HS256: Warming up for 3.0000 s
+Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0033 s (6.5M iterations)
+Benchmarking jwt/sign_HS256: Analyzing
+jwt/sign_HS256          time:   [772.12 ns 772.55 ns 773.04 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+{"timestamp":"2025-12-21T00:59:30.037872904+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign_HS384
+Benchmarking jwt/sign_HS384: Warming up for 3.0000 s
+Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0080 s (2.7M iterations)
+Benchmarking jwt/sign_HS384: Analyzing
+jwt/sign_HS384          time:   [1.8581 µs 1.8607 µs 1.8636 µs]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+{"timestamp":"2025-12-21T00:59:39.118957956+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign_HS512
+Benchmarking jwt/sign_HS512: Warming up for 3.0000 s
+Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0095 s (2.6M iterations)
+Benchmarking jwt/sign_HS512: Analyzing
+jwt/sign_HS512          time:   [1.8905 µs 1.8939 µs 1.8972 µs]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 
-[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
-   [1m[94m--> [0marmature-openapi/src/swagger.rs:109:8
-    [1m[94m|[0m
-[1m[94m109[0m [1m[94m|[0m     Ok(HttpResponse {
-    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
-[1m[96mhelp[0m: you might have meant to use an associated function to build this type
-    [1m[94m|[0m
-[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m110[0m [91m-         status: 200,[0m
-[1m[94m111[0m [91m-         headers: {[0m
-[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
-[1m[94m114[0m [91m-             headers[0m
-[1m[94m115[0m [91m-         },[0m
-[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
-[1m[94m117[0m [91m-     }[0m)
-[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
-    [1m[94m|[0m
-[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m110[0m [91m-         status: 200,[0m
-[1m[94m111[0m [91m-         headers: {[0m
-[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
-[1m[94m114[0m [91m-             headers[0m
-[1m[94m115[0m [91m-         },[0m
-[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
-[1m[94m117[0m [91m-     }[0m)
-[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::with_capacity(_, _)[0m)
-    [1m[94m|[0m
-[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m110[0m [91m-         status: 200,[0m
-[1m[94m111[0m [91m-         headers: {[0m
-[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
-[1m[94m114[0m [91m-             headers[0m
-[1m[94m115[0m [91m-         },[0m
-[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
-[1m[94m117[0m [91m-     }[0m)
-[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
-    [1m[94m|[0m
-[1m[94m109[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m110[0m [91m-         status: 200,[0m
-[1m[94m111[0m [91m-         headers: {[0m
-[1m[94m112[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m113[0m [91m-             headers.insert("content-type".to_string(), "application/json".to_string());[0m
-[1m[94m114[0m [91m-             headers[0m
-[1m[94m115[0m [91m-         },[0m
-[1m[94m116[0m [91m-         body: spec_json.into_bytes(),[0m
-[1m[94m117[0m [91m-     }[0m)
-[1m[94m109[0m [92m+ [0m    Ok(HttpResponse[92m::ok_preallocated()[0m)
-    [1m[94m|[0m
-    [1m[94m= [0mand 18 other candidates
-
-[1m[91merror[0m[1m: cannot construct `HttpResponse` with struct literal syntax due to private fields[0m
-   [1m[94m--> [0marmature-openapi/src/swagger.rs:124:8
-    [1m[94m|[0m
-[1m[94m124[0m [1m[94m|[0m     Ok(HttpResponse {
-    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: ...and other private field `body_bytes` that was not provided
-[1m[96mhelp[0m: you might have meant to use an associated function to build this type
-    [1m[94m|[0m
-[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m125[0m [91m-         status: 200,[0m
-[1m[94m126[0m [91m-         headers: {[0m
-[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
-[1m[94m129[0m [91m-             headers[0m
-[1m[94m130[0m [91m-         },[0m
-[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
-[1m[94m132[0m [91m-     }[0m)
-[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::new(_)[0m)
-    [1m[94m|[0m
-[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m125[0m [91m-         status: 200,[0m
-[1m[94m126[0m [91m-         headers: {[0m
-[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
-[1m[94m129[0m [91m-             headers[0m
-[1m[94m130[0m [91m-         },[0m
-[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
-[1m[94m132[0m [91m-     }[0m)
-[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::with_capacity(_, _)[0m)
-    [1m[94m|[0m
-[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m125[0m [91m-         status: 200,[0m
-[1m[94m126[0m [91m-         headers: {[0m
-[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
-[1m[94m129[0m [91m-             headers[0m
-[1m[94m130[0m [91m-         },[0m
-[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
-[1m[94m132[0m [91m-     }[0m)
-[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::ok()[0m)
-    [1m[94m|[0m
-[1m[94m124[0m [91m- [0m    Ok(HttpResponse[91m {[0m
-[1m[94m125[0m [91m-         status: 200,[0m
-[1m[94m126[0m [91m-         headers: {[0m
-[1m[94m127[0m [91m-             let mut headers = std::collections::HashMap::new();[0m
-[1m[94m128[0m [91m-             headers.insert("content-type".to_string(), "application/x-yaml".to_string());[0m
-[1m[94m129[0m [91m-             headers[0m
-[1m[94m130[0m [91m-         },[0m
-[1m[94m131[0m [91m-         body: spec_yaml.into_bytes(),[0m
-[1m[94m132[0m [91m-     }[0m)
-[1m[94m124[0m [92m+ [0m    Ok(HttpResponse[92m::ok_preallocated()[0m)
-    [1m[94m|[0m
-    [1m[94m= [0mand 18 other candidates
-
-[1m[91merror[0m: could not compile `armature-openapi` (lib) due to 3 previous errors
