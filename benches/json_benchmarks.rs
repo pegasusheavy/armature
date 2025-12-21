@@ -138,8 +138,8 @@ fn create_large_payload() -> LargePayload {
                 id: 1000 + i,
                 content: format!("This is post number {}. It has some interesting content about technology, programming, and life in general. #rust #webdev", i),
                 created_at: format!("2024-01-{:02}T12:00:00Z", i + 1),
-                likes: (i * 17) as u64,
-                comments: (i * 3) as u64,
+                likes: (i * 17),
+                comments: (i * 3),
                 tags: vec!["rust".to_string(), "programming".to_string(), "tech".to_string()],
             })
             .collect(),

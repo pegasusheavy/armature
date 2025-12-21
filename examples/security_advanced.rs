@@ -28,6 +28,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use armature_security::content_security_policy::CspConfig;
 use armature_security::cors::CorsConfig;
 use armature_security::hsts::HstsConfig;
@@ -131,10 +132,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::OPTIONS,
         path: "/api/users".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let cors = cors_clone.clone();
             Box::pin(async move { cors.handle_preflight(&req) })
-        }),
+        })),
         constraints: None,
     });
 
@@ -143,7 +144,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/users".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let cors = cors_clone2.clone();
             Box::pin(async move {
                 let response = HttpResponse::ok().with_json(&serde_json::json!({
@@ -156,7 +157,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Apply CORS headers
                 Ok(cors.apply(&req, response))
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -164,13 +165,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/api/secure".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Securely accessed with valid signature"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -179,7 +180,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/generate-signature".to_string(),
-        handler: Arc::new(move |_req| {
+        handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
             let signer = signer.clone();
             Box::pin(async move {
                 let timestamp = SystemTime::now()
@@ -201,7 +202,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     )
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -209,7 +210,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Advanced Security Example",
@@ -242,7 +243,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

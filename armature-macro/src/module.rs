@@ -110,17 +110,11 @@ pub fn module_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
                             format!("{}/{}", base_path, path)
                         };
 
-                        let handler = handler.clone();
                         let route = armature_core::routing::Route {
                             method: armature_core::HttpMethod::from_str(method)
                                 .unwrap_or(armature_core::HttpMethod::GET),
                             path: full_path,
-                            handler: std::sync::Arc::new(move |req| {
-                                let handler = handler.clone();
-                                Box::pin(async move {
-                                    handler(req).await
-                                })
-                            }),
+                            handler: armature_core::handler::from_legacy_handler(handler.clone()),
                             constraints: None,
                         };
                         router.add_route(route);

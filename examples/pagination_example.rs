@@ -36,6 +36,7 @@
 //! ```
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -134,7 +135,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 // Parse query parameters
                 let query = QueryParams::from_hashmap(&req.query_params);
@@ -276,7 +277,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 Ok(HttpResponse::ok().with_json(&response_json)?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -284,7 +285,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/cursor".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
             Box::pin(async move {
                 // Parse cursor pagination
                 let pagination = CursorPagination::from_query_params(&req.query_params);
@@ -321,7 +322,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 Ok(HttpResponse::ok().with_json(&response)?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -329,7 +330,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Pagination & Filtering Example",
@@ -367,7 +368,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 

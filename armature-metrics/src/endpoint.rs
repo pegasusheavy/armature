@@ -2,6 +2,7 @@
 //!
 //! Provides the `/metrics` endpoint for Prometheus scraping.
 
+use armature_core::handler::{from_legacy_handler, BoxedHandler};
 use armature_core::{Error, HttpRequest, HttpResponse};
 
 /// Handle metrics endpoint request
@@ -12,6 +13,7 @@ use armature_core::{Error, HttpRequest, HttpResponse};
 ///
 /// ```no_run
 /// use armature_core::*;
+/// use armature_core::handler::from_legacy_handler;
 /// use armature_metrics::*;
 /// use std::sync::Arc;
 ///
@@ -20,11 +22,11 @@ use armature_core::{Error, HttpRequest, HttpResponse};
 /// router.add_route(Route {
 ///     method: HttpMethod::GET,
 ///     path: "/metrics".to_string(),
-///     handler: Arc::new(|req| {
+///     handler: from_legacy_handler(Arc::new(|req: HttpRequest| {
 ///         Box::pin(async move {
 ///             metrics_handler(req).await
 ///         })
-///     }),
+///     })),
 ///     constraints: None,
 /// });
 /// ```
@@ -48,7 +50,6 @@ pub async fn metrics_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
 /// ```no_run
 /// use armature_core::*;
 /// use armature_metrics::*;
-/// use std::sync::Arc;
 ///
 /// let handler = create_metrics_handler();
 ///
@@ -60,8 +61,10 @@ pub async fn metrics_handler(_req: HttpRequest) -> Result<HttpResponse, Error> {
 ///     constraints: None,
 /// });
 /// ```
-pub fn create_metrics_handler() -> armature_core::routing::HandlerFn {
-    std::sync::Arc::new(|req| Box::pin(async move { metrics_handler(req).await }))
+pub fn create_metrics_handler() -> BoxedHandler {
+    from_legacy_handler(std::sync::Arc::new(|req: HttpRequest| {
+        Box::pin(async move { metrics_handler(req).await })
+    }))
 }
 
 #[cfg(test)]

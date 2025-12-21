@@ -121,10 +121,10 @@ mod tests {
         router.add_route(Route {
             method: HttpMethod::GET,
             path: "/users".to_string(),
-            handler: Arc::new(move |_req| {
+            handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
                 let c = ctrl.clone();
                 Box::pin(async move { c.get_all()?.into_response() })
-            }),
+            })),
             constraints: None,
         });
 
@@ -153,7 +153,7 @@ mod tests {
         router.add_route(Route {
             method: HttpMethod::GET,
             path: "/users/:id".to_string(),
-            handler: Arc::new(move |req| {
+            handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
                 let c = ctrl.clone();
                 Box::pin(async move {
                     let id = req
@@ -163,7 +163,7 @@ mod tests {
                         .unwrap_or(0);
                     c.get_one(id)?.into_response()
                 })
-            }),
+            })),
             constraints: None,
         });
 
@@ -192,7 +192,7 @@ mod tests {
         router.add_route(Route {
             method: HttpMethod::GET,
             path: "/users/:id".to_string(),
-            handler: Arc::new(move |req| {
+            handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
                 let c = ctrl.clone();
                 Box::pin(async move {
                     let id = req
@@ -202,7 +202,7 @@ mod tests {
                         .unwrap_or(0);
                     c.get_one(id)?.into_response()
                 })
-            }),
+            })),
             constraints: None,
         });
 

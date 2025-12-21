@@ -11,9 +11,7 @@
 //! and help identify performance bottlenecks in database layers.
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
 use std::time::Duration;
 
 // ============================================================================
@@ -99,7 +97,7 @@ impl MockPool {
 
     /// Update a world's random number
     #[inline]
-    pub fn update_world(&self, id: i32, random_number: i32) -> bool {
+    pub fn update_world(&self, id: i32, _random_number: i32) -> bool {
         self.query_count.fetch_add(1, Ordering::Relaxed);
         let idx = (id - 1) as usize;
         idx < self.worlds.len()

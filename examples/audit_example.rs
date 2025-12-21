@@ -21,6 +21,7 @@
 
 use armature_audit::*;
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -51,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::POST,
         path: "/login".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let logger = audit_for_login.clone();
             Box::pin(async move {
                 // Parse login attempt
@@ -76,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -84,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/api/users".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "users": [
@@ -93,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ]
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -101,7 +102,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::DELETE,
         path: "/api/delete/:id".to_string(),
-        handler: Arc::new(move |req| {
+        handler: from_legacy_handler(Arc::new(move |req: HttpRequest| {
             let logger = audit_for_delete.clone();
             Box::pin(async move {
                 let id = req.path_params.get("id").unwrap();
@@ -125,7 +126,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "message": format!("Deleted resource {}", id)
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
@@ -133,7 +134,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/".to_string(),
-        handler: Arc::new(|_req| {
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| {
             Box::pin(async move {
                 Ok(HttpResponse::ok().with_json(&serde_json::json!({
                     "message": "Audit Logging Example",
@@ -145,7 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "audit_log": "audit.log"
                 }))?)
             })
-        }),
+        })),
         constraints: None,
     });
 
