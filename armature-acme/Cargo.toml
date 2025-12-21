@@ -7,6 +7,9 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+description = "ACME protocol support for automatic TLS certificates in Armature"
+keywords = ["acme", "tls", "certificates", "letsencrypt"]
+categories = ["web-programming", "cryptography"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

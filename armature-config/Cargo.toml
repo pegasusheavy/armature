@@ -1,8 +1,15 @@
 [package]
 name = "armature-config"
-version = "0.1.0"
-edition = "2024"
-description = "Configuration management for Armature framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Configuration management for Armature with environment and file support"
+keywords = ["config", "configuration", "environment", "settings"]
+categories = ["config", "web-programming"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

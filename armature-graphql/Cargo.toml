@@ -1,8 +1,15 @@
 [package]
 name = "armature-graphql"
-version = "0.1.0"
-edition = "2024"
-description = "GraphQL support for Armature framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "GraphQL server integration for Armature"
+keywords = ["graphql", "api", "async-graphql", "server"]
+categories = ["web-programming", "api-bindings"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

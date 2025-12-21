@@ -1,11 +1,14 @@
 [package]
 name = "armature-webhooks"
-version = "0.1.0"
-edition = "2024"
-authors = ["Armature Contributors"]
-description = "Webhook orchestration for Armature framework - send, receive, and manage webhooks"
-license = "MIT OR Apache-2.0"
-keywords = ["webhooks", "events", "http", "callbacks", "integrations"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Webhook sending and receiving for Armature"
+keywords = ["webhooks", "events", "http", "notifications"]
 categories = ["web-programming", "asynchronous"]
 
 [dependencies]

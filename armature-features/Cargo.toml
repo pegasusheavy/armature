@@ -1,8 +1,15 @@
 [package]
 name = "armature-features"
-version = "0.1.0"
-edition = "2024"
-description = "Feature flags, A/B testing, and gradual rollout for Armature framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Feature flags, A/B testing, and gradual rollout for Armature"
+keywords = ["features", "flags", "toggles", "ab-testing"]
+categories = ["web-programming", "config"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

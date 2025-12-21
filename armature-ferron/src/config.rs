@@ -532,7 +532,7 @@ impl FerronConfig {
                     writeln!(output, "    tls_email \"{}\"", email)
                         .map_err(|e| FerronError::config(e.to_string()))?;
                 }
-            } else if let (Some(ref cert), Some(ref key)) = (&tls.cert_path, &tls.key_path) {
+            } else if let (Some(cert), Some(key)) = (&tls.cert_path, &tls.key_path) {
                 writeln!(output, "    tls \"{}\" \"{}\"", cert, key)
                     .map_err(|e| FerronError::config(e.to_string()))?;
             }

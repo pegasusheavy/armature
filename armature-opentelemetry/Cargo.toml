@@ -1,7 +1,15 @@
 [package]
 name = "armature-opentelemetry"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "OpenTelemetry integration for Armature observability"
+keywords = ["opentelemetry", "tracing", "metrics", "observability"]
+categories = ["development-tools::profiling", "web-programming"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

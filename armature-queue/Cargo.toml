@@ -1,10 +1,15 @@
 [package]
 name = "armature-queue"
-version = "0.1.0"
-edition = "2024"
-authors = ["Armature Contributors"]
-description = "Job queue and background processing for Armature framework"
-license = "MIT OR Apache-2.0"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Job queue and background processing for Armature"
+keywords = ["queue", "jobs", "background", "redis"]
+categories = ["web-programming", "asynchronous"]
 
 [dependencies]
 # Logging

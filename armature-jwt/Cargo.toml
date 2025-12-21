@@ -1,8 +1,15 @@
 [package]
 name = "armature-jwt"
-version = "0.1.0"
-edition = "2024"
-description = "JWT authentication and authorization for Armature framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "JWT token handling for Armature authentication"
+keywords = ["jwt", "token", "authentication", "security"]
+categories = ["authentication", "web-programming"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

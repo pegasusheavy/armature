@@ -1,11 +1,14 @@
 [package]
 name = "armature-session"
-version = "0.1.0"
-edition = "2024"
-authors = ["Armature Contributors"]
-description = "Session storage for Armature framework - Redis, Memcached, and CouchDB backends"
-license = "MIT OR Apache-2.0"
-keywords = ["session", "storage", "redis", "memcached", "couchdb"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Session management for Armature applications"
+keywords = ["session", "storage", "redis", "cookies"]
 categories = ["web-programming", "caching"]
 
 [dependencies]

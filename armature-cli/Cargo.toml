@@ -1,11 +1,13 @@
 [package]
 name = "armature-cli"
-version = "0.1.0"
-edition = "2024"
-authors = ["Pegasus Heavy Industries LLC"]
-description = "CLI tool for Armature framework - code generation and development server"
-license = "Apache-2.0"
-repository = "https://github.com/pegasusheavy/armature"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "CLI tool for Armature framework - scaffolding and development"
 keywords = ["cli", "code-generation", "development", "web-framework"]
 categories = ["command-line-utilities", "development-tools"]
 

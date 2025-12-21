@@ -1,10 +1,13 @@
 [package]
 name = "armature-compression"
-version = "0.1.0"
-edition = "2024"
-authors = ["Armature Contributors"]
-description = "HTTP response compression middleware for Armature framework"
-license = "MIT OR Apache-2.0"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "HTTP compression middleware with gzip, brotli, and zstd support"
 keywords = ["compression", "gzip", "brotli", "zstd", "middleware"]
 categories = ["compression", "web-programming"]
 
