@@ -589,15 +589,14 @@ where
     }
 
     /// Apply function to all values.
-    pub fn for_each<F>(&self, f: F)
+    pub fn for_each<F>(&self, mut f: F)
     where
         F: FnMut(&K, &V),
     {
         READ_STATE_STATS.record_read();
-        self.inner.read().iter().for_each(|(k, v)| {
-            let mut f = f;
+        for (k, v) in self.inner.read().iter() {
             f(k, v);
-        });
+        }
     }
 
     /// Update value if present.

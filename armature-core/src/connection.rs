@@ -226,7 +226,7 @@ pub enum TransitionAction {
 /// This eliminates branching by using array indexing instead of match statements.
 /// The table is const and will be embedded in the binary.
 const TRANSITION_TABLE: [[TransitionEntry; ConnectionEvent::COUNT]; ConnectionState::COUNT] = {
-    use ConnectionEvent as E;
+    
     use ConnectionState as S;
     use TransitionAction as A;
 
@@ -784,6 +784,7 @@ pub struct RecyclePool<T: Recyclable + Default> {
     /// High water mark (max concurrent usage)
     high_water_mark: usize,
     /// Configuration
+    #[allow(dead_code)] // Reserved for future dynamic pool management
     config: RecyclePoolConfig,
 }
 
@@ -1111,6 +1112,7 @@ impl RecycleStats {
     }
 
     #[inline]
+    #[allow(dead_code)] // Reserved for future pool allocation tracking
     fn record_allocation(&self) {
         self.allocations.fetch_add(1, Ordering::Relaxed);
     }
@@ -1471,6 +1473,7 @@ pub struct ConnectionStats {
     /// Pool releases
     pool_releases: AtomicU64,
     /// State transitions
+    #[allow(dead_code)] // Reserved for future state machine telemetry
     transitions: AtomicU64,
 }
 
@@ -1578,6 +1581,7 @@ pub struct StateMachineExecutor {
     /// Pending events
     events: Vec<(u64, ConnectionEvent)>,
     /// Batch size
+    #[allow(dead_code)] // Reserved for batch processing limits
     batch_size: usize,
 }
 

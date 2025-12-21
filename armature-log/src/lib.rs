@@ -112,8 +112,8 @@ pub enum Level {
 }
 
 impl Level {
-    /// Get level from string.
-    pub fn from_str(s: &str) -> Option<Self> {
+    /// Parse level from string.
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "trace" => Some(Level::Trace),
             "debug" => Some(Level::Debug),
@@ -152,6 +152,14 @@ impl Level {
     }
 }
 
+impl std::str::FromStr for Level {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s).ok_or(())
+    }
+}
+
 impl std::fmt::Display for Level {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
@@ -175,14 +183,22 @@ pub enum Format {
 }
 
 impl Format {
-    /// Get format from string.
-    pub fn from_str(s: &str) -> Option<Self> {
+    /// Parse format from string.
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "pretty" => Some(Format::Pretty),
             "compact" => Some(Format::Compact),
             "json" => Some(Format::Json),
             _ => None,
         }
+    }
+}
+
+impl std::str::FromStr for Format {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s).ok_or(())
     }
 }
 
@@ -238,12 +254,12 @@ impl LogConfig {
 
         let level = env::var("ARMATURE_LOG_LEVEL")
             .ok()
-            .and_then(|s| Level::from_str(&s))
+            .and_then(|s| Level::parse(&s))
             .unwrap_or(if debug { Level::Debug } else { Level::Info });
 
         let format = env::var("ARMATURE_LOG_FORMAT")
             .ok()
-            .and_then(|s| Format::from_str(&s))
+            .and_then(|s| Format::parse(&s))
             .unwrap_or(Format::Json);
 
         let color = env::var("ARMATURE_LOG_COLOR")
@@ -887,20 +903,20 @@ mod tests {
     }
 
     #[test]
-    fn test_level_from_str() {
-        assert_eq!(Level::from_str("debug"), Some(Level::Debug));
-        assert_eq!(Level::from_str("DEBUG"), Some(Level::Debug));
-        assert_eq!(Level::from_str("warn"), Some(Level::Warn));
-        assert_eq!(Level::from_str("warning"), Some(Level::Warn));
-        assert_eq!(Level::from_str("invalid"), None);
+    fn test_level_parse() {
+        assert_eq!(Level::parse("debug"), Some(Level::Debug));
+        assert_eq!(Level::parse("DEBUG"), Some(Level::Debug));
+        assert_eq!(Level::parse("warn"), Some(Level::Warn));
+        assert_eq!(Level::parse("warning"), Some(Level::Warn));
+        assert_eq!(Level::parse("invalid"), None);
     }
 
     #[test]
-    fn test_format_from_str() {
-        assert_eq!(Format::from_str("pretty"), Some(Format::Pretty));
-        assert_eq!(Format::from_str("compact"), Some(Format::Compact));
-        assert_eq!(Format::from_str("json"), Some(Format::Json));
-        assert_eq!(Format::from_str("invalid"), None);
+    fn test_format_parse() {
+        assert_eq!(Format::parse("pretty"), Some(Format::Pretty));
+        assert_eq!(Format::parse("compact"), Some(Format::Compact));
+        assert_eq!(Format::parse("json"), Some(Format::Json));
+        assert_eq!(Format::parse("invalid"), None);
     }
 
     #[test]

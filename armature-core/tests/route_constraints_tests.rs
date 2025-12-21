@@ -1,7 +1,11 @@
 //! Integration tests for Route Constraints
 
 use armature_core::*;
+use armature_core::handler::from_legacy_handler;
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::pin::Pin;
+use std::future::Future;
 
 // IntConstraint tests
 #[test]
@@ -339,20 +343,18 @@ fn test_route_constraints_clone() {
 // Integration tests with routing
 #[tokio::test]
 async fn test_route_with_constraints_valid() {
-    use std::sync::Arc;
-
     let constraints = RouteConstraints::new().add("id", Box::new(UIntConstraint));
 
     let mut router = Router::new();
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
             Box::pin(async move {
                 let id = req.path_params.get("id").unwrap();
                 Ok(HttpResponse::ok().with_body(id.as_bytes().to_vec()))
             })
-        }),
+        })),
         constraints: Some(constraints),
     });
 
@@ -364,20 +366,18 @@ async fn test_route_with_constraints_valid() {
 
 #[tokio::test]
 async fn test_route_with_constraints_invalid() {
-    use std::sync::Arc;
-
     let constraints = RouteConstraints::new().add("id", Box::new(UIntConstraint));
 
     let mut router = Router::new();
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:id".to_string(),
-        handler: Arc::new(|req| {
+        handler: from_legacy_handler(Arc::new(|req: HttpRequest| -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
             Box::pin(async move {
                 let id = req.path_params.get("id").unwrap();
                 Ok(HttpResponse::ok().with_body(id.as_bytes().to_vec()))
             })
-        }),
+        })),
         constraints: Some(constraints),
     });
 
@@ -393,8 +393,6 @@ async fn test_route_with_constraints_invalid() {
 
 #[tokio::test]
 async fn test_route_with_multiple_constraints() {
-    use std::sync::Arc;
-
     let constraints = RouteConstraints::new()
         .add("user_id", Box::new(UIntConstraint))
         .add("post_id", Box::new(UIntConstraint));
@@ -403,7 +401,9 @@ async fn test_route_with_multiple_constraints() {
     router.add_route(Route {
         method: HttpMethod::GET,
         path: "/users/:user_id/posts/:post_id".to_string(),
-        handler: Arc::new(|_req| Box::pin(async move { Ok(HttpResponse::ok()) })),
+        handler: from_legacy_handler(Arc::new(|_req: HttpRequest| -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
+            Box::pin(async move { Ok(HttpResponse::ok()) })
+        })),
         constraints: Some(constraints),
     });
 

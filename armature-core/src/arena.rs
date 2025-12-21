@@ -192,8 +192,10 @@ impl<'a> ArenaStr<'a> {
     }
 
     /// Convert to owned String (allocates on heap).
+    ///
+    /// Note: Prefer using `Display::to_string()` if `Display` is in scope.
     #[inline]
-    pub fn to_string(&self) -> String {
+    pub fn into_string(&self) -> String {
         self.inner.to_string()
     }
 }

@@ -322,6 +322,7 @@ impl SizePool {
         }
     }
 
+    #[allow(dead_code)] // Reserved for future direct allocation path
     fn allocate(&self) -> BytesMut {
         POOL_STATS.record_miss(self.capacity);
         BytesMut::with_capacity(self.capacity)

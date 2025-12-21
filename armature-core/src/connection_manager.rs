@@ -171,7 +171,9 @@ pub type ConnectionId = u64;
 /// State tracked for each connection.
 #[derive(Debug)]
 struct ConnectionState {
+    #[allow(dead_code)] // Reserved for connection identification
     id: ConnectionId,
+    #[allow(dead_code)] // Reserved for connection lifetime tracking
     created_at: Instant,
     last_active: Instant,
     bytes_read: u64,
@@ -511,7 +513,7 @@ impl ConnectionManager {
     
     /// Recalculate optimal buffer size.
     fn adjust_buffer_size(&self) {
-        let mut history = self.buffer_history.lock().unwrap();
+        let history = self.buffer_history.lock().unwrap();
         let optimal = history.compute_optimal_size(
             self.config.min_buffer_size,
             self.config.max_buffer_size,
@@ -588,8 +590,7 @@ impl ConnectionManager {
         }
         
         // Find idle connections to cull
-        let mut to_cull = Vec::new();
-        {
+        let to_cull: Vec<ConnectionId> = {
             let connections = self.connections.read().unwrap();
             let mut idle_connections: Vec<_> = connections
                 .iter()
@@ -604,12 +605,12 @@ impl ConnectionManager {
             let max_cull = (current - self.config.min_connections)
                 .min(self.config.cull_batch_size);
             
-            to_cull = idle_connections
+            idle_connections
                 .into_iter()
                 .take(max_cull)
                 .map(|(id, _)| id)
-                .collect();
-        }
+                .collect()
+        };
         
         // Remove culled connections
         let culled = to_cull.len();

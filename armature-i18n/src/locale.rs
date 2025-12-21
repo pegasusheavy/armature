@@ -436,6 +436,7 @@ pub fn negotiate_locale<'a>(
 }
 
 /// Find the best matching locale using scores.
+#[allow(dead_code)] // Public API for advanced locale negotiation
 pub fn best_match<'a>(
     requested: &Locale,
     available: &'a [Locale],
