@@ -6,8 +6,8 @@ Welcome to the Armature framework documentation! Armature is a batteries-include
 
 Armature provides everything you need to build production-ready APIs:
 
-- ✅ **98% Feature Complete** - Enterprise-ready with 150+ features implemented
-- 🚀 **Actix-Competitive Performance** - 110+ optimizations, SIMD JSON, zero-alloc responses
+- ✅ **99% Feature Complete** - Enterprise-ready with 150+ features implemented
+- 🚀 **Actix-Competitive Performance** - 112 optimizations, SIMD JSON, zero-alloc responses
 - 🔒 **Type-Safe** - Catch errors at compile time
 - 💉 **Dependency Injection** - Automatic service injection
 - 📦 **Modular Architecture** - Organize code into reusable modules
@@ -131,6 +131,12 @@ armature dev
 | Guide | Description |
 |-------|-------------|
 | [OpenSearch](opensearch-guide.md) | Full-text search, indexing, aggregations |
+
+### Internationalization
+
+| Guide | Description |
+|-------|-------------|
+| [i18n Guide](i18n-guide.md) | Translations, locale detection, pluralization, formatting |
 
 ### Serialization & AI
 
