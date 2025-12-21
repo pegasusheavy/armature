@@ -1,3 +1,8 @@
+[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
+[1m[92m   Compiling[0m h2 v0.3.27
+[1m[92m   Compiling[0m http-body v0.4.6
+[1m[92m   Compiling[0m num-format v0.4.4
+[1m[92m   Compiling[0m oauth2 v5.0.0
 [1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
   [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
    [1m[94m|[0m
@@ -48,6 +53,10 @@
 [1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
    [1m[94m|[0m                              [1m[33m^^^^^^[0m
 
+[1m[92m   Compiling[0m tinytemplate v1.2.1
+[1m[92m   Compiling[0m sea-query v0.32.7
+[1m[92m   Compiling[0m armature-events v0.1.0 (/home/runner/work/armature/armature/armature-events)
+[1m[92m   Compiling[0m armature-cache v0.1.0 (/home/runner/work/armature/armature/armature-cache)
 [1m[33mwarning[0m[1m: variable does not need to be mutable[0m
    [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
     [1m[94m|[0m
@@ -67,6 +76,32 @@
     [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
     [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
 
+[1m[91merror[E0507][0m[1m: cannot move out of `f`, a captured variable in an `FnMut` closure[0m
+   [1m[94m--> [0marmature-core/src/read_state.rs:598:25
+    [1m[94m|[0m
+[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
+    [1m[94m|[0m                               [1m[94m-[0m [1m[94mcaptured outer variable[0m
+[1m[94m...[0m
+[1m[94m597[0m [1m[94m|[0m         self.inner.read().iter().for_each(|(k, v)| {
+    [1m[94m|[0m                                           [1m[94m--------[0m [1m[94mcaptured by this `FnMut` closure[0m
+[1m[94m598[0m [1m[94m|[0m             let mut f = f;
+    [1m[94m|[0m                         [1m[91m^[0m [1m[91mmove occurs because `f` has type `F`, which does not implement the `Copy` trait[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
+   [1m[94m--> [0m/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:821:12
+[1m[96mhelp[0m: if `F` implemented `Clone`, you could clone the value
+   [1m[94m--> [0marmature-core/src/read_state.rs:592:21
+    [1m[94m|[0m
+[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
+    [1m[94m|[0m                     [1m[96m^[0m [1m[96mconsider constraining this type parameter with `Clone`[0m
+[1m[94m...[0m
+[1m[94m598[0m [1m[94m|[0m             let mut f = f;
+    [1m[94m|[0m                         [1m[94m-[0m [1m[94myou could clone this value[0m
+[1m[96mhelp[0m: consider borrowing here
+    [1m[94m|[0m
+[1m[94m598[0m [1m[94m| [0m            let mut f = [92m&[0mf;
+    [1m[94m|[0m                         [92m+[0m
+
 [1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
    [1m[94m--> [0marmature-core/src/numa.rs:549:13
     [1m[94m|[0m
@@ -82,193 +117,8 @@
     [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
     [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
 
-[1m[33mwarning[0m[1m: field `config` is never read[0m
-   [1m[94m--> [0marmature-core/src/body_parser.rs:528:5
-    [1m[94m|[0m
-[1m[94m526[0m [1m[94m|[0m pub struct LazyBody {
-    [1m[94m|[0m            [1m[94m--------[0m [1m[94mfield in this struct[0m
-[1m[94m527[0m [1m[94m|[0m     state: LazyBodyState,
-[1m[94m528[0m [1m[94m|[0m     config: StreamingConfig,
-    [1m[94m|[0m     [1m[33m^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: method `allocate` is never used[0m
-   [1m[94m--> [0marmature-core/src/buffer_pool.rs:325:8
-    [1m[94m|[0m
-[1m[94m294[0m [1m[94m|[0m impl SizePool {
-    [1m[94m|[0m [1m[94m-------------[0m [1m[94mmethod in this implementation[0m
-[1m[94m...[0m
-[1m[94m325[0m [1m[94m|[0m     fn allocate(&self) -> BytesMut {
-    [1m[94m|[0m        [1m[33m^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: field `config` is never read[0m
-   [1m[94m--> [0marmature-core/src/connection.rs:787:5
-    [1m[94m|[0m
-[1m[94m777[0m [1m[94m|[0m pub struct RecyclePool<T: Recyclable + Default> {
-    [1m[94m|[0m            [1m[94m-----------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m787[0m [1m[94m|[0m     config: RecyclePoolConfig,
-    [1m[94m|[0m     [1m[33m^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `RecyclePool` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1m[33mwarning[0m[1m: method `record_allocation` is never used[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1114:8
-     [1m[94m|[0m
-[1m[94m1092[0m [1m[94m|[0m impl RecycleStats {
-     [1m[94m|[0m [1m[94m-----------------[0m [1m[94mmethod in this implementation[0m
-[1m[94m...[0m
-[1m[94m1114[0m [1m[94m|[0m     fn record_allocation(&self) {
-     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: field `transitions` is never read[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1474:5
-     [1m[94m|[0m
-[1m[94m1460[0m [1m[94m|[0m pub struct ConnectionStats {
-     [1m[94m|[0m            [1m[94m---------------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m1474[0m [1m[94m|[0m     transitions: AtomicU64,
-     [1m[94m|[0m     [1m[33m^^^^^^^^^^^[0m
-     [1m[94m|[0m
-     [1m[94m= [0m[1mnote[0m: `ConnectionStats` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1m[33mwarning[0m[1m: field `batch_size` is never read[0m
-    [1m[94m--> [0marmature-core/src/connection.rs:1581:5
-     [1m[94m|[0m
-[1m[94m1577[0m [1m[94m|[0m pub struct StateMachineExecutor {
-     [1m[94m|[0m            [1m[94m--------------------[0m [1m[94mfield in this struct[0m
-[1m[94m...[0m
-[1m[94m1581[0m [1m[94m|[0m     batch_size: usize,
-     [1m[94m|[0m     [1m[33m^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: fields `id` and `created_at` are never read[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:174:5
-    [1m[94m|[0m
-[1m[94m173[0m [1m[94m|[0m struct ConnectionState {
-    [1m[94m|[0m        [1m[94m---------------[0m [1m[94mfields in this struct[0m
-[1m[94m174[0m [1m[94m|[0m     id: ConnectionId,
-    [1m[94m|[0m     [1m[33m^^[0m
-[1m[94m175[0m [1m[94m|[0m     created_at: Instant,
-    [1m[94m|[0m     [1m[33m^^^^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `ConnectionState` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
-
-[1mFor more information about this error, try `rustc --explain E0133`.[0m
-[1m[33mwarning[0m: `armature-core` (lib) generated 18 warnings (run `cargo fix --lib -p armature-core` to apply 10 suggestions)
-[1m[33mwarning[0m[1m: unused import: `warn`[0m
-  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
-   [1m[94m|[0m
-[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-   [1m[94m|[0m                                        [1m[33m^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused import: `debug`[0m
-  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
-   [1m[94m|[0m                    [1m[33m^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
- [1m[94m--> [0marmature-queue/src/queue.rs:3:33
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-queue/src/worker.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-
-[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
-[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.15s
-[1m[92m     Running[0m benches/security_benchmarks.rs (target/release/deps/security_benchmarks-c9a565c023e5d191)
-Gnuplot not found, using plotters backend
-{"timestamp":"2025-12-21T00:59:03.184281805+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign
-Benchmarking jwt/sign: Warming up for 3.0000 s
-Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0032 s (6.4M iterations)
-Benchmarking jwt/sign: Analyzing
-jwt/sign                time:   [788.36 ns 789.25 ns 790.17 ns]
-Found 13 outliers among 100 measurements (13.00%)
-  8 (8.00%) low mild
-  3 (3.00%) high mild
-  2 (2.00%) high severe
-Benchmarking jwt/verify
-Benchmarking jwt/verify: Warming up for 3.0000 s
-Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0031 s (2.2M iterations)
-Benchmarking jwt/verify: Analyzing
-jwt/verify              time:   [2.2768 µs 2.2851 µs 2.2932 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high mild
-{"timestamp":"2025-12-21T00:59:21.622070551+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign_HS256
-Benchmarking jwt/sign_HS256: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0033 s (6.5M iterations)
-Benchmarking jwt/sign_HS256: Analyzing
-jwt/sign_HS256          time:   [772.12 ns 772.55 ns 773.04 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
-  1 (1.00%) high severe
-{"timestamp":"2025-12-21T00:59:30.037872904+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign_HS384
-Benchmarking jwt/sign_HS384: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0080 s (2.7M iterations)
-Benchmarking jwt/sign_HS384: Analyzing
-jwt/sign_HS384          time:   [1.8581 µs 1.8607 µs 1.8636 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
-{"timestamp":"2025-12-21T00:59:39.118957956+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign_HS512
-Benchmarking jwt/sign_HS512: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0095 s (2.6M iterations)
-Benchmarking jwt/sign_HS512: Analyzing
-jwt/sign_HS512          time:   [1.8905 µs 1.8939 µs 1.8972 µs]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
-
+[1mSome errors have detailed explanations: E0133, E0507.[0m
+[1mFor more information about an error, try `rustc --explain E0133`.[0m
+[1m[33mwarning[0m: `armature-core` (lib) generated 11 warnings
+[1m[91merror[0m: could not compile `armature-core` (lib) due to 1 previous error; 11 warnings emitted
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
