@@ -52,7 +52,11 @@ impl OpenSearchConfig {
     }
 
     /// Set basic authentication credentials.
-    pub fn with_basic_auth(mut self, username: impl Into<String>, password: impl Into<String>) -> Self {
+    pub fn with_basic_auth(
+        mut self,
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> Self {
         self.username = Some(username.into());
         self.password = Some(password.into());
         self
@@ -97,8 +101,7 @@ impl OpenSearchConfig {
 }
 
 /// TLS configuration.
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct TlsConfig {
     /// Path to CA certificate.
     pub ca_cert: Option<String>,
@@ -110,7 +113,6 @@ pub struct TlsConfig {
     pub danger_accept_invalid_certs: bool,
 }
 
-
 impl TlsConfig {
     /// Create TLS config with CA certificate.
     pub fn with_ca_cert(ca_cert: impl Into<String>) -> Self {
@@ -121,11 +123,7 @@ impl TlsConfig {
     }
 
     /// Set client certificate and key for mutual TLS.
-    pub fn with_client_cert(
-        mut self,
-        cert: impl Into<String>,
-        key: impl Into<String>,
-    ) -> Self {
+    pub fn with_client_cert(mut self, cert: impl Into<String>, key: impl Into<String>) -> Self {
         self.client_cert = Some(cert.into());
         self.client_key = Some(key.into());
         self
@@ -137,4 +135,3 @@ impl TlsConfig {
         self
     }
 }
-

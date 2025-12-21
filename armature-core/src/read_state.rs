@@ -51,8 +51,8 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWrit
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::Deref;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 // ============================================================================
 // Statistics
@@ -307,7 +307,10 @@ impl<T: std::fmt::Debug> std::fmt::Debug for ReadState<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.try_read() {
             Some(guard) => f.debug_struct("ReadState").field("value", &*guard).finish(),
-            None => f.debug_struct("ReadState").field("value", &"<locked>").finish(),
+            None => f
+                .debug_struct("ReadState")
+                .field("value", &"<locked>")
+                .finish(),
         }
     }
 }
@@ -948,7 +951,9 @@ mod tests {
 
         assert_eq!(config.get().value, 10);
 
-        config.update(|c| Config { value: c.value + 10 });
+        config.update(|c| Config {
+            value: c.value + 10,
+        });
 
         assert_eq!(config.get().value, 20);
         assert!(config.changed_since(v1));
@@ -979,4 +984,3 @@ mod tests {
         assert!(!state.changed_since(v2));
     }
 }
-

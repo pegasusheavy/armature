@@ -27,8 +27,8 @@
 //! # (requires signature generation - see code below)
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use armature_security::content_security_policy::CspConfig;
 use armature_security::cors::CorsConfig;
 use armature_security::hsts::HstsConfig;

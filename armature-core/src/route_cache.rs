@@ -30,8 +30,8 @@ use crate::handler::BoxedHandler;
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::RwLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 // ============================================================================
 // Cache Key
@@ -191,11 +191,7 @@ impl RouteCache {
             // Simple eviction: if full, clear half
             if cache.len() >= self.max_size {
                 self.stats.evictions.fetch_add(1, Ordering::Relaxed);
-                let to_remove: Vec<_> = cache
-                    .keys()
-                    .take(self.max_size / 2)
-                    .cloned()
-                    .collect();
+                let to_remove: Vec<_> = cache.keys().take(self.max_size / 2).cloned().collect();
                 for k in to_remove {
                     cache.remove(&k);
                 }
@@ -483,7 +479,12 @@ impl OptimizedRouter {
     }
 
     /// Add a route.
-    pub fn add_route(&mut self, method: HttpMethod, path: impl Into<String>, handler: BoxedHandler) {
+    pub fn add_route(
+        &mut self,
+        method: HttpMethod,
+        path: impl Into<String>,
+        handler: BoxedHandler,
+    ) {
         let path = path.into();
         let compiled = CompiledRoute::compile(&path);
         let route_index = self.routes.len();
@@ -634,11 +635,7 @@ impl RouteCacheStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 {
-            hits / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { hits / total } else { 0.0 }
     }
 }
 
@@ -664,11 +661,7 @@ impl StaticRouteStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 {
-            hits / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { hits / total } else { 0.0 }
     }
 }
 
@@ -875,4 +868,3 @@ mod tests {
         assert!(cache.stats().evictions() > 0);
     }
 }
-

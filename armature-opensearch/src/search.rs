@@ -8,7 +8,7 @@ use crate::{
 use armature_log::debug;
 use opensearch::OpenSearch;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::sync::Arc;
 
 /// Search builder for constructing and executing searches.
@@ -228,7 +228,8 @@ impl SearchBuilder {
         let index_refs: Vec<&str> = indices.iter().map(|s| s.as_str()).collect();
         let body = self.build_body();
 
-        let response = self.client
+        let response = self
+            .client
             .search(opensearch::SearchParts::Index(&index_refs))
             .body(body)
             .send()
@@ -239,11 +240,12 @@ impl SearchBuilder {
 
         if !status.is_success() {
             return Err(OpenSearchError::Query(
-                result.get("error")
+                result
+                    .get("error")
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Search failed")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -279,7 +281,8 @@ impl SearchBuilder {
                         .collect()
                 });
 
-                let source = hit.get("_source")
+                let source = hit
+                    .get("_source")
                     .ok_or_else(|| OpenSearchError::Internal("Missing _source".to_string()))?;
 
                 let doc: T = serde_json::from_value(source.clone())?;
@@ -330,7 +333,8 @@ impl SearchBuilder {
             json!({})
         };
 
-        let response = self.client
+        let response = self
+            .client
             .count(opensearch::CountParts::Index(&indices))
             .body(body)
             .send()
@@ -456,7 +460,11 @@ impl Aggregation {
                 }
                 json!({ "terms": terms })
             }
-            Aggregation::DateHistogram { field, calendar_interval, fixed_interval } => {
+            Aggregation::DateHistogram {
+                field,
+                calendar_interval,
+                fixed_interval,
+            } => {
                 let mut dh = json!({ "field": field });
                 if let Some(ci) = calendar_interval {
                     dh["calendar_interval"] = json!(ci);
@@ -552,4 +560,3 @@ impl AggregationResult {
         self.value["buckets"].as_array().cloned()
     }
 }
-

@@ -148,8 +148,7 @@ where
 }
 
 /// Transaction options for advanced control.
-#[derive(Debug, Clone)]
-#[derive(Default)]
+#[derive(Debug, Clone, Default)]
 pub struct TransactionOptions {
     /// Isolation level.
     pub isolation: Option<IsolationLevel>,
@@ -158,7 +157,6 @@ pub struct TransactionOptions {
     /// Deferrable (PostgreSQL only).
     pub deferrable: bool,
 }
-
 
 impl TransactionOptions {
     /// Create new transaction options.

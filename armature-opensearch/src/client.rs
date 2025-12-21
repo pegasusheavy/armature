@@ -9,11 +9,11 @@ use crate::{
 };
 use armature_log::{debug, info};
 use opensearch::{
-    http::transport::{SingleNodeConnectionPool, TransportBuilder},
     OpenSearch,
+    http::transport::{SingleNodeConnectionPool, TransportBuilder},
 };
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::sync::Arc;
 
 /// OpenSearch client for document operations.
@@ -28,7 +28,9 @@ impl OpenSearchClient {
     pub fn new(config: OpenSearchConfig) -> Result<Self> {
         info!("Initializing OpenSearch client for: {:?}", config.urls);
 
-        let url = config.urls.first()
+        let url = config
+            .urls
+            .first()
             .ok_or_else(|| OpenSearchError::Validation("No URLs provided".to_string()))?;
 
         let url = opensearch::http::Url::parse(url)
@@ -38,18 +40,18 @@ impl OpenSearchClient {
         let mut builder = TransportBuilder::new(conn_pool);
 
         // Configure timeouts
-        builder = builder
-            .timeout(config.request_timeout)
-            .disable_proxy();
+        builder = builder.timeout(config.request_timeout).disable_proxy();
 
         // Configure basic auth
         if let (Some(user), Some(pass)) = (&config.username, &config.password) {
-            builder = builder.auth(
-                opensearch::auth::Credentials::Basic(user.clone(), pass.clone())
-            );
+            builder = builder.auth(opensearch::auth::Credentials::Basic(
+                user.clone(),
+                pass.clone(),
+            ));
         }
 
-        let transport = builder.build()
+        let transport = builder
+            .build()
             .map_err(|e| OpenSearchError::Connection(e.to_string()))?;
 
         let client = OpenSearch::new(transport);
@@ -91,7 +93,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Indexing document {} in index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .index(opensearch::IndexParts::IndexId(index, id))
             .body(doc)
             .send()
@@ -106,7 +109,7 @@ impl OpenSearchClient {
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Unknown error")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -116,9 +119,13 @@ impl OpenSearchClient {
     /// Index a document with auto-generated ID.
     pub async fn index_auto_id<T: Document>(&self, doc: &T) -> Result<String> {
         let index = T::index_name();
-        debug!("Indexing document with auto-generated ID in index {}", index);
+        debug!(
+            "Indexing document with auto-generated ID in index {}",
+            index
+        );
 
-        let response = self.client
+        let response = self
+            .client
             .index(opensearch::IndexParts::Index(index))
             .body(doc)
             .send()
@@ -133,7 +140,7 @@ impl OpenSearchClient {
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Unknown error")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -145,7 +152,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Getting document {} from index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .get(opensearch::GetParts::IndexId(index, id))
             .send()
             .await?;
@@ -162,7 +170,8 @@ impl OpenSearchClient {
             return Ok(None);
         }
 
-        let source = body.get("_source")
+        let source = body
+            .get("_source")
             .ok_or_else(|| OpenSearchError::Internal("No _source in response".to_string()))?;
 
         let doc: T = serde_json::from_value(source.clone())?;
@@ -174,7 +183,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Checking if document {} exists in index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .exists(opensearch::ExistsParts::IndexId(index, id))
             .send()
             .await?;
@@ -187,7 +197,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Updating document {} in index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .update(opensearch::UpdateParts::IndexId(index, id))
             .body(json!({ "doc": doc }))
             .send()
@@ -209,7 +220,7 @@ impl OpenSearchClient {
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Unknown error")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -225,7 +236,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Partial update of document {} in index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .update(opensearch::UpdateParts::IndexId(index, id))
             .body(json!({ "doc": partial }))
             .send()
@@ -247,7 +259,7 @@ impl OpenSearchClient {
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Unknown error")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -259,7 +271,8 @@ impl OpenSearchClient {
         let index = T::index_name();
         debug!("Deleting document {} from index {}", id, index);
 
-        let response = self.client
+        let response = self
+            .client
             .delete(opensearch::DeleteParts::IndexId(index, id))
             .send()
             .await?;
@@ -277,7 +290,7 @@ impl OpenSearchClient {
                     .and_then(|e| e.get("reason"))
                     .and_then(|r| r.as_str())
                     .unwrap_or("Unknown error")
-                    .to_string()
+                    .to_string(),
             ));
         }
 
@@ -288,7 +301,8 @@ impl OpenSearchClient {
     pub async fn delete_by_query(&self, index: &str, query: Value) -> Result<u64> {
         debug!("Deleting documents by query in index {}", index);
 
-        let response = self.client
+        let response = self
+            .client
             .delete_by_query(opensearch::DeleteByQueryParts::Index(&[index]))
             .body(json!({ "query": query }))
             .send()
@@ -314,13 +328,15 @@ impl OpenSearchClient {
         debug!("Bulk indexing {} documents in index {}", docs.len(), index);
 
         // Build body as Vec of BulkOperation bytes
-        let mut body: Vec<opensearch::http::request::JsonBody<Value>> = Vec::with_capacity(docs.len() * 2);
+        let mut body: Vec<opensearch::http::request::JsonBody<Value>> =
+            Vec::with_capacity(docs.len() * 2);
         for (id, doc) in &docs {
             body.push(json!({ "index": { "_index": index, "_id": id } }).into());
             body.push(serde_json::to_value(doc)?.into());
         }
 
-        let response = self.client
+        let response = self
+            .client
             .bulk(opensearch::BulkParts::None)
             .body(body)
             .send()
@@ -338,10 +354,11 @@ impl OpenSearchClient {
                     if let Some(error) = item["index"]["error"].as_object() {
                         failed += 1;
                         errors.push(
-                            error.get("reason")
+                            error
+                                .get("reason")
                                 .and_then(|r| r.as_str())
                                 .unwrap_or("Unknown error")
-                                .to_string()
+                                .to_string(),
                         );
                     }
                 }
@@ -367,12 +384,14 @@ impl OpenSearchClient {
         debug!("Bulk deleting {} documents from index {}", ids.len(), index);
 
         // Build body as Vec of BulkOperation bytes
-        let mut body: Vec<opensearch::http::request::JsonBody<Value>> = Vec::with_capacity(ids.len());
+        let mut body: Vec<opensearch::http::request::JsonBody<Value>> =
+            Vec::with_capacity(ids.len());
         for id in &ids {
             body.push(json!({ "delete": { "_index": index, "_id": id } }).into());
         }
 
-        let response = self.client
+        let response = self
+            .client
             .bulk(opensearch::BulkParts::None)
             .body(body)
             .send()
@@ -390,10 +409,11 @@ impl OpenSearchClient {
                     if let Some(error) = item["delete"]["error"].as_object() {
                         failed += 1;
                         errors.push(
-                            error.get("reason")
+                            error
+                                .get("reason")
                                 .and_then(|r| r.as_str())
                                 .unwrap_or("Unknown error")
-                                .to_string()
+                                .to_string(),
                         );
                     }
                 }
@@ -428,7 +448,8 @@ impl OpenSearchClient {
 
     /// Get cluster health.
     pub async fn health(&self) -> Result<Value> {
-        let response = self.client
+        let response = self
+            .client
             .cluster()
             .health(opensearch::cluster::ClusterHealthParts::None)
             .send()
@@ -451,4 +472,3 @@ impl std::fmt::Debug for OpenSearchClient {
             .finish()
     }
 }
-

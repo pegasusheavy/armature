@@ -74,8 +74,7 @@ use std::time::{Duration, Instant};
 /// Using `#[repr(u8)]` ensures the enum is exactly 1 byte,
 /// enabling branchless table lookups via direct indexing.
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum ConnectionState {
     /// Connection slot is idle/available
     #[default]
@@ -141,7 +140,6 @@ impl ConnectionState {
         matches!(self, Self::Reading | Self::Processing | Self::Writing)
     }
 }
-
 
 // ============================================================================
 // Connection Events
@@ -223,7 +221,6 @@ pub enum TransitionAction {
 /// This eliminates branching by using array indexing instead of match statements.
 /// The table is const and will be embedded in the binary.
 const TRANSITION_TABLE: [[TransitionEntry; ConnectionEvent::COUNT]; ConnectionState::COUNT] = {
-
     use ConnectionState as S;
     use TransitionAction as A;
 
@@ -278,61 +275,61 @@ const TRANSITION_TABLE: [[TransitionEntry; ConnectionEvent::COUNT]; ConnectionSt
         ],
         // Reading state: reading request
         [
-            NOOP_READ,                         // Accept (ignore)
-            e(S::Reading, A::ContinueRead),    // DataReady -> continue reading
-            e(S::Processing, A::Dispatch),     // RequestComplete -> Processing
-            NOOP_READ,                         // ResponseReady (ignore)
-            NOOP_READ,                         // WriteComplete (ignore)
-            NOOP_READ,                         // KeepAlive (ignore)
-            TO_CLOSE,                          // Timeout -> Closing
-            TO_ERROR,                          // Error -> Error
-            TO_CLOSE,                          // Close -> Closing
+            NOOP_READ,                      // Accept (ignore)
+            e(S::Reading, A::ContinueRead), // DataReady -> continue reading
+            e(S::Processing, A::Dispatch),  // RequestComplete -> Processing
+            NOOP_READ,                      // ResponseReady (ignore)
+            NOOP_READ,                      // WriteComplete (ignore)
+            NOOP_READ,                      // KeepAlive (ignore)
+            TO_CLOSE,                       // Timeout -> Closing
+            TO_ERROR,                       // Error -> Error
+            TO_CLOSE,                       // Close -> Closing
         ],
         // Processing state: executing handler
         [
-            NOOP_PROC,                        // Accept (ignore)
-            NOOP_PROC,                        // DataReady (ignore)
-            NOOP_PROC,                        // RequestComplete (ignore)
-            e(S::Writing, A::StartWrite),     // ResponseReady -> Writing
-            NOOP_PROC,                        // WriteComplete (ignore)
-            NOOP_PROC,                        // KeepAlive (ignore)
-            TO_CLOSE,                         // Timeout -> Closing
-            TO_ERROR,                         // Error -> Error
-            TO_CLOSE,                         // Close -> Closing
+            NOOP_PROC,                    // Accept (ignore)
+            NOOP_PROC,                    // DataReady (ignore)
+            NOOP_PROC,                    // RequestComplete (ignore)
+            e(S::Writing, A::StartWrite), // ResponseReady -> Writing
+            NOOP_PROC,                    // WriteComplete (ignore)
+            NOOP_PROC,                    // KeepAlive (ignore)
+            TO_CLOSE,                     // Timeout -> Closing
+            TO_ERROR,                     // Error -> Error
+            TO_CLOSE,                     // Close -> Closing
         ],
         // Writing state: writing response
         [
-            NOOP_WRIT,                         // Accept (ignore)
-            NOOP_WRIT,                         // DataReady (ignore)
-            NOOP_WRIT,                         // RequestComplete (ignore)
-            NOOP_WRIT,                         // ResponseReady (ignore)
-            e(S::Closing, A::InitiateClose),   // WriteComplete -> Closing (or KeepAlive)
-            e(S::Connected, A::Reset),         // KeepAlive -> Connected
-            TO_CLOSE,                          // Timeout -> Closing
-            TO_ERROR,                          // Error -> Error
-            TO_CLOSE,                          // Close -> Closing
+            NOOP_WRIT,                       // Accept (ignore)
+            NOOP_WRIT,                       // DataReady (ignore)
+            NOOP_WRIT,                       // RequestComplete (ignore)
+            NOOP_WRIT,                       // ResponseReady (ignore)
+            e(S::Closing, A::InitiateClose), // WriteComplete -> Closing (or KeepAlive)
+            e(S::Connected, A::Reset),       // KeepAlive -> Connected
+            TO_CLOSE,                        // Timeout -> Closing
+            TO_ERROR,                        // Error -> Error
+            TO_CLOSE,                        // Close -> Closing
         ],
         // Closing state: graceful shutdown
         [
-            NOOP_CLOS,    // Accept (ignore)
-            NOOP_CLOS,    // DataReady (ignore)
-            NOOP_CLOS,    // RequestComplete (ignore)
-            NOOP_CLOS,    // ResponseReady (ignore)
-            TO_CLOSED,    // WriteComplete -> Closed
-            NOOP_CLOS,    // KeepAlive (ignore)
-            TO_CLOSED,    // Timeout -> Closed
-            TO_CLOSED,    // Error -> Closed
-            TO_CLOSED,    // Close -> Closed
+            NOOP_CLOS, // Accept (ignore)
+            NOOP_CLOS, // DataReady (ignore)
+            NOOP_CLOS, // RequestComplete (ignore)
+            NOOP_CLOS, // ResponseReady (ignore)
+            TO_CLOSED, // WriteComplete -> Closed
+            NOOP_CLOS, // KeepAlive (ignore)
+            TO_CLOSED, // Timeout -> Closed
+            TO_CLOSED, // Error -> Closed
+            TO_CLOSED, // Close -> Closed
         ],
         // Closed state: terminal
         [
-            NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD,
-            NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD,
+            NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD, NOOP_CLSD,
+            NOOP_CLSD,
         ],
         // Error state: terminal
         [
-            NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR,
-            NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR,
+            NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR, NOOP_ERR,
+            NOOP_ERR,
         ],
     ]
 };
@@ -551,9 +548,10 @@ impl Connection {
         }
 
         if let Some(idle_time) = self.idle_time()
-            && idle_time > idle_timeout {
-                return true;
-            }
+            && idle_time > idle_timeout
+        {
+            return true;
+        }
 
         false
     }
@@ -1235,9 +1233,10 @@ impl ConnectionRecycler {
 
         // Check age
         if let Some(age) = conn.inner().age()
-            && age > self.config.idle_timeout * 10 {
-                return false;
-            }
+            && age > self.config.idle_timeout * 10
+        {
+            return false;
+        }
 
         true
     }
@@ -2077,4 +2076,3 @@ mod tests {
         assert_eq!(conn.generation(), 2); // reset increments generation
     }
 }
-

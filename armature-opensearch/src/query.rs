@@ -1,7 +1,7 @@
 //! Query DSL builder for OpenSearch.
 
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// Query builder for constructing OpenSearch queries.
 #[derive(Debug, Clone, Default)]
@@ -51,7 +51,9 @@ impl QueryBuilder {
 
     /// Build the query as JSON.
     pub fn build(self) -> Value {
-        self.query.map(|q| q.to_json()).unwrap_or(json!({ "match_all": {} }))
+        self.query
+            .map(|q| q.to_json())
+            .unwrap_or(json!({ "match_all": {} }))
     }
 }
 
@@ -264,11 +266,21 @@ impl RangeQuery {
     fn to_json(&self) -> Value {
         let mut range = serde_json::Map::new();
 
-        if let Some(v) = &self.gt { range.insert("gt".to_string(), v.clone()); }
-        if let Some(v) = &self.gte { range.insert("gte".to_string(), v.clone()); }
-        if let Some(v) = &self.lt { range.insert("lt".to_string(), v.clone()); }
-        if let Some(v) = &self.lte { range.insert("lte".to_string(), v.clone()); }
-        if let Some(v) = &self.format { range.insert("format".to_string(), json!(v)); }
+        if let Some(v) = &self.gt {
+            range.insert("gt".to_string(), v.clone());
+        }
+        if let Some(v) = &self.gte {
+            range.insert("gte".to_string(), v.clone());
+        }
+        if let Some(v) = &self.lt {
+            range.insert("lt".to_string(), v.clone());
+        }
+        if let Some(v) = &self.lte {
+            range.insert("lte".to_string(), v.clone());
+        }
+        if let Some(v) = &self.format {
+            range.insert("format".to_string(), json!(v));
+        }
 
         json!({ "range": { &self.field: range } })
     }
@@ -481,4 +493,3 @@ impl NestedQuery {
         json!({ "nested": nested })
     }
 }
-

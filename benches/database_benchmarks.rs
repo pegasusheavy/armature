@@ -10,7 +10,7 @@
 //! These benchmarks simulate real-world database access patterns
 //! and help identify performance bottlenecks in database layers.
 
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -84,9 +84,7 @@ impl MockPool {
     /// Multiple queries - fetch N worlds
     #[inline]
     pub fn get_worlds(&self, ids: &[i32]) -> Vec<World> {
-        ids.iter()
-            .filter_map(|&id| self.get_world(id))
-            .collect()
+        ids.iter().filter_map(|&id| self.get_world(id)).collect()
     }
 
     /// Get all fortunes
@@ -234,29 +232,19 @@ fn multiple_queries_benchmark(c: &mut Criterion) {
     for count in [1, 5, 10, 15, 20].iter() {
         group.throughput(Throughput::Elements(*count as u64));
 
-        group.bench_with_input(
-            BenchmarkId::new("random", count),
-            count,
-            |b, &count| {
-                b.iter(|| {
-                    let ids: Vec<i32> = (0..count)
-                        .map(|_| fastrand::i32(1..=10000))
-                        .collect();
-                    black_box(pool.get_worlds(&ids))
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("random", count), count, |b, &count| {
+            b.iter(|| {
+                let ids: Vec<i32> = (0..count).map(|_| fastrand::i32(1..=10000)).collect();
+                black_box(pool.get_worlds(&ids))
+            });
+        });
 
-        group.bench_with_input(
-            BenchmarkId::new("sequential", count),
-            count,
-            |b, &count| {
-                b.iter(|| {
-                    let ids: Vec<i32> = (1..=count).collect();
-                    black_box(pool.get_worlds(&ids))
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("sequential", count), count, |b, &count| {
+            b.iter(|| {
+                let ids: Vec<i32> = (1..=count).collect();
+                black_box(pool.get_worlds(&ids))
+            });
+        });
     }
 
     group.finish();
@@ -334,32 +322,24 @@ fn updates_benchmark(c: &mut Criterion) {
         group.throughput(Throughput::Elements(*count as u64));
 
         // Single updates (sequential)
-        group.bench_with_input(
-            BenchmarkId::new("sequential", count),
-            count,
-            |b, &count| {
-                b.iter(|| {
-                    for id in 1..=count {
-                        let new_random = fastrand::i32(1..=10000);
-                        pool.update_world(id, new_random);
-                    }
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("sequential", count), count, |b, &count| {
+            b.iter(|| {
+                for id in 1..=count {
+                    let new_random = fastrand::i32(1..=10000);
+                    pool.update_world(id, new_random);
+                }
+            });
+        });
 
         // Batch update
-        group.bench_with_input(
-            BenchmarkId::new("batch", count),
-            count,
-            |b, &count| {
-                b.iter(|| {
-                    let updates: Vec<(i32, i32)> = (1..=count)
-                        .map(|id| (id, fastrand::i32(1..=10000)))
-                        .collect();
-                    black_box(pool.update_worlds(&updates))
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("batch", count), count, |b, &count| {
+            b.iter(|| {
+                let updates: Vec<(i32, i32)> = (1..=count)
+                    .map(|id| (id, fastrand::i32(1..=10000)))
+                    .collect();
+                black_box(pool.update_worlds(&updates))
+            });
+        });
     }
 
     group.finish();
@@ -407,9 +387,7 @@ fn async_benchmark(c: &mut Criterion) {
             count,
             |b, &count| {
                 b.to_async(&rt).iter(|| async {
-                    let ids: Vec<i32> = (0..count)
-                        .map(|_| fastrand::i32(1..=10000))
-                        .collect();
+                    let ids: Vec<i32> = (0..count).map(|_| fastrand::i32(1..=10000)).collect();
                     black_box(pool_100.get_worlds(&ids).await)
                 });
             },
@@ -482,4 +460,3 @@ criterion_group! {
 }
 
 criterion_main!(benches);
-

@@ -90,7 +90,9 @@ impl FastHeaders {
 
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> {
-        self.inner.iter().map(|h| (h.name.as_str(), h.value.as_str()))
+        self.inner
+            .iter()
+            .map(|h| (h.name.as_str(), h.value.as_str()))
     }
 
     /// Convert to HashMap for compatibility.
@@ -216,7 +218,7 @@ impl FastResponse {
     // =========================================================================
 
     /// Create empty response with status code.
-    /// 
+    ///
     /// This is the fastest path - no heap allocation.
     #[inline(always)]
     pub const fn new(status: u16) -> Self {
@@ -293,7 +295,11 @@ impl FastResponse {
 
     /// Set header.
     #[inline]
-    pub fn header(mut self, name: impl Into<CompactString>, value: impl Into<CompactString>) -> Self {
+    pub fn header(
+        mut self,
+        name: impl Into<CompactString>,
+        value: impl Into<CompactString>,
+    ) -> Self {
         self.headers.insert(name, value);
         self
     }
@@ -328,18 +334,26 @@ impl FastResponse {
     /// Set JSON body.
     #[inline]
     pub fn with_json<T: serde::Serialize>(self, value: &T) -> Result<Self, crate::Error> {
-        let vec = crate::json::to_vec(value)
-            .map_err(|e| crate::Error::Serialization(e.to_string()))?;
-        Ok(self.content_type("application/json").with_bytes(Bytes::from(vec)))
+        let vec =
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
+        Ok(self
+            .content_type("application/json")
+            .with_bytes(Bytes::from(vec)))
     }
 
     /// Set JSON body with pre-sized buffer.
     #[inline]
-    pub fn with_json_sized<T: serde::Serialize>(self, value: &T, size_hint: usize) -> Result<Self, crate::Error> {
+    pub fn with_json_sized<T: serde::Serialize>(
+        self,
+        value: &T,
+        size_hint: usize,
+    ) -> Result<Self, crate::Error> {
         let mut vec = Vec::with_capacity(size_hint);
         crate::json::to_writer(&mut vec, value)
             .map_err(|e| crate::Error::Serialization(e.to_string()))?;
-        Ok(self.content_type("application/json").with_bytes(Bytes::from(vec)))
+        Ok(self
+            .content_type("application/json")
+            .with_bytes(Bytes::from(vec)))
     }
 
     /// Set text body from static string (zero-copy).
@@ -463,7 +477,7 @@ pub mod fast {
     }
 
     // Common JSON responses
-    
+
     /// Empty JSON object response `{}`.
     #[inline(always)]
     pub fn empty_json() -> FastResponse {
@@ -510,12 +524,12 @@ mod tests {
     #[test]
     fn test_fast_response_with_json() {
         #[derive(serde::Serialize)]
-        struct Data { value: i32 }
+        struct Data {
+            value: i32,
+        }
 
-        let resp = FastResponse::ok()
-            .with_json(&Data { value: 42 })
-            .unwrap();
-        
+        let resp = FastResponse::ok().with_json(&Data { value: 42 }).unwrap();
+
         assert_eq!(resp.status, 200);
         assert!(!resp.body.is_empty());
         assert_eq!(resp.headers.get("content-type"), Some("application/json"));
@@ -523,9 +537,8 @@ mod tests {
 
     #[test]
     fn test_fast_response_static_body() {
-        let resp = FastResponse::ok()
-            .with_static_body(b"Hello, World!");
-        
+        let resp = FastResponse::ok().with_static_body(b"Hello, World!");
+
         assert_eq!(resp.body.as_slice(), b"Hello, World!");
     }
 
@@ -534,7 +547,7 @@ mod tests {
         let mut headers = FastHeaders::new();
         headers.insert("content-type", "application/json");
         headers.insert("x-custom", "value");
-        
+
         assert_eq!(headers.len(), 2);
         assert_eq!(headers.get("content-type"), Some("application/json"));
         assert_eq!(headers.get("Content-Type"), Some("application/json")); // Case insensitive
@@ -544,7 +557,7 @@ mod tests {
     fn test_fast_responses() {
         let resp = fast::ok();
         assert_eq!(resp.status, 200);
-        
+
         let resp = fast::not_found();
         assert_eq!(resp.status, 404);
 
@@ -557,10 +570,9 @@ mod tests {
         let fast = FastResponse::ok()
             .header("x-test", "value")
             .with_text("Hello");
-        
+
         let legacy = fast.into_http_response();
         assert_eq!(legacy.status, 200);
         assert!(legacy.headers.contains_key("x-test"));
     }
 }
-

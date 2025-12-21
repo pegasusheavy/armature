@@ -157,7 +157,6 @@ impl From<EventStoreError> for AggregateError {
 mod tests {
     use super::*;
 
-
     #[tokio::test]
     async fn test_in_memory_store() {
         let store = InMemoryEventStore::new();

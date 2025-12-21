@@ -32,9 +32,9 @@ use crate::{CompressionAlgorithm, CompressionError, Result};
 use bytes::{Bytes, BytesMut};
 
 #[cfg(feature = "gzip")]
-use flate2::write::GzEncoder;
-#[cfg(feature = "gzip")]
 use flate2::Compression as GzipCompression;
+#[cfg(feature = "gzip")]
+use flate2::write::GzEncoder;
 
 #[cfg(feature = "brotli")]
 use brotli::CompressorWriter as BrotliEncoder;
@@ -111,8 +111,8 @@ impl StreamingConfig {
     pub fn low_latency() -> Self {
         Self {
             algorithm: CompressionAlgorithm::Auto,
-            level: 1,  // Fastest
-            flush_interval: 256,  // Frequent flushes
+            level: 1,            // Fastest
+            flush_interval: 256, // Frequent flushes
             min_chunk_size: 16,
             buffer_size: 1024,
         }
@@ -122,8 +122,8 @@ impl StreamingConfig {
     pub fn high_compression() -> Self {
         Self {
             algorithm: CompressionAlgorithm::Auto,
-            level: 9,  // Best compression
-            flush_interval: 16384,  // Less frequent flushes
+            level: 9,              // Best compression
+            flush_interval: 16384, // Less frequent flushes
             min_chunk_size: 1024,
             buffer_size: 32768,
         }
@@ -182,9 +182,13 @@ impl StreamingCompressor {
             CompressionAlgorithm::Auto => {
                 // Default to gzip for streaming (best compatibility)
                 #[cfg(feature = "gzip")]
-                { CompressionAlgorithm::Gzip }
+                {
+                    CompressionAlgorithm::Gzip
+                }
                 #[cfg(not(feature = "gzip"))]
-                { CompressionAlgorithm::None }
+                {
+                    CompressionAlgorithm::None
+                }
             }
             other => other,
         };
@@ -217,10 +221,8 @@ impl StreamingCompressor {
             #[cfg(feature = "zstd")]
             CompressionAlgorithm::Zstd => {
                 let level = config.level.clamp(1, 22) as i32;
-                let encoder = ZstdEncoder::new(
-                    Vec::with_capacity(config.buffer_size),
-                    level,
-                ).map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
+                let encoder = ZstdEncoder::new(Vec::with_capacity(config.buffer_size), level)
+                    .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 Ok(EncoderState::Zstd(encoder))
             }
 
@@ -251,7 +253,7 @@ impl StreamingCompressor {
     pub fn compress_chunk(&mut self, data: &[u8]) -> Result<Bytes> {
         if self.finished {
             return Err(CompressionError::CompressionFailed(
-                "Compressor already finished".to_string()
+                "Compressor already finished".to_string(),
             ));
         }
 
@@ -271,7 +273,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
-                encoder.write_all(data)
+                encoder
+                    .write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
 
                 // Flush if we've accumulated enough
@@ -284,7 +287,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(encoder) => {
-                encoder.write_all(data)
+                encoder
+                    .write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
 
                 if self.unflushed_bytes >= self.config.flush_interval {
@@ -296,7 +300,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
-                encoder.write_all(data)
+                encoder
+                    .write_all(data)
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
 
                 if self.unflushed_bytes >= self.config.flush_interval {
@@ -321,7 +326,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
-                encoder.flush()
+                encoder
+                    .flush()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 let inner = encoder.get_mut();
                 if inner.is_empty() {
@@ -334,7 +340,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(encoder) => {
-                encoder.flush()
+                encoder
+                    .flush()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 let inner = encoder.get_mut();
                 if inner.is_empty() {
@@ -347,7 +354,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
-                encoder.flush()
+                encoder
+                    .flush()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 let inner = encoder.get_mut();
                 if inner.is_empty() {
@@ -372,7 +380,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "gzip")]
             EncoderState::Gzip(encoder) => {
-                let output = encoder.finish()
+                let output = encoder
+                    .finish()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
@@ -380,7 +389,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "brotli")]
             EncoderState::Brotli(mut encoder) => {
-                encoder.flush()
+                encoder
+                    .flush()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 let output = encoder.into_inner();
                 self.bytes_out += output.len() as u64;
@@ -389,7 +399,8 @@ impl StreamingCompressor {
 
             #[cfg(feature = "zstd")]
             EncoderState::Zstd(encoder) => {
-                let output = encoder.finish()
+                let output = encoder
+                    .finish()
                     .map_err(|e| CompressionError::CompressionFailed(e.to_string()))?;
                 self.bytes_out += output.len() as u64;
                 Ok(Bytes::from(output))
@@ -493,8 +504,7 @@ mod tests {
 
     #[test]
     fn test_passthrough_compressor() {
-        let config = StreamingConfig::new()
-            .algorithm(CompressionAlgorithm::None);
+        let config = StreamingConfig::new().algorithm(CompressionAlgorithm::None);
 
         let mut compressor = StreamingCompressor::new(config).unwrap();
 
@@ -563,4 +573,3 @@ mod tests {
         assert!(config.flush_interval > 1024);
     }
 }
-

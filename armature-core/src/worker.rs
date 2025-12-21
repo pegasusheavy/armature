@@ -33,8 +33,8 @@
 
 use crate::Router;
 use std::cell::RefCell;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 // ============================================================================
 // Worker ID Generation
@@ -430,7 +430,10 @@ fn set_thread_affinity_linux(core: usize) -> Result<(), AffinityError> {
     // Check if core is valid
     let num_cores = num_cpus();
     if core >= num_cores {
-        return Err(AffinityError::InvalidCore { core, max: num_cores - 1 });
+        return Err(AffinityError::InvalidCore {
+            core,
+            max: num_cores - 1,
+        });
     }
 
     // cpu_set_t is 1024 bits = 128 bytes on Linux
@@ -808,12 +811,16 @@ impl WorkerStateStorage {
 
     fn get_mut<T: 'static>(&mut self) -> Option<&mut T> {
         let type_id = std::any::TypeId::of::<T>();
-        self.data.get_mut(&type_id).and_then(|b| b.downcast_mut::<T>())
+        self.data
+            .get_mut(&type_id)
+            .and_then(|b| b.downcast_mut::<T>())
     }
 
     fn remove<T: 'static>(&mut self) -> Option<T> {
         let type_id = std::any::TypeId::of::<T>();
-        self.data.remove(&type_id).and_then(|b| b.downcast::<T>().ok().map(|b| *b))
+        self.data
+            .remove(&type_id)
+            .and_then(|b| b.downcast::<T>().ok().map(|b| *b))
     }
 
     fn contains<T: 'static>(&self) -> bool {
@@ -921,9 +928,7 @@ impl<T: 'static + Send> WorkerState<T> {
     /// Remove state and return it.
     #[inline]
     pub fn take() -> Option<T> {
-        WORKER_STATE.with(|storage| {
-            storage.borrow_mut().remove::<T>()
-        })
+        WORKER_STATE.with(|storage| storage.borrow_mut().remove::<T>())
     }
 
     /// Replace state with a new value, returning the old one.
@@ -1134,10 +1139,12 @@ where
     /// If at capacity, evicts a random entry.
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         // Simple eviction: remove first entry if at capacity
-        if self.data.len() >= self.max_entries && !self.data.contains_key(&key)
-            && let Some(first_key) = self.data.keys().next().cloned() {
-                self.data.remove(&first_key);
-            }
+        if self.data.len() >= self.max_entries
+            && !self.data.contains_key(&key)
+            && let Some(first_key) = self.data.keys().next().cloned()
+        {
+            self.data.remove(&first_key);
+        }
         self.data.insert(key, value)
     }
 
@@ -1215,9 +1222,7 @@ where
 /// ```
 #[macro_export]
 macro_rules! with_worker_router {
-    ($router:ident, $body:block) => {{
-        $crate::worker::WorkerRouter::with(|$router| $body)
-    }};
+    ($router:ident, $body:block) => {{ $crate::worker::WorkerRouter::with(|$router| $body) }};
 }
 
 // ============================================================================
@@ -1297,9 +1302,7 @@ mod tests {
 
     #[test]
     fn test_core_for_worker_specific_cores() {
-        let config = AffinityConfig::new()
-            .enable()
-            .cores(vec![0, 4, 8]);
+        let config = AffinityConfig::new().enable().cores(vec![0, 4, 8]);
 
         assert_eq!(config.core_for_worker(0), 0);
         assert_eq!(config.core_for_worker(1), 4);
@@ -1537,4 +1540,3 @@ mod tests {
         let _ = stats.clone_avoidance_ratio();
     }
 }
-

@@ -309,4 +309,3 @@ mod tests {
         assert_send_sync::<BoxedHandler>();
     }
 }
-

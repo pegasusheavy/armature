@@ -138,7 +138,6 @@ pub mod connection_manager;
 pub mod connection_tuning;
 pub mod container;
 pub mod cow_state;
-pub mod read_state;
 pub mod epoll_tuning;
 pub mod error;
 pub mod extensions;
@@ -149,13 +148,11 @@ pub mod guard;
 pub mod handler;
 pub mod headers;
 pub mod health;
-pub mod small_vec;
-pub mod json;
-pub mod simd_parser;
 pub mod hmr;
 pub mod http;
 pub mod interceptor;
 pub mod io_uring;
+pub mod json;
 pub mod lifecycle;
 pub mod load_balancer;
 pub mod logging;
@@ -163,13 +160,15 @@ pub mod memory_opt;
 pub mod middleware;
 pub mod module;
 pub mod numa;
-pub mod pipeline;
 pub mod pagination;
-pub mod resilience;
+pub mod pipeline;
 pub mod read_buffer;
+pub mod read_state;
+pub mod resilience;
 pub mod response_buffer;
-pub mod route_constraint;
+pub mod response_pipeline;
 pub mod route_cache;
+pub mod route_constraint;
 pub mod route_group;
 pub mod route_params;
 pub mod route_registry;
@@ -177,17 +176,18 @@ pub mod routing;
 pub mod runtime_config;
 pub mod serialization_pool;
 pub mod shutdown;
+pub mod simd_parser;
+pub mod small_vec;
 pub mod socket_batch;
 pub mod sse;
 pub mod static_assets;
 pub mod status;
 pub mod streaming;
 pub mod timeout;
-pub mod tower_compat;
 pub mod tls;
+pub mod tower_compat;
 pub mod traits;
 pub mod vectored_io;
-pub mod response_pipeline;
 pub mod websocket;
 pub mod worker;
 pub mod write_coalesce;
@@ -198,9 +198,9 @@ pub use application::*;
 pub use body_limits::*;
 pub use connection::{
     Connection, ConnectionConfig, ConnectionEvent, ConnectionPool, ConnectionRecycler,
-    ConnectionState, ConnectionStats, PoolHandle, Recyclable, RecyclableConnection,
-    RecyclePool, RecyclePoolConfig, RecycleStats, RecyclerStats, StateMachineExecutor,
-    TransitionAction, TransitionError, connection_stats, recycle_stats,
+    ConnectionState, ConnectionStats, PoolHandle, Recyclable, RecyclableConnection, RecyclePool,
+    RecyclePoolConfig, RecycleStats, RecyclerStats, StateMachineExecutor, TransitionAction,
+    TransitionError, connection_stats, recycle_stats,
 };
 pub use container::*;
 pub use error::*;
@@ -222,27 +222,30 @@ pub use logging::*;
 pub use middleware::*;
 pub use module::*;
 pub use numa::{
-    GlobalNumaStats, NumaAllocStats, NumaAllocator, NumaBuffer, NumaConfig,
-    NumaError, NumaNode, NumaPolicy, bind_to_local_node, bind_to_node,
-    cached_numa_config, current_numa_node, init_worker_numa, num_numa_nodes,
-    numa_available, numa_stats,
+    GlobalNumaStats, NumaAllocStats, NumaAllocator, NumaBuffer, NumaConfig, NumaError, NumaNode,
+    NumaPolicy, bind_to_local_node, bind_to_node, cached_numa_config, current_numa_node,
+    init_worker_numa, num_numa_nodes, numa_available, numa_stats,
 };
 pub use pagination::*;
+pub use read_buffer::{
+    AdaptiveBufferSizer, BufferSizingStats, ContentCategory, DEFAULT_INITIAL_BUFFER, HUGE_BUFFER,
+    LARGE_BUFFER, MAX_BUFFER, MEDIUM_BUFFER, MIN_BUFFER, PayloadTracker, ReadBufferConfig,
+    SMALL_BUFFER, TINY_BUFFER, buffer_sizing_stats,
+};
 pub use resilience::{
     BackoffStrategy, Bulkhead, BulkheadConfig, BulkheadError, BulkheadStats, CircuitBreaker,
     CircuitBreakerConfig, CircuitBreakerError, CircuitBreakerStats, CircuitState, Fallback,
     FallbackBuilder, FallbackChain, Retry, RetryConfig, RetryError, Timeout as ResilienceTimeout,
     TimeoutConfig, TimeoutError, fallback_default, fallback_value,
 };
-pub use read_buffer::{
-    AdaptiveBufferSizer, BufferSizingStats, ContentCategory, PayloadTracker,
-    ReadBufferConfig, buffer_sizing_stats,
-    DEFAULT_INITIAL_BUFFER, HUGE_BUFFER, LARGE_BUFFER, MAX_BUFFER,
-    MEDIUM_BUFFER, MIN_BUFFER, SMALL_BUFFER, TINY_BUFFER,
-};
 pub use response_buffer::{
-    ResponseBuffer, ResponseBuilder, DEFAULT_RESPONSE_CAPACITY,
-    MEDIUM_RESPONSE_CAPACITY, LARGE_RESPONSE_CAPACITY,
+    DEFAULT_RESPONSE_CAPACITY, LARGE_RESPONSE_CAPACITY, MEDIUM_RESPONSE_CAPACITY, ResponseBuffer,
+    ResponseBuilder,
+};
+pub use response_pipeline::{
+    ConnectionPipeline, GlobalPipelineStats, ResponseBatch, ResponseItem, ResponseQueue,
+    ResponseQueueStats, ResponseWriterConfig, ResponseWriterStats, global_pipeline_stats,
+    writer_stats,
 };
 pub use route_constraint::*;
 pub use route_group::*;
@@ -256,30 +259,21 @@ pub use timeout::*;
 pub use tls::*;
 pub use traits::*;
 pub use vectored_io::{
-    ResponseChunks, VectoredIoStats, VectoredResponse,
-    status_line, vectored_stats, MAX_IO_SLICES,
-};
-pub use response_pipeline::{
-    ConnectionPipeline, GlobalPipelineStats, ResponseBatch, ResponseItem,
-    ResponseQueue, ResponseQueueStats, ResponseWriterConfig, ResponseWriterStats,
-    global_pipeline_stats, writer_stats,
+    MAX_IO_SLICES, ResponseChunks, VectoredIoStats, VectoredResponse, status_line, vectored_stats,
 };
 pub use websocket::*;
 pub use worker::{
-    AffinityConfig, AffinityError, AffinityMode, AffinityStats,
-    StateFactory, WorkerCache, WorkerConfig, WorkerHandle,
-    WorkerRouter, WorkerState, WorkerStateStats, WorkerStats,
-    affinity_stats, affinity_supported, clear_worker_router,
-    clear_worker_state, get_thread_affinity, has_worker_router,
-    init_worker_router, init_worker_state, init_worker_with_affinity,
-    next_worker_id, num_cpus, num_physical_cpus, set_thread_affinity,
+    AffinityConfig, AffinityError, AffinityMode, AffinityStats, StateFactory, WorkerCache,
+    WorkerConfig, WorkerHandle, WorkerRouter, WorkerState, WorkerStateStats, WorkerStats,
+    affinity_stats, affinity_supported, clear_worker_router, clear_worker_state,
+    get_thread_affinity, has_worker_router, init_worker_router, init_worker_state,
+    init_worker_with_affinity, next_worker_id, num_cpus, num_physical_cpus, set_thread_affinity,
     total_workers, worker_id, worker_state_stats, worker_stats,
 };
 pub use write_coalesce::{
-    CoalesceConfig, CoalesceStats, ConnectionWriteBuffer, MultiBufferCoalescer,
-    WriteCoalescer, WriteResult, coalesce_stats,
-    DEFAULT_COALESCE_CAPACITY, DEFAULT_FLUSH_THRESHOLD, DEFAULT_FLUSH_TIMEOUT_US,
-    MAX_COALESCE_BUFFER, MIN_COALESCE_SIZE,
+    CoalesceConfig, CoalesceStats, ConnectionWriteBuffer, DEFAULT_COALESCE_CAPACITY,
+    DEFAULT_FLUSH_THRESHOLD, DEFAULT_FLUSH_TIMEOUT_US, MAX_COALESCE_BUFFER, MIN_COALESCE_SIZE,
+    MultiBufferCoalescer, WriteCoalescer, WriteResult, coalesce_stats,
 };
 
 // Re-export inventory for route registration macros

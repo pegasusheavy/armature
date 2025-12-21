@@ -102,26 +102,23 @@ impl DieselConfig {
         }
 
         if let Ok(timeout) = std::env::var("DATABASE_CONNECT_TIMEOUT") {
-            config.connect_timeout = Duration::from_secs(
-                timeout
-                    .parse()
-                    .map_err(|_| crate::DieselError::Config("Invalid DATABASE_CONNECT_TIMEOUT".into()))?,
-            );
+            config.connect_timeout = Duration::from_secs(timeout.parse().map_err(|_| {
+                crate::DieselError::Config("Invalid DATABASE_CONNECT_TIMEOUT".into())
+            })?);
         }
 
         if let Ok(lifetime) = std::env::var("DATABASE_MAX_LIFETIME") {
-            config.max_lifetime = Duration::from_secs(
-                lifetime
-                    .parse()
-                    .map_err(|_| crate::DieselError::Config("Invalid DATABASE_MAX_LIFETIME".into()))?,
-            );
+            config.max_lifetime =
+                Duration::from_secs(lifetime.parse().map_err(|_| {
+                    crate::DieselError::Config("Invalid DATABASE_MAX_LIFETIME".into())
+                })?);
         }
 
         if let Ok(idle) = std::env::var("DATABASE_IDLE_TIMEOUT") {
-            config.idle_timeout = Duration::from_secs(
-                idle.parse()
-                    .map_err(|_| crate::DieselError::Config("Invalid DATABASE_IDLE_TIMEOUT".into()))?,
-            );
+            config.idle_timeout =
+                Duration::from_secs(idle.parse().map_err(|_| {
+                    crate::DieselError::Config("Invalid DATABASE_IDLE_TIMEOUT".into())
+                })?);
         }
 
         Ok(config)
@@ -202,4 +199,3 @@ mod humantime_serde {
         Ok(Duration::from_secs(secs))
     }
 }
-

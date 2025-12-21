@@ -7,8 +7,8 @@
 //! No special Armature plugin is needed - just use the handlebars crate
 //! and inject it as a service!
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use armature_proc_macro::*;
 use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};

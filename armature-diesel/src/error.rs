@@ -43,4 +43,3 @@ impl From<std::io::Error> for DieselError {
         DieselError::Connection(err.to_string())
     }
 }
-

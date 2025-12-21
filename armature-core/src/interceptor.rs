@@ -129,7 +129,6 @@ impl Interceptor for CacheInterceptor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     fn test_logging_interceptor_creation() {

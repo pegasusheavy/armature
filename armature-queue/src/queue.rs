@@ -1,8 +1,8 @@
 //! Queue implementation with Redis backend.
 
-use armature_log::{debug, info};
 use crate::error::{QueueError, QueueResult};
 use crate::job::{Job, JobData, JobId, JobPriority, JobState};
+use armature_log::{debug, info};
 use chrono::Utc;
 use redis::{AsyncCommands, Client, aio::ConnectionManager};
 use std::time::Duration;
@@ -83,7 +83,10 @@ impl Queue {
     /// Create a queue with custom configuration.
     pub async fn with_config(config: QueueConfig) -> QueueResult<Self> {
         info!("Initializing job queue: {}", config.queue_name);
-        debug!("Queue config - prefix: {}, max_size: {}", config.key_prefix, config.max_size);
+        debug!(
+            "Queue config - prefix: {}, max_size: {}",
+            config.key_prefix, config.max_size
+        );
 
         let client = Client::open(config.redis_url.as_str())
             .map_err(|e| QueueError::Config(e.to_string()))?;
@@ -97,7 +100,10 @@ impl Queue {
     /// Enqueue a job.
     pub async fn enqueue(&self, job_type: impl Into<String>, data: JobData) -> QueueResult<JobId> {
         let job_type = job_type.into();
-        debug!("Enqueueing job: {} on queue '{}'", job_type, self.config.queue_name);
+        debug!(
+            "Enqueueing job: {} on queue '{}'",
+            job_type, self.config.queue_name
+        );
         let job = Job::new(&self.config.queue_name, &job_type, data);
         self.enqueue_job(job).await
     }

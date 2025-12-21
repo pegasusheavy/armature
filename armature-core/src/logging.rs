@@ -522,7 +522,11 @@ impl LogConfig {
                 "error" => Some(LogLevel::Error),
                 _ => None,
             })
-            .unwrap_or(if debug_enabled { LogLevel::Debug } else { LogLevel::Info });
+            .unwrap_or(if debug_enabled {
+                LogLevel::Debug
+            } else {
+                LogLevel::Info
+            });
 
         let format = std::env::var("ARMATURE_LOG_FORMAT")
             .ok()
@@ -533,7 +537,11 @@ impl LogConfig {
                 "compact" => Some(LogFormat::Compact),
                 _ => None,
             })
-            .unwrap_or(if debug_enabled { LogFormat::Pretty } else { LogFormat::Json });
+            .unwrap_or(if debug_enabled {
+                LogFormat::Pretty
+            } else {
+                LogFormat::Json
+            });
 
         let colors = std::env::var("ARMATURE_LOG_COLOR")
             .map(|v| v == "1" || v.to_lowercase() == "true")

@@ -91,7 +91,7 @@ where
 {
     ARENA.with(|arena| {
         let arena = arena.borrow();
-        
+
         // Note: We don't reset here - let the caller do it explicitly
         // for better control over when deallocations happen
         f(&arena)
@@ -108,7 +108,7 @@ where
 {
     ARENA.with(|arena| {
         let arena = arena.borrow();
-        
+
         f(&arena)
     })
 }
@@ -792,4 +792,3 @@ mod tests {
         reset_arena();
     }
 }
-

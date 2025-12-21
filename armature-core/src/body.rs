@@ -26,7 +26,7 @@
 
 use bytes::Bytes;
 use http_body_util::Full;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::ops::Deref;
 
 // Re-export Bytes for convenience
@@ -133,7 +133,8 @@ impl RequestBody {
     /// Uses SIMD-accelerated parsing when the `simd-json` feature is enabled.
     #[inline]
     pub fn json<T: DeserializeOwned>(&self) -> Result<T, crate::Error> {
-        crate::json::from_slice(&self.inner).map_err(|e| crate::Error::Deserialization(e.to_string()))
+        crate::json::from_slice(&self.inner)
+            .map_err(|e| crate::Error::Deserialization(e.to_string()))
     }
 
     /// Parse body as URL-encoded form data.
@@ -281,7 +282,8 @@ impl ResponseBody {
     /// Uses SIMD-accelerated serialization when the `simd-json` feature is enabled.
     #[inline]
     pub fn from_json<T: Serialize>(value: &T) -> Result<Self, crate::Error> {
-        let vec = crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
+        let vec =
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
         Ok(Self::from_vec(vec))
     }
 
@@ -289,7 +291,10 @@ impl ResponseBody {
     ///
     /// Use this when you have a reasonable estimate of the output size.
     #[inline]
-    pub fn from_json_with_capacity<T: Serialize>(value: &T, capacity: usize) -> Result<Self, crate::Error> {
+    pub fn from_json_with_capacity<T: Serialize>(
+        value: &T,
+        capacity: usize,
+    ) -> Result<Self, crate::Error> {
         let vec = crate::json::to_vec_with_capacity(value, capacity)
             .map_err(|e| crate::Error::Serialization(e.to_string()))?;
         Ok(Self::from_vec(vec))
@@ -511,4 +516,3 @@ mod tests {
         assert_eq!(resp.len(), 0);
     }
 }
-

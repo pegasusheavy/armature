@@ -114,7 +114,6 @@ mod tests {
     use super::*;
     use crate::TenantError;
     use crate::tenant::Tenant;
-    
 
     struct MockResolver {
         tenant: Option<Tenant>,

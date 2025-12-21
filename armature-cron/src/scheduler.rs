@@ -1,9 +1,9 @@
 //! Cron job scheduler.
 
-use armature_log::{debug, info, warn};
 use crate::error::{CronError, CronResult};
 use crate::expression::CronExpression;
 use crate::job::{Job, JobContext};
+use armature_log::{debug, info, warn};
 use std::collections::HashMap;
 use std::future::Future;
 use std::sync::Arc;
@@ -55,7 +55,10 @@ impl CronScheduler {
     /// Create a new scheduler with custom configuration.
     pub fn with_config(config: SchedulerConfig) -> Self {
         info!("Initializing cron scheduler");
-        debug!("Scheduler config - tick_interval: {:?}, max_concurrent: {}", config.tick_interval, config.max_concurrent_jobs);
+        debug!(
+            "Scheduler config - tick_interval: {:?}, max_concurrent: {}",
+            config.tick_interval, config.max_concurrent_jobs
+        );
         Self {
             jobs: Arc::new(RwLock::new(HashMap::new())),
             config,

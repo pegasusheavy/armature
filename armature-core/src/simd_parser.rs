@@ -218,10 +218,7 @@ pub fn url_decode(input: &str) -> String {
         match bytes[i] {
             b'%' if i + 2 < bytes.len() => {
                 // Try to decode hex
-                if let (Some(h1), Some(h2)) = (
-                    hex_digit(bytes[i + 1]),
-                    hex_digit(bytes[i + 2]),
-                ) {
+                if let (Some(h1), Some(h2)) = (hex_digit(bytes[i + 1]), hex_digit(bytes[i + 2])) {
                     result.push((h1 << 4 | h2) as char);
                     i += 3;
                 } else {
@@ -307,7 +304,9 @@ pub fn parse_headers(buf: &[u8]) -> Result<Vec<(&str, &str)>, httparse::Error> {
 
     match req.parse(buf)? {
         httparse::Status::Complete(_) => {
-            let result = req.headers.iter()
+            let result = req
+                .headers
+                .iter()
                 .filter(|h| !h.name.is_empty())
                 .map(|h| (h.name, std::str::from_utf8(h.value).unwrap_or("")))
                 .collect();
@@ -315,7 +314,9 @@ pub fn parse_headers(buf: &[u8]) -> Result<Vec<(&str, &str)>, httparse::Error> {
         }
         httparse::Status::Partial => {
             // Partial parse - return what we have
-            let result = req.headers.iter()
+            let result = req
+                .headers
+                .iter()
                 .filter(|h| !h.name.is_empty())
                 .map(|h| (h.name, std::str::from_utf8(h.value).unwrap_or("")))
                 .collect();
@@ -354,9 +355,8 @@ pub fn parse_request_line(buf: &[u8]) -> Result<(&str, &str, u8), httparse::Erro
 #[inline]
 pub fn is_valid_header_name(name: &[u8]) -> bool {
     // Valid header name characters: a-z, A-Z, 0-9, -, _
-    name.iter().all(|&c| {
-        c.is_ascii_alphanumeric() || c == b'-' || c == b'_'
-    })
+    name.iter()
+        .all(|&c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
 }
 
 /// Fast path parameter extraction.
@@ -507,4 +507,3 @@ mod tests {
         assert_eq!(version, 1);
     }
 }
-

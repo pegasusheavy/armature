@@ -65,8 +65,8 @@ impl Default for EpollConfig {
             oneshot: false,
             busy_poll_us: None,
             exclusive: false,
-            recv_buffer_size: Some(256 * 1024),  // 256KB
-            send_buffer_size: Some(256 * 1024),  // 256KB
+            recv_buffer_size: Some(256 * 1024), // 256KB
+            send_buffer_size: Some(256 * 1024), // 256KB
             tcp_nodelay: true,
             tcp_quickack: true,
             reuse_port: true,
@@ -111,7 +111,7 @@ impl EpollConfig {
         Self {
             max_events: 256,
             min_batch: 1,
-            timeout_ms: 0,  // Return immediately
+            timeout_ms: 0, // Return immediately
             edge_triggered: true,
             oneshot: false,
             busy_poll_us: Some(50), // 50us busy poll
@@ -446,7 +446,8 @@ impl AdaptiveBatcher {
     /// Record events processed.
     #[inline]
     pub fn record_events(&self, count: usize) {
-        self.events_processed.fetch_add(count as u64, Ordering::Relaxed);
+        self.events_processed
+            .fetch_add(count as u64, Ordering::Relaxed);
         EPOLL_STATS.record_events(count);
     }
 
@@ -774,7 +775,8 @@ impl EpollStats {
 
     /// Record events processed.
     pub fn record_events(&self, count: usize) {
-        self.events_processed.fetch_add(count as u64, Ordering::Relaxed);
+        self.events_processed
+            .fetch_add(count as u64, Ordering::Relaxed);
     }
 
     /// Record coalesced event.
@@ -1079,4 +1081,3 @@ mod tests {
         assert!(flags & (libc::EPOLLET as u32) != 0);
     }
 }
-

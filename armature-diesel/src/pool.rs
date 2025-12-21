@@ -37,7 +37,14 @@ impl PgPool {
         use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 
         info!("Creating PostgreSQL connection pool");
-        debug!("Pool size: {}, URL: {}", config.pool_size, &config.database_url[..config.database_url.find('@').unwrap_or(config.database_url.len())]);
+        debug!(
+            "Pool size: {}, URL: {}",
+            config.pool_size,
+            &config.database_url[..config
+                .database_url
+                .find('@')
+                .unwrap_or(config.database_url.len())]
+        );
 
         let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&config.database_url);
 
@@ -113,7 +120,14 @@ impl PgPoolBb8 {
     }
 
     /// Get a connection from the pool.
-    pub async fn get(&self) -> DieselResult<bb8::PooledConnection<'_, diesel_async::pooled_connection::AsyncDieselConnectionManager<AsyncPgConnection>>> {
+    pub async fn get(
+        &self,
+    ) -> DieselResult<
+        bb8::PooledConnection<
+            '_,
+            diesel_async::pooled_connection::AsyncDieselConnectionManager<AsyncPgConnection>,
+        >,
+    > {
         debug!("Acquiring PostgreSQL connection from bb8 pool");
         self.pool
             .get()
@@ -152,7 +166,8 @@ impl MysqlPool {
 
         info!("Creating MySQL connection pool");
 
-        let manager = AsyncDieselConnectionManager::<AsyncMysqlConnection>::new(&config.database_url);
+        let manager =
+            AsyncDieselConnectionManager::<AsyncMysqlConnection>::new(&config.database_url);
 
         let pool = DeadpoolPool::builder(manager)
             .max_size(config.pool_size)
@@ -232,4 +247,3 @@ pub type DieselPool = PgPool;
 /// Default MySQL pool type.
 #[cfg(all(feature = "mysql", feature = "deadpool", not(feature = "postgres")))]
 pub type DieselPool = MysqlPool;
-

@@ -23,8 +23,8 @@
 //! # Server will wait for in-flight requests to complete
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use std::sync::Arc;
 use std::time::Duration;
 

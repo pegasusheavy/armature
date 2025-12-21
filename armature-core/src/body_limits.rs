@@ -596,11 +596,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse::ok())
-                    })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -618,11 +614,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse::ok())
-                    })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -646,11 +638,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse::ok())
-                    })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 
@@ -663,11 +651,7 @@ mod tests {
         let result = middleware
             .handle(
                 req,
-                Box::new(|_req| {
-                    Box::pin(async {
-                        Ok(HttpResponse::ok())
-                    })
-                }),
+                Box::new(|_req| Box::pin(async { Ok(HttpResponse::ok()) })),
             )
             .await;
 

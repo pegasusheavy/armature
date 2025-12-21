@@ -183,10 +183,12 @@ mod tests {
 
     #[test]
     fn test_error_is_recoverable() {
-        assert!(FerronError::BackendUnreachable {
-            url: "http://localhost:3000".into()
-        }
-        .is_recoverable());
+        assert!(
+            FerronError::BackendUnreachable {
+                url: "http://localhost:3000".into()
+            }
+            .is_recoverable()
+        );
         assert!(FerronError::HealthCheck("timeout".into()).is_recoverable());
         assert!(!FerronError::Config("bad config".into()).is_recoverable());
     }

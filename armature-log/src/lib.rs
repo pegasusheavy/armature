@@ -608,7 +608,9 @@ pub fn log(level: Level, target: &str, message: &str) {
     let module_path = LOG_MODULE_PATH.load(Ordering::Relaxed);
 
     match format {
-        Format::Pretty => log_pretty_runtime(level, target, message, color, timestamps, module_path),
+        Format::Pretty => {
+            log_pretty_runtime(level, target, message, color, timestamps, module_path)
+        }
         Format::Compact => log_compact_runtime(level, target, message, timestamps, module_path),
         Format::Json => log_json(level, target, message),
     }
@@ -616,12 +618,25 @@ pub fn log(level: Level, target: &str, message: &str) {
 
 #[allow(dead_code)]
 fn log_pretty(level: Level, target: &str, message: &str, config: &LogConfig) {
-    log_pretty_runtime(level, target, message, config.color, config.timestamps, config.module_path);
+    log_pretty_runtime(
+        level,
+        target,
+        message,
+        config.color,
+        config.timestamps,
+        config.module_path,
+    );
 }
 
 #[allow(dead_code)]
 fn log_compact(level: Level, target: &str, message: &str, config: &LogConfig) {
-    log_compact_runtime(level, target, message, config.timestamps, config.module_path);
+    log_compact_runtime(
+        level,
+        target,
+        message,
+        config.timestamps,
+        config.module_path,
+    );
 }
 
 // Runtime-configurable versions
@@ -864,7 +879,7 @@ pub mod tracing_compat {
     /// Create a tracing subscriber that respects Armature config.
     pub fn subscriber() -> impl tracing::Subscriber {
         use tracing_subscriber::prelude::*;
-        use tracing_subscriber::{fmt, EnvFilter};
+        use tracing_subscriber::{EnvFilter, fmt};
 
         let config = config();
         let level = match config.level {
@@ -876,8 +891,7 @@ pub mod tracing_compat {
             Level::Off => "off",
         };
 
-        let filter = EnvFilter::try_from_default_env()
-            .unwrap_or_else(|_| EnvFilter::new(level));
+        let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(level));
 
         tracing_subscriber::registry()
             .with(filter)
@@ -964,4 +978,3 @@ mod tests {
         debug!("formatted: {}", x);
     }
 }
-

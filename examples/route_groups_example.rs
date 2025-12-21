@@ -21,8 +21,8 @@
 //! curl http://localhost:3000/api/v1/admin/users -H "Authorization: Bearer token123"
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use std::sync::Arc;
 
 #[tokio::main]

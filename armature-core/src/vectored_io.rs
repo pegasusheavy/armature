@@ -35,9 +35,9 @@
 //! let chunks = response.into_io_slices();
 //! ```
 
-use bytes::{Bytes, BytesMut, BufMut};
-use std::io::IoSlice;
+use bytes::{BufMut, Bytes, BytesMut};
 use std::collections::HashMap;
+use std::io::IoSlice;
 
 /// Maximum number of IoSlice buffers for vectored writes.
 /// Most responses have: status line + headers + body = 3 parts.
@@ -90,7 +90,10 @@ pub fn status_line(status: u16) -> &'static [u8] {
 /// Check if status code has a pre-computed status line.
 #[inline]
 pub fn has_precomputed_status(status: u16) -> bool {
-    matches!(status, 200 | 201 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 405 | 500 | 502 | 503)
+    matches!(
+        status,
+        200 | 201 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 405 | 500 | 502 | 503
+    )
 }
 
 /// Format a status line for non-common status codes.
@@ -337,9 +340,11 @@ impl VectoredResponse {
     /// Set body from JSON.
     #[inline]
     pub fn body_json<T: serde::Serialize>(self, value: &T) -> Result<Self, crate::Error> {
-        let json = crate::json::to_vec(value)
-            .map_err(|e| crate::Error::Serialization(e.to_string()))?;
-        Ok(self.content_type("application/json").body(Bytes::from(json)))
+        let json =
+            crate::json::to_vec(value).map_err(|e| crate::Error::Serialization(e.to_string()))?;
+        Ok(self
+            .content_type("application/json")
+            .body(Bytes::from(json)))
     }
 
     /// Build into ResponseChunks for vectored I/O.
@@ -392,11 +397,7 @@ impl crate::HttpResponse {
     #[inline]
     pub fn to_vectored(&self) -> ResponseChunks {
         let headers = self.headers.to_hashmap();
-        ResponseChunks::new(
-            self.status,
-            &headers,
-            self.body_bytes(),
-        )
+        ResponseChunks::new(self.status, &headers, self.body_bytes())
     }
 }
 
@@ -429,7 +430,8 @@ impl VectoredIoStats {
     #[inline]
     pub fn record_write(&self, bytes: usize, precomputed: bool) {
         self.writes.fetch_add(1, Ordering::Relaxed);
-        self.bytes_written.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_written
+            .fetch_add(bytes as u64, Ordering::Relaxed);
         if precomputed {
             self.precomputed_status.fetch_add(1, Ordering::Relaxed);
         } else {
@@ -592,14 +594,9 @@ mod tests {
 
     #[test]
     fn test_content_length_header() {
-        let chunks = ResponseChunks::new(
-            200,
-            &HashMap::new(),
-            Bytes::from_static(b"12345"),
-        );
+        let chunks = ResponseChunks::new(200, &HashMap::new(), Bytes::from_static(b"12345"));
         let bytes = chunks.to_bytes();
         let s = String::from_utf8_lossy(&bytes);
         assert!(s.contains("Content-Length: 5"));
     }
 }
-

@@ -231,4 +231,3 @@ impl SearchFilters {
         crate::PaginationOptions::new(self.page, self.per_page)
     }
 }
-

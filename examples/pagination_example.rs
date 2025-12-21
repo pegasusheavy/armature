@@ -35,8 +35,8 @@
 //! curl "http://localhost:3000/users/cursor?limit=10"
 //! ```
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 

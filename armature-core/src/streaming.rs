@@ -57,8 +57,8 @@ use futures_util::Stream;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::task::{Context, Poll};
 use std::time::Duration;
 use tokio::sync::mpsc;
@@ -144,13 +144,7 @@ impl ByteStream {
     pub fn with_buffer_size(size: usize) -> (Self, ByteStreamSender) {
         let (sender, receiver) = mpsc::channel(size);
         let bytes_sent = Arc::new(AtomicU64::new(0));
-        (
-            Self { receiver },
-            ByteStreamSender {
-                sender,
-                bytes_sent,
-            },
-        )
+        (Self { receiver }, ByteStreamSender { sender, bytes_sent })
     }
 }
 
@@ -311,8 +305,7 @@ impl Stream for JsonStream {
 impl JsonStreamSender {
     /// Send a JSON-serializable value.
     pub async fn send_json<T: Serialize>(&self, value: &T) -> Result<(), Error> {
-        let json =
-            serde_json::to_string(value).map_err(|e| Error::Serialization(e.to_string()))?;
+        let json = serde_json::to_string(value).map_err(|e| Error::Serialization(e.to_string()))?;
         self.inner.send(format!("{}\n", json)).await?;
         self.items_sent.fetch_add(1, Ordering::Relaxed);
         Ok(())
@@ -504,9 +497,10 @@ impl StreamingResponse {
             headers: HashMap::new(),
             body: StreamBody::Json(stream),
         };
-        response
-            .headers
-            .insert("Content-Type".to_string(), "application/x-ndjson".to_string());
+        response.headers.insert(
+            "Content-Type".to_string(),
+            "application/x-ndjson".to_string(),
+        );
         response
     }
 
@@ -1078,11 +1072,17 @@ mod tests {
 
     #[test]
     fn test_network_condition_from_rtt() {
-        assert_eq!(NetworkCondition::from_rtt_ms(5), NetworkCondition::Excellent);
+        assert_eq!(
+            NetworkCondition::from_rtt_ms(5),
+            NetworkCondition::Excellent
+        );
         assert_eq!(NetworkCondition::from_rtt_ms(30), NetworkCondition::Good);
         assert_eq!(NetworkCondition::from_rtt_ms(80), NetworkCondition::Fair);
         assert_eq!(NetworkCondition::from_rtt_ms(300), NetworkCondition::Poor);
-        assert_eq!(NetworkCondition::from_rtt_ms(1000), NetworkCondition::Terrible);
+        assert_eq!(
+            NetworkCondition::from_rtt_ms(1000),
+            NetworkCondition::Terrible
+        );
     }
 
     #[test]
@@ -1152,8 +1152,7 @@ mod tests {
 
     #[test]
     fn test_chunked_encoding_create_chunks() {
-        let optimizer = ChunkedEncodingOptimizer::new()
-            .target_chunk(100);
+        let optimizer = ChunkedEncodingOptimizer::new().target_chunk(100);
 
         let data = vec![0u8; 350];
         let chunks = optimizer.create_chunks(&data);
@@ -1193,8 +1192,7 @@ pub const DEFAULT_MAX_CHUNK: usize = 64 * 1024;
 // ============================================================================
 
 /// Strategy for handling backpressure when consumer is slow.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BackpressureStrategy {
     /// Pause production when buffer is full (default)
     #[default]
@@ -1208,7 +1206,6 @@ pub enum BackpressureStrategy {
     /// Error when buffer is full
     Error,
 }
-
 
 /// Configuration for backpressure handling.
 #[derive(Debug, Clone)]
@@ -1371,27 +1368,31 @@ impl BackpressureController {
     /// Record data being sent (increases buffer level).
     pub fn record_send(&self, bytes: usize) {
         let new_level = self.buffer_level.fetch_add(bytes, Ordering::AcqRel) + bytes;
-        self.stats.bytes_sent.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.stats
+            .bytes_sent
+            .fetch_add(bytes as u64, Ordering::Relaxed);
 
         // Check if we should pause
-        if new_level >= self.config.high_watermark
-            && !self.is_paused.swap(true, Ordering::AcqRel) {
-                self.stats.pause_count.fetch_add(1, Ordering::Relaxed);
-            }
+        if new_level >= self.config.high_watermark && !self.is_paused.swap(true, Ordering::AcqRel) {
+            self.stats.pause_count.fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     /// Record data being acknowledged by consumer (decreases buffer level).
     pub fn record_ack(&self, bytes: usize) {
-        let old_level = self.buffer_level.fetch_sub(bytes.min(self.buffer_level()), Ordering::AcqRel);
+        let old_level = self
+            .buffer_level
+            .fetch_sub(bytes.min(self.buffer_level()), Ordering::AcqRel);
         let new_level = old_level.saturating_sub(bytes);
-        self.stats.bytes_acked.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.stats
+            .bytes_acked
+            .fetch_add(bytes as u64, Ordering::Relaxed);
 
         // Check if we should resume
-        if new_level <= self.config.low_watermark
-            && self.is_paused.swap(false, Ordering::AcqRel) {
-                self.stats.resume_count.fetch_add(1, Ordering::Relaxed);
-                self.resume_notify.notify_waiters();
-            }
+        if new_level <= self.config.low_watermark && self.is_paused.swap(false, Ordering::AcqRel) {
+            self.stats.resume_count.fetch_add(1, Ordering::Relaxed);
+            self.resume_notify.notify_waiters();
+        }
     }
 
     /// Wait until not paused (for async producers).
@@ -1428,7 +1429,9 @@ impl BackpressureController {
             BackpressureStrategy::DropOldest | BackpressureStrategy::DropNewest => {
                 if current + bytes > self.config.max_buffer {
                     self.stats.dropped_chunks.fetch_add(1, Ordering::Relaxed);
-                    self.stats.dropped_bytes.fetch_add(bytes as u64, Ordering::Relaxed);
+                    self.stats
+                        .dropped_bytes
+                        .fetch_add(bytes as u64, Ordering::Relaxed);
                     Ok(false)
                 } else {
                     self.record_send(bytes);
@@ -1634,9 +1637,7 @@ impl ChunkContentType {
             || mime_lower.contains("font/")
         {
             Self::Binary
-        } else if mime_lower.contains("video/")
-            || mime_lower.contains("audio/")
-        {
+        } else if mime_lower.contains("video/") || mime_lower.contains("audio/") {
             Self::Media
         } else {
             Self::Unknown
@@ -1646,12 +1647,12 @@ impl ChunkContentType {
     /// Get recommended chunk size for this content type.
     pub fn recommended_chunk_size(&self) -> usize {
         match self {
-            Self::RealTime => CHUNK_TINY,    // 512B - minimize latency
-            Self::Json => CHUNK_MEDIUM,      // 8KB - balance latency/throughput
-            Self::Html => CHUNK_MEDIUM,      // 8KB - good for progressive rendering
-            Self::Text => CHUNK_SMALL,       // 1KB - line-oriented
-            Self::Binary => CHUNK_LARGE,     // 32KB - maximize throughput
-            Self::Media => CHUNK_TCP_OPTIMAL, // 64KB - optimal for streaming
+            Self::RealTime => CHUNK_TINY,        // 512B - minimize latency
+            Self::Json => CHUNK_MEDIUM,          // 8KB - balance latency/throughput
+            Self::Html => CHUNK_MEDIUM,          // 8KB - good for progressive rendering
+            Self::Text => CHUNK_SMALL,           // 1KB - line-oriented
+            Self::Binary => CHUNK_LARGE,         // 32KB - maximize throughput
+            Self::Media => CHUNK_TCP_OPTIMAL,    // 64KB - optimal for streaming
             Self::Unknown => DEFAULT_CHUNK_SIZE, // 16KB - safe default
         }
     }
@@ -1659,26 +1660,26 @@ impl ChunkContentType {
     /// Get minimum chunk size for this content type.
     pub fn min_chunk_size(&self) -> usize {
         match self {
-            Self::RealTime => 64,             // Can send very small updates
-            Self::Json => CHUNK_SMALL,       // At least one object
-            Self::Html => CHUNK_SMALL,       // At least one tag
-            Self::Text => 128,               // At least one line
-            Self::Binary => CHUNK_MEDIUM,    // Worth the overhead
-            Self::Media => CHUNK_MEDIUM,     // Minimize fragmentation
-            Self::Unknown => CHUNK_SMALL,    // Conservative
+            Self::RealTime => 64,         // Can send very small updates
+            Self::Json => CHUNK_SMALL,    // At least one object
+            Self::Html => CHUNK_SMALL,    // At least one tag
+            Self::Text => 128,            // At least one line
+            Self::Binary => CHUNK_MEDIUM, // Worth the overhead
+            Self::Media => CHUNK_MEDIUM,  // Minimize fragmentation
+            Self::Unknown => CHUNK_SMALL, // Conservative
         }
     }
 
     /// Get maximum chunk size for this content type.
     pub fn max_chunk_size(&self) -> usize {
         match self {
-            Self::RealTime => CHUNK_SMALL,   // Keep latency low
-            Self::Json => CHUNK_LARGE,       // Single objects can be large
-            Self::Html => CHUNK_LARGE,       // Full pages
-            Self::Text => CHUNK_MEDIUM,      // Not too large
-            Self::Binary => CHUNK_XLARGE,    // Large files
-            Self::Media => CHUNK_XLARGE,     // Video frames
-            Self::Unknown => CHUNK_LARGE,    // Safe default
+            Self::RealTime => CHUNK_SMALL, // Keep latency low
+            Self::Json => CHUNK_LARGE,     // Single objects can be large
+            Self::Html => CHUNK_LARGE,     // Full pages
+            Self::Text => CHUNK_MEDIUM,    // Not too large
+            Self::Binary => CHUNK_XLARGE,  // Large files
+            Self::Media => CHUNK_XLARGE,   // Video frames
+            Self::Unknown => CHUNK_LARGE,  // Safe default
         }
     }
 }
@@ -1726,12 +1727,12 @@ impl NetworkCondition {
     /// Get recommended chunk size multiplier.
     pub fn chunk_multiplier(&self) -> f32 {
         match self {
-            Self::Excellent => 2.0,  // Larger chunks, fewer round trips
-            Self::Good => 1.0,       // Default sizes
-            Self::Fair => 0.75,      // Slightly smaller
-            Self::Poor => 0.5,       // Smaller chunks, faster feedback
-            Self::Terrible => 0.25,  // Very small, prevent timeouts
-            Self::Unknown => 1.0,    // Default
+            Self::Excellent => 2.0, // Larger chunks, fewer round trips
+            Self::Good => 1.0,      // Default sizes
+            Self::Fair => 0.75,     // Slightly smaller
+            Self::Poor => 0.5,      // Smaller chunks, faster feedback
+            Self::Terrible => 0.25, // Very small, prevent timeouts
+            Self::Unknown => 1.0,   // Default
         }
     }
 }
@@ -2114,10 +2115,10 @@ impl ChunkedEncodingOptimizer {
 impl Default for ChunkedEncodingOptimizer {
     fn default() -> Self {
         Self {
-            min_chunk: CHUNK_SMALL,                        // 1KB minimum
-            target_chunk: DEFAULT_CHUNK_SIZE,              // 16KB target
-            max_chunk: CHUNK_XLARGE,                       // 128KB max
-            min_efficiency: 0.99,                          // 99% efficiency
+            min_chunk: CHUNK_SMALL,           // 1KB minimum
+            target_chunk: DEFAULT_CHUNK_SIZE, // 16KB target
+            max_chunk: CHUNK_XLARGE,          // 128KB max
+            min_efficiency: 0.99,             // 99% efficiency
         }
     }
 }
@@ -2442,7 +2443,8 @@ impl StreamRateLimiter {
 
             let current = self.bytes_in_window.load(Ordering::Relaxed);
             if current + bytes as u64 <= self.bytes_per_sec {
-                self.bytes_in_window.fetch_add(bytes as u64, Ordering::Relaxed);
+                self.bytes_in_window
+                    .fetch_add(bytes as u64, Ordering::Relaxed);
                 return;
             }
 
@@ -2522,4 +2524,3 @@ static STREAMING_STATS: StreamingStats = StreamingStats {
 pub fn streaming_stats() -> &'static StreamingStats {
     &STREAMING_STATS
 }
-

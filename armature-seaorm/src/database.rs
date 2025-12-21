@@ -18,7 +18,10 @@ impl Database {
         info!("Connecting to database");
         debug!(
             "Database URL: {}",
-            &config.database_url[..config.database_url.find('@').unwrap_or(config.database_url.len())]
+            &config.database_url[..config
+                .database_url
+                .find('@')
+                .unwrap_or(config.database_url.len())]
         );
 
         let options = config.to_connect_options();
@@ -158,4 +161,3 @@ impl Database {
         }
     }
 }
-

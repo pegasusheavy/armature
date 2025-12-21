@@ -5,11 +5,11 @@
 //!
 //! Run with: cargo bench --bench arena_benchmarks
 
-use armature_core::arena::{
-    reset_arena, with_arena, ArenaMap, ArenaRequest, ArenaStr, ArenaVec, RequestScope,
-};
 use armature_core::HttpRequest;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use armature_core::arena::{
+    ArenaMap, ArenaRequest, ArenaStr, ArenaVec, RequestScope, reset_arena, with_arena,
+};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::collections::HashMap;
 use std::hint::black_box;
 
@@ -42,9 +42,7 @@ fn bench_string_allocation(c: &mut Criterion) {
     // Multiple strings - heap
     group.bench_function("heap/multiple_10", |b| {
         b.iter(|| {
-            let strings: Vec<String> = (0..10)
-                .map(|i| format!("string number {}", i))
-                .collect();
+            let strings: Vec<String> = (0..10).map(|i| format!("string number {}", i)).collect();
             black_box(strings)
         })
     });
@@ -79,10 +77,16 @@ fn bench_map_allocation(c: &mut Criterion) {
             let mut map = HashMap::with_capacity(16);
             map.insert("Content-Type".to_string(), "application/json".to_string());
             map.insert("Accept".to_string(), "application/json".to_string());
-            map.insert("Authorization".to_string(), "Bearer token123456".to_string());
+            map.insert(
+                "Authorization".to_string(),
+                "Bearer token123456".to_string(),
+            );
             map.insert("User-Agent".to_string(), "Mozilla/5.0".to_string());
             map.insert("Accept-Language".to_string(), "en-US,en;q=0.9".to_string());
-            map.insert("Accept-Encoding".to_string(), "gzip, deflate, br".to_string());
+            map.insert(
+                "Accept-Encoding".to_string(),
+                "gzip, deflate, br".to_string(),
+            );
             map.insert("Connection".to_string(), "keep-alive".to_string());
             map.insert("Host".to_string(), "api.example.com".to_string());
             black_box(map)
@@ -146,13 +150,19 @@ fn bench_request_creation(c: &mut Criterion) {
     group.bench_function("http_request/typical", |b| {
         b.iter(|| {
             let mut req = HttpRequest::new("POST".to_string(), "/api/v1/users/123".to_string());
-            req.headers.insert("Content-Type".to_string(), "application/json".to_string());
-            req.headers.insert("Authorization".to_string(), "Bearer token123".to_string());
-            req.headers.insert("Accept".to_string(), "application/json".to_string());
-            req.headers.insert("User-Agent".to_string(), "TestClient/1.0".to_string());
+            req.headers
+                .insert("Content-Type".to_string(), "application/json".to_string());
+            req.headers
+                .insert("Authorization".to_string(), "Bearer token123".to_string());
+            req.headers
+                .insert("Accept".to_string(), "application/json".to_string());
+            req.headers
+                .insert("User-Agent".to_string(), "TestClient/1.0".to_string());
             req.path_params.insert("id".to_string(), "123".to_string());
-            req.query_params.insert("include".to_string(), "profile".to_string());
-            req.query_params.insert("fields".to_string(), "name,email".to_string());
+            req.query_params
+                .insert("include".to_string(), "profile".to_string());
+            req.query_params
+                .insert("fields".to_string(), "name,email".to_string());
             black_box(req)
         })
     });
@@ -223,8 +233,10 @@ fn bench_request_lifecycle(c: &mut Criterion) {
         b.iter(|| {
             // Create request
             let mut req = HttpRequest::new("POST".to_string(), "/api/users".to_string());
-            req.headers.insert("Content-Type".to_string(), "application/json".to_string());
-            req.headers.insert("Authorization".to_string(), "Bearer xyz".to_string());
+            req.headers
+                .insert("Content-Type".to_string(), "application/json".to_string());
+            req.headers
+                .insert("Authorization".to_string(), "Bearer xyz".to_string());
             req.query_params.insert("page".to_string(), "1".to_string());
             req.body = b"{\"name\":\"John\"}".to_vec();
 
@@ -267,7 +279,8 @@ fn bench_request_lifecycle(c: &mut Criterion) {
         b.iter(|| {
             for i in 0..100 {
                 let mut req = HttpRequest::new("GET".to_string(), format!("/api/item/{}", i));
-                req.headers.insert("Accept".to_string(), "application/json".to_string());
+                req.headers
+                    .insert("Accept".to_string(), "application/json".to_string());
                 req.query_params.insert("v".to_string(), "1".to_string());
                 black_box(&req);
             }
@@ -359,4 +372,3 @@ criterion_group!(
 );
 
 criterion_main!(arena_benches);
-

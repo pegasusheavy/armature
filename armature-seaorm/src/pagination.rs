@@ -1,6 +1,6 @@
 //! Pagination utilities for SeaORM queries.
 
-use sea_orm::{entity::prelude::*, EntityTrait, PaginatorTrait, Select};
+use sea_orm::{EntityTrait, PaginatorTrait, Select, entity::prelude::*};
 use serde::{Deserialize, Serialize};
 
 /// Pagination options.
@@ -145,7 +145,12 @@ where
         let total_items = paginator.num_items().await?;
         let items = paginator.fetch_page(options.page.saturating_sub(1)).await?;
 
-        Ok(Paginated::new(items, options.page, options.per_page, total_items))
+        Ok(Paginated::new(
+            items,
+            options.page,
+            options.per_page,
+            total_items,
+        ))
     }
 }
 
@@ -217,4 +222,3 @@ impl<T> CursorPaginated<T> {
         }
     }
 }
-

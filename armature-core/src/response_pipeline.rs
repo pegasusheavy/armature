@@ -277,7 +277,10 @@ impl ResponseBatch {
     /// Convert to IoSlices for vectored I/O.
     #[inline]
     pub fn as_io_slices(&self) -> Vec<IoSlice<'_>> {
-        self.items.iter().map(|item| IoSlice::new(&item.data)).collect()
+        self.items
+            .iter()
+            .map(|item| IoSlice::new(&item.data))
+            .collect()
     }
 
     /// Concatenate all responses into a single buffer.
@@ -360,7 +363,8 @@ impl ResponseQueueStats {
     #[inline]
     fn record_batch_drain(&self, count: usize, _size: usize) {
         self.batch_drains.fetch_add(1, Ordering::Relaxed);
-        self.batched_responses.fetch_add(count as u64, Ordering::Relaxed);
+        self.batched_responses
+            .fetch_add(count as u64, Ordering::Relaxed);
     }
 
     /// Get total pushed.
@@ -493,7 +497,8 @@ impl ResponseWriterStats {
     #[inline]
     pub fn record_write(&self, bytes: usize, vectored: bool) {
         self.writes.fetch_add(1, Ordering::Relaxed);
-        self.bytes_written.fetch_add(bytes as u64, Ordering::Relaxed);
+        self.bytes_written
+            .fetch_add(bytes as u64, Ordering::Relaxed);
         if vectored {
             self.vectored_writes.fetch_add(1, Ordering::Relaxed);
         } else {
@@ -720,13 +725,15 @@ impl GlobalPipelineStats {
     /// Record responses queued.
     #[inline]
     pub fn record_queued(&self, count: usize) {
-        self.responses_queued.fetch_add(count as u64, Ordering::Relaxed);
+        self.responses_queued
+            .fetch_add(count as u64, Ordering::Relaxed);
     }
 
     /// Record a batch sent.
     #[inline]
     pub fn record_batch_sent(&self, responses: usize, bytes: usize) {
-        self.responses_sent.fetch_add(responses as u64, Ordering::Relaxed);
+        self.responses_sent
+            .fetch_add(responses as u64, Ordering::Relaxed);
         self.batches_sent.fetch_add(1, Ordering::Relaxed);
         self.bytes_sent.fetch_add(bytes as u64, Ordering::Relaxed);
         self.max_batch_size.fetch_max(responses, Ordering::Relaxed);
@@ -1040,4 +1047,3 @@ mod tests {
         let _ = stats.avg_batch_size();
     }
 }
-

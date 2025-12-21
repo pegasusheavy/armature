@@ -185,7 +185,6 @@ impl Middleware for CompressionMiddleware {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     fn create_response(body: &str, content_type: &str) -> HttpResponse {
         HttpResponse::new(200)

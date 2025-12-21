@@ -56,8 +56,8 @@
 //!
 //! Expected throughput improvement: 5-15% on multi-socket systems.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 // ============================================================================
 // NUMA Availability Detection
@@ -203,9 +203,10 @@ impl NumaNode {
             for line in content.lines() {
                 if line.contains("MemTotal:")
                     && let Some(kb_str) = line.split_whitespace().nth(3)
-                        && let Ok(kb) = kb_str.parse::<u64>() {
-                            return kb * 1024;
-                        }
+                    && let Ok(kb) = kb_str.parse::<u64>()
+                {
+                    return kb * 1024;
+                }
             }
         }
         0
@@ -231,9 +232,10 @@ impl NumaNode {
             for line in content.lines() {
                 if line.contains("MemFree:")
                     && let Some(kb_str) = line.split_whitespace().nth(3)
-                        && let Ok(kb) = kb_str.parse::<u64>() {
-                            return kb * 1024;
-                        }
+                    && let Ok(kb) = kb_str.parse::<u64>()
+                {
+                    return kb * 1024;
+                }
             }
         }
         0
@@ -260,9 +262,10 @@ impl NumaNode {
         let path = format!("/sys/devices/system/node/node{}/distance", self.id);
         if let Ok(content) = std::fs::read_to_string(&path)
             && let Some(dist_str) = content.split_whitespace().nth(other.id)
-                && let Ok(dist) = dist_str.parse::<u32>() {
-                    return dist;
-                }
+            && let Ok(dist) = dist_str.parse::<u32>()
+        {
+            return dist;
+        }
         if self.id == other.id { 10 } else { 20 }
     }
 }
@@ -289,9 +292,10 @@ fn current_numa_node_linux() -> usize {
         // Field 39 (0-indexed 38) is the processor number
         let fields: Vec<&str> = content.split_whitespace().collect();
         if fields.len() > 38
-            && let Ok(cpu) = fields[38].parse::<usize>() {
-                return cpu_to_numa_node(cpu);
-            }
+            && let Ok(cpu) = fields[38].parse::<usize>()
+        {
+            return cpu_to_numa_node(cpu);
+        }
     }
     0
 }
@@ -424,8 +428,7 @@ impl Default for NumaConfig {
 }
 
 /// NUMA memory allocation policy.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum NumaPolicy {
     /// Allocate on local node (best for latency)
     #[default]
@@ -437,7 +440,6 @@ pub enum NumaPolicy {
     /// Bind to specific node strictly
     Bind(usize),
 }
-
 
 // ============================================================================
 // NUMA-Aware Allocator
@@ -494,7 +496,7 @@ impl NumaAllocator {
 
     #[cfg(target_os = "linux")]
     fn allocate_linux(&self, size: usize) -> Option<*mut u8> {
-        use std::alloc::{alloc, Layout};
+        use std::alloc::{Layout, alloc};
 
         // Use standard allocation with mbind hint
         // For actual NUMA binding, use mmap + mbind
@@ -512,7 +514,7 @@ impl NumaAllocator {
 
     #[cfg(not(target_os = "linux"))]
     fn allocate_fallback(&self, size: usize) -> Option<*mut u8> {
-        use std::alloc::{alloc, Layout};
+        use std::alloc::{Layout, alloc};
 
         let layout = Layout::from_size_align(size, 64).ok()?;
         let ptr = unsafe { alloc(layout) };
@@ -533,7 +535,7 @@ impl NumaAllocator {
     /// `ptr` must have been allocated by this allocator with the given `size`.
     #[inline]
     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
-        use std::alloc::{dealloc, Layout};
+        use std::alloc::{Layout, dealloc};
 
         if let Ok(layout) = Layout::from_size_align(size, 64) {
             // SAFETY: caller guarantees ptr was allocated with this size/alignment
@@ -755,7 +757,8 @@ impl NumaAllocStats {
     #[inline]
     fn record_allocation(&self, size: usize, node: usize) {
         self.allocations.fetch_add(1, Ordering::Relaxed);
-        self.bytes_allocated.fetch_add(size as u64, Ordering::Relaxed);
+        self.bytes_allocated
+            .fetch_add(size as u64, Ordering::Relaxed);
         if node < 8 {
             self.per_node[node].fetch_add(1, Ordering::Relaxed);
         }
@@ -764,7 +767,8 @@ impl NumaAllocStats {
     #[inline]
     fn record_deallocation(&self, size: usize) {
         self.deallocations.fetch_add(1, Ordering::Relaxed);
-        self.bytes_deallocated.fetch_add(size as u64, Ordering::Relaxed);
+        self.bytes_deallocated
+            .fetch_add(size as u64, Ordering::Relaxed);
     }
 
     #[inline]
@@ -1001,4 +1005,3 @@ mod tests {
         assert_eq!(stats.allocations_on_node(0), 1);
     }
 }
-

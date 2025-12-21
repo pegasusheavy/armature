@@ -614,4 +614,3 @@ mod tests {
         assert!(SmallVec::<[(String, String); PATH_PARAM_INLINE]>::stack_size() < 256);
     }
 }
-

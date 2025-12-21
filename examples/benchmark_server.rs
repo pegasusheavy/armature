@@ -29,8 +29,8 @@
 
 #![allow(clippy::needless_question_mark)]
 
-use armature_core::*;
 use armature_core::handler::from_legacy_handler;
+use armature_core::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::Level;

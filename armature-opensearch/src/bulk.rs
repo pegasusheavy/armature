@@ -5,7 +5,7 @@ use crate::{
     error::{OpenSearchError, Result},
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// Bulk operation type.
 #[derive(Debug, Clone)]
@@ -44,28 +44,20 @@ impl<T: Document> BulkOperation<T> {
         let index = T::index_name();
 
         match self {
-            BulkOperation::Index { id, doc } => {
-                Ok(vec![
-                    json!({ "index": { "_index": index, "_id": id } }),
-                    serde_json::to_value(doc)?,
-                ])
-            }
-            BulkOperation::Create { id, doc } => {
-                Ok(vec![
-                    json!({ "create": { "_index": index, "_id": id } }),
-                    serde_json::to_value(doc)?,
-                ])
-            }
-            BulkOperation::Update { id, doc } => {
-                Ok(vec![
-                    json!({ "update": { "_index": index, "_id": id } }),
-                    json!({ "doc": doc }),
-                ])
-            }
+            BulkOperation::Index { id, doc } => Ok(vec![
+                json!({ "index": { "_index": index, "_id": id } }),
+                serde_json::to_value(doc)?,
+            ]),
+            BulkOperation::Create { id, doc } => Ok(vec![
+                json!({ "create": { "_index": index, "_id": id } }),
+                serde_json::to_value(doc)?,
+            ]),
+            BulkOperation::Update { id, doc } => Ok(vec![
+                json!({ "update": { "_index": index, "_id": id } }),
+                json!({ "doc": doc }),
+            ]),
             BulkOperation::Delete { id } => {
-                Ok(vec![
-                    json!({ "delete": { "_index": index, "_id": id } }),
-                ])
+                Ok(vec![json!({ "delete": { "_index": index, "_id": id } })])
             }
         }
     }
@@ -140,4 +132,3 @@ impl BulkItemStatus {
         self.status >= 200 && self.status < 300
     }
 }
-

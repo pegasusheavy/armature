@@ -1,6 +1,6 @@
 //! HTTP integration for TOON responses.
 
-use crate::{to_string, ToonError, TOON_CONTENT_TYPE};
+use crate::{TOON_CONTENT_TYPE, ToonError, to_string};
 use armature_core::http::HttpResponse;
 use bytes::Bytes;
 use serde::Serialize;
@@ -129,7 +129,9 @@ mod tests {
 
     #[test]
     fn test_accepts_toon() {
-        assert!(ToonContentNegotiator::accepts_toon(Some("application/toon")));
+        assert!(ToonContentNegotiator::accepts_toon(Some(
+            "application/toon"
+        )));
         assert!(ToonContentNegotiator::accepts_toon(Some(
             "application/json, application/toon"
         )));
@@ -153,4 +155,3 @@ mod tests {
         )));
     }
 }
-

@@ -49,23 +49,22 @@
 //! format_currency(99.99, "EUR", &locale);  // "99,99 €"
 //! ```
 
+mod bundle;
 mod error;
+mod format;
 mod locale;
 mod messages;
 mod plural;
-mod format;
-mod bundle;
 
-pub use error::I18nError;
-pub use locale::{Locale, LocaleBuilder, parse_accept_language, negotiate_locale};
-pub use messages::{MessageBundle, Messages, I18n, TranslationSource};
-pub use plural::{PluralCategory, PluralRules, plural_category};
-pub use format::{
-    NumberFormatter, DateFormatter, CurrencyFormatter,
-    format_number, format_date, format_currency, format_percent,
-    DateStyle, TimeStyle,
-};
 pub use bundle::FluentBundle;
+pub use error::I18nError;
+pub use format::{
+    CurrencyFormatter, DateFormatter, DateStyle, NumberFormatter, TimeStyle, format_currency,
+    format_date, format_number, format_percent,
+};
+pub use locale::{Locale, LocaleBuilder, negotiate_locale, parse_accept_language};
+pub use messages::{I18n, MessageBundle, Messages, TranslationSource};
+pub use plural::{PluralCategory, PluralRules, plural_category};
 
 /// Result type for i18n operations
 pub type Result<T> = std::result::Result<T, I18nError>;
@@ -73,11 +72,7 @@ pub type Result<T> = std::result::Result<T, I18nError>;
 /// Prelude for common imports
 pub mod prelude {
     pub use crate::{
-        I18n, Locale, LocaleBuilder,
-        parse_accept_language, negotiate_locale,
-        format_number, format_date, format_currency,
-        PluralCategory, plural_category,
-        Result, I18nError,
+        I18n, I18nError, Locale, LocaleBuilder, PluralCategory, Result, format_currency,
+        format_date, format_number, negotiate_locale, parse_accept_language, plural_category,
     };
 }
-
