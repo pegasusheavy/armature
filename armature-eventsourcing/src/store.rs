@@ -156,7 +156,7 @@ impl From<EventStoreError> for AggregateError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
 
     #[tokio::test]
     async fn test_in_memory_store() {

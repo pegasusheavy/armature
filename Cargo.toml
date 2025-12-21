@@ -2,7 +2,7 @@
 members = [
     "armature-log",
     "armature-core",
-    "armature-macro",
+    "armature-proc-macro",
     "armature-graphql",
     "armature-config",
     "armature-jwt",
@@ -106,7 +106,7 @@ path = "src/lib.rs"
 
 [dependencies]
 armature-core = { path = "armature-core" }
-armature-macro = { path = "armature-macro" }
+armature-proc-macro = { path = "armature-proc-macro" }
 armature-graphql = { path = "armature-graphql", optional = true }
 armature-config = { path = "armature-config", optional = true }
 armature-jwt = { path = "armature-jwt", optional = true }

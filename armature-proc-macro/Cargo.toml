@@ -1,7 +1,8 @@
 [package]
-name = "armature-macro"
+name = "armature-proc-macro"
 version = "0.1.0"
 edition = "2024"
+description = "Procedural macros for the Armature framework"
 
 [lib]
 proc-macro = true
