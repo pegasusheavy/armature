@@ -1,123 +1,241 @@
-[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
-[1m[92m   Compiling[0m sqlx-core v0.8.6
-[1m[92m   Compiling[0m bb8-redis v0.26.0
-[1m[92m   Compiling[0m tonic v0.14.2
-[1m[92m   Compiling[0m async-graphql-parser v7.0.17
-[1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
-  [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
+[1m[33mwarning[0m[1m: unused import: `warn`[0m
+  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
    [1m[94m|[0m
-[1m[94m41[0m [1m[94m|[0m use crate::buffer_pool::{acquire_buffer_for_bytes, BufferSize, PooledBuffer};
-   [1m[94m|[0m                                                    [1m[33m^^^^^^^^^^[0m  [1m[33m^^^^^^^^^^^^[0m
+[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+   [1m[94m|[0m                                        [1m[33m^^^^[0m
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `ConnectionEvent as E`[0m
-   [1m[94m--> [0marmature-core/src/connection.rs:229:9
-    [1m[94m|[0m
-[1m[94m229[0m [1m[94m|[0m     use ConnectionEvent as E;
-    [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `std::sync::Arc`[0m
-  [1m[94m--> [0marmature-core/src/connection_tuning.rs:20:5
+[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused import: `debug`[0m
+  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
    [1m[94m|[0m
-[1m[94m20[0m [1m[94m|[0m use std::sync::Arc;
-   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `ErrorKind`[0m
-   [1m[94m--> [0marmature-core/src/epoll_tuning.rs:309:26
-    [1m[94m|[0m
-[1m[94m309[0m [1m[94m|[0m     use std::io::{Error, ErrorKind};
-    [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:22:36
+[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
+   [1m[94m|[0m                    [1m[33m^^^^^[0m
    [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `Arc`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:23:17
-   [1m[94m|[0m
-[1m[94m23[0m [1m[94m|[0m use std::sync::{Arc, Mutex};
-   [1m[94m|[0m                 [1m[33m^^^[0m
+[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/numa.rs:59:36
-   [1m[94m|[0m
-[1m[94m59[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
+ [1m[94m--> [0marmature-queue/src/queue.rs:3:33
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `BufMut`[0m
-  [1m[94m--> [0marmature-core/src/write_coalesce.rs:54:30
-   [1m[94m|[0m
-[1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
-   [1m[94m|[0m                              [1m[33m^^^^^^[0m
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-queue/src/worker.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
 
-[1m[92m   Compiling[0m multer v3.1.0
-[1m[92m   Compiling[0m async-graphql-value v7.0.17
-[1m[92m   Compiling[0m sqlx-postgres v0.8.6
-[1m[33mwarning[0m[1m: variable does not need to be mutable[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
+[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
+[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
+   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
     [1m[94m|[0m
-[1m[94m514[0m [1m[94m|[0m         let mut history = self.buffer_history.lock().unwrap();
-    [1m[94m|[0m             [1m[94m----[0m[1m[33m^^^^^^^[0m
-    [1m[94m|[0m             [1m[94m|[0m
-    [1m[94m|[0m             [1m[94mhelp: remove this `mut`[0m
+  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
+    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
     [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
+   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m mod test_client;
+    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: value assigned to `to_cull` is never read[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:591:27
+[1m[33mwarning[0m[1m: field `pending` is never read[0m
+   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
     [1m[94m|[0m
-[1m[94m591[0m [1m[94m|[0m         let mut to_cull = Vec::new();
-    [1m[94m|[0m                           [1m[33m^^^^^^^^^^[0m
+[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
+    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
+[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
+[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
+    [1m[94m|[0m     [1m[33m^^^^^^^[0m
     [1m[94m|[0m
-    [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
 
-[1m[91merror[E0507][0m[1m: cannot move out of `f`, a captured variable in an `FnMut` closure[0m
-   [1m[94m--> [0marmature-core/src/read_state.rs:598:25
-    [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                               [1m[94m-[0m [1m[94mcaptured outer variable[0m
-[1m[94m...[0m
-[1m[94m597[0m [1m[94m|[0m         self.inner.read().iter().for_each(|(k, v)| {
-    [1m[94m|[0m                                           [1m[94m--------[0m [1m[94mcaptured by this `FnMut` closure[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[91m^[0m [1m[91mmove occurs because `f` has type `F`, which does not implement the `Copy` trait[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
-   [1m[94m--> [0m/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:821:12
-[1m[96mhelp[0m: if `F` implemented `Clone`, you could clone the value
-   [1m[94m--> [0marmature-core/src/read_state.rs:592:21
-    [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                     [1m[96m^[0m [1m[96mconsider constraining this type parameter with `Clone`[0m
-[1m[94m...[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[94m-[0m [1m[94myou could clone this value[0m
-[1m[96mhelp[0m: consider borrowing here
-    [1m[94m|[0m
-[1m[94m598[0m [1m[94m| [0m            let mut f = [92m&[0mf;
-    [1m[94m|[0m                         [92m+[0m
+[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
+[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
+[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.55s
+[1m[92m     Running[0m benches/arena_benchmarks.rs (target/release/deps/arena_benchmarks-7ccb7fdc81f68cd4)
+Gnuplot not found, using plotters backend
+Benchmarking string_alloc/heap/single
+Benchmarking string_alloc/heap/single: Warming up for 3.0000 s
+Benchmarking string_alloc/heap/single: Collecting 100 samples in estimated 5.0000 s (374M iterations)
+Benchmarking string_alloc/heap/single: Analyzing
+string_alloc/heap/single
+                        time:   [13.385 ns 13.395 ns 13.406 ns]
+Found 11 outliers among 100 measurements (11.00%)
+  6 (6.00%) high mild
+  5 (5.00%) high severe
+Benchmarking string_alloc/arena/single
+Benchmarking string_alloc/arena/single: Warming up for 3.0000 s
+Benchmarking string_alloc/arena/single: Collecting 100 samples in estimated 5.0000 s (815M iterations)
+Benchmarking string_alloc/arena/single: Analyzing
+string_alloc/arena/single
+                        time:   [6.1450 ns 6.1546 ns 6.1663 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+Benchmarking string_alloc/heap/multiple_10
+Benchmarking string_alloc/heap/multiple_10: Warming up for 3.0000 s
+Benchmarking string_alloc/heap/multiple_10: Collecting 100 samples in estimated 5.0003 s (12M iterations)
+Benchmarking string_alloc/heap/multiple_10: Analyzing
+string_alloc/heap/multiple_10
+                        time:   [408.00 ns 409.29 ns 410.45 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+Benchmarking string_alloc/arena/multiple_10
+Benchmarking string_alloc/arena/multiple_10: Warming up for 3.0000 s
+Benchmarking string_alloc/arena/multiple_10: Collecting 100 samples in estimated 5.0015 s (13M iterations)
+Benchmarking string_alloc/arena/multiple_10: Analyzing
+string_alloc/arena/multiple_10
+                        time:   [396.56 ns 396.87 ns 397.30 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high severe
 
-[1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
-   [1m[94m--> [0marmature-core/src/numa.rs:549:13
-    [1m[94m|[0m
-[1m[94m549[0m [1m[94m|[0m             dealloc(ptr, layout);
-    [1m[94m|[0m             [1m[33m^^^^^^^^^^^^^^^^^^^^[0m [1m[33mcall to unsafe function[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: for more information, see <https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html>
-    [1m[94m= [0m[1mnote[0m: consult the function's documentation for information on how to avoid undefined behavior
-[1m[92mnote[0m: an unsafe function restricts its caller, but its body is safe by default
-   [1m[94m--> [0marmature-core/src/numa.rs:545:5
-    [1m[94m|[0m
-[1m[94m545[0m [1m[94m|[0m     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
-    [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
+Benchmarking map_alloc/hashmap/headers_16
+Benchmarking map_alloc/hashmap/headers_16: Warming up for 3.0000 s
+Benchmarking map_alloc/hashmap/headers_16: Collecting 100 samples in estimated 5.0004 s (8.1M iterations)
+Benchmarking map_alloc/hashmap/headers_16: Analyzing
+map_alloc/hashmap/headers_16
+                        time:   [617.39 ns 617.94 ns 618.68 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+Benchmarking map_alloc/arenamap/headers_16
+Benchmarking map_alloc/arenamap/headers_16: Warming up for 3.0000 s
+Benchmarking map_alloc/arenamap/headers_16: Collecting 100 samples in estimated 5.0002 s (100M iterations)
+Benchmarking map_alloc/arenamap/headers_16: Analyzing
+map_alloc/arenamap/headers_16
+                        time:   [49.863 ns 49.887 ns 49.914 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
 
-[1mSome errors have detailed explanations: E0133, E0507.[0m
-[1mFor more information about an error, try `rustc --explain E0133`.[0m
-[1m[33mwarning[0m: `armature-core` (lib) generated 11 warnings
-[1m[91merror[0m: could not compile `armature-core` (lib) due to 1 previous error; 11 warnings emitted
-[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+Benchmarking request_create/http_request/typical
+Benchmarking request_create/http_request/typical: Warming up for 3.0000 s
+Benchmarking request_create/http_request/typical: Collecting 100 samples in estimated 5.0025 s (8.0M iterations)
+Benchmarking request_create/http_request/typical: Analyzing
+request_create/http_request/typical
+                        time:   [606.79 ns 607.47 ns 608.29 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking request_create/arena_request/typical
+Benchmarking request_create/arena_request/typical: Warming up for 3.0000 s
+Benchmarking request_create/arena_request/typical: Collecting 100 samples in estimated 5.0001 s (63M iterations)
+Benchmarking request_create/arena_request/typical: Analyzing
+request_create/arena_request/typical
+                        time:   [79.108 ns 79.148 ns 79.192 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+Benchmarking request_create/http_request/many_headers
+Benchmarking request_create/http_request/many_headers: Warming up for 3.0000 s
+Benchmarking request_create/http_request/many_headers: Collecting 100 samples in estimated 5.0075 s (1.4M iterations)
+Benchmarking request_create/http_request/many_headers: Analyzing
+request_create/http_request/many_headers
+                        time:   [3.3549 µs 3.3574 µs 3.3597 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+Benchmarking request_create/arena_request/many_headers
+Benchmarking request_create/arena_request/many_headers: Warming up for 3.0000 s
+Benchmarking request_create/arena_request/many_headers: Collecting 100 samples in estimated 5.0050 s (2.5M iterations)
+Benchmarking request_create/arena_request/many_headers: Analyzing
+request_create/arena_request/many_headers
+                        time:   [2.0862 µs 2.0880 µs 2.0897 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking request_lifecycle/heap/full_cycle
+Benchmarking request_lifecycle/heap/full_cycle: Warming up for 3.0000 s
+Benchmarking request_lifecycle/heap/full_cycle: Collecting 100 samples in estimated 5.0009 s (14M iterations)
+Benchmarking request_lifecycle/heap/full_cycle: Analyzing
+request_lifecycle/heap/full_cycle
+                        time:   [334.33 ns 334.61 ns 334.92 ns]
+                        thrpt:  [2.9858 Melem/s 2.9885 Melem/s 2.9911 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+Benchmarking request_lifecycle/arena/full_cycle
+Benchmarking request_lifecycle/arena/full_cycle: Warming up for 3.0000 s
+Benchmarking request_lifecycle/arena/full_cycle: Collecting 100 samples in estimated 5.0002 s (116M iterations)
+Benchmarking request_lifecycle/arena/full_cycle: Analyzing
+request_lifecycle/arena/full_cycle
+                        time:   [43.080 ns 43.115 ns 43.150 ns]
+                        thrpt:  [23.175 Melem/s 23.194 Melem/s 23.213 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) low mild
+  1 (1.00%) high severe
+Benchmarking request_lifecycle/heap/100_requests
+Benchmarking request_lifecycle/heap/100_requests: Warming up for 3.0000 s
+Benchmarking request_lifecycle/heap/100_requests: Collecting 100 samples in estimated 5.0846 s (258k iterations)
+Benchmarking request_lifecycle/heap/100_requests: Analyzing
+request_lifecycle/heap/100_requests
+                        time:   [19.677 µs 19.686 µs 19.697 µs]
+                        thrpt:  [5.0768 Melem/s 5.0796 Melem/s 5.0820 Melem/s]
+Found 12 outliers among 100 measurements (12.00%)
+  10 (10.00%) high mild
+  2 (2.00%) high severe
+Benchmarking request_lifecycle/arena/100_requests
+Benchmarking request_lifecycle/arena/100_requests: Warming up for 3.0000 s
+Benchmarking request_lifecycle/arena/100_requests: Collecting 100 samples in estimated 5.0136 s (843k iterations)
+Benchmarking request_lifecycle/arena/100_requests: Analyzing
+request_lifecycle/arena/100_requests
+                        time:   [5.9581 µs 5.9635 µs 5.9691 µs]
+                        thrpt:  [16.753 Melem/s 16.769 Melem/s 16.784 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking alloc_patterns/heap/many_small
+Benchmarking alloc_patterns/heap/many_small: Warming up for 3.0000 s
+Benchmarking alloc_patterns/heap/many_small: Collecting 100 samples in estimated 5.0249 s (853k iterations)
+Benchmarking alloc_patterns/heap/many_small: Analyzing
+alloc_patterns/heap/many_small
+                        time:   [5.8424 µs 5.8531 µs 5.8667 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+Benchmarking alloc_patterns/arena/many_small
+Benchmarking alloc_patterns/arena/many_small: Warming up for 3.0000 s
+Benchmarking alloc_patterns/arena/many_small: Collecting 100 samples in estimated 5.0063 s (1.3M iterations)
+Benchmarking alloc_patterns/arena/many_small: Analyzing
+alloc_patterns/arena/many_small
+                        time:   [3.9046 µs 3.9135 µs 3.9231 µs]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+Benchmarking alloc_patterns/heap/mixed_sizes
+Benchmarking alloc_patterns/heap/mixed_sizes: Warming up for 3.0000 s
+Benchmarking alloc_patterns/heap/mixed_sizes: Collecting 100 samples in estimated 5.0002 s (95M iterations)
+Benchmarking alloc_patterns/heap/mixed_sizes: Analyzing
+alloc_patterns/heap/mixed_sizes
+                        time:   [52.661 ns 52.740 ns 52.818 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+Benchmarking alloc_patterns/arena/mixed_sizes
+Benchmarking alloc_patterns/arena/mixed_sizes: Warming up for 3.0000 s
+Benchmarking alloc_patterns/arena/mixed_sizes: Collecting 100 samples in estimated 5.0002 s (85M iterations)
+Benchmarking alloc_patterns/arena/mixed_sizes: Analyzing
+alloc_patterns/arena/mixed_sizes
+                        time:   [59.138 ns 59.182 ns 59.228 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+
