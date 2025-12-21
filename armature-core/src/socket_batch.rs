@@ -705,8 +705,8 @@ pub fn readv(fd: RawFd, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
     }
 }
 
-/// Set TCP_CORK option.
-#[cfg(unix)]
+/// Set TCP_CORK option (Linux only).
+#[cfg(target_os = "linux")]
 pub fn set_tcp_cork(fd: RawFd, cork: bool) -> io::Result<()> {
     let val: libc::c_int = if cork { 1 } else { 0 };
     let ret = unsafe {
@@ -724,6 +724,13 @@ pub fn set_tcp_cork(fd: RawFd, cork: bool) -> io::Result<()> {
     } else {
         Ok(())
     }
+}
+
+/// Set TCP_CORK option (stub for non-Linux).
+#[cfg(all(unix, not(target_os = "linux")))]
+pub fn set_tcp_cork(_fd: RawFd, _cork: bool) -> io::Result<()> {
+    // TCP_CORK is Linux-specific; on macOS/BSD this is a no-op
+    Ok(())
 }
 
 /// Set TCP_NODELAY option.
@@ -747,8 +754,8 @@ pub fn set_tcp_nodelay(fd: RawFd, nodelay: bool) -> io::Result<()> {
     }
 }
 
-/// Send with MSG_MORE flag (like TCP_CORK per-send).
-#[cfg(unix)]
+/// Send with MSG_MORE flag (like TCP_CORK per-send). Linux only.
+#[cfg(target_os = "linux")]
 pub fn send_more(fd: RawFd, data: &[u8]) -> io::Result<usize> {
     let ret = unsafe {
         libc::send(
@@ -765,6 +772,13 @@ pub fn send_more(fd: RawFd, data: &[u8]) -> io::Result<usize> {
         SOCKET_STATS.record_send_more();
         Ok(ret as usize)
     }
+}
+
+/// Send with MSG_MORE flag (stub for non-Linux - falls back to regular send).
+#[cfg(all(unix, not(target_os = "linux")))]
+pub fn send_more(fd: RawFd, data: &[u8]) -> io::Result<usize> {
+    // MSG_MORE is Linux-specific; fall back to regular send on macOS/BSD
+    send_final(fd, data)
 }
 
 /// Final send (without MSG_MORE).
