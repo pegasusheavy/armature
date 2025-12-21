@@ -1,120 +1,198 @@
-[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
-[1m[92m   Compiling[0m async-graphql v7.0.17
-[1m[92m   Compiling[0m jsonwebtoken v10.2.0
-[1m[92m   Compiling[0m opentelemetry-proto v0.31.0
-[1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
-  [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
+[1m[33mwarning[0m[1m: unused import: `warn`[0m
+  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
    [1m[94m|[0m
-[1m[94m41[0m [1m[94m|[0m use crate::buffer_pool::{acquire_buffer_for_bytes, BufferSize, PooledBuffer};
-   [1m[94m|[0m                                                    [1m[33m^^^^^^^^^^[0m  [1m[33m^^^^^^^^^^^^[0m
+[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+   [1m[94m|[0m                                        [1m[33m^^^^[0m
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `ConnectionEvent as E`[0m
-   [1m[94m--> [0marmature-core/src/connection.rs:229:9
-    [1m[94m|[0m
-[1m[94m229[0m [1m[94m|[0m     use ConnectionEvent as E;
-    [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `std::sync::Arc`[0m
-  [1m[94m--> [0marmature-core/src/connection_tuning.rs:20:5
+[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused import: `debug`[0m
+  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
    [1m[94m|[0m
-[1m[94m20[0m [1m[94m|[0m use std::sync::Arc;
-   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `ErrorKind`[0m
-   [1m[94m--> [0marmature-core/src/epoll_tuning.rs:309:26
-    [1m[94m|[0m
-[1m[94m309[0m [1m[94m|[0m     use std::io::{Error, ErrorKind};
-    [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:22:36
+[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
+   [1m[94m|[0m                    [1m[33m^^^^^[0m
    [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `Arc`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:23:17
-   [1m[94m|[0m
-[1m[94m23[0m [1m[94m|[0m use std::sync::{Arc, Mutex};
-   [1m[94m|[0m                 [1m[33m^^^[0m
+[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/numa.rs:59:36
-   [1m[94m|[0m
-[1m[94m59[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
+ [1m[94m--> [0marmature-queue/src/queue.rs:3:33
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `BufMut`[0m
-  [1m[94m--> [0marmature-core/src/write_coalesce.rs:54:30
-   [1m[94m|[0m
-[1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
-   [1m[94m|[0m                              [1m[33m^^^^^^[0m
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-queue/src/worker.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
 
-[1m[92m   Compiling[0m sqlx-macros-core v0.8.6
-[1m[33mwarning[0m[1m: variable does not need to be mutable[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
+[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
+[1m[33mwarning[0m[1m: field `pending` is never read[0m
+   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
     [1m[94m|[0m
-[1m[94m514[0m [1m[94m|[0m         let mut history = self.buffer_history.lock().unwrap();
-    [1m[94m|[0m             [1m[94m----[0m[1m[33m^^^^^^^[0m
-    [1m[94m|[0m             [1m[94m|[0m
-    [1m[94m|[0m             [1m[94mhelp: remove this `mut`[0m
+[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
+    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
+[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
+[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
+    [1m[94m|[0m     [1m[33m^^^^^^^[0m
     [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: value assigned to `to_cull` is never read[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:591:27
+[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
+   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
     [1m[94m|[0m
-[1m[94m591[0m [1m[94m|[0m         let mut to_cull = Vec::new();
-    [1m[94m|[0m                           [1m[33m^^^^^^^^^^[0m
+  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
+    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
     [1m[94m|[0m
-    [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
+   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m mod test_client;
+    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[91merror[E0507][0m[1m: cannot move out of `f`, a captured variable in an `FnMut` closure[0m
-   [1m[94m--> [0marmature-core/src/read_state.rs:598:25
-    [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                               [1m[94m-[0m [1m[94mcaptured outer variable[0m
-[1m[94m...[0m
-[1m[94m597[0m [1m[94m|[0m         self.inner.read().iter().for_each(|(k, v)| {
-    [1m[94m|[0m                                           [1m[94m--------[0m [1m[94mcaptured by this `FnMut` closure[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[91m^[0m [1m[91mmove occurs because `f` has type `F`, which does not implement the `Copy` trait[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
-   [1m[94m--> [0m/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:821:12
-[1m[96mhelp[0m: if `F` implemented `Clone`, you could clone the value
-   [1m[94m--> [0marmature-core/src/read_state.rs:592:21
-    [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                     [1m[96m^[0m [1m[96mconsider constraining this type parameter with `Clone`[0m
-[1m[94m...[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[94m-[0m [1m[94myou could clone this value[0m
-[1m[96mhelp[0m: consider borrowing here
-    [1m[94m|[0m
-[1m[94m598[0m [1m[94m| [0m            let mut f = [92m&[0mf;
-    [1m[94m|[0m                         [92m+[0m
+[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
+[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
+[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 15.54s
+[1m[92m     Running[0m benches/json_benchmarks.rs (target/release/deps/json_benchmarks-04582452fa1983c1)
+Gnuplot not found, using plotters backend
 
-[1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
-   [1m[94m--> [0marmature-core/src/numa.rs:549:13
-    [1m[94m|[0m
-[1m[94m549[0m [1m[94m|[0m             dealloc(ptr, layout);
-    [1m[94m|[0m             [1m[33m^^^^^^^^^^^^^^^^^^^^[0m [1m[33mcall to unsafe function[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: for more information, see <https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html>
-    [1m[94m= [0m[1mnote[0m: consult the function's documentation for information on how to avoid undefined behavior
-[1m[92mnote[0m: an unsafe function restricts its caller, but its body is safe by default
-   [1m[94m--> [0marmature-core/src/numa.rs:545:5
-    [1m[94m|[0m
-[1m[94m545[0m [1m[94m|[0m     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
-    [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
+===========================================
+JSON Library: serde_json
+SIMD Enabled: false
+===========================================
 
-[1mSome errors have detailed explanations: E0133, E0507.[0m
-[1mFor more information about an error, try `rustc --explain E0133`.[0m
-[1m[33mwarning[0m: `armature-core` (lib) generated 11 warnings
-[1m[91merror[0m: could not compile `armature-core` (lib) due to 1 previous error; 11 warnings emitted
-[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+Benchmarking json_info/library_check
+Benchmarking json_info/library_check: Warming up for 3.0000 s
+Benchmarking json_info/library_check: Collecting 100 samples in estimated 5.0000 s (16B iterations)
+Benchmarking json_info/library_check: Analyzing
+json_info/library_check time:   [311.09 ps 311.24 ps 311.40 ps]
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+
+Benchmarking json_serialize/small
+Benchmarking json_serialize/small: Warming up for 3.0000 s
+Benchmarking json_serialize/small: Collecting 100 samples in estimated 5.0003 s (70M iterations)
+Benchmarking json_serialize/small: Analyzing
+json_serialize/small    time:   [71.677 ns 71.858 ns 72.052 ns]
+                        thrpt:  [582.38 MiB/s 583.95 MiB/s 585.43 MiB/s]
+Found 10 outliers among 100 measurements (10.00%)
+  2 (2.00%) high mild
+  8 (8.00%) high severe
+Benchmarking json_serialize/medium
+Benchmarking json_serialize/medium: Warming up for 3.0000 s
+Benchmarking json_serialize/medium: Collecting 100 samples in estimated 5.0011 s (14M iterations)
+Benchmarking json_serialize/medium: Analyzing
+json_serialize/medium   time:   [356.94 ns 357.14 ns 357.37 ns]
+                        thrpt:  [624.44 MiB/s 624.85 MiB/s 625.21 MiB/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking json_serialize/large
+Benchmarking json_serialize/large: Warming up for 3.0000 s
+Benchmarking json_serialize/large: Collecting 100 samples in estimated 5.0013 s (1.1M iterations)
+Benchmarking json_serialize/large: Analyzing
+json_serialize/large    time:   [4.4089 µs 4.4159 µs 4.4246 µs]
+                        thrpt:  [770.34 MiB/s 771.86 MiB/s 773.08 MiB/s]
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+
+Benchmarking json_deserialize/small
+Benchmarking json_deserialize/small: Warming up for 3.0000 s
+Benchmarking json_deserialize/small: Collecting 100 samples in estimated 5.0003 s (47M iterations)
+Benchmarking json_deserialize/small: Analyzing
+json_deserialize/small  time:   [107.96 ns 108.09 ns 108.21 ns]
+                        thrpt:  [387.80 MiB/s 388.23 MiB/s 388.68 MiB/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking json_deserialize/medium
+Benchmarking json_deserialize/medium: Warming up for 3.0000 s
+Benchmarking json_deserialize/medium: Collecting 100 samples in estimated 5.0016 s (5.3M iterations)
+Benchmarking json_deserialize/medium: Analyzing
+json_deserialize/medium time:   [957.01 ns 958.60 ns 960.10 ns]
+                        thrpt:  [232.43 MiB/s 232.80 MiB/s 233.18 MiB/s]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+Benchmarking json_deserialize/large
+Benchmarking json_deserialize/large: Warming up for 3.0000 s
+Benchmarking json_deserialize/large: Collecting 100 samples in estimated 5.0214 s (571k iterations)
+Benchmarking json_deserialize/large: Analyzing
+json_deserialize/large  time:   [8.8113 µs 8.8189 µs 8.8272 µs]
+                        thrpt:  [386.13 MiB/s 386.49 MiB/s 386.82 MiB/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking json_roundtrip/small
+Benchmarking json_roundtrip/small: Warming up for 3.0000 s
+Benchmarking json_roundtrip/small: Collecting 100 samples in estimated 5.0008 s (28M iterations)
+Benchmarking json_roundtrip/small: Analyzing
+json_roundtrip/small    time:   [181.02 ns 181.37 ns 181.74 ns]
+                        thrpt:  [461.77 MiB/s 462.72 MiB/s 463.61 MiB/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking json_roundtrip/medium
+Benchmarking json_roundtrip/medium: Warming up for 3.0000 s
+Benchmarking json_roundtrip/medium: Collecting 100 samples in estimated 5.0058 s (3.6M iterations)
+Benchmarking json_roundtrip/medium: Analyzing
+json_roundtrip/medium   time:   [1.3793 µs 1.3807 µs 1.3822 µs]
+                        thrpt:  [322.91 MiB/s 323.27 MiB/s 323.58 MiB/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking json_roundtrip/large
+Benchmarking json_roundtrip/large: Warming up for 3.0000 s
+Benchmarking json_roundtrip/large: Collecting 100 samples in estimated 5.0512 s (333k iterations)
+Benchmarking json_roundtrip/large: Analyzing
+json_roundtrip/large    time:   [15.233 µs 15.251 µs 15.272 µs]
+                        thrpt:  [446.37 MiB/s 446.99 MiB/s 447.50 MiB/s]
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) high severe
+
+Benchmarking http_json/request_parse
+Benchmarking http_json/request_parse: Warming up for 3.0000 s
+Benchmarking http_json/request_parse: Collecting 100 samples in estimated 5.0050 s (4.9M iterations)
+Benchmarking http_json/request_parse: Analyzing
+http_json/request_parse time:   [1.0230 µs 1.0236 µs 1.0242 µs]
+                        thrpt:  [217.89 MiB/s 218.02 MiB/s 218.13 MiB/s]
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) low mild
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+Benchmarking http_json/response_json
+Benchmarking http_json/response_json: Warming up for 3.0000 s
+Benchmarking http_json/response_json: Collecting 100 samples in estimated 5.0010 s (11M iterations)
+Benchmarking http_json/response_json: Analyzing
+http_json/response_json time:   [451.06 ns 451.55 ns 452.09 ns]
+                        thrpt:  [493.61 MiB/s 494.20 MiB/s 494.75 MiB/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking http_json/full_cycle
+Benchmarking http_json/full_cycle: Warming up for 3.0000 s
+Benchmarking http_json/full_cycle: Collecting 100 samples in estimated 5.0059 s (2.7M iterations)
+Benchmarking http_json/full_cycle: Analyzing
+http_json/full_cycle    time:   [1.9123 µs 1.9159 µs 1.9197 µs]
+                        thrpt:  [116.24 MiB/s 116.48 MiB/s 116.70 MiB/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+

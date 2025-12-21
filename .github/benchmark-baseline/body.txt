@@ -1,123 +1,525 @@
-[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
-[1m[92m   Compiling[0m async-graphql-derive v7.0.17
-[1m[92m   Compiling[0m tonic-prost v0.14.2
-[1m[92m   Compiling[0m armature-redis v0.1.0 (/home/runner/work/armature/armature/armature-redis)
-[1m[92m   Compiling[0m handlebars v5.1.2
-[1m[33mwarning[0m[1m: unused imports: `BufferSize` and `PooledBuffer`[0m
-  [1m[94m--> [0marmature-core/src/body_parser.rs:41:52
+[1m[33mwarning[0m[1m: unused import: `warn`[0m
+  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
    [1m[94m|[0m
-[1m[94m41[0m [1m[94m|[0m use crate::buffer_pool::{acquire_buffer_for_bytes, BufferSize, PooledBuffer};
-   [1m[94m|[0m                                                    [1m[33m^^^^^^^^^^[0m  [1m[33m^^^^^^^^^^^^[0m
+[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+   [1m[94m|[0m                                        [1m[33m^^^^[0m
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `ConnectionEvent as E`[0m
-   [1m[94m--> [0marmature-core/src/connection.rs:229:9
-    [1m[94m|[0m
-[1m[94m229[0m [1m[94m|[0m     use ConnectionEvent as E;
-    [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^^[0m
-
-[1m[33mwarning[0m[1m: unused import: `std::sync::Arc`[0m
-  [1m[94m--> [0marmature-core/src/connection_tuning.rs:20:5
+[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused import: `debug`[0m
+  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
    [1m[94m|[0m
-[1m[94m20[0m [1m[94m|[0m use std::sync::Arc;
-   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^[0m
+[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
+   [1m[94m|[0m                    [1m[33m^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[33mwarning[0m[1m: unused import: `ErrorKind`[0m
-   [1m[94m--> [0marmature-core/src/epoll_tuning.rs:309:26
+[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
+[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
+ [1m[94m--> [0marmature-queue/src/queue.rs:3:33
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
+  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
+ [1m[94m--> [0marmature-queue/src/worker.rs:3:27
+  [1m[94m|[0m
+[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
+  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
+
+[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
+[1m[33mwarning[0m[1m: field `pending` is never read[0m
+   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
     [1m[94m|[0m
-[1m[94m309[0m [1m[94m|[0m     use std::io::{Error, ErrorKind};
+[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
+    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
+[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
+[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
+    [1m[94m|[0m     [1m[33m^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
+   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
+    [1m[94m|[0m
+  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
+    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
+   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m mod test_client;
+    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
+[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
+[1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:10:17
+   [1m[94m|[0m
+[1m[94m10[0m [1m[94m|[0m use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
+   [1m[94m|[0m                 [1m[33m^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(deprecated)]` on by default
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:25:48
+   [1m[94m|[0m
+[1m[94m25[0m [1m[94m|[0m             let body = RequestBody::from_slice(black_box(&data));
+   [1m[94m|[0m                                                [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:26:13
+   [1m[94m|[0m
+[1m[94m26[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:33:23
+   [1m[94m|[0m
+[1m[94m33[0m [1m[94m|[0m             let vec = black_box(vec![0u8; 1024]);
+   [1m[94m|[0m                       [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:35:13
+   [1m[94m|[0m
+[1m[94m35[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:43:48
+   [1m[94m|[0m
+[1m[94m43[0m [1m[94m|[0m             let body = RequestBody::from_bytes(black_box(bytes.clone()));
+   [1m[94m|[0m                                                [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:44:13
+   [1m[94m|[0m
+[1m[94m44[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:52:49
+   [1m[94m|[0m
+[1m[94m52[0m [1m[94m|[0m             let body = RequestBody::from_static(black_box(&DATA));
+   [1m[94m|[0m                                                 [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:53:13
+   [1m[94m|[0m
+[1m[94m53[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:72:23
+   [1m[94m|[0m
+[1m[94m72[0m [1m[94m|[0m             let vec = black_box(vec![0u8; 1024]);
+   [1m[94m|[0m                       [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:74:13
+   [1m[94m|[0m
+[1m[94m74[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:82:49
+   [1m[94m|[0m
+[1m[94m82[0m [1m[94m|[0m             let body = ResponseBody::from_bytes(black_box(bytes.clone()));
+   [1m[94m|[0m                                                 [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+  [1m[94m--> [0mbenches/body_benchmarks.rs:83:13
+   [1m[94m|[0m
+[1m[94m83[0m [1m[94m|[0m             black_box(body.len())
+   [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:103:48
+    [1m[94m|[0m
+[1m[94m103[0m [1m[94m|[0m             let body = ResponseBody::from_json(black_box(&data)).unwrap();
+    [1m[94m|[0m                                                [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:104:13
+    [1m[94m|[0m
+[1m[94m104[0m [1m[94m|[0m             black_box(body.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:122:24
+    [1m[94m|[0m
+[1m[94m122[0m [1m[94m|[0m             req.body = black_box(vec![0u8; 1024]);
+    [1m[94m|[0m                        [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:123:13
+    [1m[94m|[0m
+[1m[94m123[0m [1m[94m|[0m             black_box(req.body.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:132:32
+    [1m[94m|[0m
+[1m[94m132[0m [1m[94m|[0m             req.set_body_bytes(black_box(bytes.clone()));
+    [1m[94m|[0m                                [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:133:13
+    [1m[94m|[0m
+[1m[94m133[0m [1m[94m|[0m             black_box(req.body_ref().len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:143:17
+    [1m[94m|[0m
+[1m[94m143[0m [1m[94m|[0m                 black_box(bytes.clone()),
+    [1m[94m|[0m                 [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:145:13
+    [1m[94m|[0m
+[1m[94m145[0m [1m[94m|[0m             black_box(req.body_ref().len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:162:53
+    [1m[94m|[0m
+[1m[94m162[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_body(black_box(vec![0u8; 1024]));
+    [1m[94m|[0m                                                     [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:163:13
+    [1m[94m|[0m
+[1m[94m163[0m [1m[94m|[0m             black_box(resp.body.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:171:59
+    [1m[94m|[0m
+[1m[94m171[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_bytes_body(black_box(bytes.clone()));
+    [1m[94m|[0m                                                           [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:172:13
+    [1m[94m|[0m
+[1m[94m172[0m [1m[94m|[0m             black_box(resp.body_ref().len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:190:53
+    [1m[94m|[0m
+[1m[94m190[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_json(black_box(&data)).unwrap();
+    [1m[94m|[0m                                                     [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:191:13
+    [1m[94m|[0m
+[1m[94m191[0m [1m[94m|[0m             black_box(resp.body_ref().len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:199:60
+    [1m[94m|[0m
+[1m[94m199[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_static_body(black_box(BODY));
+    [1m[94m|[0m                                                            [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:200:13
+    [1m[94m|[0m
+[1m[94m200[0m [1m[94m|[0m             black_box(resp.body_ref().len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:217:53
+    [1m[94m|[0m
+[1m[94m217[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_body(black_box(vec![0u8; 1024]));
+    [1m[94m|[0m                                                     [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:220:13
+    [1m[94m|[0m
+[1m[94m220[0m [1m[94m|[0m             black_box(body_bytes.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:228:59
+    [1m[94m|[0m
+[1m[94m228[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_bytes_body(black_box(bytes.clone()));
+    [1m[94m|[0m                                                           [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:231:13
+    [1m[94m|[0m
+[1m[94m231[0m [1m[94m|[0m             black_box(body_bytes.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:249:53
+    [1m[94m|[0m
+[1m[94m249[0m [1m[94m|[0m             let resp = HttpResponse::ok().with_json(black_box(&data)).unwrap();
+    [1m[94m|[0m                                                     [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:251:13
+    [1m[94m|[0m
+[1m[94m251[0m [1m[94m|[0m             black_box(body_bytes.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:269:26
+    [1m[94m|[0m
+[1m[94m269[0m [1m[94m|[0m             let cloned = black_box(&vec_data).clone();
     [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:22:36
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:270:13
+    [1m[94m|[0m
+[1m[94m270[0m [1m[94m|[0m             black_box(cloned.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[0m[1m: unused import: `Arc`[0m
-  [1m[94m--> [0marmature-core/src/memory_opt.rs:23:17
-   [1m[94m|[0m
-[1m[94m23[0m [1m[94m|[0m use std::sync::{Arc, Mutex};
-   [1m[94m|[0m                 [1m[33m^^^[0m
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:278:26
+    [1m[94m|[0m
+[1m[94m278[0m [1m[94m|[0m             let cloned = black_box(&bytes_data).clone();
+    [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[0m[1m: unused import: `AtomicUsize`[0m
-  [1m[94m--> [0marmature-core/src/numa.rs:59:36
-   [1m[94m|[0m
-[1m[94m59[0m [1m[94m|[0m use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-   [1m[94m|[0m                                    [1m[33m^^^^^^^^^^^[0m
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:279:13
+    [1m[94m|[0m
+[1m[94m279[0m [1m[94m|[0m             black_box(cloned.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[0m[1m: unused import: `BufMut`[0m
-  [1m[94m--> [0marmature-core/src/write_coalesce.rs:54:30
-   [1m[94m|[0m
-[1m[94m54[0m [1m[94m|[0m use bytes::{Bytes, BytesMut, BufMut};
-   [1m[94m|[0m                              [1m[33m^^^^^^[0m
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:287:26
+    [1m[94m|[0m
+[1m[94m287[0m [1m[94m|[0m             let cloned = black_box(&request_body).clone();
+    [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
 
-[1m[92m   Compiling[0m simple_asn1 v0.6.3
-[1m[92m   Compiling[0m http v0.2.12
-[1m[92m   Compiling[0m sqlx-core v0.8.6
-[1m[33mwarning[0m[1m: variable does not need to be mutable[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:514:13
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:288:13
     [1m[94m|[0m
-[1m[94m514[0m [1m[94m|[0m         let mut history = self.buffer_history.lock().unwrap();
-    [1m[94m|[0m             [1m[94m----[0m[1m[33m^^^^^^^[0m
-    [1m[94m|[0m             [1m[94m|[0m
-    [1m[94m|[0m             [1m[94mhelp: remove this `mut`[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+[1m[94m288[0m [1m[94m|[0m             black_box(cloned.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[0m[1m: value assigned to `to_cull` is never read[0m
-   [1m[94m--> [0marmature-core/src/connection_manager.rs:591:27
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:296:26
     [1m[94m|[0m
-[1m[94m591[0m [1m[94m|[0m         let mut to_cull = Vec::new();
-    [1m[94m|[0m                           [1m[33m^^^^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+[1m[94m296[0m [1m[94m|[0m             let cloned = black_box(&response_body).clone();
+    [1m[94m|[0m                          [1m[33m^^^^^^^^^[0m
 
-[1m[91merror[E0507][0m[1m: cannot move out of `f`, a captured variable in an `FnMut` closure[0m
-   [1m[94m--> [0marmature-core/src/read_state.rs:598:25
+[1m[33mwarning[0m[1m: use of deprecated function `criterion::black_box`: use `std::hint::black_box()` instead[0m
+   [1m[94m--> [0mbenches/body_benchmarks.rs:297:13
     [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                               [1m[94m-[0m [1m[94mcaptured outer variable[0m
-[1m[94m...[0m
-[1m[94m597[0m [1m[94m|[0m         self.inner.read().iter().for_each(|(k, v)| {
-    [1m[94m|[0m                                           [1m[94m--------[0m [1m[94mcaptured by this `FnMut` closure[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[91m^[0m [1m[91mmove occurs because `f` has type `F`, which does not implement the `Copy` trait[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
-   [1m[94m--> [0m/rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:821:12
-[1m[96mhelp[0m: if `F` implemented `Clone`, you could clone the value
-   [1m[94m--> [0marmature-core/src/read_state.rs:592:21
-    [1m[94m|[0m
-[1m[94m592[0m [1m[94m|[0m     pub fn for_each<F>(&self, f: F)
-    [1m[94m|[0m                     [1m[96m^[0m [1m[96mconsider constraining this type parameter with `Clone`[0m
-[1m[94m...[0m
-[1m[94m598[0m [1m[94m|[0m             let mut f = f;
-    [1m[94m|[0m                         [1m[94m-[0m [1m[94myou could clone this value[0m
-[1m[96mhelp[0m: consider borrowing here
-    [1m[94m|[0m
-[1m[94m598[0m [1m[94m| [0m            let mut f = [92m&[0mf;
-    [1m[94m|[0m                         [92m+[0m
+[1m[94m297[0m [1m[94m|[0m             black_box(cloned.len())
+    [1m[94m|[0m             [1m[33m^^^^^^^^^[0m
 
-[1m[33mwarning[E0133][0m[1m: call to unsafe function `std::alloc::dealloc` is unsafe and requires unsafe block[0m
-   [1m[94m--> [0marmature-core/src/numa.rs:549:13
-    [1m[94m|[0m
-[1m[94m549[0m [1m[94m|[0m             dealloc(ptr, layout);
-    [1m[94m|[0m             [1m[33m^^^^^^^^^^^^^^^^^^^^[0m [1m[33mcall to unsafe function[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: for more information, see <https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html>
-    [1m[94m= [0m[1mnote[0m: consult the function's documentation for information on how to avoid undefined behavior
-[1m[92mnote[0m: an unsafe function restricts its caller, but its body is safe by default
-   [1m[94m--> [0marmature-core/src/numa.rs:545:5
-    [1m[94m|[0m
-[1m[94m545[0m [1m[94m|[0m     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
-    [1m[94m|[0m     [1m[92m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unsafe_op_in_unsafe_fn)]` (part of `#[warn(rust_2024_compatibility)]`) on by default
+[1m[33mwarning[0m: `armature` (bench "body_benchmarks") generated 43 warnings
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.40s
+[1m[92m     Running[0m benches/body_benchmarks.rs (target/release/deps/body_benchmarks-fbf903925bafd7e8)
+Gnuplot not found, using plotters backend
+Benchmarking request_body_create/from_slice_1kb
+Benchmarking request_body_create/from_slice_1kb: Warming up for 3.0000 s
+Benchmarking request_body_create/from_slice_1kb: Collecting 100 samples in estimated 5.0001 s (217M iterations)
+Benchmarking request_body_create/from_slice_1kb: Analyzing
+request_body_create/from_slice_1kb
+                        time:   [22.981 ns 22.996 ns 23.013 ns]
+                        thrpt:  [41.440 GiB/s 41.471 GiB/s 41.498 GiB/s]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+Benchmarking request_body_create/from_vec_1kb
+Benchmarking request_body_create/from_vec_1kb: Warming up for 3.0000 s
+Benchmarking request_body_create/from_vec_1kb: Collecting 100 samples in estimated 5.0000 s (96M iterations)
+Benchmarking request_body_create/from_vec_1kb: Analyzing
+request_body_create/from_vec_1kb
+                        time:   [50.178 ns 50.201 ns 50.225 ns]
+                        thrpt:  [18.988 GiB/s 18.997 GiB/s 19.006 GiB/s]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  5 (5.00%) high severe
+Benchmarking request_body_create/from_bytes_1kb
+Benchmarking request_body_create/from_bytes_1kb: Warming up for 3.0000 s
+Benchmarking request_body_create/from_bytes_1kb: Collecting 100 samples in estimated 5.0000 s (339M iterations)
+Benchmarking request_body_create/from_bytes_1kb: Analyzing
+request_body_create/from_bytes_1kb
+                        time:   [14.711 ns 14.730 ns 14.750 ns]
+                        thrpt:  [64.657 GiB/s 64.744 GiB/s 64.828 GiB/s]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+Benchmarking request_body_create/from_static_1kb
+Benchmarking request_body_create/from_static_1kb: Warming up for 3.0000 s
+Benchmarking request_body_create/from_static_1kb: Collecting 100 samples in estimated 5.0000 s (4.0B iterations)
+Benchmarking request_body_create/from_static_1kb: Analyzing
+request_body_create/from_static_1kb
+                        time:   [1.2427 ns 1.2432 ns 1.2439 ns]
+                        thrpt:  [766.69 GiB/s 767.10 GiB/s 767.42 GiB/s]
+Found 14 outliers among 100 measurements (14.00%)
+  3 (3.00%) high mild
+  11 (11.00%) high severe
 
-[1mSome errors have detailed explanations: E0133, E0507.[0m
-[1mFor more information about an error, try `rustc --explain E0133`.[0m
-[1m[33mwarning[0m: `armature-core` (lib) generated 11 warnings
-[1m[91merror[0m: could not compile `armature-core` (lib) due to 1 previous error; 11 warnings emitted
-[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+Benchmarking response_body_create/from_vec_1kb
+Benchmarking response_body_create/from_vec_1kb: Warming up for 3.0000 s
+Benchmarking response_body_create/from_vec_1kb: Collecting 100 samples in estimated 5.0001 s (139M iterations)
+Benchmarking response_body_create/from_vec_1kb: Analyzing
+response_body_create/from_vec_1kb
+                        time:   [36.099 ns 36.118 ns 36.141 ns]
+                        thrpt:  [26.388 GiB/s 26.404 GiB/s 26.418 GiB/s]
+Found 5 outliers among 100 measurements (5.00%)
+  5 (5.00%) high severe
+Benchmarking response_body_create/from_bytes_1kb
+Benchmarking response_body_create/from_bytes_1kb: Warming up for 3.0000 s
+Benchmarking response_body_create/from_bytes_1kb: Collecting 100 samples in estimated 5.0000 s (341M iterations)
+Benchmarking response_body_create/from_bytes_1kb: Analyzing
+response_body_create/from_bytes_1kb
+                        time:   [14.665 ns 14.675 ns 14.688 ns]
+                        thrpt:  [64.931 GiB/s 64.985 GiB/s 65.032 GiB/s]
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+Benchmarking response_body_create/from_json
+Benchmarking response_body_create/from_json: Warming up for 3.0000 s
+Benchmarking response_body_create/from_json: Collecting 100 samples in estimated 5.0005 s (29M iterations)
+Benchmarking response_body_create/from_json: Analyzing
+response_body_create/from_json
+                        time:   [175.64 ns 177.06 ns 178.35 ns]
+                        thrpt:  [5.3472 GiB/s 5.3863 GiB/s 5.4296 GiB/s]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) low mild
+
+Benchmarking http_request_body/legacy_vec_assignment
+Benchmarking http_request_body/legacy_vec_assignment: Warming up for 3.0000 s
+Benchmarking http_request_body/legacy_vec_assignment: Collecting 100 samples in estimated 5.0002 s (59M iterations)
+Benchmarking http_request_body/legacy_vec_assignment: Analyzing
+http_request_body/legacy_vec_assignment
+                        time:   [84.918 ns 84.982 ns 85.047 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking http_request_body/bytes_assignment
+Benchmarking http_request_body/bytes_assignment: Warming up for 3.0000 s
+Benchmarking http_request_body/bytes_assignment: Collecting 100 samples in estimated 5.0001 s (106M iterations)
+Benchmarking http_request_body/bytes_assignment: Analyzing
+http_request_body/bytes_assignment
+                        time:   [46.868 ns 47.002 ns 47.120 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+Benchmarking http_request_body/constructor_with_bytes
+Benchmarking http_request_body/constructor_with_bytes: Warming up for 3.0000 s
+Benchmarking http_request_body/constructor_with_bytes: Collecting 100 samples in estimated 5.0001 s (127M iterations)
+Benchmarking http_request_body/constructor_with_bytes: Analyzing
+http_request_body/constructor_with_bytes
+                        time:   [39.365 ns 39.599 ns 39.980 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+
+Benchmarking http_response_body/legacy_with_body
+Benchmarking http_response_body/legacy_with_body: Warming up for 3.0000 s
+Benchmarking http_response_body/legacy_with_body: Collecting 100 samples in estimated 5.0000 s (110M iterations)
+Benchmarking http_response_body/legacy_with_body: Analyzing
+http_response_body/legacy_with_body
+                        time:   [44.239 ns 44.521 ns 44.789 ns]
+Benchmarking http_response_body/with_bytes_body
+Benchmarking http_response_body/with_bytes_body: Warming up for 3.0000 s
+Benchmarking http_response_body/with_bytes_body: Collecting 100 samples in estimated 5.0001 s (178M iterations)
+Benchmarking http_response_body/with_bytes_body: Analyzing
+http_response_body/with_bytes_body
+                        time:   [28.096 ns 28.111 ns 28.127 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
+Benchmarking http_response_body/with_json
+Benchmarking http_response_body/with_json: Warming up for 3.0000 s
+Benchmarking http_response_body/with_json: Collecting 100 samples in estimated 5.0004 s (31M iterations)
+Benchmarking http_response_body/with_json: Analyzing
+http_response_body/with_json
+                        time:   [162.54 ns 162.67 ns 162.84 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking http_response_body/with_static_body
+Benchmarking http_response_body/with_static_body: Warming up for 3.0000 s
+Benchmarking http_response_body/with_static_body: Collecting 100 samples in estimated 5.0000 s (4.0B iterations)
+Benchmarking http_response_body/with_static_body: Analyzing
+http_response_body/with_static_body
+                        time:   [1.2426 ns 1.2428 ns 1.2430 ns]
+Found 14 outliers among 100 measurements (14.00%)
+  3 (3.00%) high mild
+  11 (11.00%) high severe
+
+Benchmarking hyper_passthrough/legacy_vec_to_bytes
+Benchmarking hyper_passthrough/legacy_vec_to_bytes: Warming up for 3.0000 s
+Benchmarking hyper_passthrough/legacy_vec_to_bytes: Collecting 100 samples in estimated 5.0001 s (86M iterations)
+Benchmarking hyper_passthrough/legacy_vec_to_bytes: Analyzing
+hyper_passthrough/legacy_vec_to_bytes
+                        time:   [58.638 ns 58.937 ns 59.250 ns]
+Benchmarking hyper_passthrough/zero_copy_bytes
+Benchmarking hyper_passthrough/zero_copy_bytes: Warming up for 3.0000 s
+Benchmarking hyper_passthrough/zero_copy_bytes: Collecting 100 samples in estimated 5.0002 s (146M iterations)
+Benchmarking hyper_passthrough/zero_copy_bytes: Analyzing
+hyper_passthrough/zero_copy_bytes
+                        time:   [34.173 ns 34.200 ns 34.228 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+Benchmarking hyper_passthrough/json_to_hyper_body
+Benchmarking hyper_passthrough/json_to_hyper_body: Warming up for 3.0000 s
+Benchmarking hyper_passthrough/json_to_hyper_body: Collecting 100 samples in estimated 5.0006 s (37M iterations)
+Benchmarking hyper_passthrough/json_to_hyper_body: Analyzing
+hyper_passthrough/json_to_hyper_body
+                        time:   [135.70 ns 135.83 ns 136.00 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking body_clone/vec_clone_4kb
+Benchmarking body_clone/vec_clone_4kb: Warming up for 3.0000 s
+Benchmarking body_clone/vec_clone_4kb: Collecting 100 samples in estimated 5.0027 s (3.5M iterations)
+Benchmarking body_clone/vec_clone_4kb: Analyzing
+body_clone/vec_clone_4kb
+                        time:   [1.4188 µs 1.4201 µs 1.4218 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+Benchmarking body_clone/bytes_clone_4kb
+Benchmarking body_clone/bytes_clone_4kb: Warming up for 3.0000 s
+Benchmarking body_clone/bytes_clone_4kb: Collecting 100 samples in estimated 5.0000 s (1.2B iterations)
+Benchmarking body_clone/bytes_clone_4kb: Analyzing
+body_clone/bytes_clone_4kb
+                        time:   [4.3476 ns 4.3545 ns 4.3622 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+Benchmarking body_clone/request_body_clone_4kb
+Benchmarking body_clone/request_body_clone_4kb: Warming up for 3.0000 s
+Benchmarking body_clone/request_body_clone_4kb: Collecting 100 samples in estimated 5.0000 s (1.2B iterations)
+Benchmarking body_clone/request_body_clone_4kb: Analyzing
+body_clone/request_body_clone_4kb
+                        time:   [4.3390 ns 4.3437 ns 4.3489 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+Benchmarking body_clone/response_body_clone_4kb
+Benchmarking body_clone/response_body_clone_4kb: Warming up for 3.0000 s
+Benchmarking body_clone/response_body_clone_4kb: Collecting 100 samples in estimated 5.0000 s (1.2B iterations)
+Benchmarking body_clone/response_body_clone_4kb: Analyzing
+body_clone/response_body_clone_4kb
+                        time:   [4.3388 ns 4.3408 ns 4.3430 ns]
+Found 10 outliers among 100 measurements (10.00%)
+  6 (6.00%) high mild
+  4 (4.00%) high severe
+
