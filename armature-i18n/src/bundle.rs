@@ -260,7 +260,7 @@ mod tests {
     fn test_fluent_bundle_simple() {
         let mut bundle = FluentBundle::new(&Locale::en()).unwrap();
         bundle.add_resource("hello = Hello, World!").unwrap();
-        
+
         let result = bundle.format("hello", None).unwrap();
         assert_eq!(result, "Hello, World!");
     }
@@ -269,10 +269,10 @@ mod tests {
     fn test_fluent_bundle_with_args() {
         let mut bundle = FluentBundle::new(&Locale::en()).unwrap();
         bundle.add_resource("greeting = Hello, { $name }!").unwrap();
-        
+
         let mut args = HashMap::new();
         args.insert("name".to_string(), FluentValue::from("Alice"));
-        
+
         let result = bundle.format("greeting", Some(&args)).unwrap();
         assert!(result.contains("Alice"));
     }
