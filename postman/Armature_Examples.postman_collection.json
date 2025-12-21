@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "armature-examples-collection",
     "name": "Armature Framework Examples",
-    "description": "Comprehensive Postman collection for testing Armature framework examples.\n\nEach folder corresponds to an example in the `examples/` directory.\nMake sure to run the relevant example before testing:\n\n```bash\ncargo run --example <example_name> --features full\n```",
+    "description": "Comprehensive Postman collection for testing Armature framework examples.\n\nEach folder corresponds to an example in the `examples/` directory.\nMake sure to run the relevant example before testing:\n\n```bash\ncargo run --example <example_name> --features full\n```\n\n## Quick Start\n\n1. Import this collection into Postman\n2. Import the environment file\n3. Run an example: `cargo run --example simple`\n4. Test the endpoints!\n\n## Version\n\nArmature v0.1.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -297,6 +297,21 @@
         },
         {
           "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    console.log('JWT token saved to environment');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -315,7 +330,7 @@
               "port": "3000",
               "path": ["api", "auth", "login"]
             },
-            "description": "Login and receive a JWT token."
+            "description": "Login and receive a JWT token. Token is automatically saved to environment."
           }
         },
         {
@@ -334,7 +349,7 @@
               "port": "3000",
               "path": ["api", "users", "me"]
             },
-            "description": "Get the current authenticated user. Requires JWT token.\n\nNote: Endpoint is on UserController at /api/users/me"
+            "description": "Get the current authenticated user. Requires JWT token."
           }
         },
         {
@@ -353,98 +368,171 @@
               "port": "3000",
               "path": ["api", "admin", "stats"]
             },
-            "description": "Get admin statistics. Requires admin role.\n\nNote: Endpoint is on AdminController at /api/admin/stats\n\nUse admin credentials: admin@example.com / admin123"
+            "description": "Get admin statistics. Requires admin role.\n\nUse admin credentials: admin@example.com / admin123"
           }
         }
       ]
     },
     {
-      "name": "05. Real-time API",
-      "description": "Real-time communication with WebSockets and SSE.\n\nRun: `cargo run --example realtime_api`\nPort: 3000",
+      "name": "05. Rate Limiting",
+      "description": "Rate limiting middleware demonstration.\n\nRun: `cargo run --example rate_limiting`\nPort: 3000",
       "item": [
         {
-          "name": "Send Chat Message",
+          "name": "Public Endpoint (10 req/min)",
           "request": {
-            "method": "POST",
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/api/public",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "public"]
+            },
+            "description": "Public endpoint with 10 requests per minute limit."
+          }
+        },
+        {
+          "name": "Authenticated Endpoint (100 req/min)",
+          "request": {
+            "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"Alice\",\n  \"content\": \"Hello from Postman!\",\n  \"room\": \"general\"\n}"
-            },
             "url": {
-              "raw": "{{base_url}}:3000/api/chat/messages",
+              "raw": "{{base_url}}:3000/api/authenticated",
               "host": ["{{base_url}}"],
               "port": "3000",
-              "path": ["api", "chat", "messages"]
+              "path": ["api", "authenticated"]
             },
-            "description": "Send a chat message to broadcast."
+            "description": "Authenticated endpoint with 100 requests per minute limit."
           }
         },
         {
-          "name": "Get Chat Stats",
+          "name": "Premium Endpoint (1000 req/min)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              },
+              {
+                "key": "X-Premium-User",
+                "value": "true"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/premium",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "premium"]
+            },
+            "description": "Premium endpoint with 1000 requests per minute limit."
+          }
+        },
+        {
+          "name": "Check Rate Limit Status",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}:3000/api/chat/stats",
+              "raw": "{{base_url}}:3000/api/rate-limit/status",
               "host": ["{{base_url}}"],
               "port": "3000",
-              "path": ["api", "chat", "stats"]
+              "path": ["api", "rate-limit", "status"]
             },
-            "description": "Get chat statistics and active connections."
-          }
-        },
-        {
-          "name": "Get Events Stream Info",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/api/events/stream",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["api", "events", "stream"]
-            },
-            "description": "Get SSE stream info."
-          }
-        },
-        {
-          "name": "Get Heartbeat Info",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/api/events/heartbeat",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["api", "events", "heartbeat"]
-            },
-            "description": "Get heartbeat endpoint info."
-          }
-        },
-        {
-          "name": "Get WebSocket Info",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/api/ws/info",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["api", "ws", "info"]
-            },
-            "description": "Get WebSocket connection details."
+            "description": "Check current rate limit status."
           }
         }
       ]
     },
     {
-      "name": "06. GraphQL API",
+      "name": "06. Compression",
+      "description": "HTTP compression middleware.\n\nRun: `cargo run --example compression_example`\nPort: 3000",
+      "item": [
+        {
+          "name": "Get Large Response (Gzip)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Encoding",
+                "value": "gzip"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/large-data",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "large-data"]
+            },
+            "description": "Get a large response compressed with gzip."
+          }
+        },
+        {
+          "name": "Get Large Response (Brotli)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Encoding",
+                "value": "br"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/large-data",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "large-data"]
+            },
+            "description": "Get a large response compressed with Brotli."
+          }
+        },
+        {
+          "name": "Get Large Response (Zstd)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Encoding",
+                "value": "zstd"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/large-data",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "large-data"]
+            },
+            "description": "Get a large response compressed with Zstd."
+          }
+        },
+        {
+          "name": "Get Small Response (No Compression)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Encoding",
+                "value": "gzip, br, zstd"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}:3000/api/small-data",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["api", "small-data"]
+            },
+            "description": "Small responses may not be compressed (threshold)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. GraphQL API",
       "description": "GraphQL API with queries and mutations.\n\nRun: `cargo run --example graphql_api`\nPort: 3007",
       "item": [
         {
@@ -563,20 +651,6 @@
           }
         },
         {
-          "name": "Get GraphQL Schema",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3007/graphql/schema",
-              "host": ["{{base_url}}"],
-              "port": "3007",
-              "path": ["graphql", "schema"]
-            },
-            "description": "Get the GraphQL schema in SDL format."
-          }
-        },
-        {
           "name": "GraphQL Playground",
           "request": {
             "method": "GET",
@@ -593,23 +667,9 @@
       ]
     },
     {
-      "name": "07. Pagination & Filtering",
+      "name": "08. Pagination & Filtering",
       "description": "Advanced pagination, filtering, and sorting.\n\nRun: `cargo run --example pagination_example`\nPort: 3000",
       "item": [
-        {
-          "name": "Documentation",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": [""]
-            },
-            "description": "Get API documentation with all supported parameters."
-          }
-        },
         {
           "name": "List Users (Basic)",
           "request": {
@@ -677,40 +737,6 @@
           }
         },
         {
-          "name": "List Users (Filtered by Age)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/users?age__gte=25",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["users"],
-              "query": [
-                {"key": "age__gte", "value": "25"}
-              ]
-            },
-            "description": "List users with age >= 25."
-          }
-        },
-        {
-          "name": "List Users (Field Selection)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/users?fields=id,name,email",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["users"],
-              "query": [
-                {"key": "fields", "value": "id,name,email"}
-              ]
-            },
-            "description": "List users with only selected fields."
-          }
-        },
-        {
           "name": "List Users (Combined)",
           "request": {
             "method": "GET",
@@ -730,28 +756,11 @@
             },
             "description": "Combined pagination, sorting, filtering, and field selection."
           }
-        },
-        {
-          "name": "List Users (Cursor Pagination)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/users/cursor?limit=3",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["users", "cursor"],
-              "query": [
-                {"key": "limit", "value": "3"}
-              ]
-            },
-            "description": "List users with cursor-based pagination."
-          }
         }
       ]
     },
     {
-      "name": "08. Validation",
+      "name": "09. Validation",
       "description": "Input validation examples.\n\nRun: `cargo run --example validation_example`\nPort: 3018",
       "item": [
         {
@@ -824,52 +833,6 @@
           }
         },
         {
-          "name": "Create User (Invalid - Underage)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Young Person\",\n  \"email\": \"young@example.com\",\n  \"age\": 10,\n  \"password\": \"securepassword123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}:3018/users",
-              "host": ["{{base_url}}"],
-              "port": "3018",
-              "path": ["users"]
-            },
-            "description": "Create user with age < 18 - should return validation error."
-          }
-        },
-        {
-          "name": "Create User (Invalid - Short Password)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John\",\n  \"email\": \"john@example.com\",\n  \"age\": 30,\n  \"password\": \"short\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}:3018/users",
-              "host": ["{{base_url}}"],
-              "port": "3018",
-              "path": ["users"]
-            },
-            "description": "Create user with password < 8 chars - should return validation error."
-          }
-        },
-        {
           "name": "Create User (Multiple Errors)",
           "request": {
             "method": "POST",
@@ -891,34 +854,11 @@
             },
             "description": "Create user with multiple validation errors."
           }
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}:3018/users/1",
-              "host": ["{{base_url}}"],
-              "port": "3018",
-              "path": ["users", "1"]
-            },
-            "description": "Update a user."
-          }
         }
       ]
     },
     {
-      "name": "09. Metrics",
+      "name": "10. Metrics",
       "description": "Prometheus metrics endpoints.\n\nRun: `cargo run --example metrics_example`\nPort: 3000",
       "item": [
         {
@@ -950,20 +890,6 @@
           }
         },
         {
-          "name": "Get Posts",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}:3000/api/posts",
-              "host": ["{{base_url}}"],
-              "port": "3000",
-              "path": ["api", "posts"]
-            },
-            "description": "Posts endpoint."
-          }
-        },
-        {
           "name": "Get Prometheus Metrics",
           "request": {
             "method": "GET",
@@ -980,8 +906,175 @@
       ]
     },
     {
-      "name": "10. Health Checks",
-      "description": "Common health check endpoints (available in most examples).",
+      "name": "11. Benchmark Server",
+      "description": "High-performance benchmark server for load testing.\n\nRun: `cargo run --example benchmark_server --release`\nPort: 3000",
+      "item": [
+        {
+          "name": "Plaintext",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/plaintext",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["plaintext"]
+            },
+            "description": "Returns 'Hello, World!' as plaintext."
+          }
+        },
+        {
+          "name": "JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/json",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["json"]
+            },
+            "description": "Returns a JSON object."
+          }
+        },
+        {
+          "name": "Echo POST",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}:3000/echo",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["echo"]
+            },
+            "description": "Echoes back the request body."
+          }
+        },
+        {
+          "name": "User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:3000/user/123",
+              "host": ["{{base_url}}"],
+              "port": "3000",
+              "path": ["user", "123"]
+            },
+            "description": "Get user with path parameter extraction."
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. TechEmpower Server",
+      "description": "TechEmpower-style benchmark endpoints.\n\nRun: `cargo run --example techempower_server --release`\nPort: 8080",
+      "item": [
+        {
+          "name": "Plaintext",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/plaintext",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["plaintext"]
+            },
+            "description": "TechEmpower plaintext test."
+          }
+        },
+        {
+          "name": "JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/json",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["json"]
+            },
+            "description": "TechEmpower JSON serialization test."
+          }
+        },
+        {
+          "name": "Database Single Query",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/db",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["db"]
+            },
+            "description": "TechEmpower single database query test."
+          }
+        },
+        {
+          "name": "Database Multiple Queries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/queries?queries=20",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["queries"],
+              "query": [
+                {"key": "queries", "value": "20"}
+              ]
+            },
+            "description": "TechEmpower multiple queries test."
+          }
+        },
+        {
+          "name": "Fortunes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/fortunes",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["fortunes"]
+            },
+            "description": "TechEmpower fortunes (HTML template) test."
+          }
+        },
+        {
+          "name": "Updates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}:8080/updates?queries=10",
+              "host": ["{{base_url}}"],
+              "port": "8080",
+              "path": ["updates"],
+              "query": [
+                {"key": "queries", "value": "10"}
+              ]
+            },
+            "description": "TechEmpower database updates test."
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Health Checks",
+      "description": "Common health check endpoints (available in most examples).\n\nPort varies by example.",
       "item": [
         {
           "name": "Health Check",
@@ -1029,3 +1122,4 @@
     }
   ]
 }
+
