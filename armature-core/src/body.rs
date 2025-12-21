@@ -473,7 +473,7 @@ mod tests {
         };
 
         let body = ResponseBody::from_json(&data).unwrap();
-        assert!(body.len() > 0);
+        assert!(!body.is_empty());
         assert!(String::from_utf8_lossy(&body).contains("ok"));
     }
 

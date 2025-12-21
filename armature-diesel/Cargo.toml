@@ -34,6 +34,7 @@ diesel_migrations = { version = "2.2", optional = true }
 # Async
 tokio = { version = "1", features = ["sync"] }
 async-trait = "0.1"
+futures-util = { version = "0.3", features = ["async-await-macro"] }
 
 # Error handling
 thiserror = "1.0"

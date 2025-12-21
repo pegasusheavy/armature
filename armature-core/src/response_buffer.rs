@@ -157,7 +157,7 @@ impl ResponseBuffer {
 
     /// Get mutable reference to inner BytesMut.
     #[inline]
-    pub fn as_mut(&mut self) -> &mut BytesMut {
+    pub fn inner_mut(&mut self) -> &mut BytesMut {
         &mut self.inner
     }
 
@@ -194,6 +194,13 @@ impl AsRef<[u8]> for ResponseBuffer {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         &self.inner
+    }
+}
+
+impl AsMut<BytesMut> for ResponseBuffer {
+    #[inline]
+    fn as_mut(&mut self) -> &mut BytesMut {
+        &mut self.inner
     }
 }
 
@@ -477,7 +484,7 @@ mod tests {
         use std::io::Write;
 
         let mut buf = ResponseBuffer::new();
-        write!(buf, "Hello, {}!", "World").unwrap();
+        write!(buf, "Hello, World!").unwrap();
         assert_eq!(buf.as_slice(), b"Hello, World!");
     }
 }

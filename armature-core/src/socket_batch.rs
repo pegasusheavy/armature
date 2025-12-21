@@ -1003,7 +1003,7 @@ mod tests {
     #[test]
     fn test_cork_manager() {
         // Just test the state tracking (no actual socket)
-        let mut manager = CorkManager::new(0, true);
+        let manager = CorkManager::new(0, true);
         assert!(!manager.is_corked());
     }
 

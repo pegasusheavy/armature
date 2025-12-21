@@ -1,12 +1,14 @@
 //! Transaction management for SeaORM.
 
-use crate::{Database, SeaOrmError, SeaOrmResult};
-use async_trait::async_trait;
-use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
+use crate::Database;
+use sea_orm::{
+    AccessMode, DatabaseConnection, DatabaseTransaction, IsolationLevel as SeaIsolationLevel,
+    TransactionTrait,
+};
 use std::future::Future;
+use std::pin::Pin;
 
 /// Extension trait for transaction management.
-#[async_trait]
 pub trait TransactionExt {
     /// Execute a closure within a transaction.
     ///
@@ -16,33 +18,28 @@ pub trait TransactionExt {
     /// # Example
     ///
     /// ```rust,ignore
-    /// db.transaction(|txn| async move {
-    ///     let user = user::ActiveModel {
-    ///         name: Set("Alice".to_owned()),
-    ///         ..Default::default()
-    ///     };
-    ///     user.insert(&txn).await?;
-    ///     Ok(())
+    /// use sea_orm::TransactionTrait;
+    ///
+    /// db.connection().transaction(|txn| {
+    ///     Box::pin(async move {
+    ///         let user = user::ActiveModel {
+    ///             name: Set("Alice".to_owned()),
+    ///             ..Default::default()
+    ///         };
+    ///         user.insert(txn).await?;
+    ///         Ok(())
+    ///     })
     /// }).await?;
     /// ```
-    async fn transaction<F, Fut, T, E>(&self, f: F) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send;
+    fn begin_transaction(
+        &self,
+    ) -> impl Future<Output = Result<DatabaseTransaction, sea_orm::DbErr>> + Send;
 
     /// Execute a closure within a transaction with custom isolation level.
-    async fn transaction_with_isolation<F, Fut, T, E>(
+    fn begin_transaction_with_isolation(
         &self,
         isolation: IsolationLevel,
-        f: F,
-    ) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send;
+    ) -> impl Future<Output = Result<DatabaseTransaction, sea_orm::DbErr>> + Send;
 }
 
 /// Transaction isolation levels.
@@ -58,77 +55,101 @@ pub enum IsolationLevel {
     Serializable,
 }
 
-impl From<IsolationLevel> for Option<sea_orm::IsolationLevel> {
+impl From<IsolationLevel> for SeaIsolationLevel {
     fn from(level: IsolationLevel) -> Self {
-        Some(match level {
-            IsolationLevel::ReadUncommitted => sea_orm::IsolationLevel::ReadUncommitted,
-            IsolationLevel::ReadCommitted => sea_orm::IsolationLevel::ReadCommitted,
-            IsolationLevel::RepeatableRead => sea_orm::IsolationLevel::RepeatableRead,
-            IsolationLevel::Serializable => sea_orm::IsolationLevel::Serializable,
-        })
+        match level {
+            IsolationLevel::ReadUncommitted => SeaIsolationLevel::ReadUncommitted,
+            IsolationLevel::ReadCommitted => SeaIsolationLevel::ReadCommitted,
+            IsolationLevel::RepeatableRead => SeaIsolationLevel::RepeatableRead,
+            IsolationLevel::Serializable => SeaIsolationLevel::Serializable,
+        }
     }
 }
 
-#[async_trait]
 impl TransactionExt for Database {
-    async fn transaction<F, Fut, T, E>(&self, f: F) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send,
-    {
+    async fn begin_transaction(&self) -> Result<DatabaseTransaction, sea_orm::DbErr> {
         armature_log::debug!("Starting database transaction");
-        self.connection().transaction(f).await
+        self.connection().begin().await
     }
 
-    async fn transaction_with_isolation<F, Fut, T, E>(
+    async fn begin_transaction_with_isolation(
         &self,
         isolation: IsolationLevel,
-        f: F,
-    ) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send,
-    {
-        armature_log::debug!("Starting database transaction with isolation level {:?}", isolation);
+    ) -> Result<DatabaseTransaction, sea_orm::DbErr> {
+        armature_log::debug!(
+            "Starting database transaction with isolation level {:?}",
+            isolation
+        );
         self.connection()
-            .transaction_with_config(f, isolation.into(), None)
+            .begin_with_config(Some(isolation.into()), None)
             .await
     }
 }
 
-#[async_trait]
 impl TransactionExt for DatabaseConnection {
-    async fn transaction<F, Fut, T, E>(&self, f: F) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send,
-    {
-        TransactionTrait::transaction(self, f).await
+    async fn begin_transaction(&self) -> Result<DatabaseTransaction, sea_orm::DbErr> {
+        self.begin().await
     }
 
-    async fn transaction_with_isolation<F, Fut, T, E>(
+    async fn begin_transaction_with_isolation(
         &self,
         isolation: IsolationLevel,
-        f: F,
-    ) -> Result<T, E>
-    where
-        F: FnOnce(DatabaseTransaction) -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
-        T: Send,
-        E: From<sea_orm::DbErr> + Send,
-    {
-        TransactionTrait::transaction_with_config(self, f, isolation.into(), None).await
+    ) -> Result<DatabaseTransaction, sea_orm::DbErr> {
+        self.begin_with_config(Some(isolation.into()), None).await
     }
+}
+
+/// Helper to run a transactional closure.
+///
+/// This is a convenience wrapper around SeaORM's transaction API.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use armature_seaorm::run_transaction;
+///
+/// let result = run_transaction(&db.connection(), |txn| {
+///     Box::pin(async move {
+///         // Do work with txn
+///         Ok::<_, sea_orm::DbErr>(42)
+///     })
+/// }).await?;
+/// ```
+pub async fn run_transaction<C, F, T, E>(conn: &C, f: F) -> Result<T, sea_orm::TransactionError<E>>
+where
+    C: TransactionTrait,
+    F: for<'c> FnOnce(
+            &'c DatabaseTransaction,
+        ) -> Pin<Box<dyn Future<Output = Result<T, E>> + Send + 'c>>
+        + Send,
+    T: Send,
+    E: std::error::Error + Send,
+{
+    conn.transaction(f).await
+}
+
+/// Helper to run a transactional closure with custom isolation.
+pub async fn run_transaction_with_isolation<C, F, T, E>(
+    conn: &C,
+    isolation: IsolationLevel,
+    f: F,
+) -> Result<T, sea_orm::TransactionError<E>>
+where
+    C: TransactionTrait,
+    F: for<'c> FnOnce(
+            &'c DatabaseTransaction,
+        ) -> Pin<Box<dyn Future<Output = Result<T, E>> + Send + 'c>>
+        + Send,
+    T: Send,
+    E: std::error::Error + Send,
+{
+    conn.transaction_with_config(f, Some(isolation.into()), None)
+        .await
 }
 
 /// Transaction options for advanced control.
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct TransactionOptions {
     /// Isolation level.
     pub isolation: Option<IsolationLevel>,
@@ -138,15 +159,6 @@ pub struct TransactionOptions {
     pub deferrable: bool,
 }
 
-impl Default for TransactionOptions {
-    fn default() -> Self {
-        Self {
-            isolation: None,
-            read_only: false,
-            deferrable: false,
-        }
-    }
-}
 
 impl TransactionOptions {
     /// Create new transaction options.
@@ -171,5 +183,13 @@ impl TransactionOptions {
         self.deferrable = deferrable;
         self
     }
-}
 
+    /// Convert to SeaORM access mode.
+    pub fn to_access_mode(&self) -> Option<AccessMode> {
+        if self.read_only {
+            Some(AccessMode::ReadOnly)
+        } else {
+            None
+        }
+    }
+}

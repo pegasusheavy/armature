@@ -129,7 +129,7 @@ impl Interceptor for CacheInterceptor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
+    
 
     #[test]
     fn test_logging_interceptor_creation() {

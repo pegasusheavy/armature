@@ -1,9 +1,6 @@
 //! Pagination utilities for SeaORM queries.
 
-use sea_orm::{
-    entity::prelude::*,
-    Condition, EntityTrait, PaginatorTrait, QueryOrder, QuerySelect, Select,
-};
+use sea_orm::{entity::prelude::*, EntityTrait, PaginatorTrait, Select};
 use serde::{Deserialize, Serialize};
 
 /// Pagination options.
@@ -87,7 +84,7 @@ pub struct PaginationMeta {
 impl<T> Paginated<T> {
     /// Create a new paginated result.
     pub fn new(items: Vec<T>, page: u64, per_page: u64, total_items: u64) -> Self {
-        let total_pages = (total_items + per_page - 1) / per_page;
+        let total_pages = total_items.div_ceil(per_page);
 
         Self {
             items,
@@ -144,7 +141,7 @@ where
     where
         E::Model: Sync,
     {
-        let paginator = self.paginate(db, options.per_page);
+        let paginator = PaginatorTrait::paginate(self, db, options.per_page);
         let total_items = paginator.num_items().await?;
         let items = paginator.fetch_page(options.page.saturating_sub(1)).await?;
 

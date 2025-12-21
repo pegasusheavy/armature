@@ -281,7 +281,7 @@ mod tests {
     fn test_fluent_value_conversions() {
         let _s: FluentValue = "test".into();
         let _n: FluentValue = 42.into();
-        let _f: FluentValue = 3.14.into();
+        let _f: FluentValue = 3.5.into();
     }
 }
 

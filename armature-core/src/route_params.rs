@@ -192,6 +192,7 @@ impl<'a> Default for Params<'a> {
 
 /// Result of pattern matching.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)] // Match is the common path, boxing would add indirection
 pub enum MatchResult<'a> {
     /// Pattern matched, params extracted.
     Match(Params<'a>),
@@ -242,10 +243,10 @@ impl<'a> PatternSegment<'a> {
     /// Parse a segment string.
     #[inline]
     pub fn parse(segment: &'a str) -> Self {
-        if segment.starts_with(':') {
+        if let Some(param_name) = segment.strip_prefix(':') {
             Self {
                 segment_type: SegmentType::Param,
-                value: &segment[1..],
+                value: param_name,
             }
         } else if segment == "*" {
             Self {
@@ -356,10 +357,8 @@ impl CompiledPattern {
             if path_segments.len() != self.segments.len() {
                 return MatchResult::NoMatch;
             }
-        } else {
-            if path_segments.len() < self.required_segments {
-                return MatchResult::NoMatch;
-            }
+        } else if path_segments.len() < self.required_segments {
+            return MatchResult::NoMatch;
         }
 
         let mut params = Params::with_capacity(self.segments.len());
@@ -459,12 +458,11 @@ where
     let mut params = Params::with_capacity(pattern_parts.len());
 
     for (i, pattern_part) in pattern_parts.iter().enumerate() {
-        if pattern_part.starts_with(':') {
+        if let Some(name) = pattern_part.strip_prefix(':') {
             // Named parameter
             if i >= path_parts.len() {
                 return None;
             }
-            let name = &pattern_part[1..];
             params.push(name, path_parts[i]);
         } else if *pattern_part == "*" {
             // Single wildcard
@@ -472,9 +470,8 @@ where
                 return None;
             }
             params.push("*", path_parts[i]);
-        } else if pattern_part.starts_with('*') {
+        } else if let Some(name) = pattern_part.strip_prefix('*') {
             // Catch-all (e.g., *path, *rest)
-            let name = &pattern_part[1..];
             let remaining: String = path_parts[i..].join("/");
             let leaked: &'static str = Box::leak(remaining.into_boxed_str());
             params.push(name, leaked);

@@ -35,7 +35,7 @@ pub trait TransactionExt {
     async fn transaction<F, Fut, T>(&self, f: F) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send;
 
     /// Execute a closure within a transaction with custom isolation level.
@@ -46,7 +46,7 @@ pub trait TransactionExt {
     ) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send;
 }
 
@@ -99,16 +99,16 @@ impl TransactionExt for crate::PgPool {
     async fn transaction<F, Fut, T>(&self, f: F) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::RunQueryDsl;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::AsyncConnection;
 
         let mut conn = self.get().await?;
+        let conn: &mut AsyncPgConnection = &mut conn;
 
-        conn.build_transaction()
-            .run(|conn| async move { f(conn).await }.scope_boxed())
+        conn.transaction(|conn| async move { f(conn).await }.scope_boxed())
             .await
             .map_err(|e| DieselError::Transaction(e.to_string()))
     }
@@ -120,25 +120,25 @@ impl TransactionExt for crate::PgPool {
     ) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::RunQueryDsl;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::{AsyncConnection, RunQueryDsl};
 
         let mut conn = self.get().await?;
+        let conn: &mut AsyncPgConnection = &mut conn;
 
         // Set isolation level
         diesel::sql_query(format!(
             "SET TRANSACTION ISOLATION LEVEL {}",
             isolation.to_pg_sql()
         ))
-        .execute(&mut *conn)
+        .execute(conn)
         .await
         .map_err(|e| DieselError::Transaction(e.to_string()))?;
 
-        conn.build_transaction()
-            .run(|conn| async move { f(conn).await }.scope_boxed())
+        conn.transaction(|conn| async move { f(conn).await }.scope_boxed())
             .await
             .map_err(|e| DieselError::Transaction(e.to_string()))
     }
@@ -156,16 +156,16 @@ impl TransactionExt for crate::MysqlPool {
     async fn transaction<F, Fut, T>(&self, f: F) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::RunQueryDsl;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::AsyncConnection;
 
         let mut conn = self.get().await?;
+        let conn: &mut AsyncMysqlConnection = &mut *conn;
 
-        conn.build_transaction()
-            .run(|conn| async move { f(conn).await }.scope_boxed())
+        conn.transaction(|conn| async move { f(conn).await }.scope_boxed())
             .await
             .map_err(|e| DieselError::Transaction(e.to_string()))
     }
@@ -177,31 +177,32 @@ impl TransactionExt for crate::MysqlPool {
     ) -> DieselResult<T>
     where
         F: FnOnce(&mut Self::Connection) -> Fut + Send,
-        Fut: Future<Output = DieselResult<T>> + Send,
+        Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::RunQueryDsl;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::{AsyncConnection, RunQueryDsl};
 
         let mut conn = self.get().await?;
+        let conn: &mut AsyncMysqlConnection = &mut *conn;
 
         // Set isolation level
         diesel::sql_query(format!(
             "SET TRANSACTION ISOLATION LEVEL {}",
             isolation.to_mysql_sql()
         ))
-        .execute(&mut *conn)
+        .execute(conn)
         .await
         .map_err(|e| DieselError::Transaction(e.to_string()))?;
 
-        conn.build_transaction()
-            .run(|conn| async move { f(conn).await }.scope_boxed())
+        conn.transaction(|conn| async move { f(conn).await }.scope_boxed())
             .await
             .map_err(|e| DieselError::Transaction(e.to_string()))
     }
 }
 
 /// Transaction guard for manual transaction management.
+#[allow(dead_code)]
 pub struct TransactionGuard<'a, C> {
     conn: &'a mut C,
     committed: bool,
@@ -229,4 +230,3 @@ impl<'a, C> TransactionGuard<'a, C> {
 
 // On drop, if not committed, the transaction will be rolled back
 // (handled by the connection's transaction scope)
-

@@ -924,8 +924,8 @@ pub fn middleware_stats() -> &'static ZeroCostStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::extensions::Extensions;
-    use std::collections::HashMap;
+    
+    
 
     fn create_request() -> HttpRequest {
         let mut req = HttpRequest::new("GET".to_string(), "/api/users/123".to_string());

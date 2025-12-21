@@ -63,7 +63,7 @@ impl Locale {
 
     /// Parse from BCP 47 tag (e.g., "en-US", "zh-Hans-CN").
     pub fn parse(tag: &str) -> Result<Self> {
-        let parts: Vec<&str> = tag.split(|c| c == '-' || c == '_').collect();
+        let parts: Vec<&str> = tag.split(['-', '_']).collect();
 
         if parts.is_empty() || parts[0].is_empty() {
             return Err(I18nError::InvalidLocale(tag.to_string()));
@@ -377,11 +377,7 @@ pub fn parse_accept_language(header: &str) -> Vec<Locale> {
                 .next()
                 .and_then(|q| {
                     let q = q.trim();
-                    if q.starts_with("q=") {
-                        q[2..].parse().ok()
-                    } else {
-                        None
-                    }
+                    q.strip_prefix("q=").and_then(|v| v.parse().ok())
                 })
                 .unwrap_or(1.0);
 

@@ -146,7 +146,7 @@ impl SmallHeaders {
     /// Check if headers are stored inline (no heap allocation).
     #[inline]
     pub fn is_inline(&self) -> bool {
-        self.headers.spilled() == false
+        !self.headers.spilled()
     }
 
     /// Iterate over headers.

@@ -45,7 +45,7 @@ async fn test_audit_logger() {
 
 #[tokio::test]
 async fn test_masking() {
-    let config = MaskingConfig::default();
+    let _config = MaskingConfig::default();
     let masked = mask_value("secret123", '*', 3);
     assert_eq!(masked, "******123");
 }

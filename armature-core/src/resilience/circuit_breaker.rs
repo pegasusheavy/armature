@@ -543,7 +543,7 @@ impl CircuitBreakerStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::AtomicUsize;
+    
 
     #[tokio::test]
     async fn test_circuit_breaker_opens_after_failures() {

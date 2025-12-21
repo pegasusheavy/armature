@@ -1194,8 +1194,10 @@ pub const DEFAULT_MAX_CHUNK: usize = 64 * 1024;
 
 /// Strategy for handling backpressure when consumer is slow.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum BackpressureStrategy {
     /// Pause production when buffer is full (default)
+    #[default]
     PauseResume,
     /// Drop oldest chunks when buffer is full
     DropOldest,
@@ -1207,11 +1209,6 @@ pub enum BackpressureStrategy {
     Error,
 }
 
-impl Default for BackpressureStrategy {
-    fn default() -> Self {
-        Self::PauseResume
-    }
-}
 
 /// Configuration for backpressure handling.
 #[derive(Debug, Clone)]
@@ -1377,11 +1374,10 @@ impl BackpressureController {
         self.stats.bytes_sent.fetch_add(bytes as u64, Ordering::Relaxed);
 
         // Check if we should pause
-        if new_level >= self.config.high_watermark {
-            if !self.is_paused.swap(true, Ordering::AcqRel) {
+        if new_level >= self.config.high_watermark
+            && !self.is_paused.swap(true, Ordering::AcqRel) {
                 self.stats.pause_count.fetch_add(1, Ordering::Relaxed);
             }
-        }
     }
 
     /// Record data being acknowledged by consumer (decreases buffer level).
@@ -1391,12 +1387,11 @@ impl BackpressureController {
         self.stats.bytes_acked.fetch_add(bytes as u64, Ordering::Relaxed);
 
         // Check if we should resume
-        if new_level <= self.config.low_watermark {
-            if self.is_paused.swap(false, Ordering::AcqRel) {
+        if new_level <= self.config.low_watermark
+            && self.is_paused.swap(false, Ordering::AcqRel) {
                 self.stats.resume_count.fetch_add(1, Ordering::Relaxed);
                 self.resume_notify.notify_waiters();
             }
-        }
     }
 
     /// Wait until not paused (for async producers).

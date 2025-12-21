@@ -520,8 +520,8 @@ mod tests {
         let slices = chunks.as_io_slices();
 
         assert_eq!(slices.len(), 4);
-        assert!(slices[0].len() > 0); // Status line
-        assert!(slices[1].len() > 0); // Headers
+        assert!(!slices[0].is_empty()); // Status line
+        assert!(!slices[1].is_empty()); // Headers
     }
 
     #[test]

@@ -98,6 +98,7 @@ impl OpenSearchConfig {
 
 /// TLS configuration.
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct TlsConfig {
     /// Path to CA certificate.
     pub ca_cert: Option<String>,
@@ -109,16 +110,6 @@ pub struct TlsConfig {
     pub danger_accept_invalid_certs: bool,
 }
 
-impl Default for TlsConfig {
-    fn default() -> Self {
-        Self {
-            ca_cert: None,
-            client_cert: None,
-            client_key: None,
-            danger_accept_invalid_certs: false,
-        }
-    }
-}
 
 impl TlsConfig {
     /// Create TLS config with CA certificate.

@@ -1,6 +1,6 @@
 //! Queue implementation with Redis backend.
 
-use armature_log::{debug, info, trace, warn};
+use armature_log::{debug, info};
 use crate::error::{QueueError, QueueResult};
 use crate::job::{Job, JobData, JobId, JobPriority, JobState};
 use chrono::Utc;

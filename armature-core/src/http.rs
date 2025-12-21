@@ -282,7 +282,7 @@ impl LazyHeaders {
     /// Check if key exists.
     #[inline]
     pub fn contains_key(&self, key: &str) -> bool {
-        self.inner.as_ref().map_or(false, |m| m.contains_key(key))
+        self.inner.as_ref().is_some_and(|m| m.contains_key(key))
     }
 
     /// Get number of headers.
@@ -294,7 +294,7 @@ impl LazyHeaders {
     /// Check if empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.inner.as_ref().map_or(true, |m| m.is_empty())
+        self.inner.as_ref().is_none_or(|m| m.is_empty())
     }
 
     /// Iterate over headers.
