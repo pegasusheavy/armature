@@ -616,10 +616,10 @@ impl TcpKeepalive {
         }
     }
 
-    /// Apply keepalive settings (non-Linux stub).
-    #[cfg(not(target_os = "linux"))]
+    /// Apply keepalive settings (non-Linux Unix stub).
+    #[cfg(all(unix, not(target_os = "linux")))]
     fn apply_to_fd(&self, _fd: std::os::unix::io::RawFd) {
-        // Platform-specific implementation would go here
+        // Platform-specific implementation would go here for macOS/BSD
     }
 }
 
