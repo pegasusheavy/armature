@@ -82,12 +82,14 @@ Main publishing script that handles dependency order.
 
 ```bash
 # Show publish order (dry run)
+# Also shows which versions are already on crates.io
 ./scripts/publish.sh --dry-run
 
 # Check all crates are ready
 ./scripts/publish.sh --check
 
 # Publish all crates
+# Automatically skips versions already published on crates.io
 ./scripts/publish.sh
 
 # Publish single crate
@@ -98,6 +100,9 @@ Main publishing script that handles dependency order.
 
 # Skip problematic crates
 ./scripts/publish.sh --skip armature-cli --skip armature-ferron
+
+# Force republish even if version exists on crates.io
+./scripts/publish.sh --force
 
 # Skip verification (faster, less safe)
 ./scripts/publish.sh --no-verify
@@ -136,11 +141,60 @@ Example order (abbreviated):
 ...
 ```
 
-View the full order:
+View the full order with version status:
 
 ```bash
 ./scripts/publish.sh --dry-run
 ```
+
+Output shows crates.io status:
+
+```
+1. armature-log (v0.1.0) [on crates.io]     # Already published
+2. armature-core (v0.1.0) [new version]     # New version to publish
+3. armature-auth (v0.1.0) [new crate]       # First time publishing
+```
+
+---
+
+## Version Verification
+
+The publish script automatically checks crates.io before publishing:
+
+- **Already published versions are skipped** (no errors)
+- **New versions are published** normally
+- **New crates** (never published) are published normally
+
+### Behavior
+
+```bash
+./scripts/publish.sh
+```
+
+Output:
+```
+[INFO] Publishing armature-log v0.1.0...
+[WARN] armature-log v0.1.0 is already published on crates.io (use --force to republish)
+[INFO] Publishing armature-core v0.1.1...
+[SUCCESS] armature-core v0.1.1 published successfully
+
+Publishing complete!
+  Published: 1
+  Already on crates.io: 1
+  Skipped: 0
+```
+
+### Force Republish
+
+To attempt publishing even if the version exists:
+
+```bash
+./scripts/publish.sh --force
+```
+
+Note: crates.io will still reject duplicate versions. Use `--force` when:
+- You need to retry a failed publish
+- The API check returned an error
 
 ---
 
@@ -229,7 +283,13 @@ description = "Your description"
 
 ### "Package already exists"
 
-The version is already published. Bump the version:
+The version is already published. The script now automatically detects this and skips the crate:
+
+```
+[WARN] armature-xxx v0.1.0 is already published on crates.io
+```
+
+To publish a new version, bump the version in `Cargo.toml`:
 
 ```toml
 version = "0.1.1"
