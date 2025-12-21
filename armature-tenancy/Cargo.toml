@@ -1,8 +1,15 @@
 [package]
 name = "armature-tenancy"
-version = "0.1.0"
-edition = "2024"
-description = "Multi-tenancy support for Armature framework"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Multi-tenancy support for Armature applications"
+keywords = ["multi-tenant", "tenancy", "saas", "isolation"]
+categories = ["web-programming"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

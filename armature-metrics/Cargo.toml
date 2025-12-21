@@ -1,10 +1,15 @@
 [package]
 name = "armature-metrics"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 description = "Prometheus metrics and monitoring for Armature"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/armature-rs/armature"
+keywords = ["metrics", "prometheus", "monitoring", "observability"]
+categories = ["web-programming", "development-tools::profiling"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }

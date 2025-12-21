@@ -1,12 +1,14 @@
 [package]
 name = "armature-ferron"
-version = "0.1.0"
-edition = "2021"
-authors = ["Pegasus Heavy Industries <pegasusheavyindustries@gmail.com>"]
-description = "Ferron reverse proxy integration for Armature web applications"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/PegasusHeavyIndustries/armature"
-keywords = ["ferron", "proxy", "reverse-proxy", "load-balancer", "armature"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Ferron reverse proxy integration for Armature"
+keywords = ["ferron", "proxy", "reverse-proxy", "load-balancer"]
 categories = ["web-programming", "network-programming"]
 
 [dependencies]

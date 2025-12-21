@@ -1,9 +1,15 @@
 [package]
 name = "armature-macros"
-version = "0.1.0"
-edition = "2024"
-description = "Declarative macros for the Armature framework"
-license = "MIT OR Apache-2.0"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Declarative macros for Armature framework"
+keywords = ["macros", "framework", "web"]
+categories = ["web-programming", "development-tools::procedural-macro-helpers"]
 
 [dependencies]
 armature-core = { path = "../armature-core" }
