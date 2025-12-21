@@ -106,7 +106,7 @@ impl TransactionExt for crate::PgPool {
         use diesel_async::scoped_futures::ScopedFutureExt;
 
         let mut conn = self.get().await?;
-        
+
         conn.build_transaction()
             .run(|conn| async move { f(conn).await }.scope_boxed())
             .await
@@ -127,7 +127,7 @@ impl TransactionExt for crate::PgPool {
         use diesel_async::scoped_futures::ScopedFutureExt;
 
         let mut conn = self.get().await?;
-        
+
         // Set isolation level
         diesel::sql_query(format!(
             "SET TRANSACTION ISOLATION LEVEL {}",
@@ -136,7 +136,7 @@ impl TransactionExt for crate::PgPool {
         .execute(&mut *conn)
         .await
         .map_err(|e| DieselError::Transaction(e.to_string()))?;
-        
+
         conn.build_transaction()
             .run(|conn| async move { f(conn).await }.scope_boxed())
             .await
@@ -163,7 +163,7 @@ impl TransactionExt for crate::MysqlPool {
         use diesel_async::scoped_futures::ScopedFutureExt;
 
         let mut conn = self.get().await?;
-        
+
         conn.build_transaction()
             .run(|conn| async move { f(conn).await }.scope_boxed())
             .await
@@ -184,7 +184,7 @@ impl TransactionExt for crate::MysqlPool {
         use diesel_async::scoped_futures::ScopedFutureExt;
 
         let mut conn = self.get().await?;
-        
+
         // Set isolation level
         diesel::sql_query(format!(
             "SET TRANSACTION ISOLATION LEVEL {}",
@@ -193,7 +193,7 @@ impl TransactionExt for crate::MysqlPool {
         .execute(&mut *conn)
         .await
         .map_err(|e| DieselError::Transaction(e.to_string()))?;
-        
+
         conn.build_transaction()
             .run(|conn| async move { f(conn).await }.scope_boxed())
             .await

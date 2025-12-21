@@ -104,15 +104,15 @@ let config = DatabaseConfig::new("postgres://localhost/mydb")
     // Pool settings
     .max_connections(20)
     .min_connections(5)
-    
+
     // Timeouts
     .connect_timeout(Duration::from_secs(30))
     .max_lifetime(Duration::from_secs(30 * 60))
     .idle_timeout(Duration::from_secs(10 * 60))
-    
+
     // Logging
     .sqlx_logging(true)
-    
+
     // PostgreSQL schema
     .schema("public");
 ```

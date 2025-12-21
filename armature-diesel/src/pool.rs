@@ -38,7 +38,7 @@ impl PgPool {
         debug!("Pool size: {}, URL: {}", config.pool_size, &config.database_url[..config.database_url.find('@').unwrap_or(config.database_url.len())]);
 
         let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&config.database_url);
-        
+
         let pool = DeadpoolPool::builder(manager)
             .max_size(config.pool_size)
             .build()
@@ -94,7 +94,7 @@ impl PgPoolBb8 {
         info!("Creating PostgreSQL bb8 connection pool");
 
         let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(&config.database_url);
-        
+
         let pool = Bb8Pool::builder()
             .max_size(config.pool_size as u32)
             .connection_timeout(config.connect_timeout)
@@ -151,7 +151,7 @@ impl MysqlPool {
         info!("Creating MySQL connection pool");
 
         let manager = AsyncDieselConnectionManager::<AsyncMysqlConnection>::new(&config.database_url);
-        
+
         let pool = DeadpoolPool::builder(manager)
             .max_size(config.pool_size)
             .build()
