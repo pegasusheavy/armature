@@ -1,239 +1,174 @@
-[1m[33mwarning[0m[1m: unused import: `warn`[0m
-  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
-   [1m[94m|[0m
-[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-   [1m[94m|[0m                                        [1m[33m^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused import: `debug`[0m
-  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
-   [1m[94m|[0m                    [1m[33m^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
- [1m[94m--> [0marmature-queue/src/queue.rs:3:33
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-queue/src/worker.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-
-[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
 [1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.12s
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.74s
 [1m[92m     Running[0m benches/arena_benchmarks.rs (target/release/deps/arena_benchmarks-7ccb7fdc81f68cd4)
 Gnuplot not found, using plotters backend
 Benchmarking string_alloc/heap/single
 Benchmarking string_alloc/heap/single: Warming up for 3.0000 s
-Benchmarking string_alloc/heap/single: Collecting 100 samples in estimated 5.0000 s (374M iterations)
+Benchmarking string_alloc/heap/single: Collecting 100 samples in estimated 5.0000 s (373M iterations)
 Benchmarking string_alloc/heap/single: Analyzing
 string_alloc/heap/single
-                        time:   [13.369 ns 13.373 ns 13.377 ns]
-Found 7 outliers among 100 measurements (7.00%)
-  4 (4.00%) high mild
-  3 (3.00%) high severe
+                        time:   [13.387 ns 13.395 ns 13.405 ns]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) high mild
+  8 (8.00%) high severe
 Benchmarking string_alloc/arena/single
 Benchmarking string_alloc/arena/single: Warming up for 3.0000 s
-Benchmarking string_alloc/arena/single: Collecting 100 samples in estimated 5.0000 s (813M iterations)
+Benchmarking string_alloc/arena/single: Collecting 100 samples in estimated 5.0000 s (811M iterations)
 Benchmarking string_alloc/arena/single: Analyzing
 string_alloc/arena/single
-                        time:   [6.1314 ns 6.1372 ns 6.1435 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  1 (1.00%) high mild
-  3 (3.00%) high severe
+                        time:   [6.1350 ns 6.1420 ns 6.1501 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
 Benchmarking string_alloc/heap/multiple_10
 Benchmarking string_alloc/heap/multiple_10: Warming up for 3.0000 s
-Benchmarking string_alloc/heap/multiple_10: Collecting 100 samples in estimated 5.0004 s (12M iterations)
+Benchmarking string_alloc/heap/multiple_10: Collecting 100 samples in estimated 5.0008 s (12M iterations)
 Benchmarking string_alloc/heap/multiple_10: Analyzing
 string_alloc/heap/multiple_10
-                        time:   [410.86 ns 411.74 ns 412.61 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+                        time:   [403.40 ns 404.58 ns 406.05 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
 Benchmarking string_alloc/arena/multiple_10
 Benchmarking string_alloc/arena/multiple_10: Warming up for 3.0000 s
-Benchmarking string_alloc/arena/multiple_10: Collecting 100 samples in estimated 5.0010 s (13M iterations)
+Benchmarking string_alloc/arena/multiple_10: Collecting 100 samples in estimated 5.0018 s (13M iterations)
 Benchmarking string_alloc/arena/multiple_10: Analyzing
 string_alloc/arena/multiple_10
-                        time:   [391.62 ns 391.80 ns 391.99 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  1 (1.00%) high mild
-  3 (3.00%) high severe
+                        time:   [391.49 ns 391.68 ns 391.91 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
 
 Benchmarking map_alloc/hashmap/headers_16
 Benchmarking map_alloc/hashmap/headers_16: Warming up for 3.0000 s
-Benchmarking map_alloc/hashmap/headers_16: Collecting 100 samples in estimated 5.0031 s (8.1M iterations)
+Benchmarking map_alloc/hashmap/headers_16: Collecting 100 samples in estimated 5.0012 s (8.2M iterations)
 Benchmarking map_alloc/hashmap/headers_16: Analyzing
 map_alloc/hashmap/headers_16
-                        time:   [625.14 ns 626.74 ns 628.19 ns]
-Found 22 outliers among 100 measurements (22.00%)
-  18 (18.00%) low mild
-  3 (3.00%) high mild
-  1 (1.00%) high severe
+                        time:   [615.18 ns 616.33 ns 618.14 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
 Benchmarking map_alloc/arenamap/headers_16
 Benchmarking map_alloc/arenamap/headers_16: Warming up for 3.0000 s
-Benchmarking map_alloc/arenamap/headers_16: Collecting 100 samples in estimated 5.0002 s (100M iterations)
+Benchmarking map_alloc/arenamap/headers_16: Collecting 100 samples in estimated 5.0000 s (100M iterations)
 Benchmarking map_alloc/arenamap/headers_16: Analyzing
 map_alloc/arenamap/headers_16
-                        time:   [49.889 ns 49.914 ns 49.943 ns]
-Found 6 outliers among 100 measurements (6.00%)
-  5 (5.00%) high mild
-  1 (1.00%) high severe
+                        time:   [49.882 ns 49.926 ns 49.979 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  6 (6.00%) high severe
 
 Benchmarking request_create/http_request/typical
 Benchmarking request_create/http_request/typical: Warming up for 3.0000 s
-Benchmarking request_create/http_request/typical: Collecting 100 samples in estimated 5.0011 s (8.3M iterations)
+Benchmarking request_create/http_request/typical: Collecting 100 samples in estimated 5.0002 s (6.9M iterations)
 Benchmarking request_create/http_request/typical: Analyzing
 request_create/http_request/typical
-                        time:   [603.97 ns 604.94 ns 606.13 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high severe
+                        time:   [614.14 ns 615.21 ns 616.53 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
 Benchmarking request_create/arena_request/typical
 Benchmarking request_create/arena_request/typical: Warming up for 3.0000 s
-Benchmarking request_create/arena_request/typical: Collecting 100 samples in estimated 5.0002 s (65M iterations)
+Benchmarking request_create/arena_request/typical: Collecting 100 samples in estimated 5.0001 s (63M iterations)
 Benchmarking request_create/arena_request/typical: Analyzing
 request_create/arena_request/typical
-                        time:   [76.616 ns 76.704 ns 76.794 ns]
-Found 5 outliers among 100 measurements (5.00%)
+                        time:   [79.687 ns 79.875 ns 80.066 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) low mild
   4 (4.00%) high mild
-  1 (1.00%) high severe
 Benchmarking request_create/http_request/many_headers
 Benchmarking request_create/http_request/many_headers: Warming up for 3.0000 s
-Benchmarking request_create/http_request/many_headers: Collecting 100 samples in estimated 5.0102 s (1.5M iterations)
+Benchmarking request_create/http_request/many_headers: Collecting 100 samples in estimated 5.0093 s (1.5M iterations)
 Benchmarking request_create/http_request/many_headers: Analyzing
 request_create/http_request/many_headers
-                        time:   [3.3736 µs 3.3761 µs 3.3786 µs]
-Found 6 outliers among 100 measurements (6.00%)
+                        time:   [3.3706 µs 3.3727 µs 3.3752 µs]
+Found 7 outliers among 100 measurements (7.00%)
   4 (4.00%) high mild
-  2 (2.00%) high severe
+  3 (3.00%) high severe
 Benchmarking request_create/arena_request/many_headers
 Benchmarking request_create/arena_request/many_headers: Warming up for 3.0000 s
-Benchmarking request_create/arena_request/many_headers: Collecting 100 samples in estimated 5.0053 s (2.4M iterations)
+Benchmarking request_create/arena_request/many_headers: Collecting 100 samples in estimated 5.0097 s (2.4M iterations)
 Benchmarking request_create/arena_request/many_headers: Analyzing
 request_create/arena_request/many_headers
-                        time:   [2.0635 µs 2.0663 µs 2.0688 µs]
-Found 7 outliers among 100 measurements (7.00%)
-  5 (5.00%) high mild
-  2 (2.00%) high severe
+                        time:   [2.1540 µs 2.1590 µs 2.1646 µs]
+Found 16 outliers among 100 measurements (16.00%)
+  15 (15.00%) high mild
+  1 (1.00%) high severe
 
 Benchmarking request_lifecycle/heap/full_cycle
 Benchmarking request_lifecycle/heap/full_cycle: Warming up for 3.0000 s
-Benchmarking request_lifecycle/heap/full_cycle: Collecting 100 samples in estimated 5.0005 s (15M iterations)
+Benchmarking request_lifecycle/heap/full_cycle: Collecting 100 samples in estimated 5.0014 s (13M iterations)
 Benchmarking request_lifecycle/heap/full_cycle: Analyzing
 request_lifecycle/heap/full_cycle
-                        time:   [332.15 ns 332.33 ns 332.54 ns]
-                        thrpt:  [3.0072 Melem/s 3.0091 Melem/s 3.0107 Melem/s]
-Found 5 outliers among 100 measurements (5.00%)
+                        time:   [336.05 ns 336.88 ns 337.91 ns]
+                        thrpt:  [2.9593 Melem/s 2.9684 Melem/s 2.9758 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
   3 (3.00%) high mild
-  2 (2.00%) high severe
+  1 (1.00%) high severe
 Benchmarking request_lifecycle/arena/full_cycle
 Benchmarking request_lifecycle/arena/full_cycle: Warming up for 3.0000 s
-Benchmarking request_lifecycle/arena/full_cycle: Collecting 100 samples in estimated 5.0002 s (116M iterations)
+Benchmarking request_lifecycle/arena/full_cycle: Collecting 100 samples in estimated 5.0001 s (114M iterations)
 Benchmarking request_lifecycle/arena/full_cycle: Analyzing
 request_lifecycle/arena/full_cycle
-                        time:   [42.996 ns 43.041 ns 43.088 ns]
-                        thrpt:  [23.208 Melem/s 23.233 Melem/s 23.258 Melem/s]
-Found 3 outliers among 100 measurements (3.00%)
+                        time:   [44.025 ns 44.063 ns 44.119 ns]
+                        thrpt:  [22.666 Melem/s 22.695 Melem/s 22.714 Melem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  2 (2.00%) low mild
   2 (2.00%) high mild
-  1 (1.00%) high severe
+  4 (4.00%) high severe
 Benchmarking request_lifecycle/heap/100_requests
 Benchmarking request_lifecycle/heap/100_requests: Warming up for 3.0000 s
-Benchmarking request_lifecycle/heap/100_requests: Collecting 100 samples in estimated 5.0602 s (252k iterations)
+Benchmarking request_lifecycle/heap/100_requests: Collecting 100 samples in estimated 5.0466 s (227k iterations)
 Benchmarking request_lifecycle/heap/100_requests: Analyzing
 request_lifecycle/heap/100_requests
-                        time:   [19.690 µs 19.717 µs 19.762 µs]
-                        thrpt:  [5.0601 Melem/s 5.0717 Melem/s 5.0788 Melem/s]
-Found 6 outliers among 100 measurements (6.00%)
-  3 (3.00%) high mild
-  3 (3.00%) high severe
+                        time:   [19.922 µs 20.010 µs 20.126 µs]
+                        thrpt:  [4.9687 Melem/s 4.9974 Melem/s 5.0197 Melem/s]
 Benchmarking request_lifecycle/arena/100_requests
 Benchmarking request_lifecycle/arena/100_requests: Warming up for 3.0000 s
-Benchmarking request_lifecycle/arena/100_requests: Collecting 100 samples in estimated 5.0101 s (848k iterations)
+Benchmarking request_lifecycle/arena/100_requests: Collecting 100 samples in estimated 5.0210 s (848k iterations)
 Benchmarking request_lifecycle/arena/100_requests: Analyzing
 request_lifecycle/arena/100_requests
-                        time:   [6.0216 µs 6.0302 µs 6.0397 µs]
-                        thrpt:  [16.557 Melem/s 16.583 Melem/s 16.607 Melem/s]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+                        time:   [5.9577 µs 5.9666 µs 5.9759 µs]
+                        thrpt:  [16.734 Melem/s 16.760 Melem/s 16.785 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
 
 Benchmarking alloc_patterns/heap/many_small
 Benchmarking alloc_patterns/heap/many_small: Warming up for 3.0000 s
-Benchmarking alloc_patterns/heap/many_small: Collecting 100 samples in estimated 5.0212 s (853k iterations)
+Benchmarking alloc_patterns/heap/many_small: Collecting 100 samples in estimated 5.0072 s (848k iterations)
 Benchmarking alloc_patterns/heap/many_small: Analyzing
 alloc_patterns/heap/many_small
-                        time:   [5.8807 µs 5.8849 µs 5.8895 µs]
+                        time:   [5.9289 µs 5.9366 µs 5.9466 µs]
 Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+  2 (2.00%) high severe
 Benchmarking alloc_patterns/arena/many_small
 Benchmarking alloc_patterns/arena/many_small: Warming up for 3.0000 s
-Benchmarking alloc_patterns/arena/many_small: Collecting 100 samples in estimated 5.0122 s (1.3M iterations)
+Benchmarking alloc_patterns/arena/many_small: Collecting 100 samples in estimated 5.0137 s (1.3M iterations)
 Benchmarking alloc_patterns/arena/many_small: Analyzing
 alloc_patterns/arena/many_small
-                        time:   [3.9069 µs 3.9179 µs 3.9301 µs]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high mild
+                        time:   [3.8880 µs 3.8958 µs 3.9048 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) low mild
+  5 (5.00%) high mild
+  3 (3.00%) high severe
 Benchmarking alloc_patterns/heap/mixed_sizes
 Benchmarking alloc_patterns/heap/mixed_sizes: Warming up for 3.0000 s
 Benchmarking alloc_patterns/heap/mixed_sizes: Collecting 100 samples in estimated 5.0001 s (94M iterations)
 Benchmarking alloc_patterns/heap/mixed_sizes: Analyzing
 alloc_patterns/heap/mixed_sizes
-                        time:   [53.458 ns 53.594 ns 53.761 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high mild
-Benchmarking alloc_patterns/arena/mixed_sizes
-Benchmarking alloc_patterns/arena/mixed_sizes: Warming up for 3.0000 s
-Benchmarking alloc_patterns/arena/mixed_sizes: Collecting 100 samples in estimated 5.0001 s (84M iterations)
-Benchmarking alloc_patterns/arena/mixed_sizes: Analyzing
-alloc_patterns/arena/mixed_sizes
-                        time:   [59.174 ns 59.227 ns 59.280 ns]
-Found 5 outliers among 100 measurements (5.00%)
+                        time:   [53.324 ns 53.367 ns 53.411 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) low mild
   3 (3.00%) high mild
   2 (2.00%) high severe
+Benchmarking alloc_patterns/arena/mixed_sizes
+Benchmarking alloc_patterns/arena/mixed_sizes: Warming up for 3.0000 s
+Benchmarking alloc_patterns/arena/mixed_sizes: Collecting 100 samples in estimated 5.0001 s (83M iterations)
+Benchmarking alloc_patterns/arena/mixed_sizes: Analyzing
+alloc_patterns/arena/mixed_sizes
+                        time:   [59.918 ns 59.964 ns 60.021 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
 

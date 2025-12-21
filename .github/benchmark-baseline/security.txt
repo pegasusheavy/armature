@@ -1,114 +1,47 @@
-[1m[33mwarning[0m[1m: unused import: `warn`[0m
-  [1m[94m--> [0marmature-jwt/src/lib.rs:78:40
-   [1m[94m|[0m
-[1m[94m78[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-   [1m[94m|[0m                                        [1m[33m^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-jwt` (lib) generated 1 warning (run `cargo fix --lib -p armature-jwt` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused import: `debug`[0m
-  [1m[94m--> [0marmature-graphql/src/lib.rs:22:20
-   [1m[94m|[0m
-[1m[94m22[0m [1m[94m|[0m use armature_log::{debug, info};
-   [1m[94m|[0m                    [1m[33m^^^^^[0m
-   [1m[94m|[0m
-   [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-graphql` (lib) generated 1 warning (run `cargo fix --lib -p armature-graphql` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-cron/src/scheduler.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-cron` (lib) generated 1 warning (run `cargo fix --lib -p armature-cron` to apply 1 suggestion)
-[1m[33mwarning[0m[1m: unused imports: `trace` and `warn`[0m
- [1m[94m--> [0marmature-queue/src/queue.rs:3:33
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, info, trace, warn};
-  [1m[94m|[0m                                 [1m[33m^^^^^[0m  [1m[33m^^^^[0m
-  [1m[94m|[0m
-  [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: unused imports: `error` and `trace`[0m
- [1m[94m--> [0marmature-queue/src/worker.rs:3:27
-  [1m[94m|[0m
-[1m[94m3[0m [1m[94m|[0m use armature_log::{debug, error, info, trace, warn};
-  [1m[94m|[0m                           [1m[33m^^^^^[0m        [1m[33m^^^^^[0m
-
-[1m[33mwarning[0m: `armature-queue` (lib) generated 2 warnings (run `cargo fix --lib -p armature-queue` to apply 2 suggestions)
-[1m[33mwarning[0m[1m: unused import: `extensions::Extensions`[0m
-   [1m[94m--> [0marmature-testing/src/test_client.rs:3:75
-    [1m[94m|[0m
-  [1m[94m3[0m [1m[94m|[0m use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
-    [1m[94m|[0m                                                                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
-    [1m[94m|[0m
-[1m[96mhelp[0m: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
-   [1m[94m--> [0marmature-testing/src/lib.rs:181:1
-    [1m[94m|[0m
-[1m[94m181[0m [1m[94m|[0m mod test_client;
-    [1m[94m|[0m [1m[96m^^^^^^^^^^^^^^^^[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m[1m: field `pending` is never read[0m
-   [1m[94m--> [0marmature-compression/src/streaming.rs:439:5
-    [1m[94m|[0m
-[1m[94m437[0m [1m[94m|[0m pub struct AsyncStreamingCompressor {
-    [1m[94m|[0m            [1m[94m------------------------[0m [1m[94mfield in this struct[0m
-[1m[94m438[0m [1m[94m|[0m     inner: StreamingCompressor,
-[1m[94m439[0m [1m[94m|[0m     pending: BytesMut,
-    [1m[94m|[0m     [1m[33m^^^^^^^[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
-
-[1m[33mwarning[0m: `armature-testing` (lib) generated 1 warning (run `cargo fix --lib -p armature-testing` to apply 1 suggestion)
-[1m[33mwarning[0m: `armature-compression` (lib) generated 1 warning
 [1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.21s
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.72s
 [1m[92m     Running[0m benches/security_benchmarks.rs (target/release/deps/security_benchmarks-a0430363f2fad6f1)
 Gnuplot not found, using plotters backend
-{"timestamp":"2025-12-21T16:25:50.581355479+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+{"timestamp":"2025-12-21T17:22:04.343311063+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign
 Benchmarking jwt/sign: Warming up for 3.0000 s
-Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0012 s (6.4M iterations)
+Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0006 s (6.1M iterations)
 Benchmarking jwt/sign: Analyzing
-jwt/sign                time:   [788.21 ns 789.89 ns 791.79 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high severe
+jwt/sign                time:   [818.88 ns 819.88 ns 821.09 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  3 (3.00%) high severe
 Benchmarking jwt/verify
 Benchmarking jwt/verify: Warming up for 3.0000 s
-Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0019 s (2.2M iterations)
+Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0111 s (2.2M iterations)
 Benchmarking jwt/verify: Analyzing
-jwt/verify              time:   [2.2412 µs 2.2429 µs 2.2443 µs]
+jwt/verify              time:   [2.2641 µs 2.2664 µs 2.2686 µs]
 Found 2 outliers among 100 measurements (2.00%)
   1 (1.00%) high mild
   1 (1.00%) high severe
-{"timestamp":"2025-12-21T16:26:08.959908662+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+{"timestamp":"2025-12-21T17:22:22.878097670+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign_HS256
 Benchmarking jwt/sign_HS256: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0011 s (6.4M iterations)
+Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0018 s (6.3M iterations)
 Benchmarking jwt/sign_HS256: Analyzing
-jwt/sign_HS256          time:   [776.60 ns 777.72 ns 779.02 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high mild
-{"timestamp":"2025-12-21T16:26:17.395528204+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign_HS384
-Benchmarking jwt/sign_HS384: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0046 s (2.6M iterations)
-Benchmarking jwt/sign_HS384: Analyzing
-jwt/sign_HS384          time:   [1.8945 µs 1.8976 µs 1.9010 µs]
+jwt/sign_HS256          time:   [795.86 ns 796.58 ns 797.31 ns]
 Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high severe
-{"timestamp":"2025-12-21T16:26:26.555336238+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+{"timestamp":"2025-12-21T17:22:31.382597414+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign_HS384
+Benchmarking jwt/sign_HS384: Warming up for 3.0000 s
+Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0049 s (2.6M iterations)
+Benchmarking jwt/sign_HS384: Analyzing
+jwt/sign_HS384          time:   [1.8851 µs 1.8863 µs 1.8876 µs]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+{"timestamp":"2025-12-21T17:22:40.506164064+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign_HS512
 Benchmarking jwt/sign_HS512: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0049 s (2.6M iterations)
+Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0024 s (2.6M iterations)
 Benchmarking jwt/sign_HS512: Analyzing
-jwt/sign_HS512          time:   [1.9001 µs 1.9019 µs 1.9037 µs]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
+jwt/sign_HS512          time:   [1.9497 µs 1.9521 µs 1.9544 µs]
+Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high severe
 
