@@ -1,197 +1,195 @@
 [1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.13s
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 14.38s
 [1m[92m     Running[0m benches/simd_parser_benchmarks.rs (target/release/deps/simd_parser_benchmarks-15b9059b7659a73b)
 Gnuplot not found, using plotters backend
 Benchmarking query_string/small/simd
 Benchmarking query_string/small/simd: Warming up for 3.0000 s
-Benchmarking query_string/small/simd: Collecting 100 samples in estimated 5.0003 s (24M iterations)
+Benchmarking query_string/small/simd: Collecting 100 samples in estimated 5.0000 s (24M iterations)
 Benchmarking query_string/small/simd: Analyzing
-query_string/small/simd time:   [205.98 ns 206.08 ns 206.18 ns]
-                        thrpt:  [111.01 MiB/s 111.07 MiB/s 111.12 MiB/s]
-Found 6 outliers among 100 measurements (6.00%)
-  2 (2.00%) high mild
-  4 (4.00%) high severe
-Benchmarking query_string/small/naive
-Benchmarking query_string/small/naive: Warming up for 3.0000 s
-Benchmarking query_string/small/naive: Collecting 100 samples in estimated 5.0011 s (22M iterations)
-Benchmarking query_string/small/naive: Analyzing
-query_string/small/naive
-                        time:   [225.90 ns 226.12 ns 226.41 ns]
-                        thrpt:  [101.09 MiB/s 101.22 MiB/s 101.32 MiB/s]
-Found 8 outliers among 100 measurements (8.00%)
-  4 (4.00%) high mild
-  4 (4.00%) high severe
-Benchmarking query_string/medium/simd
-Benchmarking query_string/medium/simd: Warming up for 3.0000 s
-Benchmarking query_string/medium/simd: Collecting 100 samples in estimated 5.0017 s (8.7M iterations)
-Benchmarking query_string/medium/simd: Analyzing
-query_string/medium/simd
-                        time:   [571.96 ns 572.42 ns 573.09 ns]
-                        thrpt:  [236.30 MiB/s 236.58 MiB/s 236.77 MiB/s]
+query_string/small/simd time:   [205.56 ns 205.94 ns 206.53 ns]
+                        thrpt:  [110.82 MiB/s 111.14 MiB/s 111.35 MiB/s]
 Found 8 outliers among 100 measurements (8.00%)
   3 (3.00%) high mild
   5 (5.00%) high severe
+Benchmarking query_string/small/naive
+Benchmarking query_string/small/naive: Warming up for 3.0000 s
+Benchmarking query_string/small/naive: Collecting 100 samples in estimated 5.0004 s (22M iterations)
+Benchmarking query_string/small/naive: Analyzing
+query_string/small/naive
+                        time:   [224.91 ns 225.11 ns 225.36 ns]
+                        thrpt:  [101.56 MiB/s 101.68 MiB/s 101.77 MiB/s]
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+Benchmarking query_string/medium/simd
+Benchmarking query_string/medium/simd: Warming up for 3.0000 s
+Benchmarking query_string/medium/simd: Collecting 100 samples in estimated 5.0000 s (8.8M iterations)
+Benchmarking query_string/medium/simd: Analyzing
+query_string/medium/simd
+                        time:   [572.20 ns 572.38 ns 572.57 ns]
+                        thrpt:  [236.51 MiB/s 236.59 MiB/s 236.67 MiB/s]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
 Benchmarking query_string/medium/naive
 Benchmarking query_string/medium/naive: Warming up for 3.0000 s
-Benchmarking query_string/medium/naive: Collecting 100 samples in estimated 5.0018 s (5.1M iterations)
+Benchmarking query_string/medium/naive: Collecting 100 samples in estimated 5.0007 s (5.1M iterations)
 Benchmarking query_string/medium/naive: Analyzing
 query_string/medium/naive
-                        time:   [970.89 ns 971.44 ns 972.14 ns]
-                        thrpt:  [139.30 MiB/s 139.40 MiB/s 139.48 MiB/s]
-Found 7 outliers among 100 measurements (7.00%)
-  6 (6.00%) high mild
-  1 (1.00%) high severe
+                        time:   [974.55 ns 975.28 ns 976.30 ns]
+                        thrpt:  [138.71 MiB/s 138.85 MiB/s 138.96 MiB/s]
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) high mild
+  8 (8.00%) high severe
 Benchmarking query_string/large/simd
 Benchmarking query_string/large/simd: Warming up for 3.0000 s
-Benchmarking query_string/large/simd: Collecting 100 samples in estimated 5.0002 s (2.4M iterations)
+Benchmarking query_string/large/simd: Collecting 100 samples in estimated 5.0016 s (2.4M iterations)
 Benchmarking query_string/large/simd: Analyzing
-query_string/large/simd time:   [2.0833 µs 2.0858 µs 2.0891 µs]
-                        thrpt:  [214.10 MiB/s 214.44 MiB/s 214.69 MiB/s]
-Found 12 outliers among 100 measurements (12.00%)
-  2 (2.00%) high mild
-  10 (10.00%) high severe
-Benchmarking query_string/large/naive
-Benchmarking query_string/large/naive: Warming up for 3.0000 s
-Benchmarking query_string/large/naive: Collecting 100 samples in estimated 5.0032 s (1.9M iterations)
-Benchmarking query_string/large/naive: Analyzing
-query_string/large/naive
-                        time:   [2.6534 µs 2.6551 µs 2.6576 µs]
-                        thrpt:  [168.30 MiB/s 168.46 MiB/s 168.57 MiB/s]
+query_string/large/simd time:   [2.0917 µs 2.0928 µs 2.0944 µs]
+                        thrpt:  [213.56 MiB/s 213.72 MiB/s 213.83 MiB/s]
 Found 6 outliers among 100 measurements (6.00%)
   3 (3.00%) high mild
   3 (3.00%) high severe
+Benchmarking query_string/large/naive
+Benchmarking query_string/large/naive: Warming up for 3.0000 s
+Benchmarking query_string/large/naive: Collecting 100 samples in estimated 5.0007 s (1.9M iterations)
+Benchmarking query_string/large/naive: Analyzing
+query_string/large/naive
+                        time:   [2.6649 µs 2.6664 µs 2.6681 µs]
+                        thrpt:  [167.64 MiB/s 167.74 MiB/s 167.84 MiB/s]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
 
 Benchmarking url_decode/plain/simd
 Benchmarking url_decode/plain/simd: Warming up for 3.0000 s
-Benchmarking url_decode/plain/simd: Collecting 100 samples in estimated 5.0001 s (200M iterations)
+Benchmarking url_decode/plain/simd: Collecting 100 samples in estimated 5.0001 s (202M iterations)
 Benchmarking url_decode/plain/simd: Analyzing
-url_decode/plain/simd   time:   [24.922 ns 24.962 ns 25.011 ns]
-Found 7 outliers among 100 measurements (7.00%)
-  4 (4.00%) high mild
+url_decode/plain/simd   time:   [24.681 ns 24.707 ns 24.733 ns]
+Found 3 outliers among 100 measurements (3.00%)
   3 (3.00%) high severe
 Benchmarking url_decode/encoded/simd
 Benchmarking url_decode/encoded/simd: Warming up for 3.0000 s
-Benchmarking url_decode/encoded/simd: Collecting 100 samples in estimated 5.0002 s (71M iterations)
+Benchmarking url_decode/encoded/simd: Collecting 100 samples in estimated 5.0000 s (72M iterations)
 Benchmarking url_decode/encoded/simd: Analyzing
-url_decode/encoded/simd time:   [71.298 ns 71.350 ns 71.407 ns]
-Found 7 outliers among 100 measurements (7.00%)
-  3 (3.00%) low mild
-  2 (2.00%) high mild
-  2 (2.00%) high severe
+url_decode/encoded/simd time:   [70.927 ns 71.095 ns 71.227 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 Benchmarking url_decode/plus_encoded/simd
 Benchmarking url_decode/plus_encoded/simd: Warming up for 3.0000 s
-Benchmarking url_decode/plus_encoded/simd: Collecting 100 samples in estimated 5.0002 s (52M iterations)
+Benchmarking url_decode/plus_encoded/simd: Collecting 100 samples in estimated 5.0005 s (52M iterations)
 Benchmarking url_decode/plus_encoded/simd: Analyzing
 url_decode/plus_encoded/simd
-                        time:   [95.615 ns 95.712 ns 95.826 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
+                        time:   [95.696 ns 95.773 ns 95.855 ns]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
 
 Benchmarking uri_split/with_query/simd
 Benchmarking uri_split/with_query/simd: Warming up for 3.0000 s
-Benchmarking uri_split/with_query/simd: Collecting 100 samples in estimated 5.0000 s (943M iterations)
+Benchmarking uri_split/with_query/simd: Collecting 100 samples in estimated 5.0000 s (944M iterations)
 Benchmarking uri_split/with_query/simd: Analyzing
 uri_split/with_query/simd
-                        time:   [5.2995 ns 5.3154 ns 5.3387 ns]
-Found 8 outliers among 100 measurements (8.00%)
-  8 (8.00%) high severe
+                        time:   [5.3004 ns 5.3104 ns 5.3259 ns]
+Found 9 outliers among 100 measurements (9.00%)
+  6 (6.00%) high mild
+  3 (3.00%) high severe
 Benchmarking uri_split/with_query/naive
 Benchmarking uri_split/with_query/naive: Warming up for 3.0000 s
-Benchmarking uri_split/with_query/naive: Collecting 100 samples in estimated 5.0000 s (313M iterations)
+Benchmarking uri_split/with_query/naive: Collecting 100 samples in estimated 5.0000 s (312M iterations)
 Benchmarking uri_split/with_query/naive: Analyzing
 uri_split/with_query/naive
-                        time:   [15.918 ns 15.950 ns 15.983 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  2 (2.00%) low mild
-  3 (3.00%) high severe
+                        time:   [15.974 ns 16.007 ns 16.045 ns]
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) low mild
+  5 (5.00%) high mild
+  2 (2.00%) high severe
 Benchmarking uri_split/without_query/simd
 Benchmarking uri_split/without_query/simd: Warming up for 3.0000 s
 Benchmarking uri_split/without_query/simd: Collecting 100 samples in estimated 5.0000 s (1.1B iterations)
 Benchmarking uri_split/without_query/simd: Analyzing
 uri_split/without_query/simd
-                        time:   [4.6692 ns 4.6756 ns 4.6857 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
+                        time:   [4.6683 ns 4.6703 ns 4.6725 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  6 (6.00%) high mild
+  2 (2.00%) high severe
 Benchmarking uri_split/without_query/naive
 Benchmarking uri_split/without_query/naive: Warming up for 3.0000 s
-Benchmarking uri_split/without_query/naive: Collecting 100 samples in estimated 5.0001 s (435M iterations)
+Benchmarking uri_split/without_query/naive: Collecting 100 samples in estimated 5.0000 s (434M iterations)
 Benchmarking uri_split/without_query/naive: Analyzing
 uri_split/without_query/naive
-                        time:   [11.500 ns 11.506 ns 11.515 ns]
-Found 9 outliers among 100 measurements (9.00%)
-  3 (3.00%) high mild
-  6 (6.00%) high severe
+                        time:   [11.499 ns 11.514 ns 11.538 ns]
+Found 13 outliers among 100 measurements (13.00%)
+  6 (6.00%) high mild
+  7 (7.00%) high severe
 
 Benchmarking header_intern/common/content-type
 Benchmarking header_intern/common/content-type: Warming up for 3.0000 s
-Benchmarking header_intern/common/content-type: Collecting 100 samples in estimated 5.0004 s (69M iterations)
+Benchmarking header_intern/common/content-type: Collecting 100 samples in estimated 5.0004 s (64M iterations)
 Benchmarking header_intern/common/content-type: Analyzing
 header_intern/common/content-type
-                        time:   [72.264 ns 72.381 ns 72.516 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+                        time:   [78.193 ns 78.288 ns 78.406 ns]
+Found 10 outliers among 100 measurements (10.00%)
+  4 (4.00%) high mild
+  6 (6.00%) high severe
 Benchmarking header_intern/common/authorization
 Benchmarking header_intern/common/authorization: Warming up for 3.0000 s
-Benchmarking header_intern/common/authorization: Collecting 100 samples in estimated 5.0002 s (63M iterations)
+Benchmarking header_intern/common/authorization: Collecting 100 samples in estimated 5.0000 s (56M iterations)
 Benchmarking header_intern/common/authorization: Analyzing
 header_intern/common/authorization
-                        time:   [79.414 ns 79.478 ns 79.547 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  3 (3.00%) high mild
-  2 (2.00%) high severe
+                        time:   [89.789 ns 89.904 ns 90.026 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
 Benchmarking header_intern/custom/x-custom-header
 Benchmarking header_intern/custom/x-custom-header: Warming up for 3.0000 s
-Benchmarking header_intern/custom/x-custom-header: Collecting 100 samples in estimated 5.0003 s (54M iterations)
+Benchmarking header_intern/custom/x-custom-header: Collecting 100 samples in estimated 5.0001 s (51M iterations)
 Benchmarking header_intern/custom/x-custom-header: Analyzing
 header_intern/custom/x-custom-header
-                        time:   [90.016 ns 90.326 ns 90.767 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  3 (3.00%) high severe
+                        time:   [93.783 ns 93.957 ns 94.169 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 
 Benchmarking path_split/short/simd
 Benchmarking path_split/short/simd: Warming up for 3.0000 s
-Benchmarking path_split/short/simd: Collecting 100 samples in estimated 5.0002 s (128M iterations)
+Benchmarking path_split/short/simd: Collecting 100 samples in estimated 5.0002 s (130M iterations)
 Benchmarking path_split/short/simd: Analyzing
-path_split/short/simd   time:   [38.336 ns 38.408 ns 38.491 ns]
-Found 6 outliers among 100 measurements (6.00%)
-  3 (3.00%) high mild
-  3 (3.00%) high severe
-Benchmarking path_split/medium/simd
-Benchmarking path_split/medium/simd: Warming up for 3.0000 s
-Benchmarking path_split/medium/simd: Collecting 100 samples in estimated 5.0004 s (38M iterations)
-Benchmarking path_split/medium/simd: Analyzing
-path_split/medium/simd  time:   [122.39 ns 123.25 ns 124.47 ns]
+path_split/short/simd   time:   [38.445 ns 39.385 ns 40.471 ns]
 Found 7 outliers among 100 measurements (7.00%)
   2 (2.00%) high mild
   5 (5.00%) high severe
+Benchmarking path_split/medium/simd
+Benchmarking path_split/medium/simd: Warming up for 3.0000 s
+Benchmarking path_split/medium/simd: Collecting 100 samples in estimated 5.0002 s (42M iterations)
+Benchmarking path_split/medium/simd: Analyzing
+path_split/medium/simd  time:   [118.84 ns 119.87 ns 121.04 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  1 (1.00%) high mild
+  6 (6.00%) high severe
 Benchmarking path_split/long/simd
 Benchmarking path_split/long/simd: Warming up for 3.0000 s
-Benchmarking path_split/long/simd: Collecting 100 samples in estimated 5.0002 s (19M iterations)
+Benchmarking path_split/long/simd: Collecting 100 samples in estimated 5.0006 s (21M iterations)
 Benchmarking path_split/long/simd: Analyzing
-path_split/long/simd    time:   [247.14 ns 247.58 ns 248.14 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  2 (2.00%) high mild
-  3 (3.00%) high severe
+path_split/long/simd    time:   [238.21 ns 239.95 ns 242.14 ns]
+Found 12 outliers among 100 measurements (12.00%)
+  5 (5.00%) high mild
+  7 (7.00%) high severe
 
 Benchmarking path_params/single_param
 Benchmarking path_params/single_param: Warming up for 3.0000 s
-Benchmarking path_params/single_param: Collecting 100 samples in estimated 5.0007 s (34M iterations)
+Benchmarking path_params/single_param: Collecting 100 samples in estimated 5.0005 s (34M iterations)
 Benchmarking path_params/single_param: Analyzing
 path_params/single_param
-                        time:   [145.83 ns 145.91 ns 146.00 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  2 (2.00%) high mild
-  3 (3.00%) high severe
+                        time:   [145.46 ns 145.61 ns 145.80 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 Benchmarking path_params/multiple_params
 Benchmarking path_params/multiple_params: Warming up for 3.0000 s
-Benchmarking path_params/multiple_params: Collecting 100 samples in estimated 5.0007 s (12M iterations)
+Benchmarking path_params/multiple_params: Collecting 100 samples in estimated 5.0005 s (11M iterations)
 Benchmarking path_params/multiple_params: Analyzing
 path_params/multiple_params
-                        time:   [421.23 ns 421.57 ns 421.98 ns]
-Found 6 outliers among 100 measurements (6.00%)
-  4 (4.00%) high mild
+                        time:   [446.27 ns 447.05 ns 448.00 ns]
+Found 13 outliers among 100 measurements (13.00%)
+  11 (11.00%) high mild
   2 (2.00%) high severe
 

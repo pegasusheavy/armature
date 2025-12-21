@@ -1,5 +1,5 @@
 [1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 15.80s
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 15.88s
 [1m[92m     Running[0m benches/json_benchmarks.rs (target/release/deps/json_benchmarks-a54d5512df5dfbef)
 Gnuplot not found, using plotters backend
 
@@ -12,115 +12,114 @@ Benchmarking json_info/library_check
 Benchmarking json_info/library_check: Warming up for 3.0000 s
 Benchmarking json_info/library_check: Collecting 100 samples in estimated 5.0000 s (16B iterations)
 Benchmarking json_info/library_check: Analyzing
-json_info/library_check time:   [311.14 ps 312.29 ps 314.27 ps]
-Found 12 outliers among 100 measurements (12.00%)
-  5 (5.00%) high mild
-  7 (7.00%) high severe
+json_info/library_check time:   [311.11 ps 312.47 ps 314.88 ps]
+Found 10 outliers among 100 measurements (10.00%)
+  1 (1.00%) high mild
+  9 (9.00%) high severe
 
 Benchmarking json_serialize/small
 Benchmarking json_serialize/small: Warming up for 3.0000 s
 Benchmarking json_serialize/small: Collecting 100 samples in estimated 5.0003 s (69M iterations)
 Benchmarking json_serialize/small: Analyzing
-json_serialize/small    time:   [73.786 ns 74.286 ns 74.716 ns]
-                        thrpt:  [561.61 MiB/s 564.86 MiB/s 568.69 MiB/s]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high mild
+json_serialize/small    time:   [155.82 ns 160.72 ns 165.04 ns]
+                        thrpt:  [254.25 MiB/s 261.08 MiB/s 269.30 MiB/s]
+Found 8 outliers among 100 measurements (8.00%)
+  8 (8.00%) high mild
 Benchmarking json_serialize/medium
 Benchmarking json_serialize/medium: Warming up for 3.0000 s
-Benchmarking json_serialize/medium: Collecting 100 samples in estimated 5.0018 s (14M iterations)
+Benchmarking json_serialize/medium: Collecting 100 samples in estimated 5.0012 s (11M iterations)
 Benchmarking json_serialize/medium: Analyzing
-json_serialize/medium   time:   [361.49 ns 361.86 ns 362.20 ns]
-                        thrpt:  [616.12 MiB/s 616.70 MiB/s 617.33 MiB/s]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+json_serialize/medium   time:   [420.71 ns 426.18 ns 431.24 ns]
+                        thrpt:  [517.49 MiB/s 523.62 MiB/s 530.43 MiB/s]
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high mild
 Benchmarking json_serialize/large
 Benchmarking json_serialize/large: Warming up for 3.0000 s
-Benchmarking json_serialize/large: Collecting 100 samples in estimated 5.0071 s (1.1M iterations)
+Benchmarking json_serialize/large: Collecting 100 samples in estimated 5.0179 s (1.1M iterations)
 Benchmarking json_serialize/large: Analyzing
-json_serialize/large    time:   [4.5471 µs 4.5516 µs 4.5555 µs]
-                        thrpt:  [748.20 MiB/s 748.84 MiB/s 749.59 MiB/s]
-Found 1 outliers among 100 measurements (1.00%)
+json_serialize/large    time:   [4.5139 µs 4.5186 µs 4.5232 µs]
+                        thrpt:  [753.54 MiB/s 754.32 MiB/s 755.09 MiB/s]
+Found 18 outliers among 100 measurements (18.00%)
+  17 (17.00%) low mild
   1 (1.00%) high severe
 
 Benchmarking json_deserialize/small
 Benchmarking json_deserialize/small: Warming up for 3.0000 s
-Benchmarking json_deserialize/small: Collecting 100 samples in estimated 5.0003 s (46M iterations)
+Benchmarking json_deserialize/small: Collecting 100 samples in estimated 5.0004 s (46M iterations)
 Benchmarking json_deserialize/small: Analyzing
-json_deserialize/small  time:   [108.22 ns 108.46 ns 108.73 ns]
-                        thrpt:  [385.94 MiB/s 386.89 MiB/s 387.73 MiB/s]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+json_deserialize/small  time:   [108.77 ns 109.13 ns 109.55 ns]
+                        thrpt:  [383.04 MiB/s 384.52 MiB/s 385.80 MiB/s]
 Benchmarking json_deserialize/medium
 Benchmarking json_deserialize/medium: Warming up for 3.0000 s
-Benchmarking json_deserialize/medium: Collecting 100 samples in estimated 5.0027 s (5.4M iterations)
+Benchmarking json_deserialize/medium: Collecting 100 samples in estimated 5.0037 s (5.3M iterations)
 Benchmarking json_deserialize/medium: Analyzing
-json_deserialize/medium time:   [939.38 ns 940.85 ns 942.74 ns]
-                        thrpt:  [236.71 MiB/s 237.19 MiB/s 237.56 MiB/s]
-Found 1 outliers among 100 measurements (1.00%)
+json_deserialize/medium time:   [926.23 ns 926.99 ns 927.84 ns]
+                        thrpt:  [240.52 MiB/s 240.74 MiB/s 240.93 MiB/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
   1 (1.00%) high severe
 Benchmarking json_deserialize/large
 Benchmarking json_deserialize/large: Warming up for 3.0000 s
-Benchmarking json_deserialize/large: Collecting 100 samples in estimated 5.0254 s (500k iterations)
+Benchmarking json_deserialize/large: Collecting 100 samples in estimated 5.0250 s (561k iterations)
 Benchmarking json_deserialize/large: Analyzing
-json_deserialize/large  time:   [10.018 µs 10.063 µs 10.126 µs]
-                        thrpt:  [336.61 MiB/s 338.71 MiB/s 340.23 MiB/s]
-Found 4 outliers among 100 measurements (4.00%)
-  4 (4.00%) high severe
+json_deserialize/large  time:   [8.8210 µs 8.8334 µs 8.8487 µs]
+                        thrpt:  [385.19 MiB/s 385.86 MiB/s 386.40 MiB/s]
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
 
 Benchmarking json_roundtrip/small
 Benchmarking json_roundtrip/small: Warming up for 3.0000 s
-Benchmarking json_roundtrip/small: Collecting 100 samples in estimated 5.0009 s (26M iterations)
+Benchmarking json_roundtrip/small: Collecting 100 samples in estimated 5.0005 s (28M iterations)
 Benchmarking json_roundtrip/small: Analyzing
-json_roundtrip/small    time:   [185.64 ns 187.06 ns 188.92 ns]
-                        thrpt:  [444.22 MiB/s 448.66 MiB/s 452.07 MiB/s]
+json_roundtrip/small    time:   [179.09 ns 179.27 ns 179.45 ns]
+                        thrpt:  [467.68 MiB/s 468.15 MiB/s 468.60 MiB/s]
 Found 6 outliers among 100 measurements (6.00%)
-  6 (6.00%) high severe
+  1 (1.00%) low mild
+  2 (2.00%) high mild
+  3 (3.00%) high severe
 Benchmarking json_roundtrip/medium
 Benchmarking json_roundtrip/medium: Warming up for 3.0000 s
-Benchmarking json_roundtrip/medium: Collecting 100 samples in estimated 5.0012 s (3.7M iterations)
+Benchmarking json_roundtrip/medium: Collecting 100 samples in estimated 5.0015 s (3.6M iterations)
 Benchmarking json_roundtrip/medium: Analyzing
-json_roundtrip/medium   time:   [1.3591 µs 1.3604 µs 1.3620 µs]
-                        thrpt:  [327.71 MiB/s 328.07 MiB/s 328.39 MiB/s]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
+json_roundtrip/medium   time:   [1.3857 µs 1.3878 µs 1.3903 µs]
+                        thrpt:  [321.01 MiB/s 321.61 MiB/s 322.08 MiB/s]
+Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high severe
 Benchmarking json_roundtrip/large
 Benchmarking json_roundtrip/large: Warming up for 3.0000 s
-Benchmarking json_roundtrip/large: Collecting 100 samples in estimated 5.0244 s (338k iterations)
+Benchmarking json_roundtrip/large: Collecting 100 samples in estimated 5.0724 s (333k iterations)
 Benchmarking json_roundtrip/large: Analyzing
-json_roundtrip/large    time:   [14.750 µs 14.816 µs 14.937 µs]
-                        thrpt:  [456.38 MiB/s 460.09 MiB/s 462.15 MiB/s]
-Found 3 outliers among 100 measurements (3.00%)
-  1 (1.00%) high mild
-  2 (2.00%) high severe
+json_roundtrip/large    time:   [15.200 µs 15.219 µs 15.239 µs]
+                        thrpt:  [447.33 MiB/s 447.93 MiB/s 448.47 MiB/s]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
 
 Benchmarking http_json/request_parse
 Benchmarking http_json/request_parse: Warming up for 3.0000 s
-Benchmarking http_json/request_parse: Collecting 100 samples in estimated 5.0040 s (5.0M iterations)
+Benchmarking http_json/request_parse: Collecting 100 samples in estimated 5.0011 s (5.0M iterations)
 Benchmarking http_json/request_parse: Analyzing
-http_json/request_parse time:   [1.0305 µs 1.0334 µs 1.0358 µs]
-                        thrpt:  [215.44 MiB/s 215.95 MiB/s 216.56 MiB/s]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+http_json/request_parse time:   [1.0084 µs 1.0114 µs 1.0149 µs]
+                        thrpt:  [219.88 MiB/s 220.64 MiB/s 221.30 MiB/s]
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) high mild
+  4 (4.00%) high severe
 Benchmarking http_json/response_json
 Benchmarking http_json/response_json: Warming up for 3.0000 s
-Benchmarking http_json/response_json: Collecting 100 samples in estimated 5.0002 s (11M iterations)
+Benchmarking http_json/response_json: Collecting 100 samples in estimated 5.0015 s (11M iterations)
 Benchmarking http_json/response_json: Analyzing
-http_json/response_json time:   [452.45 ns 452.67 ns 452.91 ns]
-                        thrpt:  [492.73 MiB/s 492.98 MiB/s 493.23 MiB/s]
-Found 7 outliers among 100 measurements (7.00%)
-  1 (1.00%) low mild
-  3 (3.00%) high mild
-  3 (3.00%) high severe
+http_json/response_json time:   [479.27 ns 482.29 ns 484.93 ns]
+                        thrpt:  [460.19 MiB/s 462.71 MiB/s 465.62 MiB/s]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) low mild
+  1 (1.00%) high severe
 Benchmarking http_json/full_cycle
 Benchmarking http_json/full_cycle: Warming up for 3.0000 s
-Benchmarking http_json/full_cycle: Collecting 100 samples in estimated 5.0064 s (2.7M iterations)
+Benchmarking http_json/full_cycle: Collecting 100 samples in estimated 5.0002 s (2.6M iterations)
 Benchmarking http_json/full_cycle: Analyzing
-http_json/full_cycle    time:   [1.9148 µs 1.9196 µs 1.9249 µs]
-                        thrpt:  [115.93 MiB/s 116.25 MiB/s 116.55 MiB/s]
+http_json/full_cycle    time:   [1.8849 µs 1.8860 µs 1.8870 µs]
+                        thrpt:  [118.26 MiB/s 118.32 MiB/s 118.39 MiB/s]
 Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+  2 (2.00%) high severe
 
