@@ -21,7 +21,7 @@ path = "axum_bench.rs"
 # Armature (full path with needed features)
 armature = { path = "../.." }
 armature-core = { path = "../../armature-core" }
-armature-macro = { path = "../../armature-macro" }
+armature-proc-macro = { path = "../../armature-proc-macro" }
 async-trait = "0.1"
 
 # Actix-web

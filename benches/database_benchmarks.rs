@@ -23,19 +23,22 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub struct World {
     pub id: i32,
-    pub random_number: i32}
+    pub random_number: i32,
+}
 
 /// Fortune row from TechEmpower benchmark
 #[derive(Debug, Clone)]
 pub struct Fortune {
     pub id: i32,
-    pub message: String}
+    pub message: String,
+}
 
 /// Mock database connection pool
 pub struct MockPool {
     worlds: Vec<World>,
     fortunes: Vec<Fortune>,
-    query_count: AtomicU64}
+    query_count: AtomicU64,
+}
 
 impl MockPool {
     pub fn new() -> Self {
@@ -43,7 +46,8 @@ impl MockPool {
         let worlds: Vec<World> = (1..=10000)
             .map(|id| World {
                 id,
-                random_number: fastrand::i32(1..=10000)})
+                random_number: fastrand::i32(1..=10000),
+            })
             .collect();
 
         // Pre-populate fortunes
@@ -65,7 +69,8 @@ impl MockPool {
         Self {
             worlds,
             fortunes,
-            query_count: AtomicU64::new(0)}
+            query_count: AtomicU64::new(0),
+        }
     }
 
     /// Single query - fetch one world by ID
@@ -130,13 +135,15 @@ impl Default for MockPool {
 /// Async database pool that simulates network latency
 pub struct AsyncMockPool {
     inner: MockPool,
-    latency_us: u64}
+    latency_us: u64,
+}
 
 impl AsyncMockPool {
     pub fn new(latency_us: u64) -> Self {
         Self {
             inner: MockPool::new(),
-            latency_us}
+            latency_us,
+        }
     }
 
     /// Simulate network latency
@@ -272,7 +279,8 @@ fn fortunes_benchmark(c: &mut Criterion) {
             // Add the additional fortune (TechEmpower spec)
             fortunes.push(Fortune {
                 id: 0,
-                message: "Additional fortune added at request time.".to_string()});
+                message: "Additional fortune added at request time.".to_string(),
+            });
             fortunes.sort_by(|a, b| a.message.cmp(&b.message));
             black_box(fortunes)
         });
@@ -284,7 +292,8 @@ fn fortunes_benchmark(c: &mut Criterion) {
             let mut fortunes = pool.get_fortunes();
             fortunes.push(Fortune {
                 id: 0,
-                message: "Additional fortune added at request time.".to_string()});
+                message: "Additional fortune added at request time.".to_string(),
+            });
             fortunes.sort_by(|a, b| a.message.cmp(&b.message));
 
             // Simple HTML rendering
@@ -303,7 +312,8 @@ fn fortunes_benchmark(c: &mut Criterion) {
                         '&' => html.push_str("&amp;"),
                         '"' => html.push_str("&quot;"),
                         '\'' => html.push_str("&#x27;"),
-                        _ => html.push(c)}
+                        _ => html.push(c),
+                    }
                 }
                 html.push_str("</td></tr>");
             }

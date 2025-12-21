@@ -37,7 +37,7 @@
 //! ## Using the `#[catch]` Decorator
 //!
 //! ```ignore
-//! use armature_macro::catch;
+//! use armature_proc_macro::catch;
 //!
 //! #[catch(NotFound)]
 //! async fn handle_not_found(error: &Error, ctx: &ExceptionContext) -> HttpResponse {

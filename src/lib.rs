@@ -7,7 +7,7 @@
 pub use armature_core::*;
 
 // Re-export procedural macros
-pub use armature_macro::{
+pub use armature_proc_macro::{
     Body, Param, Query, controller, delete, get, injectable, module, patch, post, put, routes,
 };
 

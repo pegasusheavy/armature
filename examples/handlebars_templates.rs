@@ -9,7 +9,7 @@
 
 use armature_core::*;
 use armature_core::handler::from_legacy_handler;
-use armature_macro::*;
+use armature_proc_macro::*;
 use handlebars::Handlebars;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

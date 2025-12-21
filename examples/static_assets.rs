@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use armature_core::*;
 use armature_core::handler::from_legacy_handler;
-use armature_macro::*;
+use armature_proc_macro::*;
 use std::sync::Arc;
 use std::time::Duration;
 

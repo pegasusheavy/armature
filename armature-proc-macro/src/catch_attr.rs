@@ -6,7 +6,7 @@
 //! # Examples
 //!
 //! ```ignore
-//! use armature_macro::catch;
+//! use armature_proc_macro::catch;
 //!
 //! // Catch all errors
 //! #[catch]
