@@ -275,14 +275,13 @@ impl WriteCoalescer {
         }
 
         // Timeout (if enabled)
-        if self.config.flush_timeout_us > 0 {
-            if let Some(first_time) = self.first_write_time {
+        if self.config.flush_timeout_us > 0
+            && let Some(first_time) = self.first_write_time {
                 let elapsed_us = first_time.elapsed().as_micros() as u64;
                 if elapsed_us >= self.config.flush_timeout_us {
                     return true;
                 }
             }
-        }
 
         false
     }
@@ -592,22 +591,16 @@ impl ConnectionWriteBuffer {
     /// Write data to the buffer.
     #[inline]
     pub fn write(&mut self, data: &[u8]) {
-        match self.coalescer.write(data) {
-            WriteResult::Bypass(bytes) => {
-                self.pending_large.push(bytes);
-            }
-            _ => {}
+        if let WriteResult::Bypass(bytes) = self.coalescer.write(data) {
+            self.pending_large.push(bytes);
         }
     }
 
     /// Write owned bytes.
     #[inline]
     pub fn write_bytes(&mut self, data: Bytes) {
-        match self.coalescer.write_bytes(data) {
-            WriteResult::Bypass(bytes) => {
-                self.pending_large.push(bytes);
-            }
-            _ => {}
+        if let WriteResult::Bypass(bytes) = self.coalescer.write_bytes(data) {
+            self.pending_large.push(bytes);
         }
     }
 
@@ -914,7 +907,7 @@ mod tests {
         assert_eq!(slices.len(), 2); // headers + body
 
         let combined = coalescer.take_combined();
-        assert!(combined.len() > 0);
+        assert!(!combined.is_empty());
     }
 
     #[test]

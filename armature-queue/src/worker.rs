@@ -1,6 +1,6 @@
 //! Worker implementation for processing jobs.
 
-use armature_log::{debug, error, info, trace, warn};
+use armature_log::{debug, info, warn};
 use crate::error::{QueueError, QueueResult};
 use crate::job::{Job, JobId};
 use crate::queue::Queue;

@@ -198,11 +198,10 @@ impl RuntimeConfig {
             Builder::new_multi_thread()
         };
 
-        if let Some(threads) = self.worker_threads {
-            if !self.current_thread {
+        if let Some(threads) = self.worker_threads
+            && !self.current_thread {
                 builder.worker_threads(threads);
             }
-        }
 
         builder.thread_name(&self.thread_name);
 
@@ -244,22 +243,19 @@ impl RuntimeConfig {
 
 /// Controls when tasks should be spawned vs inlined.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum SpawnPolicy {
     /// Always spawn a new task (default Tokio behavior)
     Always,
     /// Never spawn, inline everything (single-threaded)
     Never,
     /// Spawn only if handler duration exceeds threshold
+    #[default]
     Adaptive,
     /// Spawn based on current load
     LoadBased,
 }
 
-impl Default for SpawnPolicy {
-    fn default() -> Self {
-        Self::Adaptive
-    }
-}
 
 /// Configuration for task spawning decisions.
 #[derive(Debug, Clone)]

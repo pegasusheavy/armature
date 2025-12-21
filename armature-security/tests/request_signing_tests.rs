@@ -2,7 +2,6 @@
 
 use armature_core::HttpRequest;
 use armature_security::request_signing::{RequestSigner, RequestVerifier, SigningError};
-use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[test]

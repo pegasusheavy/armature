@@ -131,6 +131,7 @@ impl StreamingConfig {
 }
 
 /// Internal encoder state.
+#[allow(clippy::large_enum_variant)] // Boxing adds complexity, variant is stack-allocated once
 enum EncoderState {
     None,
     #[cfg(feature = "gzip")]
@@ -436,6 +437,7 @@ impl CompressionStats {
 /// Wraps a StreamingCompressor for use with async streams.
 pub struct AsyncStreamingCompressor {
     inner: StreamingCompressor,
+    #[allow(dead_code)] // Reserved for buffering partial data
     pending: BytesMut,
 }
 

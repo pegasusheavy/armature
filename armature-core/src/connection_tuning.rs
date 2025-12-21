@@ -31,6 +31,7 @@ pub type StreamWeight = u8;
 
 /// Stream dependency for HTTP/2 priority tree.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub struct StreamDependency {
     /// Parent stream ID (0 = root)
     pub stream_id: u32,
@@ -38,14 +39,6 @@ pub struct StreamDependency {
     pub exclusive: bool,
 }
 
-impl Default for StreamDependency {
-    fn default() -> Self {
-        Self {
-            stream_id: 0,
-            exclusive: false,
-        }
-    }
-}
 
 /// HTTP/2 stream priority configuration.
 #[derive(Debug, Clone)]
@@ -630,6 +623,7 @@ impl TcpKeepalive {
 
 /// Keep-alive policy for connection management.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum KeepAlivePolicy {
     /// Always keep connections alive until timeout
     Always,
@@ -638,14 +632,10 @@ pub enum KeepAlivePolicy {
     /// Close after each request (HTTP/1.0 behavior)
     Never,
     /// Adaptive based on server load
+    #[default]
     Adaptive,
 }
 
-impl Default for KeepAlivePolicy {
-    fn default() -> Self {
-        Self::Adaptive
-    }
-}
 
 /// Connection keep-alive configuration.
 #[derive(Debug, Clone)]
@@ -790,18 +780,16 @@ impl ConnectionTracker {
         }
 
         // Check max requests
-        if let Some(max) = config.max_requests {
-            if self.requests >= max {
+        if let Some(max) = config.max_requests
+            && self.requests >= max {
                 return false;
             }
-        }
 
         // Check max age
-        if let Some(max_age) = config.max_age {
-            if self.age() > max_age {
+        if let Some(max_age) = config.max_age
+            && self.age() > max_age {
                 return false;
             }
-        }
 
         true
     }

@@ -202,10 +202,10 @@ impl ReadBufferConfig {
             SMALL_BUFFER // Most JSON is < 4KB
         } else if content_type.contains("text/html") {
             MEDIUM_BUFFER // HTML can be larger
-        } else if content_type.contains("multipart/form-data") {
-            LARGE_BUFFER // File uploads
-        } else if content_type.contains("application/octet-stream") {
-            LARGE_BUFFER // Binary data
+        } else if content_type.contains("multipart/form-data")
+            || content_type.contains("application/octet-stream")
+        {
+            LARGE_BUFFER // File uploads and binary data
         } else if content_type.contains("text/plain") {
             SMALL_BUFFER
         } else if content_type.contains("application/x-www-form-urlencoded") {
@@ -871,7 +871,7 @@ mod tests {
 
         let recommended = tracker.recommended_buffer_size();
         // Should be SMALL or MEDIUM for typical API traffic
-        assert!(recommended >= TINY_BUFFER && recommended <= LARGE_BUFFER);
+        assert!((TINY_BUFFER..=LARGE_BUFFER).contains(&recommended));
     }
 
     #[test]

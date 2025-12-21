@@ -230,7 +230,7 @@ impl AuditBackend for MultiBackend {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{AuditSeverity, AuditStatus};
+    
 
     #[tokio::test]
     async fn test_memory_backend() {

@@ -34,7 +34,7 @@ let mediator = Mediator::new()
 // Send command
 mediator.send(CreateUser { name: "Alice".into() }).await?;
 
-// Execute query  
+// Execute query
 let user = mediator.query(GetUser { id: "123".into() }).await?;
 ```
 

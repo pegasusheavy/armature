@@ -385,7 +385,7 @@ pub fn num_physical_cpus() -> usize {
     // This is a heuristic; for accurate info, use platform-specific APIs
     let total = num_cpus();
     // Assume hyper-threading if > 4 cores and even number
-    if total > 4 && total % 2 == 0 {
+    if total > 4 && total.is_multiple_of(2) {
         total / 2
     } else {
         total
@@ -1134,11 +1134,10 @@ where
     /// If at capacity, evicts a random entry.
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         // Simple eviction: remove first entry if at capacity
-        if self.data.len() >= self.max_entries && !self.data.contains_key(&key) {
-            if let Some(first_key) = self.data.keys().next().cloned() {
+        if self.data.len() >= self.max_entries && !self.data.contains_key(&key)
+            && let Some(first_key) = self.data.keys().next().cloned() {
                 self.data.remove(&first_key);
             }
-        }
         self.data.insert(key, value)
     }
 

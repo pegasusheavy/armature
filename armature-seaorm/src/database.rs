@@ -2,7 +2,7 @@
 
 use crate::{DatabaseConfig, SeaOrmError, SeaOrmResult};
 use armature_log::{debug, info};
-use sea_orm::DatabaseConnection;
+use sea_orm::{ConnectionTrait, DatabaseConnection};
 use std::sync::Arc;
 
 /// Database wrapper providing connection management.

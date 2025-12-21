@@ -1,19 +1,22 @@
 //! Query builder utilities for SeaORM.
 
-use sea_orm::{
-    sea_query::{Cond, IntoCondition},
-    ColumnTrait, Condition, EntityTrait, QueryFilter, QueryOrder, QuerySelect, Select,
-};
+use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, QueryOrder, QuerySelect, Select};
 use serde::Deserialize;
 
 /// Query builder for common query patterns.
-#[derive(Debug, Clone, Default)]
 pub struct QueryBuilder<E: EntityTrait> {
     select: Option<Select<E>>,
     conditions: Vec<Box<dyn Fn(Condition) -> Condition + Send + Sync>>,
+    #[allow(dead_code)] // Reserved for future use
     orders: Vec<(String, SortOrder)>,
     limit: Option<u64>,
     offset: Option<u64>,
+}
+
+impl<E: EntityTrait> Default for QueryBuilder<E> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// Sort order.
@@ -113,11 +116,11 @@ pub trait QueryExt<E: EntityTrait>: Sized {
     ) -> Self;
 
     /// Add a where clause for BETWEEN.
-    fn where_between<C: ColumnTrait>(
+    fn where_between<C: ColumnTrait, V: Into<sea_orm::Value>>(
         self,
         column: C,
-        low: impl Into<sea_orm::Value>,
-        high: impl Into<sea_orm::Value>,
+        low: V,
+        high: V,
     ) -> Self;
 
     /// Order by ascending.
@@ -172,11 +175,11 @@ impl<E: EntityTrait> QueryExt<E> for Select<E> {
         self.filter(column.is_in(values))
     }
 
-    fn where_between<C: ColumnTrait>(
+    fn where_between<C: ColumnTrait, V: Into<sea_orm::Value>>(
         self,
         column: C,
-        low: impl Into<sea_orm::Value>,
-        high: impl Into<sea_orm::Value>,
+        low: V,
+        high: V,
     ) -> Self {
         self.filter(column.between(low, high))
     }

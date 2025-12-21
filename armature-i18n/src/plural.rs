@@ -27,7 +27,7 @@ pub enum PluralCategory {
 
 impl PluralCategory {
     /// Parse from string.
-    pub fn from_str(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "zero" => Ok(Self::Zero),
             "one" => Ok(Self::One),
@@ -49,6 +49,14 @@ impl PluralCategory {
             Self::Many => "many",
             Self::Other => "other",
         }
+    }
+}
+
+impl std::str::FromStr for PluralCategory {
+    type Err = I18nError;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Self::parse(s)
     }
 }
 
@@ -390,9 +398,9 @@ mod tests {
 
     #[test]
     fn test_plural_category_parse() {
-        assert_eq!(PluralCategory::from_str("one").unwrap(), PluralCategory::One);
-        assert_eq!(PluralCategory::from_str("OTHER").unwrap(), PluralCategory::Other);
-        assert!(PluralCategory::from_str("invalid").is_err());
+        assert_eq!(PluralCategory::parse("one").unwrap(), PluralCategory::One);
+        assert_eq!(PluralCategory::parse("OTHER").unwrap(), PluralCategory::Other);
+        assert!(PluralCategory::parse("invalid").is_err());
     }
 }
 

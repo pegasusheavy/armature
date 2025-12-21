@@ -49,7 +49,7 @@ impl MessageBundle {
                     // Plural forms
                     for (form, msg) in obj {
                         if let serde_json::Value::String(s) = msg {
-                            if let Ok(category) = PluralCategory::from_str(&form) {
+                            if let Ok(category) = PluralCategory::parse(&form) {
                                 bundle.plurals.insert((key.clone(), category), s);
                             } else {
                                 // Nested key
@@ -165,7 +165,7 @@ impl Messages {
             let entry = entry?;
             let path = entry.path();
 
-            if path.extension().map_or(false, |ext| ext == "json") {
+            if path.extension().is_some_and(|ext| ext == "json") {
                 let stem = path.file_stem()
                     .and_then(|s| s.to_str())
                     .ok_or_else(|| I18nError::ParseError("Invalid filename".to_string()))?;
@@ -237,27 +237,23 @@ impl I18n {
         let messages = self.messages.read();
 
         // Try exact locale
-        if let Some(bundle) = messages.get_bundle(locale) {
-            if let Some(msg) = bundle.get(key) {
+        if let Some(bundle) = messages.get_bundle(locale)
+            && let Some(msg) = bundle.get(key) {
                 return msg.to_string();
             }
-        }
 
         // Try fallback locale
-        if let Some(ref fallback) = self.fallback_locale {
-            if let Some(bundle) = messages.get_bundle(fallback) {
-                if let Some(msg) = bundle.get(key) {
+        if let Some(ref fallback) = self.fallback_locale
+            && let Some(bundle) = messages.get_bundle(fallback)
+                && let Some(msg) = bundle.get(key) {
                     return msg.to_string();
                 }
-            }
-        }
 
         // Try default locale
-        if let Some(bundle) = messages.get_bundle(&self.default_locale) {
-            if let Some(msg) = bundle.get(key) {
+        if let Some(bundle) = messages.get_bundle(&self.default_locale)
+            && let Some(msg) = bundle.get(key) {
                 return msg.to_string();
             }
-        }
 
         // Return key as fallback
         key.to_string()

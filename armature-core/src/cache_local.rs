@@ -332,13 +332,12 @@ impl<T> LocalStateCache<T> {
         unsafe {
             let cached_version = *self.version.get();
 
-            if cached_version == current_version {
-                if let Some(ref value) = *self.value.get() {
+            if cached_version == current_version
+                && let Some(ref value) = *self.value.get() {
                     *self.hits.get() += 1;
                     LOCALITY_STATS.record_cache_hit();
                     return value;
                 }
-            }
 
             // Cache miss - refresh
             *self.misses.get() += 1;
@@ -569,7 +568,7 @@ pub fn prefetch_ptr(ptr: *const u8, level: PrefetchLevel) {
 #[inline]
 pub fn prefetch_range<T>(slice: &[T], level: PrefetchLevel) {
     let ptr = slice.as_ptr() as *const u8;
-    let len = slice.len() * std::mem::size_of::<T>();
+    let len = std::mem::size_of_val(slice);
 
     for offset in (0..len).step_by(CACHE_LINE_SIZE) {
         prefetch_ptr(unsafe { ptr.add(offset) }, level);

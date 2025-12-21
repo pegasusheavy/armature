@@ -124,14 +124,11 @@ pub fn assert_html_content_type(response: &TestResponse) {
 mod tests {
     use super::*;
     use armature_core::HttpResponse;
-    use std::collections::HashMap;
 
     fn create_test_response(status: u16, body: &str) -> TestResponse {
-        TestResponse::Success(HttpResponse {
-            status,
-            headers: HashMap::new(),
-            body: body.as_bytes().to_vec(),
-        })
+        let mut response = HttpResponse::new(status);
+        response.body = body.as_bytes().to_vec();
+        TestResponse::Success(response)
     }
 
     #[test]

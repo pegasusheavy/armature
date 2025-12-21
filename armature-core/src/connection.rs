@@ -75,8 +75,10 @@ use std::time::{Duration, Instant};
 /// enabling branchless table lookups via direct indexing.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Default)]
 pub enum ConnectionState {
     /// Connection slot is idle/available
+    #[default]
     Idle = 0,
     /// TCP connection established, awaiting first request
     Connected = 1,
@@ -140,11 +142,6 @@ impl ConnectionState {
     }
 }
 
-impl Default for ConnectionState {
-    fn default() -> Self {
-        Self::Idle
-    }
-}
 
 // ============================================================================
 // Connection Events
@@ -553,11 +550,10 @@ impl Connection {
             return true;
         }
 
-        if let Some(idle_time) = self.idle_time() {
-            if idle_time > idle_timeout {
+        if let Some(idle_time) = self.idle_time()
+            && idle_time > idle_timeout {
                 return true;
             }
-        }
 
         false
     }
@@ -1238,11 +1234,10 @@ impl ConnectionRecycler {
         }
 
         // Check age
-        if let Some(age) = conn.inner().age() {
-            if age > self.config.idle_timeout * 10 {
+        if let Some(age) = conn.inner().age()
+            && age > self.config.idle_timeout * 10 {
                 return false;
             }
-        }
 
         true
     }

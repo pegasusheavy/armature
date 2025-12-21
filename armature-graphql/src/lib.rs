@@ -19,7 +19,7 @@ pub use schema_builder::*;
 pub use schema_docs::*;
 
 use armature_core::Error as ArmatureError;
-use armature_log::{debug, info};
+use armature_log::info;
 use std::sync::Arc;
 
 /// GraphQL schema wrapper

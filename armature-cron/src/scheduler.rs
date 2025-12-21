@@ -1,6 +1,6 @@
 //! Cron job scheduler.
 
-use armature_log::{debug, error, info, trace, warn};
+use armature_log::{debug, info, warn};
 use crate::error::{CronError, CronResult};
 use crate::expression::CronExpression;
 use crate::job::{Job, JobContext};

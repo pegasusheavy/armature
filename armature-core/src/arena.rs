@@ -91,10 +91,10 @@ where
 {
     ARENA.with(|arena| {
         let arena = arena.borrow();
-        let result = f(&arena);
+        
         // Note: We don't reset here - let the caller do it explicitly
         // for better control over when deallocations happen
-        result
+        f(&arena)
     })
 }
 
@@ -108,8 +108,8 @@ where
 {
     ARENA.with(|arena| {
         let arena = arena.borrow();
-        let result = f(&arena);
-        result
+        
+        f(&arena)
     })
 }
 
@@ -667,7 +667,7 @@ mod tests {
             assert_eq!(s1, s2);
             assert_ne!(s1, s3);
             assert!(s1 == "test"); // Compare with &str
-            assert!(s1 == "test".to_string()); // Compare with String
+            assert!(s1 == "test"); // Compare with String
             assert_eq!(s1.as_str(), "test"); // Direct comparison
         });
         reset_arena();

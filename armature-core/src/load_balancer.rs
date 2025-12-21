@@ -26,8 +26,10 @@ use std::sync::Arc;
 
 /// Load balancing strategy for worker selection.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum LoadBalanceStrategy {
     /// Simple round-robin rotation
+    #[default]
     RoundRobin,
     /// Route to worker with fewest connections
     LeastConnections,
@@ -41,11 +43,6 @@ pub enum LoadBalanceStrategy {
     Sticky,
 }
 
-impl Default for LoadBalanceStrategy {
-    fn default() -> Self {
-        Self::RoundRobin
-    }
-}
 
 // ============================================================================
 // Worker State

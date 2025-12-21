@@ -2,7 +2,6 @@
 
 use armature_core::{HttpRequest, HttpResponse};
 use armature_security::cors::CorsConfig;
-use std::collections::HashMap;
 
 #[test]
 fn test_cors_strict_origin() {

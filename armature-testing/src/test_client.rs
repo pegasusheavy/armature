@@ -1,6 +1,6 @@
 // Test HTTP Client
 
-use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router, extensions::Extensions};
+use armature_core::{Error, HttpMethod, HttpRequest, HttpResponse, Router};
 use std::collections::HashMap;
 use std::sync::Arc;
 

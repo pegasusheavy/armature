@@ -167,9 +167,8 @@ impl ResponseQueue {
     /// Pop the next ready response.
     #[inline]
     pub fn pop_ready(&mut self) -> Option<ResponseItem> {
-        self.ready.pop_front().map(|item| {
+        self.ready.pop_front().inspect(|item| {
             self.stats.record_pop(item.size);
-            item
         })
     }
 

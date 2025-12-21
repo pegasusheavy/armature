@@ -13,6 +13,9 @@ use diesel_async::AsyncMysqlConnection;
 #[cfg(feature = "deadpool")]
 use diesel_async::pooled_connection::deadpool::Pool as DeadpoolPool;
 
+#[cfg(feature = "deadpool")]
+use diesel_async::pooled_connection::deadpool::Object as DeadpoolObject;
+
 #[cfg(feature = "bb8")]
 use diesel_async::pooled_connection::bb8::Pool as Bb8Pool;
 
@@ -31,7 +34,6 @@ pub struct PgPool {
 impl PgPool {
     /// Create a new PostgreSQL connection pool.
     pub async fn new(config: DieselConfig) -> DieselResult<Self> {
-        use diesel_async::pooled_connection::deadpool::Object;
         use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 
         info!("Creating PostgreSQL connection pool");
@@ -53,7 +55,7 @@ impl PgPool {
     }
 
     /// Get a connection from the pool.
-    pub async fn get(&self) -> DieselResult<deadpool::managed::Object<diesel_async::pooled_connection::AsyncDieselConnectionManager<AsyncPgConnection>>> {
+    pub async fn get(&self) -> DieselResult<DeadpoolObject<AsyncPgConnection>> {
         debug!("Acquiring PostgreSQL connection from pool");
         self.pool
             .get()
@@ -66,7 +68,7 @@ impl PgPool {
         let status = self.pool.status();
         PoolStatus {
             size: status.size,
-            available: status.available as usize,
+            available: status.available,
             waiting: status.waiting,
             max_size: status.max_size,
         }
@@ -166,7 +168,7 @@ impl MysqlPool {
     }
 
     /// Get a connection from the pool.
-    pub async fn get(&self) -> DieselResult<deadpool::managed::Object<diesel_async::pooled_connection::AsyncDieselConnectionManager<AsyncMysqlConnection>>> {
+    pub async fn get(&self) -> DieselResult<DeadpoolObject<AsyncMysqlConnection>> {
         debug!("Acquiring MySQL connection from pool");
         self.pool
             .get()

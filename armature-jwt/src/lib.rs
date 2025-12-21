@@ -75,7 +75,7 @@ pub use token::{Token, TokenPair};
 // Re-export jsonwebtoken types
 pub use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 
-use armature_log::{debug, info, trace, warn};
+use armature_log::{debug, info, trace};
 
 /// JWT service for token management
 #[derive(Clone)]

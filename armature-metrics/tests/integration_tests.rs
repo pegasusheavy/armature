@@ -233,7 +233,7 @@ fn test_export_metrics() {
 
     let metrics = export_metrics();
     assert!(
-        metrics.contains("# HELP") || metrics.contains("test_export_counter") || metrics.len() > 0
+        metrics.contains("# HELP") || metrics.contains("test_export_counter") || !metrics.is_empty()
     );
 }
 
