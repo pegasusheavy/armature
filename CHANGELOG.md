@@ -7,7 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+*No unreleased changes.*
+
+---
+
+## [0.1.0] - 2025-12-21
+
+Initial public release of the Armature framework - a high-performance, type-safe HTTP framework for Rust inspired by Angular and NestJS.
+
 ### Added
+
+#### Logging (`armature-log`)
+- JSON and Pretty logging formats with environment variable configuration
+- `ARMATURE_DEBUG`, `ARMATURE_LOG_LEVEL`, `ARMATURE_LOG_FORMAT` controls
+- `trace!`, `debug!`, `info!`, `warn!`, `error!` macros
+- Optional tracing integration
+- Runtime-configurable log levels and formats
+
+#### Internationalization (`armature-i18n`)
+- Message translation with Fluent syntax
+- Locale detection from Accept-Language headers
+- CLDR-compliant pluralization rules
+- Date, number, and currency formatting
+
+#### Database Integration
+- **`armature-diesel`** - Diesel async with connection pooling
+- **`armature-seaorm`** - SeaORM integration with active record pattern
+
+#### Search (`armature-opensearch`)
+- OpenSearch/Elasticsearch client
+- Document management and bulk operations
+- Query DSL builder
+
+#### Serialization (`armature-toon`)
+- TOON (Token-Oriented Object Notation) support for LLM-optimized serialization
+
+#### Compression (`armature-compression`)
+- Streaming compression (gzip, brotli, zstd)
+- Backpressure handling
+- Response compression middleware
+
+#### Fuzzing (`armature-fuzz`)
+- 8 fuzz targets for security testing
+- HTTP request/response, routing, JSON, URL parsing
+
+#### Performance Optimizations
+- 65+ performance optimizations implemented
+- SIMD HTTP parsing and JSON serialization
+- Zero-copy request/response handling
+- Arena allocators for per-request batch allocations
+- HTTP/1.1 pipelining and request batching
+- `io_uring` backend for Linux
+- Connection pooling and keep-alive optimization
+- Thread-local buffer pools
+- `matchit` router for O(log n) routing
+- SmallVec headers and CompactString paths
+
+#### Publishing Tools
+- `scripts/publish.sh` - Automated crates.io publishing with rate limiting
+- `scripts/prepare-publish.sh` - Path-to-version dependency conversion
+- `scripts/pgo-build.sh` - Profile-Guided Optimization workflow
 
 #### Cloud Provider SDKs
 - **`armature-aws`** - AWS SDK integration with feature-gated services
@@ -290,13 +349,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated linting and testing on commits
 - Comprehensive `.gitignore` and `.dockerignore`
 
-## [0.1.0] - TBD
-
-### Added
-- Initial public release
-
----
-
 ## Version History
 
 ### Versioning Strategy
@@ -319,5 +371,5 @@ See [docs/migration.md](docs/migration.md) for detailed upgrade instructions bet
 
 ---
 
-[Unreleased]: https://github.com/pegasusheavy/armature/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/pegasusheavy/armature/releases/tag/v0.1.0
+[Unreleased]: https://github.com/PegasusHeavyIndustries/armature/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/PegasusHeavyIndustries/armature/releases/tag/v0.1.0
