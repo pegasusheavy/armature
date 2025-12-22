@@ -48,11 +48,11 @@ aws-sdk-s3 = { version = "1.61", optional = true }
 aws-config = { version = "1.5", optional = true }
 
 # Google Cloud Storage
-armature-gcp = { path = "../armature-gcp", optional = true, features = ["storage"] }
+armature-gcp = { path = "../armature-gcp", version = "0.1.0", optional = true, features = ["storage"] }
 google-cloud-storage = { version = "0.22", optional = true }
 
 # Azure Blob Storage
-armature-azure = { path = "../armature-azure", optional = true, features = ["blob"] }
+armature-azure = { path = "../armature-azure", version = "0.1.0", optional = true, features = ["blob"] }
 azure_storage_blobs = { version = "0.21", optional = true }
 azure_storage = { version = "0.21", optional = true }
 
