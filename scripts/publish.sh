@@ -709,7 +709,7 @@ publish_crate() {
         # Check if rate limited
         if is_rate_limited "$output"; then
             if handle_rate_limit $attempt "$crate"; then
-                ((attempt++))
+                ((++attempt))
                 continue
             else
                 echo "$output"
@@ -787,11 +787,11 @@ publish_all() {
         fi
 
         if [[ "$will_publish" == "true" ]]; then
-            ((to_publish++))
+            ((++to_publish))
         fi
 
         echo -e "  $i. $crate$version_info$status"
-        ((i++))
+        ((++i))
     done
     echo ""
 
@@ -845,7 +845,7 @@ publish_all() {
     local current=0
 
     for crate in $publish_order; do
-        ((current++))
+        ((++current))
 
         # Handle --from flag
         if [[ -n "$FROM_CRATE" && "$started" == "false" ]]; then
@@ -853,7 +853,7 @@ publish_all() {
                 started=true
             else
                 log_info "Skipping $crate (before --from)"
-                ((skipped++))
+                ((++skipped))
                 continue
             fi
         fi
@@ -866,7 +866,7 @@ publish_all() {
         # Handle --skip flag
         if should_skip "$crate"; then
             log_warn "Skipping $crate (--skip)"
-            ((skipped++))
+            ((++skipped))
             continue
         fi
 
@@ -881,15 +881,15 @@ publish_all() {
 
         case $result in
             0)
-                ((published++))
-                ((BURST_COUNT++))
+                ((++published))
+                ((++BURST_COUNT))
                 ;;
             1)
-                ((failed++))
+                ((++failed))
                 log_error "Failed to publish $crate"
                 ;;
             2)
-                ((already_published++))
+                ((++already_published))
                 ;;
         esac
 
