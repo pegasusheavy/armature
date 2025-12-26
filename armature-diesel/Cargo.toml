@@ -8,7 +8,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Diesel async database integration for the Armature framework"
-keywords = ["diesel", "database", "async", "postgres", "mysql", "armature"]
+keywords = ["diesel", "database", "async", "postgres", "mysql"]
 categories = ["database", "web-programming", "asynchronous"]
 
 [features]
