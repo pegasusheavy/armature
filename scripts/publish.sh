@@ -663,20 +663,20 @@ publish_crate() {
         return 1
     fi
 
-    log_info "Publishing $crate v$version..."
-
     # Check if already published (unless --force)
     if [[ "$FORCE" != "true" ]]; then
         local pub_status
         pub_status=$(check_crates_io_version "$crate" "$version")
 
         if [[ "$pub_status" == "published" ]]; then
-            log_warn "$crate v$version is already published on crates.io (use --force to republish)"
+            echo -e "  ${CYAN}⊘${NC} $crate v$version - already on crates.io, skipping"
             return 2
         elif [[ "$pub_status" == "error" ]]; then
             log_warn "Could not check crates.io for $crate, attempting publish anyway..."
         fi
     fi
+
+    log_info "Publishing $crate v$version..."
 
     cd "$PROJECT_ROOT/$crate"
 
