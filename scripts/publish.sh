@@ -874,10 +874,9 @@ publish_all() {
         show_progress $current $total_crates
         echo ""
 
-        # Publish the crate
+        # Publish the crate (capture exit code without triggering set -e)
         local result
-        publish_crate "$crate"
-        result=$?
+        publish_crate "$crate" && result=0 || result=$?
 
         case $result in
             0)
