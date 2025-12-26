@@ -1,48 +1,47 @@
 [1m[92m   Compiling[0m armature v0.1.0 (/home/runner/work/armature/armature)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.69s
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 17.47s
 [1m[92m     Running[0m benches/security_benchmarks.rs (target/release/deps/security_benchmarks-39198cff6781401e)
 Gnuplot not found, using plotters backend
-{"timestamp":"2025-12-26T20:35:44.558341084+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+{"timestamp":"2025-12-26T21:05:53.952956395+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign
 Benchmarking jwt/sign: Warming up for 3.0000 s
-Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0033 s (6.4M iterations)
+Benchmarking jwt/sign: Collecting 100 samples in estimated 5.0033 s (6.3M iterations)
 Benchmarking jwt/sign: Analyzing
-jwt/sign                time:   [786.39 ns 787.07 ns 787.99 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
+jwt/sign                time:   [794.56 ns 795.69 ns 797.02 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 Benchmarking jwt/verify
 Benchmarking jwt/verify: Warming up for 3.0000 s
-Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0095 s (2.3M iterations)
+Benchmarking jwt/verify: Collecting 100 samples in estimated 5.0104 s (2.2M iterations)
 Benchmarking jwt/verify: Analyzing
-jwt/verify              time:   [2.2157 µs 2.2175 µs 2.2195 µs]
-Found 3 outliers among 100 measurements (3.00%)
-  1 (1.00%) high mild
-  2 (2.00%) high severe
-{"timestamp":"2025-12-26T20:36:02.879316344+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+jwt/verify              time:   [2.2031 µs 2.2154 µs 2.2323 µs]
+Found 14 outliers among 100 measurements (14.00%)
+  6 (6.00%) high mild
+  8 (8.00%) high severe
+{"timestamp":"2025-12-26T21:06:12.321133394+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign_HS256
 Benchmarking jwt/sign_HS256: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0005 s (6.5M iterations)
+Benchmarking jwt/sign_HS256: Collecting 100 samples in estimated 5.0024 s (6.3M iterations)
 Benchmarking jwt/sign_HS256: Analyzing
-jwt/sign_HS256          time:   [771.42 ns 771.93 ns 772.50 ns]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
-{"timestamp":"2025-12-26T20:36:11.288076753+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+jwt/sign_HS256          time:   [795.73 ns 798.53 ns 803.09 ns]
+Found 11 outliers among 100 measurements (11.00%)
+  4 (4.00%) high mild
+  7 (7.00%) high severe
+{"timestamp":"2025-12-26T21:06:20.847561738+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
 Benchmarking jwt/sign_HS384
 Benchmarking jwt/sign_HS384: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0017 s (2.7M iterations)
+Benchmarking jwt/sign_HS384: Collecting 100 samples in estimated 5.0079 s (2.6M iterations)
 Benchmarking jwt/sign_HS384: Analyzing
-jwt/sign_HS384          time:   [1.8540 µs 1.8556 µs 1.8575 µs]
+jwt/sign_HS384          time:   [1.8934 µs 1.8955 µs 1.8974 µs]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
+{"timestamp":"2025-12-26T21:06:29.989840287+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
+Benchmarking jwt/sign_HS512
+Benchmarking jwt/sign_HS512: Warming up for 3.0000 s
+Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0082 s (2.6M iterations)
+Benchmarking jwt/sign_HS512: Analyzing
+jwt/sign_HS512          time:   [1.8773 µs 1.8820 µs 1.8865 µs]
 Found 3 outliers among 100 measurements (3.00%)
   2 (2.00%) high mild
   1 (1.00%) high severe
-{"timestamp":"2025-12-26T20:36:20.346866860+00:00","level":"INFO","target":"armature_jwt","message":"Initializing JWT manager"}
-Benchmarking jwt/sign_HS512
-Benchmarking jwt/sign_HS512: Warming up for 3.0000 s
-Benchmarking jwt/sign_HS512: Collecting 100 samples in estimated 5.0003 s (2.6M iterations)
-Benchmarking jwt/sign_HS512: Analyzing
-jwt/sign_HS512          time:   [1.8768 µs 1.8815 µs 1.8859 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high severe
 
