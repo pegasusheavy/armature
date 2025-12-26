@@ -57,7 +57,7 @@ CRATES_IO_API="https://crates.io/api/v1/crates"
 PUBLISH_DELAY=30       # Delay between publishes (seconds)
 BURST_SIZE=5           # Number of crates to publish before longer pause
 BURST_DELAY=120        # Delay after burst (seconds)
-MAX_RETRIES=3          # Maximum retries on rate limit
+MAX_RETRIES=0          # Maximum retries on rate limit (0 = unlimited)
 INITIAL_BACKOFF=60     # Initial backoff on rate limit (seconds)
 MAX_BACKOFF=600        # Maximum backoff (10 minutes)
 
@@ -161,7 +161,8 @@ handle_rate_limit() {
     local attempt=$1
     local crate=$2
 
-    if [[ $attempt -ge $MAX_RETRIES ]]; then
+    # MAX_RETRIES=0 means unlimited
+    if [[ $MAX_RETRIES -gt 0 && $attempt -ge $MAX_RETRIES ]]; then
         log_error "Max retries ($MAX_RETRIES) exceeded for $crate"
         return 1
     fi
@@ -172,7 +173,11 @@ handle_rate_limit() {
         backoff=$MAX_BACKOFF
     fi
 
-    log_warn "Rate limited! Attempt $((attempt + 1))/$MAX_RETRIES"
+    if [[ $MAX_RETRIES -eq 0 ]]; then
+        log_warn "Rate limited! Attempt $((attempt + 1)) (unlimited retries)"
+    else
+        log_warn "Rate limited! Attempt $((attempt + 1))/$MAX_RETRIES"
+    fi
     wait_with_countdown $backoff "Rate limit backoff"
     return 0
 }
@@ -691,9 +696,9 @@ publish_crate() {
         return 0
     fi
 
-    # Publish with retry on rate limit
+    # Publish with retry on rate limit (MAX_RETRIES=0 means unlimited)
     local attempt=0
-    while [[ $attempt -lt $MAX_RETRIES ]]; do
+    while [[ $MAX_RETRIES -eq 0 || $attempt -lt $MAX_RETRIES ]]; do
         local output
         local exit_code
 
@@ -800,7 +805,11 @@ publish_all() {
     echo "  • Delay between publishes: ${PUBLISH_DELAY}s"
     echo "  • Burst size: $BURST_SIZE crates"
     echo "  • Burst delay: ${BURST_DELAY}s"
-    echo "  • Max retries on rate limit: $MAX_RETRIES"
+    if [[ $MAX_RETRIES -eq 0 ]]; then
+        echo "  • Max retries on rate limit: unlimited"
+    else
+        echo "  • Max retries on rate limit: $MAX_RETRIES"
+    fi
     echo ""
 
     # Estimate time
