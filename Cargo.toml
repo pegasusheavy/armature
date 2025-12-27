@@ -72,7 +72,7 @@ homepage = "https://pegasusheavy.github.io/armature"
 
 [package]
 name = "armature-framework"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.88"
 autobenches = false  # Disable auto-discovery, use explicit [[bench]] only
