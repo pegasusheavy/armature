@@ -53,7 +53,7 @@ ACME (Automatic Certificate Management Environment) is a protocol for automating
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["acme"] }
+armature-framework = { version = "0.1", features = ["acme"] }
 tokio = { version = "1.35", features = ["full"] }
 ```
 
@@ -175,7 +175,7 @@ let config = AcmeConfig::lets_encrypt_production(...)
 **Example Integration:**
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_acme::*;
 
 #[controller("/.well-known/acme-challenge")]
@@ -298,7 +298,7 @@ let config = AcmeConfig::lets_encrypt_production(
 ### Complete HTTPS Server with ACME
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_acme::{AcmeClient, AcmeConfig};
 
 #[tokio::main]

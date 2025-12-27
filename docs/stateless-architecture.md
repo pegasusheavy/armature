@@ -244,7 +244,7 @@ async fn get_user(req: HttpRequest) -> Result<User, Error> {
 
 ```rust
 // GOOD - Validates on each request
-use armature::{Guard, GuardContext};
+use armature_framework::{Guard, GuardContext};
 
 pub struct AuthenticationGuard;
 

@@ -54,7 +54,7 @@ Guards are authorization checks that run before a route handler. They answer the
 When your guard implements `Default`:
 
 ```rust
-use armature::{get, use_guard};
+use armature_framework::{get, use_guard};
 use armature_core::{HttpRequest, HttpResponse, Error, guard::AuthenticationGuard};
 
 #[use_guard(AuthenticationGuard)]
@@ -84,7 +84,7 @@ async fn admin_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
 Chain multiple guards - all must pass:
 
 ```rust
-use armature::{get, use_guard};
+use armature_framework::{get, use_guard};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     guard::{AuthenticationGuard, RolesGuard}
@@ -116,7 +116,7 @@ async fn premium_content(req: HttpRequest) -> Result<HttpResponse, Error> {
 Use `#[guard(...)]` for guards that need configuration:
 
 ```rust
-use armature::{get, guard};
+use armature_framework::{get, guard};
 use armature_core::{HttpRequest, HttpResponse, Error, guard::ApiKeyGuard};
 
 #[guard(ApiKeyGuard::new(vec!["secret-key-1".into(), "secret-key-2".into()]))]
@@ -129,7 +129,7 @@ async fn api_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 ### Combining Type and Instance Guards
 
 ```rust
-use armature::{get, guard};
+use armature_framework::{get, guard};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     guard::{AuthenticationGuard, RolesGuard}
@@ -150,7 +150,7 @@ async fn moderation_panel(req: HttpRequest) -> Result<HttpResponse, Error> {
 Apply guards to all routes in a controller:
 
 ```rust
-use armature::{controller, get, post, guard};
+use armature_framework::{controller, get, post, guard};
 use armature_core::{HttpRequest, HttpResponse, Error, guard::AuthenticationGuard};
 
 #[guard(AuthenticationGuard)]
@@ -182,7 +182,7 @@ impl UserController {
 Route guards add to controller guards:
 
 ```rust
-use armature::{controller, get, guard, use_guard};
+use armature_framework::{controller, get, guard, use_guard};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     guard::AuthenticationGuard

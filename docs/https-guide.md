@@ -32,7 +32,7 @@ Armature provides built-in HTTPS/TLS support using `rustls`, a modern TLS librar
 For local development, you can use automatically generated self-signed certificates:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[module()]
 #[derive(Default)]
@@ -71,7 +71,7 @@ curl -k https://localhost:8443/
 For production, use certificates from a trusted Certificate Authority:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[module()]
 #[derive(Default)]
@@ -198,7 +198,7 @@ sudo certbot certonly --standalone -d yourdomain.com
 #### Using Armature
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -246,7 +246,7 @@ chown root:root /etc/ssl/private/your-key.pem
 Automatically redirect HTTP traffic to HTTPS:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -429,7 +429,7 @@ sudo kill <PID>
 ### Basic HTTPS Server
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[derive(Default)]
 pub struct ApiService;
@@ -486,7 +486,7 @@ async fn main() -> Result<()> {
 ### HTTPS with Environment Config
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::env;
 
 #[tokio::main]
@@ -512,7 +512,7 @@ async fn main() -> Result<()> {
 ### Full Production Setup
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::env;
 
 #[tokio::main]

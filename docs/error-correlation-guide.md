@@ -46,7 +46,7 @@ Armature's error correlation module provides all these capabilities with support
 ### Basic Usage
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_core::error_correlation::*;
 
 // Create correlation context
@@ -67,7 +67,7 @@ println!("{}", error.to_json());
 ### With Middleware
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_core::error_correlation::*;
 
 let config = CorrelationConfig::new()

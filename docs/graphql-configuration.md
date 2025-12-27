@@ -354,7 +354,7 @@ let config = match env::var("ENV").unwrap_or_default().as_str() {
 ### Example 5: Full Controller Implementation
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_graphql::*;
 
 #[controller("/graphql")]
