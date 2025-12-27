@@ -95,10 +95,10 @@ Or via the main armature crate:
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["session"] }
+armature-framework = { version = "0.1", features = ["session"] }
 
 # With Memcached
-armature = { version = "0.1", features = ["session", "session-memcached"] }
+armature-framework = { version = "0.1", features = ["session", "session-memcached"] }
 ```
 
 ## When to Use Sessions
@@ -380,7 +380,7 @@ pub trait SessionStore: Send + Sync {
 ### Middleware Approach
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_session::*;
 
 pub struct SessionMiddleware {

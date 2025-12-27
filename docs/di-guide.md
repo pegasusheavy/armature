@@ -89,7 +89,7 @@ When a controller is created:
 ### Example 1: Simple Service Injection
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 // Service with no dependencies
 #[injectable]

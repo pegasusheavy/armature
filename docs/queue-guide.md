@@ -499,7 +499,7 @@ async fn main() -> Result<(), QueueError> {
 ### Using DI for Queue Service
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_queue::*;
 
 #[injectable]

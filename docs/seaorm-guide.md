@@ -349,7 +349,7 @@ if let Some(error) = health.error {
 ## With Armature DI
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_seaorm::{Database, DatabaseConfig};
 
 #[module_impl]

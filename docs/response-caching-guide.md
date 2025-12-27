@@ -39,7 +39,7 @@ Armature provides comprehensive HTTP response caching support:
 ### Parsing Cache-Control
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let cc = CacheControl::parse("public, max-age=3600, must-revalidate");
 
@@ -52,7 +52,7 @@ assert!(cc.is_cacheable());
 ### Building Cache-Control
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 let cc = CacheControl::new()
@@ -66,7 +66,7 @@ assert_eq!(cc.to_header_value(), "public, max-age=3600, must-revalidate");
 ### Preset Configurations
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 // Never cache (no-store, no-cache)
@@ -105,7 +105,7 @@ let revalidate = CacheControl::revalidate(Duration::from_secs(60));
 ### Basic Usage
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 #[controller("/api")]
@@ -139,7 +139,7 @@ impl ApiController {
 ### Custom Configuration
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 let cache = ResponseCache::with_config(ResponseCacheConfig {
@@ -154,7 +154,7 @@ let cache = ResponseCache::with_config(ResponseCacheConfig {
 ### Cache Operations
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 async fn cache_operations(cache: &ResponseCache, request: &HttpRequest, response: &HttpResponse) {
     // Store with default TTL
@@ -192,7 +192,7 @@ async fn cache_operations(cache: &ResponseCache, request: &HttpRequest, response
 ### Automatic Key Generation
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let request = HttpRequest::new("GET".into(), "/api/users".into());
 let key = request.cache_key();
@@ -204,7 +204,7 @@ println!("Key: {}", key);  // GET:/api/users
 ### Keys with Vary Headers
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let mut request = HttpRequest::new("GET".into(), "/api/users".into());
 request.headers.insert("Accept".into(), "application/json".into());
@@ -219,7 +219,7 @@ let key = request.cache_key_with_vary(&["Accept", "Accept-Language"]);
 ### Cache with Vary Support
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 async fn get_with_vary(cache: &ResponseCache, request: &HttpRequest) -> Option<HttpResponse> {
     // Get with specific Vary headers
@@ -230,7 +230,7 @@ async fn get_with_vary(cache: &ResponseCache, request: &HttpRequest) -> Option<H
 ## Request Extensions
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn analyze_request(request: &HttpRequest) {
     // Get Cache-Control from request
@@ -258,7 +258,7 @@ fn analyze_request(request: &HttpRequest) {
 ## Response Extensions
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 fn build_cached_response() -> HttpResponse {
@@ -306,7 +306,7 @@ fn check_response_cacheability(response: &HttpResponse) {
 ### 1. Choose the Right Cache-Control
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 // Static assets - cache for a long time with immutable
@@ -341,7 +341,7 @@ fn sensitive_response() -> HttpResponse {
 ### 2. Use Vary Headers Correctly
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn content_negotiated_response() -> HttpResponse {
     HttpResponse::ok()
@@ -353,7 +353,7 @@ fn content_negotiated_response() -> HttpResponse {
 ### 3. Invalidate on Mutations
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[put("/users/:id")]
 async fn update_user(
@@ -374,7 +374,7 @@ async fn update_user(
 ### 4. Configure Cache Appropriately
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 // Small API responses
@@ -399,7 +399,7 @@ let file_cache = ResponseCache::with_config(
 ### Complete Cached API Endpoint
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 use std::sync::Arc;
 
@@ -467,7 +467,7 @@ impl ProductController {
 ### Cache Middleware Pattern
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::sync::Arc;
 
 struct CachingMiddleware {
@@ -507,7 +507,7 @@ impl CachingMiddleware {
 ### Versioned Static Assets
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 #[controller("/assets")]

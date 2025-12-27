@@ -88,7 +88,7 @@ JWT_SECRET=your-secret-key
 ### Configuration Files
 
 ```rust
-use armature::config::{Config, Environment};
+use armature_framework::config::{Config, Environment};
 
 let config = Config::builder()
     .add_source(Environment::with_prefix("APP"))
@@ -191,7 +191,7 @@ impl HealthController {
 ### Prometheus Metrics
 
 ```rust
-use armature::metrics::{MetricsConfig, PrometheusExporter};
+use armature_framework::metrics::{MetricsConfig, PrometheusExporter};
 
 let metrics = MetricsConfig::default()
     .enable_prometheus("/metrics")
@@ -201,7 +201,7 @@ let metrics = MetricsConfig::default()
 ### OpenTelemetry
 
 ```rust
-use armature::telemetry::{TelemetryConfig, OtlpExporter};
+use armature_framework::telemetry::{TelemetryConfig, OtlpExporter};
 
 let telemetry = TelemetryConfig::default()
     .with_traces(OtlpExporter::new("http://jaeger:4317"))
@@ -244,7 +244,7 @@ cargo build --release
 ### 3. Configure Graceful Shutdown
 
 ```rust
-use armature::shutdown::GracefulShutdown;
+use armature_framework::shutdown::GracefulShutdown;
 
 let shutdown = GracefulShutdown::new()
     .timeout(Duration::from_secs(30))

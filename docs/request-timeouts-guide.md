@@ -41,7 +41,7 @@ Armature provides configurable request timeouts and size limits to protect your 
 By default, Armature uses sensible defaults:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[tokio::main]
 async fn main() {
@@ -58,7 +58,7 @@ async fn main() {
 ### Custom Configuration
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 #[tokio::main]
@@ -91,7 +91,7 @@ async fn main() {
 ### Builder Methods
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 let config = ServerConfig::new()
@@ -254,7 +254,7 @@ let mobile_config = ServerConfig::new()
 Combine with other protections:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_ratelimit::*;
 
 // Server-level limits
@@ -271,7 +271,7 @@ let rate_limit = RateLimiter::new(100, Duration::from_secs(60));
 ### Complete API Server
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 #[module]
@@ -317,7 +317,7 @@ async fn main() {
 ### File Upload Server
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::Duration;
 
 #[module]
@@ -351,7 +351,7 @@ async fn main() {
 For applications needing different limits for different routes, use middleware:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 // Custom middleware to check body size per-route
 async fn check_body_size(

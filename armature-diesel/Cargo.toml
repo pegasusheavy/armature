@@ -1,6 +1,6 @@
 [package]
 name = "armature-diesel"
-version.workspace = true
+version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Diesel async database integration for the Armature framework"
-keywords = ["diesel", "database", "async", "postgres", "mysql", "armature"]
+keywords = ["diesel", "database", "async", "postgres", "mysql"]
 categories = ["database", "web-programming", "asynchronous"]
 
 [features]

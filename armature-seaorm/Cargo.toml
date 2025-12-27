@@ -1,6 +1,6 @@
 [package]
 name = "armature-seaorm"
-version.workspace = true
+version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -8,7 +8,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "SeaORM database integration for the Armature framework"
-keywords = ["seaorm", "database", "orm", "postgres", "mysql", "sqlite", "armature"]
+keywords = ["seaorm", "database", "orm", "async", "sql"]
 categories = ["database", "web-programming", "asynchronous"]
 
 [features]

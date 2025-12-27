@@ -210,7 +210,7 @@ Armature provides first-class integrations with major cloud providers:
 ## Quick Example
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
