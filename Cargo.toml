@@ -51,6 +51,7 @@ members = [
     "armature-i18n",
     "armature-diesel",
     "armature-seaorm",
+    "armature-websocket",
 ]
 exclude = [
     "templates/*",
