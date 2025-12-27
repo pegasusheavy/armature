@@ -17,7 +17,7 @@ No wrappers. No adapters. Just your crates.
 ## Quick Example
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use sqlx::PgPool;
 use aws_sdk_s3::Client as S3Client;
 use reqwest::Client as HttpClient;

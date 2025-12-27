@@ -74,7 +74,7 @@ armature generate guard admin
 ### Manual Setup
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // Define your domain model
@@ -156,8 +156,20 @@ Procedural macros for decorator syntax:
 - `#[module(...)]` - Organize components into modules
 - `#[derive(Body)]`, `#[derive(Param)]`, `#[derive(Query)]` - Request parameter extraction
 
-### `armature`
-Main library that re-exports everything from core and macros
+### `armature-framework`
+Main library that re-exports everything from core and macros. Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+armature-framework = "0.1"
+```
+
+Or with specific features:
+
+```toml
+[dependencies]
+armature-framework = { version = "0.1", features = ["auth", "cache", "validation"] }
+```
 
 ## Decorators
 
@@ -232,8 +244,8 @@ Services are singletons by default and shared across the application.
 Armature provides NestJS-inspired lifecycle hooks for managing service initialization and cleanup:
 
 ```rust
-use armature::prelude::*;
-use armature::lifecycle::{OnModuleInit, OnModuleDestroy, LifecycleResult};
+use armature_framework::prelude::*;
+use armature_framework::lifecycle::{OnModuleInit, OnModuleDestroy, LifecycleResult};
 use async_trait::async_trait;
 
 #[injectable]
@@ -292,7 +304,7 @@ async fn get_user(req: HttpRequest) -> Result<Json<User>, Error> {
 Comprehensive HTTP status code support with type-safe error handling:
 
 ```rust
-use armature::{Error, HttpStatus};
+use armature_framework::{Error, HttpStatus};
 
 // Type-safe status codes
 let status = HttpStatus::NotFound;
@@ -317,7 +329,7 @@ See the [HTTP Status & Errors Guide](docs/http-status-errors.md) for complete do
 Protect and transform your routes with Guards and Interceptors:
 
 ```rust
-use armature::{Guard, AuthenticationGuard, GuardContext};
+use armature_framework::{Guard, AuthenticationGuard, GuardContext};
 
 // Apply authentication guard
 let guard = AuthenticationGuard;

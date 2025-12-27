@@ -35,7 +35,7 @@ Request extractors are included in `armature-core`:
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["core"] }
+armature-framework = { version = "0.1", features = ["core"] }
 ```
 
 Or use directly:
@@ -286,7 +286,7 @@ For more concise syntax, use the helper macros that extract and unwrap in one st
 Extract and deserialize request body.
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract body as CreateUser
@@ -303,7 +303,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract and deserialize query parameters.
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract query params as Pagination
@@ -320,7 +320,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract a path parameter by name with type conversion.
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract "id" parameter as u32
@@ -340,7 +340,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract a header value by name.
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract Authorization header
@@ -536,7 +536,7 @@ fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
 **Quick Reference:**
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     // Body extraction

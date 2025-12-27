@@ -34,7 +34,7 @@ Add the compression feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["compression"] }
+armature-framework = { version = "0.1", features = ["compression"] }
 ```
 
 Or use specific compression algorithms:
@@ -58,7 +58,7 @@ armature-compression = { version = "0.1", features = ["gzip", "brotli"] }
 ### Basic Usage
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_compression::CompressionMiddleware;
 
 fn main() {

@@ -99,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### With Armature Application
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_ferron::{FerronConfig, Location, RateLimitConfig};
 
 #[controller("/api")]
