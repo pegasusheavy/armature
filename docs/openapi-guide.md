@@ -57,14 +57,14 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["openapi"] }
+armature-framework = { version = "0.1", features = ["openapi"] }
 ```
 
 ### Basic Example
 
 ```rust
-use armature::prelude::*;
-use armature::armature_openapi::*;
+use armature_framework::prelude::*;
+use armature_framework::armature_openapi::*;
 
 // Build OpenAPI specification
 let spec = OpenApiBuilder::new("My API", "1.0.0")
@@ -378,8 +378,8 @@ let spec = OpenApiBuilder::new("API", "1.0.0")
 ### Basic Setup
 
 ```rust
-use armature::prelude::*;
-use armature::armature_openapi::*;
+use armature_framework::prelude::*;
+use armature_framework::armature_openapi::*;
 
 #[controller("/api-docs")]
 struct ApiDocsController {

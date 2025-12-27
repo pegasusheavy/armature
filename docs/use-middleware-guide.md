@@ -41,7 +41,7 @@ The `#[use_middleware]` decorator wraps route handlers with a middleware chain, 
 Apply a single middleware to a route:
 
 ```rust
-use armature::{get, use_middleware};
+use armature_framework::{get, use_middleware};
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware};
 
 #[use_middleware(LoggerMiddleware::new())]
@@ -58,7 +58,7 @@ async fn get_users(req: HttpRequest) -> Result<HttpResponse, Error> {
 Middleware can be configured inline:
 
 ```rust
-use armature::{get, use_middleware};
+use armature_framework::{get, use_middleware};
 use armature_core::{HttpRequest, HttpResponse, Error, CorsMiddleware};
 
 #[use_middleware(CorsMiddleware::new().allow_origin("https://example.com"))]
@@ -73,7 +73,7 @@ async fn get_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 Chain multiple middleware together by separating them with commas:
 
 ```rust
-use armature::{get, use_middleware};
+use armature_framework::{get, use_middleware};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, CorsMiddleware, SecurityHeadersMiddleware
@@ -102,7 +102,7 @@ Middleware executes in the order specified:
 Apply middleware to all routes in a controller using the `#[middleware]` decorator:
 
 ```rust
-use armature::{controller, get, post, middleware};
+use armature_framework::{controller, get, post, middleware};
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware, CorsMiddleware};
 
 #[middleware(LoggerMiddleware::new(), CorsMiddleware::new())]
@@ -129,7 +129,7 @@ impl ApiController {
 Route-level middleware adds to controller-level middleware:
 
 ```rust
-use armature::{controller, get, middleware, use_middleware};
+use armature_framework::{controller, get, middleware, use_middleware};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, TimeoutMiddleware
@@ -240,7 +240,7 @@ impl Middleware for AuthMiddleware {
 Use your custom middleware:
 
 ```rust
-use armature::{get, use_middleware};
+use armature_framework::{get, use_middleware};
 use my_app::AuthMiddleware;
 
 #[use_middleware(AuthMiddleware::new("secret-key"))]

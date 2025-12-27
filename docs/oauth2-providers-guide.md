@@ -346,7 +346,7 @@ if let Some(refresh_token) = token.refresh_token {
 ## Complete Example
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_auth::providers::{GoogleConfig, GoogleProvider};
 use armature_auth::OAuth2Provider;
 

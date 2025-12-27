@@ -40,7 +40,7 @@ Armature provides comprehensive support for:
 ### Parsing Accept Headers
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 // Parse an Accept header
 let accept = Accept::parse("application/json, text/html;q=0.9, */*;q=0.1");
@@ -58,7 +58,7 @@ for (media_type, quality) in &accept.media_types {
 ### MediaType Helpers
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 // Built-in media type constructors
 let json = MediaType::json();           // application/json
@@ -82,7 +82,7 @@ assert!(MediaType::json().matches(&MediaType::any()));
 ### Negotiating Media Types
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[controller("/api")]
 struct ApiController;
@@ -122,7 +122,7 @@ impl ApiController {
 ### Quick Preference Checks
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/")]
 async fn index(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
@@ -146,7 +146,7 @@ async fn index(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
 ### Parsing Language Preferences
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let accept_lang = AcceptLanguage::parse("en-US, en;q=0.9, fr;q=0.8, *;q=0.1");
 
@@ -163,7 +163,7 @@ let fr_quality = accept_lang.quality_for(&LanguageTag::new("fr"));
 ### Language Negotiation
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/greeting")]
 async fn greeting(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
@@ -195,7 +195,7 @@ async fn greeting(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
 ### Parsing Encoding Preferences
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let accept_enc = AcceptEncoding::parse("gzip, deflate, br;q=0.9");
 
@@ -213,7 +213,7 @@ if let Some(preferred) = accept_enc.preferred() {
 ### Encoding Negotiation
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/data")]
 async fn get_data(&self, request: HttpRequest) -> HttpResponse {
@@ -242,7 +242,7 @@ async fn get_data(&self, request: HttpRequest) -> HttpResponse {
 ## Accept-Charset Header
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let accept_charset = AcceptCharset::parse("utf-8, iso-8859-1;q=0.8");
 
@@ -260,7 +260,7 @@ if let Some(preferred) = accept_charset.preferred() {
 Armature adds convenient methods directly to `HttpRequest`:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handle_request(request: &HttpRequest) {
     // Parse Accept header
@@ -297,7 +297,7 @@ fn handle_request(request: &HttpRequest) {
 For complex scenarios, use `ContentNegotiator` to define multiple response formats:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_core::content_negotiation::ContentNegotiator;
 
 #[derive(Serialize)]
@@ -376,7 +376,7 @@ let best = request.negotiate_media_type(&available)
 ### 3. Return 406 Not Acceptable When Appropriate
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/data")]
 async fn get_data(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
@@ -413,7 +413,7 @@ The server should prefer HTML (q=1.0) over JSON (q=0.9).
 ### Complete API Endpoint
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_core::content_negotiation::ContentNegotiator;
 
 #[derive(Serialize)]
@@ -480,7 +480,7 @@ impl ProductController {
 ### Multi-Language API
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::collections::HashMap;
 
 #[controller("/i18n")]

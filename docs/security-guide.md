@@ -37,7 +37,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature = { version = "0.1", features = ["security"] }
+armature-framework = { version = "0.1", features = ["security"] }
 ```
 
 ## Quick Start
@@ -47,8 +47,8 @@ armature = { version = "0.1", features = ["security"] }
 The preferred way to use security middleware is to add it to your application's middleware chain:
 
 ```rust
-use armature::prelude::*;
-use armature::{MiddlewareChain, SecurityHeadersMiddleware};
+use armature_framework::prelude::*;
+use armature_framework::{MiddlewareChain, SecurityHeadersMiddleware};
 use armature_security::SecurityMiddleware;
 
 // Create your middleware chain
@@ -72,8 +72,8 @@ struct AppModule;
 ### Full Application Example
 
 ```rust
-use armature::prelude::*;
-use armature::{MiddlewareChain, LoggerMiddleware, CorsMiddleware};
+use armature_framework::prelude::*;
+use armature_framework::{MiddlewareChain, LoggerMiddleware, CorsMiddleware};
 use armature_security::{
     SecurityMiddleware,
     content_security_policy::CspConfig,
@@ -437,8 +437,8 @@ Main security middleware struct.
 ### Complete Application with Middleware Chain
 
 ```rust
-use armature::prelude::*;
-use armature::{
+use armature_framework::prelude::*;
+use armature_framework::{
     MiddlewareChain, LoggerMiddleware, CorsMiddleware, 
     RequestIdMiddleware, TimeoutMiddleware
 };
@@ -544,8 +544,8 @@ async fn main() {
 ### API-Only Configuration (Minimal)
 
 ```rust
-use armature::prelude::*;
-use armature::MiddlewareChain;
+use armature_framework::prelude::*;
+use armature_framework::MiddlewareChain;
 use armature_security::{SecurityMiddleware, frame_guard::FrameGuard};
 
 // For API servers that don't serve HTML, use a minimal config

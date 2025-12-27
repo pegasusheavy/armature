@@ -183,7 +183,7 @@ if status.is_under_pressure() {
 ## With Armature DI
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_diesel::{DieselPool, DieselConfig};
 
 #[module_impl]

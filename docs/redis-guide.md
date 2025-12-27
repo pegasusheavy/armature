@@ -139,7 +139,7 @@ let mut subscription = pubsub.psubscribe("user:*").await?;
 Register Redis as a singleton in your application:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_redis::{RedisService, RedisConfig};
 use std::sync::Arc;
 

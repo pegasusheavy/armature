@@ -233,7 +233,7 @@ The cloud provider crates integrate seamlessly with Armature's DI system.
 ### Registering Cloud Services
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_aws::{AwsServices, AwsConfig};
 
 #[module]

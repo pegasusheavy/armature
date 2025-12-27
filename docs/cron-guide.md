@@ -566,7 +566,7 @@ job.set_metadata("owner", "ops-team");
 ### Using with Dependency Injection
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_cron::*;
 
 #[injectable]

@@ -47,7 +47,7 @@ Armature provides comprehensive support for:
 ### Creating ETags
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 // Strong ETag - byte-for-byte identical
 let strong = ETag::strong("abc123");
@@ -61,7 +61,7 @@ assert_eq!(weak.to_header_value(), "W/\"abc123\"");
 ### Generating ETags
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::SystemTime;
 
 // From bytes (hash-based)
@@ -81,7 +81,7 @@ let etag = ETag::from_file_metadata(1024, SystemTime::now());
 ### Parsing ETags
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let strong = ETag::parse("\"abc123\"").unwrap();
 assert!(!strong.weak);
@@ -93,7 +93,7 @@ assert!(weak.weak);
 ### ETag Comparison
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 let strong1 = ETag::strong("abc");
 let strong2 = ETag::strong("abc");
@@ -114,7 +114,7 @@ Use `If-None-Match` to return 304 Not Modified when the client already has the c
 ### Basic Usage
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[controller("/api")]
 struct ResourceController;
@@ -143,7 +143,7 @@ impl ResourceController {
 ### Using check_conditionals Helper
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/resource/:id")]
 async fn get_resource(
@@ -175,7 +175,7 @@ Use `If-Match` for optimistic concurrency control - only update if the client ha
 ### Basic Usage
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[put("/resource/:id")]
 async fn update_resource(
@@ -208,7 +208,7 @@ async fn update_resource(
 ### Requiring If-Match Header
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[delete("/resource/:id")]
 async fn delete_resource(
@@ -237,7 +237,7 @@ async fn delete_resource(
 ### If-Modified-Since
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::SystemTime;
 
 #[get("/resource")]
@@ -260,7 +260,7 @@ async fn get_resource(&self, request: HttpRequest) -> Result<HttpResponse, Error
 ### If-Unmodified-Since
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[put("/resource")]
 async fn update_resource(
@@ -289,7 +289,7 @@ async fn update_resource(
 The `ConditionalRequest` trait adds methods to `HttpRequest`:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 fn handle_request(request: &HttpRequest) {
     // Parse all conditional headers at once
@@ -325,7 +325,7 @@ fn handle_request(request: &HttpRequest) {
 The `ConditionalResponse` trait adds methods to `HttpResponse`:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::SystemTime;
 
 // Add ETag header
@@ -352,7 +352,7 @@ let response = HttpResponse::precondition_failed_with_message("Resource modified
 Handles the common pattern of checking conditionals and returning early:
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 #[get("/data")]
 async fn get_data(&self, request: HttpRequest) -> Result<HttpResponse, Error> {
@@ -461,7 +461,7 @@ response.headers.insert(
 ### Complete CRUD with Optimistic Locking
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use std::time::SystemTime;
 
 #[derive(Serialize, Deserialize)]
@@ -538,7 +538,7 @@ impl ResourceController {
 ### Caching API Responses
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 use armature_core::conditional::cacheable_response;
 
 #[get("/products")]

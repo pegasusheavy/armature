@@ -53,7 +53,7 @@ Interceptors wrap the handler execution and can modify both input and output.
 Checks for a valid Bearer token in the `Authorization` header.
 
 ```rust
-use armature::{Guard, AuthenticationGuard, GuardContext};
+use armature_framework::{Guard, AuthenticationGuard, GuardContext};
 
 let guard = AuthenticationGuard;
 let context = GuardContext::new(request);
@@ -80,7 +80,7 @@ curl http://localhost:3000/api/protected
 Checks if the authenticated user has specific roles.
 
 ```rust
-use armature::{Guard, RolesGuard, GuardContext};
+use armature_framework::{Guard, RolesGuard, GuardContext};
 
 let guard = RolesGuard::new(vec!["admin".to_string(), "moderator".to_string()]);
 let context = GuardContext::new(request);
@@ -96,7 +96,7 @@ match guard.can_activate(&context).await {
 Validates API keys from the `x-api-key` header.
 
 ```rust
-use armature::{Guard, ApiKeyGuard, GuardContext};
+use armature_framework::{Guard, ApiKeyGuard, GuardContext};
 
 let valid_keys = vec![
     "key-123".to_string(),
@@ -123,7 +123,7 @@ curl http://localhost:3000/api/data \
 Create custom guards by implementing the `Guard` trait:
 
 ```rust
-use armature::{Guard, GuardContext, Error};
+use armature_framework::{Guard, GuardContext, Error};
 use async_trait::async_trait;
 
 pub struct IpWhitelistGuard {
@@ -159,7 +159,7 @@ impl Guard for IpWhitelistGuard {
 For simpler cases, use `CustomGuard`:
 
 ```rust
-use armature::{CustomGuard, GuardContext, Error};
+use armature_framework::{CustomGuard, GuardContext, Error};
 
 let guard = CustomGuard::new(|context: &GuardContext| {
     // Only allow requests on weekdays
@@ -177,8 +177,8 @@ let guard = CustomGuard::new(|context: &GuardContext| {
 #### Protecting a Single Route
 
 ```rust
-use armature::prelude::*;
-use armature::{Guard, AuthenticationGuard, GuardContext};
+use armature_framework::prelude::*;
+use armature_framework::{Guard, AuthenticationGuard, GuardContext};
 
 router.add_route(Route {
     method: HttpMethod::GET,
@@ -204,7 +204,7 @@ router.add_route(Route {
 #### Chaining Multiple Guards
 
 ```rust
-use armature::{Guard, AuthenticationGuard, RolesGuard, GuardContext};
+use armature_framework::{Guard, AuthenticationGuard, RolesGuard, GuardContext};
 
 router.add_route(Route {
     method: HttpMethod::DELETE,
@@ -244,7 +244,7 @@ router.add_route(Route {
 Logs all incoming requests and outgoing responses with timing.
 
 ```rust
-use armature::{Interceptor, LoggingInterceptor, ExecutionContext};
+use armature_framework::{Interceptor, LoggingInterceptor, ExecutionContext};
 
 let interceptor = LoggingInterceptor;
 
@@ -258,7 +258,7 @@ let interceptor = LoggingInterceptor;
 Transforms responses using a custom function.
 
 ```rust
-use armature::{Interceptor, TransformInterceptor, HttpResponse};
+use armature_framework::{Interceptor, TransformInterceptor, HttpResponse};
 
 let interceptor = TransformInterceptor::new(|mut response| {
     // Add custom header to all responses
@@ -275,7 +275,7 @@ let interceptor = TransformInterceptor::new(|mut response| {
 Caches responses for a specified TTL (Time To Live).
 
 ```rust
-use armature::{Interceptor, CacheInterceptor};
+use armature_framework::{Interceptor, CacheInterceptor};
 
 let interceptor = CacheInterceptor::new(60); // Cache for 60 seconds
 ```
@@ -285,7 +285,7 @@ let interceptor = CacheInterceptor::new(60); // Cache for 60 seconds
 Create custom interceptors by implementing the `Interceptor` trait:
 
 ```rust
-use armature::{Interceptor, ExecutionContext, HttpResponse, Error};
+use armature_framework::{Interceptor, ExecutionContext, HttpResponse, Error};
 use async_trait::async_trait;
 use std::future::Future;
 use std::pin::Pin;
@@ -327,7 +327,7 @@ impl Interceptor for CompressionInterceptor {
 #### Metrics Interceptor Example
 
 ```rust
-use armature::{Interceptor, ExecutionContext, HttpResponse, Error};
+use armature_framework::{Interceptor, ExecutionContext, HttpResponse, Error};
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -380,7 +380,7 @@ impl Interceptor for MetricsInterceptor {
 Currently, interceptors need to be manually applied within route handlers. A more integrated approach (similar to NestJS's `@UseInterceptors()`) can be added to the macro system in the future.
 
 ```rust
-use armature::prelude::*;
+use armature_framework::prelude::*;
 
 router.add_route(Route {
     method: HttpMethod::GET,
@@ -409,8 +409,8 @@ router.add_route(Route {
 Here's a complete example demonstrating guards and interceptors:
 
 ```rust
-use armature::prelude::*;
-use armature::{AuthenticationGuard, Guard, GuardContext, RolesGuard};
+use armature_framework::prelude::*;
+use armature_framework::{AuthenticationGuard, Guard, GuardContext, RolesGuard};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
