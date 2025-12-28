@@ -54,6 +54,7 @@ members = [
     "armature-websocket",
     "armature-analytics",
     "armature-files",
+    "armature-collab",
 ]
 exclude = [
     "templates/*",

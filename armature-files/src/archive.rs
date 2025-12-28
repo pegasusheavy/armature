@@ -107,35 +107,35 @@ impl ZipBuilder {
     /// Add a directory of files from disk
     pub async fn add_directory(mut self, dir_path: impl AsRef<Path>, archive_prefix: &str) -> FileResult<Self> {
         let dir_path = dir_path.as_ref();
-        
+
         let mut entries = Vec::new();
         let mut stack = vec![dir_path.to_path_buf()];
-        
+
         while let Some(current) = stack.pop() {
             let mut dir = tokio::fs::read_dir(&current).await.map_err(FileError::Io)?;
-            
+
             while let Some(entry) = dir.next_entry().await.map_err(FileError::Io)? {
                 let path = entry.path();
                 let file_type = entry.file_type().await.map_err(FileError::Io)?;
-                
+
                 if file_type.is_dir() {
                     stack.push(path);
                 } else if file_type.is_file() {
                     let relative_path = path.strip_prefix(dir_path)
                         .map_err(|e| FileError::Archive(e.to_string()))?;
-                    
+
                     let archive_path = if archive_prefix.is_empty() {
                         relative_path.to_string_lossy().to_string()
                     } else {
                         format!("{}/{}", archive_prefix, relative_path.to_string_lossy())
                     };
-                    
+
                     let data = tokio::fs::read(&path).await.map_err(FileError::Io)?;
                     entries.push(ArchiveEntry::new(archive_path, data));
                 }
             }
         }
-        
+
         self.entries.extend(entries);
         Ok(self)
     }
@@ -143,32 +143,32 @@ impl ZipBuilder {
     /// Build the ZIP archive
     pub fn build(self) -> FileResult<ProcessingResult> {
         let start = std::time::Instant::now();
-        
+
         let mut buffer = Cursor::new(Vec::new());
         let mut zip = ZipWriter::new(&mut buffer);
-        
+
         let options = self.compression.to_options();
-        
+
         for entry in &self.entries {
             // Normalize path separators
             let path = entry.path.replace('\\', "/");
-            
+
             zip.start_file(&path, options)
                 .map_err(|e| FileError::Archive(format!("Failed to add file {}: {}", path, e)))?;
-            
+
             zip.write_all(&entry.data)
                 .map_err(|e| FileError::Archive(format!("Failed to write {}: {}", path, e)))?;
         }
-        
+
         if let Some(comment) = &self.comment {
             zip.set_comment(comment.as_str());
         }
-        
+
         zip.finish()
             .map_err(|e| FileError::Archive(format!("Failed to finalize archive: {}", e)))?;
-        
+
         let data = Bytes::from(buffer.into_inner());
-        
+
         Ok(ProcessingResult {
             data: data.clone(),
             metadata: FileMetadata {
@@ -217,7 +217,7 @@ impl ZipExtractor {
         let cursor = Cursor::new(&self.data);
         let archive = ZipArchive::new(cursor)
             .map_err(|e| FileError::Archive(format!("Failed to open archive: {}", e)))?;
-        
+
         Ok(archive.file_names().map(|s| s.to_string()).collect())
     }
 
@@ -226,14 +226,14 @@ impl ZipExtractor {
         let cursor = Cursor::new(&self.data);
         let mut archive = ZipArchive::new(cursor)
             .map_err(|e| FileError::Archive(format!("Failed to open archive: {}", e)))?;
-        
+
         let mut file = archive.by_name(name)
             .map_err(|e| FileError::Archive(format!("File not found: {}: {}", name, e)))?;
-        
+
         let mut data = Vec::new();
         file.read_to_end(&mut data)
             .map_err(|e| FileError::Archive(format!("Failed to read {}: {}", name, e)))?;
-        
+
         Ok(Bytes::from(data))
     }
 
@@ -242,25 +242,25 @@ impl ZipExtractor {
         let cursor = Cursor::new(&self.data);
         let mut archive = ZipArchive::new(cursor)
             .map_err(|e| FileError::Archive(format!("Failed to open archive: {}", e)))?;
-        
+
         let mut entries = Vec::new();
-        
+
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)
                 .map_err(|e| FileError::Archive(format!("Failed to access file {}: {}", i, e)))?;
-            
+
             if file.is_dir() {
                 continue;
             }
-            
+
             let name = file.name().to_string();
             let mut data = Vec::new();
             file.read_to_end(&mut data)
                 .map_err(|e| FileError::Archive(format!("Failed to read {}: {}", name, e)))?;
-            
+
             entries.push(ArchiveEntry::new(name, data));
         }
-        
+
         Ok(entries)
     }
 
@@ -268,22 +268,22 @@ impl ZipExtractor {
     pub async fn extract_to(&self, dir: impl AsRef<Path>) -> FileResult<Vec<String>> {
         let dir = dir.as_ref();
         tokio::fs::create_dir_all(dir).await.map_err(FileError::Io)?;
-        
+
         let entries = self.extract_all()?;
         let mut extracted = Vec::new();
-        
+
         for entry in entries {
             let file_path = dir.join(&entry.path);
-            
+
             // Create parent directories
             if let Some(parent) = file_path.parent() {
                 tokio::fs::create_dir_all(parent).await.map_err(FileError::Io)?;
             }
-            
+
             tokio::fs::write(&file_path, &entry.data).await.map_err(FileError::Io)?;
             extracted.push(entry.path);
         }
-        
+
         Ok(extracted)
     }
 }
@@ -297,7 +297,7 @@ mod tests {
         let builder = ZipBuilder::new()
             .compression(CompressionLevel::Best)
             .comment("Test archive");
-        
+
         assert_eq!(builder.compression, CompressionLevel::Best);
         assert_eq!(builder.comment, Some("Test archive".to_string()));
     }
@@ -309,13 +309,13 @@ mod tests {
             .add_file("data/nested.txt", "Nested content")
             .build()
             .unwrap();
-        
+
         let extractor = ZipExtractor::new(archive.data);
         let files = extractor.list_files().unwrap();
-        
+
         assert!(files.contains(&"test.txt".to_string()));
         assert!(files.contains(&"data/nested.txt".to_string()));
-        
+
         let content = extractor.extract_file("test.txt").unwrap();
         assert_eq!(&*content, b"Hello, World!");
     }
