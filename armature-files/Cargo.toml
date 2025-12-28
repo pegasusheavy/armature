@@ -12,7 +12,7 @@ keywords = ["image", "pdf", "file-processing", "media", "conversion"]
 categories = ["multimedia::images", "web-programming"]
 
 [dependencies]
-armature-core = { path = "../armature-core", version = "0.1.0" }
+armature-core = { path = "../armature-core", version = "0.2.0" }
 armature-log = { path = "../armature-log", version = "0.1.0" }
 tokio = { version = "1.35", features = ["rt-multi-thread", "fs", "io-util"] }
 serde = { version = "1.0", features = ["derive"] }

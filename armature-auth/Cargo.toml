@@ -12,7 +12,7 @@ keywords = ["auth", "authentication", "authorization", "oauth"]
 categories = ["web-programming", "authentication"]
 
 [dependencies]
-armature-core = { path = "../armature-core", version = "0.1.0" }
+armature-core = { path = "../armature-core", version = "0.2.0" }
 armature-jwt = { path = "../armature-jwt", version = "0.1.0" }
 armature-log = { path = "../armature-log", version = "0.1.0" }
 serde = { version = "1.0", features = ["derive"] }
