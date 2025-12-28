@@ -20,7 +20,7 @@ None - all issues resolved! ✅
 |---------|------------|-------------|--------|--------|
 | **HTTP/2 Support** | 8.0 | Actix/Axum support HTTP/2; required for modern deployments | M | ✅ Done |
 | **Database Migrations** | 7.5 | CLI-driven migrations like `armature migrate` (NestJS, Rails pattern) | M | ⏳ |
-| **OpenAPI Client Gen** | 6.0 | Generate TypeScript/Rust clients from OpenAPI spec | S | ⏳ |
+| **OpenAPI Client Gen** | 6.0 | Generate TypeScript/Rust clients from OpenAPI spec | S | ✅ Done |
 
 ### P1: High-Value Enterprise Features
 

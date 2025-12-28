@@ -6,5 +6,6 @@ pub mod dev;
 pub mod generate;
 pub mod info;
 pub mod new;
+pub mod openapi;
 pub mod repl;
 pub mod routes;
