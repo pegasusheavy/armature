@@ -58,17 +58,17 @@ async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
 async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     let body: CreateUserRequest = serde_json::from_slice(&req.body)
         .map_err(|e| Error::validation(format!("Invalid JSON: {}", e)))?;
-    
+
     let response = CreateUserResponse {
         id: 12345,
         name: body.name,
         email: body.email.unwrap_or_else(|| "default@example.com".to_string()),
         created: true,
     };
-    
+
     let json = serde_json::to_vec(&response)
         .map_err(|e| Error::internal(format!("JSON serialization error: {}", e)))?;
-    
+
     Ok(HttpResponse::new(201)
         .with_header("Content-Type".to_string(), "application/json".to_string())
         .with_body(json))
