@@ -92,12 +92,11 @@ impl RoomManager {
             for room_id in room_ids {
                 if let Some(room) = self.rooms.get(&room_id) {
                     room.leave(connection_id);
-                    // Clean up empty rooms
-                    if room.is_empty() {
-                        drop(room);
-                        self.rooms.remove(&room_id);
-                    }
                 }
+                // Atomically remove the room if it's empty to avoid TOCTOU race condition.
+                // Using remove_if ensures no other thread can add a member between
+                // checking is_empty() and removing the room.
+                self.rooms.remove_if(&room_id, |_, room| room.is_empty());
             }
         }
         self.connections.remove(connection_id);
@@ -156,17 +155,17 @@ impl RoomManager {
     pub fn leave_room(&self, connection_id: &str, room_id: &str) -> WebSocketResult<()> {
         if let Some(room) = self.rooms.get(room_id) {
             room.leave(connection_id);
-
-            if let Some(mut rooms) = self.connection_rooms.get_mut(connection_id) {
-                rooms.remove(room_id);
-            }
-
-            // Clean up empty rooms
-            if room.is_empty() {
-                drop(room);
-                self.rooms.remove(room_id);
-            }
         }
+
+        if let Some(mut rooms) = self.connection_rooms.get_mut(connection_id) {
+            rooms.remove(room_id);
+        }
+
+        // Atomically remove the room if it's empty to avoid TOCTOU race condition.
+        // Using remove_if ensures no other thread can add a member between
+        // checking is_empty() and removing the room.
+        self.rooms.remove_if(room_id, |_, room| room.is_empty());
+
         Ok(())
     }
 

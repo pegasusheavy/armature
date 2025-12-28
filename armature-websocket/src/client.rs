@@ -66,7 +66,7 @@ pub struct WebSocketClient {
     tx: mpsc::UnboundedSender<Message>,
     rx: mpsc::UnboundedReceiver<Message>,
     /// Atomic flag for thread-safe closed state tracking.
-    /// Uses AtomicBool to prevent data races when `send()` and `close()` 
+    /// Uses AtomicBool to prevent data races when `send()` and `close()`
     /// are called concurrently from different tasks.
     closed: AtomicBool,
 }
@@ -204,7 +204,7 @@ impl WebSocketClient {
     }
 
     /// Close the connection.
-    /// 
+    ///
     /// This method is thread-safe and can be called from multiple tasks concurrently.
     /// Only the first call will actually send the close message.
     pub fn close(&self) {
