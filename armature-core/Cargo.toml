@@ -54,6 +54,9 @@ regex = "1.10"
 # Resilience patterns
 parking_lot = "0.12"
 
+# Bounded caches
+lru = "0.12"
+
 # Hot Module Reload (HMR)
 notify = "8.0"
 

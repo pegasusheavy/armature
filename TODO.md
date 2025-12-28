@@ -8,12 +8,12 @@
 
 ## Open Issues
 
-### Priority 1: Memory Leaks
+### Priority 1: Memory Leaks (Fixed ✅)
 
-| Issue | Location | Description | Fix |
-|-------|----------|-------------|-----|
-| Unbounded HashMap | `serialization_pool.rs:286` | `SizeTracker::type_sizes` grows unbounded | Replace with `lru::LruCache` (max 256) |
-| Unbounded Vec | `connection_manager.rs:219` | `BufferHistory::samples` no count cap | Add hard cap (1000 samples) |
+| Issue | Location | Status |
+|-------|----------|--------|
+| Unbounded HashMap | `serialization_pool.rs:286` | ✅ Fixed with `LruCache` (max 256) |
+| Unbounded Vec | `connection_manager.rs:238` | ✅ Fixed with hard cap (1000 samples) |
 
 ### Priority 2: Thread Safety
 
