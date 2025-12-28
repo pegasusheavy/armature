@@ -1,5 +1,6 @@
 // Application bootstrapper and HTTP server
 
+use crate::http2::{Http2Builder, Http2Config, Http2Stats};
 use crate::logging::{debug, error, info, trace, warn};
 use crate::pipeline::{PipelineConfig, PipelineStats, PipelinedHttp1Builder};
 use crate::{
@@ -25,6 +26,10 @@ pub struct Application {
     pipeline_config: PipelineConfig,
     /// Shared pipeline statistics
     pipeline_stats: Arc<PipelineStats>,
+    /// HTTP/2 configuration
+    http2_config: Http2Config,
+    /// Shared HTTP/2 statistics
+    http2_stats: Arc<Http2Stats>,
 }
 
 impl Application {
@@ -36,6 +41,8 @@ impl Application {
             lifecycle: Arc::new(LifecycleManager::new()),
             pipeline_config: PipelineConfig::default(),
             pipeline_stats: Arc::new(PipelineStats::new()),
+            http2_config: Http2Config::default(),
+            http2_stats: Arc::new(Http2Stats::new()),
         }
     }
 
@@ -64,6 +71,33 @@ impl Application {
     /// Get the pipeline configuration
     pub fn pipeline_config(&self) -> &PipelineConfig {
         &self.pipeline_config
+    }
+
+    /// Set the HTTP/2 configuration
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, Http2Config};
+    ///
+    /// let app = Application::new(container, router)
+    ///     .with_http2_config(Http2Config::high_throughput());
+    /// ```
+    pub fn with_http2_config(mut self, config: Http2Config) -> Self {
+        self.http2_config = config;
+        self
+    }
+
+    /// Get the HTTP/2 statistics
+    ///
+    /// Use this to monitor HTTP/2 connection and stream metrics at runtime.
+    pub fn http2_stats(&self) -> Arc<Http2Stats> {
+        Arc::clone(&self.http2_stats)
+    }
+
+    /// Get the HTTP/2 configuration
+    pub fn http2_config(&self) -> &Http2Config {
+        &self.http2_config
     }
 
     /// Create a new application from a root module with lifecycle support
@@ -124,6 +158,8 @@ impl Application {
             lifecycle,
             pipeline_config: PipelineConfig::default(),
             pipeline_stats: Arc::new(PipelineStats::new()),
+            http2_config: Http2Config::default(),
+            http2_stats: Arc::new(Http2Stats::new()),
         }
     }
 
@@ -600,6 +636,191 @@ impl Application {
                     }
                     Err(err) => {
                         eprintln!("TLS handshake failed: {:?}", err);
+                    }
+                }
+            });
+        }
+    }
+
+    /// Start HTTP/2 cleartext server (h2c)
+    ///
+    /// **Warning**: HTTP/2 cleartext (h2c) is not recommended for production.
+    /// Use `listen_https_h2` for TLS-secured HTTP/2.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::Application;
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::new(container, router);
+    /// app.listen_h2c(8080).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn listen_h2c(self, port: u16) -> Result<(), Error> {
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+        debug!(address = %addr, "Binding to address (HTTP/2 cleartext)");
+        let listener = TcpListener::bind(addr).await?;
+
+        info!(
+            address = %addr,
+            max_concurrent_streams = self.http2_config.max_concurrent_streams,
+            "HTTP/2 cleartext server listening (h2c)"
+        );
+        warn!("HTTP/2 cleartext (h2c) is not recommended for production. Use HTTPS.");
+
+        let router = self.router.clone();
+        let h2_builder = Http2Builder::with_stats(
+            self.http2_config.clone(),
+            Arc::clone(&self.http2_stats),
+        );
+        let h2_stats = Arc::clone(&self.http2_stats);
+
+        loop {
+            let (stream, client_addr) = listener.accept().await?;
+            trace!(client_address = %client_addr, "HTTP/2 connection accepted");
+
+            let io = TokioIo::new(stream);
+            let router = router.clone();
+            let http_builder = h2_builder.configure_hyper_builder();
+            let stats = Arc::clone(&h2_stats);
+
+            // Track connection
+            stats.connection_opened();
+
+            tokio::spawn(async move {
+                let stats_for_close = Arc::clone(&stats);
+                let service = service_fn(move |req: Request<IncomingBody>| {
+                    let router = router.clone();
+                    let stats = Arc::clone(&stats);
+                    async move {
+                        stats.request_processed();
+                        handle_request(req, router).await
+                    }
+                });
+
+                if let Err(err) = http_builder.serve_connection(io, service).await {
+                    error!(error = %err, client = %client_addr, "Error serving HTTP/2 connection");
+                }
+
+                // Track connection close
+                stats_for_close.connection_closed();
+            });
+        }
+    }
+
+    /// Start HTTPS server with HTTP/2 support (ALPN negotiation)
+    ///
+    /// This method automatically negotiates the best protocol:
+    /// - If client supports HTTP/2 and advertises "h2" via ALPN, use HTTP/2
+    /// - Otherwise, fall back to HTTP/1.1
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, TlsConfig};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::new(container, router);
+    /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
+    /// app.listen_https_h2(443, tls).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn listen_https_h2(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+        debug!(address = %addr, "Binding to address (HTTPS with HTTP/2)");
+        let listener = TcpListener::bind(addr).await?;
+
+        info!(
+            address = %addr,
+            max_concurrent_streams = self.http2_config.max_concurrent_streams,
+            pipeline_mode = ?self.pipeline_config.mode,
+            "HTTPS server listening with HTTP/2 and HTTP/1.1 (ALPN)"
+        );
+
+        let acceptor = TlsAcceptor::from(tls_config.server_config);
+        let router = self.router.clone();
+        let h1_builder = PipelinedHttp1Builder::with_stats(
+            self.pipeline_config.clone(),
+            Arc::clone(&self.pipeline_stats),
+        );
+        let h2_builder = Http2Builder::with_stats(
+            self.http2_config.clone(),
+            Arc::clone(&self.http2_stats),
+        );
+        let h1_stats = Arc::clone(&self.pipeline_stats);
+        let h2_stats = Arc::clone(&self.http2_stats);
+
+        loop {
+            let (stream, client_addr) = listener.accept().await?;
+            trace!(client_address = %client_addr, "Connection accepted, starting TLS handshake");
+
+            let acceptor = acceptor.clone();
+            let router = router.clone();
+            let h1_builder_ref = h1_builder.configure_hyper_builder();
+            let h2_builder_ref = h2_builder.configure_hyper_builder();
+            let h1_stats = Arc::clone(&h1_stats);
+            let h2_stats = Arc::clone(&h2_stats);
+
+            tokio::spawn(async move {
+                match acceptor.accept(stream).await {
+                    Ok(tls_stream) => {
+                        // Check negotiated ALPN protocol
+                        let (_, session) = tls_stream.get_ref();
+                        let protocol = session.alpn_protocol();
+
+                        let is_h2 = protocol.map(|p| p == b"h2").unwrap_or(false);
+
+                        if is_h2 {
+                            debug!(client = %client_addr, "Using HTTP/2 (ALPN negotiated h2)");
+                            h2_stats.connection_opened();
+
+                            let io = TokioIo::new(tls_stream);
+                            let stats = Arc::clone(&h2_stats);
+
+                            let service = service_fn(move |req: Request<IncomingBody>| {
+                                let router = router.clone();
+                                let stats = Arc::clone(&stats);
+                                async move {
+                                    stats.request_processed();
+                                    handle_request(req, router).await
+                                }
+                            });
+
+                            if let Err(err) = h2_builder_ref.serve_connection(io, service).await {
+                                error!(error = %err, client = %client_addr, "Error serving HTTP/2 connection");
+                            }
+
+                            h2_stats.connection_closed();
+                        } else {
+                            debug!(client = %client_addr, "Using HTTP/1.1 (ALPN fallback)");
+                            h1_stats.connection_opened();
+
+                            let io = TokioIo::new(tls_stream);
+                            let stats = Arc::clone(&h1_stats);
+
+                            let service = service_fn(move |req: Request<IncomingBody>| {
+                                let router = router.clone();
+                                let stats = Arc::clone(&stats);
+                                async move {
+                                    stats.request_processed();
+                                    handle_request(req, router).await
+                                }
+                            });
+
+                            if let Err(err) = h1_builder_ref.serve_connection(io, service).await {
+                                error!(error = %err, client = %client_addr, "Error serving HTTP/1.1 connection");
+                            }
+
+                            h1_stats.connection_closed();
+                        }
+                    }
+                    Err(err) => {
+                        error!(error = %err, client = %client_addr, "TLS handshake failed");
                     }
                 }
             });
