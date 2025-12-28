@@ -277,7 +277,7 @@ impl BuiltApp {
         // Build middleware chain - start with the innermost handler
         let router = self.router.clone();
         let default_service = self.default_service.clone();
-        
+
         let handler: Next = Box::new(move |req| {
             let router = router.clone();
             let default_service = default_service.clone();
@@ -817,9 +817,9 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                     let path = req.uri().path_and_query()
                         .map(|pq| pq.to_string())
                         .unwrap_or_else(|| "/".to_string());
-                    
+
                     let mut http_req = HttpRequest::new(method, path);
-                    
+
                     // Copy headers
                     for (name, value) in req.headers() {
                         if let Ok(v) = value.to_str() {
@@ -842,7 +842,7 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                         Ok(resp) => {
                             let mut builder = hyper::Response::builder()
                                 .status(resp.status);
-                            
+
                             for (name, value) in &resp.headers {
                                 builder = builder.header(name.as_str(), value.as_str());
                             }
