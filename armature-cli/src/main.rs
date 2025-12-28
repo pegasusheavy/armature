@@ -34,7 +34,7 @@ mod generators;
 mod templates;
 mod watcher;
 
-use commands::{build, config, dev, generate, info, new, repl, routes};
+use commands::{build, config, dev, generate, info, new, openapi, repl, routes};
 use error::{CliError, CliResult};
 
 /// Armature CLI - Modern Rust Web Framework Tools
@@ -161,6 +161,12 @@ enum Commands {
     /// Validate project setup and configuration
     #[command(alias = "check")]
     Validate(ValidateArgs),
+
+    /// OpenAPI tools (client generation, spec validation)
+    Openapi {
+        #[command(subcommand)]
+        command: OpenapiCommands,
+    },
 }
 
 // =============================================================================
@@ -794,6 +800,76 @@ struct ValidateArgs {
     /// Fix issues automatically where possible
     #[arg(long)]
     fix: bool,
+}
+
+// =============================================================================
+// OPENAPI COMMANDS
+// =============================================================================
+
+#[derive(Subcommand)]
+enum OpenapiCommands {
+    /// Generate HTTP client from OpenAPI spec
+    #[command(alias = "client")]
+    Client(OpenapiClientArgs),
+
+    /// Validate an OpenAPI spec
+    Validate {
+        /// Path to OpenAPI spec (JSON or YAML)
+        spec: String,
+    },
+
+    /// Generate OpenAPI spec from Armature routes
+    Generate {
+        /// Output file path
+        #[arg(short, long, default_value = "openapi.yaml")]
+        output: String,
+
+        /// Output format
+        #[arg(long, value_enum, default_value = "yaml")]
+        format: SpecFormat,
+    },
+}
+
+#[derive(Args)]
+struct OpenapiClientArgs {
+    /// Path to OpenAPI spec (JSON or YAML)
+    spec: String,
+
+    /// Output directory for generated client
+    #[arg(short, long, default_value = "generated-client")]
+    output: String,
+
+    /// Target language
+    #[arg(short, long, value_enum, default_value = "typescript")]
+    language: ClientLanguageArg,
+
+    /// Custom client class name
+    #[arg(long)]
+    name: Option<String>,
+
+    /// Include request logging
+    #[arg(long)]
+    with_logging: bool,
+
+    /// Include retry logic
+    #[arg(long)]
+    with_retry: bool,
+}
+
+#[derive(Clone, ValueEnum)]
+enum ClientLanguageArg {
+    /// TypeScript client
+    Typescript,
+    /// Rust client
+    Rust,
+    /// Both TypeScript and Rust
+    Both,
+}
+
+#[derive(Clone, ValueEnum)]
+enum SpecFormat {
+    Yaml,
+    Json,
 }
 
 // =============================================================================
@@ -1912,6 +1988,37 @@ async fn main() {
         Commands::Validate(args) => {
             print_mini_banner();
             run_validate_command(args).await
+        }
+
+        Commands::Openapi { command } => {
+            print_mini_banner();
+            match command {
+                OpenapiCommands::Client(args) => {
+                    let language = match args.language {
+                        ClientLanguageArg::Typescript => openapi::ClientLanguage::TypeScript,
+                        ClientLanguageArg::Rust => openapi::ClientLanguage::Rust,
+                        ClientLanguageArg::Both => openapi::ClientLanguage::Both,
+                    };
+                    let options = openapi::ClientOptions {
+                        base_url: None,
+                        async_client: true,
+                        with_logging: args.with_logging,
+                        with_retry: args.with_retry,
+                        client_name: args.name,
+                    };
+                    openapi::generate_client(&args.spec, &args.output, language, &options).await
+                }
+                OpenapiCommands::Validate { spec } => {
+                    info(&format!("Validating OpenAPI spec: {}", spec.cyan()));
+                    warn("OpenAPI validation is coming soon!");
+                    Ok(())
+                }
+                OpenapiCommands::Generate { output, format: _ } => {
+                    info(&format!("Generating OpenAPI spec to: {}", output.cyan()));
+                    warn("OpenAPI generation from routes is coming soon!");
+                    Ok(())
+                }
+            }
         }
     };
 

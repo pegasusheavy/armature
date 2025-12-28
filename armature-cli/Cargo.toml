@@ -42,6 +42,10 @@ console = "0.15"
 owo-colors = "4.1"
 open = "5.3"
 
+# OpenAPI client generation
+openapiv3 = "2.0"
+reqwest = { version = "0.12", features = ["json"], default-features = false }
+
 [dev-dependencies]
 tempfile = "3.20"
 assert_cmd = "2.0"
