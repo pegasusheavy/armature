@@ -5,7 +5,7 @@ groups:
       # High error rate
       - alert: HighErrorRate
         expr: |
-          sum(rate(http_requests_total{status=~"5.."}[5m])) 
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
           / sum(rate(http_requests_total[5m])) > 0.05
         for: 5m
         labels:
@@ -38,7 +38,7 @@ groups:
       # High memory usage
       - alert: HighMemoryUsage
         expr: |
-          process_resident_memory_bytes{job="armature-api"} 
+          process_resident_memory_bytes{job="armature-api"}
           / on() group_left node_memory_MemTotal_bytes > 0.8
         for: 5m
         labels:
@@ -73,7 +73,7 @@ groups:
       # Disk space
       - alert: DiskSpaceLow
         expr: |
-          (node_filesystem_avail_bytes{mountpoint="/"} 
+          (node_filesystem_avail_bytes{mountpoint="/"}
           / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
         for: 5m
         labels:

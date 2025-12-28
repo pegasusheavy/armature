@@ -8,7 +8,7 @@
 # - Redis (cache + sessions)
 # - Elasticsearch (search)
 # - RabbitMQ (message queue)
-# - nginx (load balancer)
+# - Ferron (load balancer / reverse proxy)
 # - MinIO (S3-compatible storage)
 #
 # Usage:
@@ -22,16 +22,16 @@ version: "3.8"
 
 services:
   # ============================================
-  # Load Balancer / Reverse Proxy
+  # Load Balancer / Reverse Proxy (Ferron)
   # ============================================
-  nginx:
-    image: nginx:1.25-alpine
+  ferron:
+    image: ghcr.io/ferronserver/ferron:latest
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./ferron/ferron.kdl:/etc/ferron/ferron.kdl:ro
+      - ./ferron/ssl:/etc/ferron/ssl:ro
     depends_on:
       - api-1
       - api-2
@@ -39,10 +39,15 @@ services:
       - frontend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
 
   # ============================================
   # Armature API Instances
