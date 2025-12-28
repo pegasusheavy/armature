@@ -6,7 +6,7 @@
 
 ---
 
-## Memory Issues Identified (December 2024)
+## Memory Issues Identified (December 2025)
 
 ### Priority 1: Potential Memory Leaks
 
@@ -148,7 +148,7 @@ Drop Timing:
 
 ---
 
-## Latest Benchmarks (December 2024)
+## Latest Benchmarks (December 2025)
 
 | Benchmark | Time | Improvement |
 |-----------|------|-------------|
