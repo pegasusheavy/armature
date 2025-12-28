@@ -95,6 +95,7 @@ Benchmark results show the micro-framework has **1.5-3x overhead** vs direct Rou
 | **File Processing Pipeline** | 3.8 | Image resize, PDF gen, format conversion | M | ✅ Done |
 | **Real-time Collaboration** | 3.5 | CRDTs/OT for collaborative features | L | ✅ Done |
 | **Node.js FFI Bindings** | 7.5 | Expose Armature to TypeScript/Node.js via NAPI-RS | XL | ⏳ |
+| **Python FFI Bindings** | 7.0 | Expose Armature to Python via PyO3 | XL | ⏳ |
 | **ML Model Serving** | 3.0 | ONNX/TensorFlow Lite inference endpoints | L | ⏳ |
 
 ---
@@ -336,6 +337,359 @@ strategy:
 
 ---
 
+## Python FFI Roadmap
+
+Expose Armature's high-performance Rust core to Python developers via PyO3 native bindings.
+
+### Value Proposition
+
+- **10-50x faster** than Flask/FastAPI for CPU-bound operations
+- **FastAPI-familiar API** with type hints and async support
+- **Zero-copy** NumPy/buffer protocol integration for data science workloads
+- **Native async** via `asyncio` integration
+- **ML-ready** with seamless PyTorch/NumPy interop
+
+### Technology Stack
+
+| Component | Choice | Rationale |
+|-----------|--------|-----------|
+| FFI Layer | **PyO3** | Best Rust-Python bindings, mature, async support |
+| Build Tool | **Maturin** | Best-in-class Python packaging for Rust |
+| Package | `armature` | PyPI package |
+| Type Hints | Auto-generated `.pyi` stubs | Via `pyo3-stub-gen` |
+| Python | 3.9+ | Stable async, type hints, buffer protocol |
+
+### Phase 1: Core Bindings (Effort: L)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **1.1 Project Setup** | Create `armature-python` crate with PyO3 + Maturin | ⏳ |
+| **1.2 HttpRequest Binding** | Expose request with headers, body, params | ⏳ |
+| **1.3 HttpResponse Binding** | Response builder with status, headers, body | ⏳ |
+| **1.4 Router Binding** | Route registration and matching | ⏳ |
+| **1.5 Async Handler Support** | Python coroutine → Rust Future bridging | ⏳ |
+| **1.6 GIL Management** | Release GIL during I/O for concurrency | ⏳ |
+
+```python
+# Target API (Phase 1)
+from armature import Router, HttpRequest, HttpResponse
+
+router = Router()
+
+@router.get("/users/{user_id}")
+async def get_user(req: HttpRequest) -> HttpResponse:
+    user_id = req.param("user_id")
+    return HttpResponse.json({"id": user_id, "name": "Alice"})
+
+if __name__ == "__main__":
+    router.run("0.0.0.0:8000")
+```
+
+### Phase 2: Micro-Framework API (Effort: M)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **2.1 App Builder** | `App()` with method chaining | ⏳ |
+| **2.2 Decorator Routes** | `@app.get()`, `@app.post()` decorators | ⏳ |
+| **2.3 Middleware System** | `@app.middleware` and `app.add_middleware()` | ⏳ |
+| **2.4 APIRouter** | FastAPI-style router grouping | ⏳ |
+| **2.5 Dependency Injection** | `Depends()` pattern like FastAPI | ⏳ |
+| **2.6 Request Validation** | Pydantic model integration | ⏳ |
+
+```python
+# Target API (Phase 2)
+from armature import App, APIRouter, Depends, HttpResponse
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    email: str
+
+app = App()
+app.add_middleware(LoggerMiddleware())
+app.add_middleware(CORSMiddleware(allow_origins=["*"]))
+
+api = APIRouter(prefix="/api/v1")
+
+@api.get("/users")
+async def list_users() -> HttpResponse:
+    return HttpResponse.json([{"id": 1, "name": "Alice"}])
+
+@api.post("/users")
+async def create_user(user: User) -> HttpResponse:
+    return HttpResponse.json(user.dict(), status=201)
+
+@api.get("/users/{user_id}")
+async def get_user(user_id: int, db: Database = Depends(get_db)) -> HttpResponse:
+    user = await db.get_user(user_id)
+    return HttpResponse.json(user)
+
+app.include_router(api)
+
+if __name__ == "__main__":
+    app.run("0.0.0.0:8000", workers=4)
+```
+
+### Phase 3: Advanced Features (Effort: L)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **3.1 WebSocket Support** | Real-time with async generators | ⏳ |
+| **3.2 Background Tasks** | `BackgroundTasks` like FastAPI | ⏳ |
+| **3.3 OpenAPI Generation** | Auto-generate OpenAPI from routes + type hints | ⏳ |
+| **3.4 GraphQL** | Strawberry/Ariadne integration | ⏳ |
+| **3.5 Caching** | Redis/in-memory with `@cache` decorator | ⏳ |
+| **3.6 Rate Limiting** | `@rate_limit` decorator | ⏳ |
+
+```python
+# WebSocket example
+@app.websocket("/ws")
+async def websocket_handler(ws: WebSocket):
+    await ws.accept()
+    async for message in ws:
+        await ws.send(f"Echo: {message}")
+
+# Background tasks
+@app.post("/send-email")
+async def send_email(background: BackgroundTasks) -> HttpResponse:
+    background.add_task(send_email_async, "user@example.com")
+    return HttpResponse.json({"status": "queued"})
+
+# Caching
+@app.get("/expensive")
+@cache(ttl=60)
+async def expensive_operation() -> HttpResponse:
+    result = await compute_expensive()
+    return HttpResponse.json(result)
+```
+
+### Phase 4: Data Science Integration (Effort: M)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **4.1 NumPy Zero-Copy** | Buffer protocol for zero-copy array access | ⏳ |
+| **4.2 Pandas Integration** | DataFrame request/response support | ⏳ |
+| **4.3 PyTorch Tensors** | GPU tensor handling | ⏳ |
+| **4.4 Streaming Responses** | Async generators for large data | ⏳ |
+| **4.5 File Upload** | Efficient multipart handling | ⏳ |
+
+```python
+import numpy as np
+from armature import App, HttpResponse
+from armature.numpy import NumpyResponse
+
+app = App()
+
+@app.post("/predict")
+async def predict(data: np.ndarray) -> NumpyResponse:
+    # Zero-copy access to request body as NumPy array
+    result = model.predict(data)
+    return NumpyResponse(result)  # Zero-copy response
+
+@app.get("/large-dataset")
+async def stream_data():
+    # Streaming large datasets
+    async def generate():
+        for chunk in load_chunks():
+            yield chunk.tobytes()
+    return HttpResponse.stream(generate())
+```
+
+### Phase 5: DX & Ecosystem (Effort: M)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **5.1 CLI Tool** | `armature new my-app` project scaffolding | ⏳ |
+| **5.2 Type Stubs** | `.pyi` files for IDE support | ⏳ |
+| **5.3 pytest Plugin** | `pytest-armature` for testing | ⏳ |
+| **5.4 uvicorn Compat** | ASGI interface for existing deployments | ⏳ |
+| **5.5 PyPI Publishing** | Multi-platform wheel distribution | ⏳ |
+
+### Technical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Python                               │
+│  from armature import App, get                              │
+│  async def handler(req): return HttpResponse.ok()           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       PyO3 Bridge                            │
+│  - #[pyfunction] for route handlers                         │
+│  - Python coroutine → tokio Future                          │
+│  - GIL release during async I/O                             │
+│  - Buffer protocol for zero-copy                            │
+│  - pyo3-asyncio for async/await                             │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   armature-python crate                      │
+│  - PyO3 wrapper types (PyHttpRequest, PyHttpResponse)       │
+│  - Python-friendly error handling                           │
+│  - Decorator registration system                            │
+│  - Pydantic model integration                               │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      armature-core                           │
+│  - Router, HttpRequest, HttpResponse                        │
+│  - Middleware, State, Scopes                                │
+│  - All existing Rust optimizations                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Implementation Details
+
+#### Async Handler Bridging
+
+```rust
+// armature-python/src/handler.rs
+use pyo3::prelude::*;
+use pyo3_asyncio::tokio::future_into_py;
+
+#[pyclass]
+pub struct PyRouter {
+    inner: Router,
+}
+
+#[pymethods]
+impl PyRouter {
+    fn get(&mut self, path: &str, handler: PyObject) -> PyResult<()> {
+        let handler = Arc::new(handler);
+        self.inner.get(path, move |req| {
+            let handler = handler.clone();
+            async move {
+                Python::with_gil(|py| {
+                    let coro = handler.call1(py, (PyHttpRequest(req),))?;
+                    pyo3_asyncio::tokio::into_future(coro.as_ref(py))
+                })?.await
+            }
+        });
+        Ok(())
+    }
+}
+```
+
+#### Zero-Copy NumPy Integration
+
+```rust
+// armature-python/src/numpy.rs
+use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::prelude::*;
+
+#[pyfunction]
+fn process_array<'py>(
+    py: Python<'py>,
+    data: PyReadonlyArray1<'py, f64>
+) -> PyResult<&'py PyArray1<f64>> {
+    // Zero-copy access to NumPy array
+    let slice = data.as_slice()?;
+    
+    // Process in Rust (releases GIL)
+    let result = py.allow_threads(|| {
+        process_data(slice)
+    });
+    
+    // Return as NumPy array (zero-copy if possible)
+    Ok(PyArray1::from_vec(py, result))
+}
+```
+
+#### GIL-Free Async I/O
+
+```rust
+// Release GIL during network I/O for maximum concurrency
+async fn handle_request(py: Python<'_>, req: HttpRequest) -> PyResult<HttpResponse> {
+    // Release GIL while waiting for I/O
+    let response = py.allow_threads(|| async {
+        // All network I/O happens here without GIL
+        fetch_from_database(&req).await
+    }).await?;
+    
+    Ok(response)
+}
+```
+
+### Performance Targets
+
+| Benchmark | Flask | FastAPI | Armature-Py | Goal |
+|-----------|-------|---------|-------------|------|
+| Hello World (req/s) | 2k | 20k | 100k+ | 5x FastAPI |
+| JSON serialize | 50µs | 10µs | 0.5µs | 20x faster |
+| Route matching | 5µs | 1µs | 0.05µs | 20x faster |
+| NumPy throughput | N/A | N/A | 10GB/s | Zero-copy |
+
+### PyPI Package Structure
+
+```
+armature/
+├── __init__.py         # Main exports
+├── app.py              # App class
+├── router.py           # Router, APIRouter
+├── request.py          # HttpRequest
+├── response.py         # HttpResponse
+├── middleware.py       # Built-in middleware
+├── depends.py          # Dependency injection
+├── websocket.py        # WebSocket support
+├── background.py       # Background tasks
+├── cache.py            # Caching decorators
+└── _native.*.so        # Compiled Rust extension
+
+# Extras
+armature[numpy]         # NumPy integration
+armature[pandas]        # Pandas support
+armature[ml]            # PyTorch/TensorFlow
+armature[full]          # Everything
+```
+
+### RICE Score Calculation
+
+- **Reach:** 8 (massive Python ecosystem, ML/AI dominance)
+- **Impact:** 3 (game-changing for Python web + data science)
+- **Confidence:** 0.8 (PyO3 is mature, but XL effort)
+- **Effort:** XL (8 person-weeks)
+
+**Score:** (8 × 3 × 0.8) / 8 = **2.4** (but strategic value for ML/AI market)
+
+### Dependencies
+
+| Crate | Purpose |
+|-------|---------|
+| `pyo3` | Rust-Python bindings |
+| `pyo3-asyncio` | Async/await support |
+| `numpy` | NumPy array support |
+| `maturin` | Build and publish wheels |
+| `tokio` | Async runtime |
+
+### Milestones
+
+| Milestone | Target | Deliverable |
+|-----------|--------|-------------|
+| M1: Alpha | +4 weeks | Basic router, handlers, `pip install` works |
+| M2: Beta | +8 weeks | Full micro-framework API, decorators |
+| M3: RC | +12 weeks | WebSocket, Pydantic, OpenAPI |
+| M4: 1.0 | +16 weeks | NumPy integration, production-ready |
+| M5: DS | +20 weeks | Full data science integrations |
+
+### Comparison with FastAPI
+
+| Feature | FastAPI | Armature-Py |
+|---------|---------|-------------|
+| Performance | Good (uvicorn) | **Excellent** (native Rust) |
+| Async | Full support | Full support |
+| Type hints | Pydantic | Pydantic + native |
+| OpenAPI | Auto-generated | Auto-generated |
+| WebSocket | Via Starlette | Native |
+| NumPy | Manual | **Zero-copy native** |
+| Memory | Python GC | **Rust ownership** |
+| GIL | Blocked during sync | **Released during I/O** |
+
+---
+
 ## RICE Scoring Details
 
 ```
@@ -377,6 +731,7 @@ Effort: S=1, M=2, L=4, XL=8 (person-weeks)
 | CLI Tooling | ✅ | ❌ | ❌ | ✅ |
 | Payment Processing | ✅ | ❌ | ❌ | 🔶 |
 | Node.js Bindings | 🔶 | ❌ | ❌ | N/A |
+| Python Bindings | 🔶 | ❌ | ❌ | N/A |
 
 ✅ = Built-in | 🔶 = Planned/Via plugin | ❌ = Not available
 
