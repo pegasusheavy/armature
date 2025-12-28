@@ -52,6 +52,7 @@ members = [
     "armature-diesel",
     "armature-seaorm",
     "armature-websocket",
+    "armature-analytics",
 ]
 exclude = [
     "templates/*",
