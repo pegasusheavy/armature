@@ -55,6 +55,7 @@ members = [
     "armature-analytics",
     "armature-files",
     "armature-collab",
+    "armature-admin",
 ]
 exclude = [
     "templates/*",

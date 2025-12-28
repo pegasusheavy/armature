@@ -265,7 +265,7 @@ impl SyncProtocol {
     /// Request sync for a document
     pub fn request_sync(&mut self, doc_id: String) -> SyncMessage {
         self.pending_syncs.insert(doc_id.clone(), self.vclock.clone());
-        
+
         SyncMessage::SyncRequest {
             replica_id: self.replica_id,
             vclock: self.vclock.clone(),
@@ -289,16 +289,16 @@ impl SyncProtocol {
             }
             SyncMessage::Operation { replica_id: _, op_id, data, vclock } => {
                 self.vclock.merge(&vclock);
-                
+
                 let pending = PendingOp {
                     id: op_id,
                     data,
                     deps: Vec::new(), // Deps would come from operation
                     received_at: chrono::Utc::now(),
                 };
-                
+
                 self.buffer.add(pending);
-                
+
                 // Acknowledge
                 responses.push(SyncMessage::Ack {
                     replica_id: self.replica_id,
