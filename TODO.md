@@ -8,9 +8,7 @@
 
 ## Open Issues
 
-| Priority | Issue | Location | Status |
-|----------|-------|----------|--------|
-| P2 | Room cleanup TOCTOU race | `room.rs:95,165` | ⏳ Pending |
+None - all issues resolved! ✅
 
 ---
 
