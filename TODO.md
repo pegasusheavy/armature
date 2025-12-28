@@ -8,7 +8,54 @@
 
 ## Open Issues
 
-None - all issues resolved! ✅
+### Micro-Framework Performance Optimizations
+
+Benchmark results show the micro-framework has **1.5-3x overhead** vs direct Router usage.
+
+| Benchmark | Direct Router | Micro App | Overhead |
+|-----------|---------------|-----------|----------|
+| Static route | ~510ns | ~1.7µs | **3.3x** |
+| Route with param | ~1.1µs | ~5.6µs | **5x** |
+| JSON handler | - | ~3.7µs | - |
+
+#### Issues to Fix
+
+| Issue | Impact | Effort | Status |
+|-------|--------|--------|--------|
+| **Middleware chain rebuilt every request** | High | S | ⏳ |
+| `BuiltApp::handle()` creates closures per request | | | |
+| **`any()` clones handler 7 times** | Medium | S | ⏳ |
+| Should take `Arc<H>` or use single BoxedHandler | | | |
+| **Route registration allocates per-route** | Medium | M | ⏳ |
+| Consider arena allocation for route strings | | | |
+| **AppState type lookup via HashMap** | Low | S | ⏳ |
+| Could use type ID directly without hashing | | | |
+
+#### Recommended Fixes
+
+1. **Pre-build middleware chain** - Build once in `App::build()`, not per-request
+   ```rust
+   // Current: Builds closure chain in handle()
+   // Fix: Store pre-composed middleware in BuiltApp
+   struct BuiltApp {
+       middleware_chain: Arc<dyn Fn(HttpRequest) -> ...>,
+   }
+   ```
+
+2. **Optimize `any()` helper** - Single clone instead of 7
+   ```rust
+   pub fn any<H>(handler: H) -> RouteBuilder {
+       let boxed = Arc::new(BoxedHandler::new(handler.into_handler()));
+       RouteBuilder::new()
+           .with_shared_handler(HttpMethod::GET, boxed.clone())
+           // ... etc
+   }
+   ```
+
+3. **Use `SmallVec` for routes** - Avoid heap for small apps
+   ```rust
+   routes: SmallVec<[Route; 16]>,  // Inline up to 16 routes
+   ```
 
 ---
 
@@ -80,20 +127,25 @@ Effort: S=1, M=2, L=4, XL=8 (person-weeks)
 | Feature | Armature | Actix | Axum | NestJS |
 |---------|----------|-------|------|--------|
 | HTTP/2 | ✅ | ✅ | ✅ | ✅ |
+| HTTP/3 | ✅ | ❌ | ❌ | ❌ |
 | GraphQL | ✅ | ✅ | ✅ | ✅ |
 | WebSocket | ✅ | ✅ | ✅ | ✅ |
 | Built-in DI | ✅ | ❌ | ❌ | ✅ |
 | Decorator Syntax | ✅ | ❌ | ❌ | ✅ |
+| Micro-framework Mode | ✅ | ✅ | ✅ | ❌ |
 | Database Migrations | ❌ | ❌ | ❌ | ✅ |
-| Admin Generator | ❌ | ❌ | ❌ | 🔶 |
+| Admin Generator | ✅ | ❌ | ❌ | 🔶 |
 | OpenAPI | ✅ | 🔶 | 🔶 | ✅ |
 | CLI Tooling | ✅ | ❌ | ❌ | ✅ |
+| Payment Processing | ✅ | ❌ | ❌ | 🔶 |
 
 ✅ = Built-in | 🔶 = Via plugin | ❌ = Not available
 
 ---
 
 ## Benchmark Reference (December 2025)
+
+### Core Framework
 
 | Benchmark | Time |
 |-----------|------|
@@ -102,6 +154,25 @@ Effort: S=1, M=2, L=4, XL=8 (person-weeks)
 | POST with body | 778ns |
 | Route first match | 51ns |
 | JSON serialize (small) | 17ns |
+
+### Micro-Framework (`armature_core::micro`)
+
+| Benchmark | Time |
+|-----------|------|
+| Empty app creation | 25ns |
+| App with 5 routes | 1.9-4.7µs |
+| App with scope | 1.5µs |
+| App with middleware | 857ns |
+| Route (no middleware) | 875ns |
+| Route (1 middleware) | 607ns |
+| Route (3 middleware) | 1.9µs |
+| Data creation | 30ns |
+| Data access | <1ns |
+| Data clone | 10ns |
+| JSON handler | 3.7µs |
+| Single route builder | 97ns |
+| Multi-method builder | 525ns |
+| Scope with routes | 448ns |
 
 ---
 
