@@ -97,7 +97,7 @@ async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     let id: u64 = req.param("id")
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
-    
+
     HttpResponse::json(&User {
         id,
         name: "Alice".to_string(),
@@ -152,7 +152,7 @@ Available helpers:
 Handle multiple methods on the same path:
 
 ```rust
-.route("/resource", 
+.route("/resource",
     get(read_resource)
         .post(create_resource)
         .put(update_resource)
@@ -166,11 +166,11 @@ Handle multiple methods on the same path:
 async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     // Extract :id from /users/:id
     let id = req.param("id").unwrap();
-    
+
     // Multiple params: /users/:user_id/posts/:post_id
     let user_id = req.param("user_id").unwrap();
     let post_id = req.param("post_id").unwrap();
-    
+
     Ok(HttpResponse::ok())
 }
 
@@ -188,7 +188,7 @@ async fn search(req: HttpRequest) -> Result<HttpResponse, Error> {
     let page = req.query("page")
         .and_then(|p| p.parse::<u32>().ok())
         .unwrap_or(1);
-    
+
     HttpResponse::json(&SearchResults { query, page })
 }
 ```
@@ -224,16 +224,16 @@ impl Middleware for Timing {
     ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
         Box::pin(async move {
             let start = std::time::Instant::now();
-            
+
             // Call next handler in chain
             let mut response = next(req).await?;
-            
+
             // Add timing header
             response.headers.insert(
                 "X-Response-Time".to_string(),
                 format!("{}ms", start.elapsed().as_millis()),
             );
-            
+
             Ok(response)
         })
     }
@@ -491,10 +491,10 @@ struct AppState { db: Pool }
 async fn handler(req: HttpRequest) -> Result<HttpResponse, Error> {
     let id = req.param("id")
         .ok_or_else(|| Error::validation("Missing id parameter"))?;
-    
+
     let id: u64 = id.parse()
         .map_err(|_| Error::validation("Invalid id format"))?;
-    
+
     // ...
 }
 ```
