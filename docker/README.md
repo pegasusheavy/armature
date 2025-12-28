@@ -57,7 +57,7 @@ docker compose up -d
 **Services:**
 | Service | Port | Description |
 |---------|------|-------------|
-| nginx | 80/443 | Load balancer |
+| Ferron | 80/443 | Load balancer (Rust-native) |
 | API (x2) | - | Application instances |
 | PostgreSQL Primary | 5432 | Primary database |
 | PostgreSQL Replica | - | Read replica |
@@ -161,7 +161,7 @@ SMTP_PORT=1025
                     └────┬─────┘
                          │
                     ┌────▼─────┐
-                    │  nginx   │
+                    │  Ferron  │
                     │   :80    │
                     └────┬─────┘
                     ┌────┴────┐
