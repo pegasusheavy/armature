@@ -195,6 +195,11 @@ pub mod worker;
 pub mod write_coalesce;
 pub mod zero_cost;
 
+/// Micro-framework API for lightweight applications
+///
+/// Provides an Actix-style API without the full module/controller system.
+pub mod micro;
+
 // Re-export commonly used types
 pub use application::*;
 pub use body_limits::*;
