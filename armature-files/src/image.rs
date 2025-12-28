@@ -137,11 +137,11 @@ pub fn convert_format(
     metadata: &mut FileMetadata,
 ) -> FileResult<Bytes> {
     let img = load_image(data)?;
-    
+
     // Update metadata for new format
     metadata.mime_type = format.mime_type().to_string();
     metadata.extension = Some(format.extension().to_string());
-    
+
     encode_image_format(&img, format)
 }
 
@@ -395,7 +395,7 @@ mod tests {
     use super::*;
 
     // Note: Actual image tests would require test fixtures
-    
+
     #[test]
     fn test_resize_filter_default() {
         assert_eq!(ResizeFilter::default(), ResizeFilter::Lanczos3);

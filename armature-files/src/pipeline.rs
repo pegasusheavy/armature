@@ -307,7 +307,7 @@ mod tests {
     fn test_pipeline_creation() {
         let pipeline = Pipeline::new()
             .max_size(1024 * 1024);
-        
+
         assert!(pipeline.data.is_none());
         assert_eq!(pipeline.max_size, Some(1024 * 1024));
     }
@@ -317,7 +317,7 @@ mod tests {
         let data = vec![0u8; 100];
         let pipeline = Pipeline::new()
             .load_bytes(data, "test.jpg");
-        
+
         assert!(pipeline.data.is_some());
         assert!(pipeline.metadata.is_some());
         assert_eq!(pipeline.metadata.unwrap().filename, "test.jpg");

@@ -176,7 +176,7 @@ impl PdfBuilder {
         let page_size = PageSize::default();
         let margins = Margins::default();
         let (_, height) = page_size.dimensions();
-        
+
         Self {
             pages: vec![PageContent::default()],
             page_size,
@@ -288,7 +288,7 @@ impl PdfBuilder {
     /// Add text with custom font size
     pub fn add_text_styled(mut self, text: &str, size: FontSize) -> Self {
         let line_height = size.line_height();
-        
+
         // Simple word wrapping (approximate)
         let chars_per_line = (self.content_width() / (size.points() * 0.6)) as usize;
 
@@ -369,7 +369,7 @@ impl PdfBuilder {
 
         for row in rows {
             self.ensure_space(row_height);
-            
+
             for (col_idx, cell) in row.iter().enumerate() {
                 let x = self.margins.left + (col_idx as f32 * col_width) + 5.0;
                 if let Some(page) = self.pages.last_mut() {
@@ -408,12 +408,12 @@ impl PdfBuilder {
         for page_content in &self.pages {
             let content_id = doc.new_object_id();
             let page_id = doc.new_object_id();
-            
+
             // Build content stream
             let mut content = String::new();
             content.push_str("BT\n"); // Begin text
             content.push_str("/F1 12 Tf\n"); // Default font
-            
+
             for text_op in &page_content.texts {
                 // Set font size
                 content.push_str(&format!("/F1 {} Tf\n", text_op.font_size));
@@ -428,7 +428,7 @@ impl PdfBuilder {
                 // Reset position for next text
                 content.push_str(&format!("{} {} Td\n", -text_op.x, -text_op.y));
             }
-            
+
             content.push_str("ET\n"); // End text
 
             // Add content stream
