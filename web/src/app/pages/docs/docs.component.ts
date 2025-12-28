@@ -5,6 +5,7 @@ import { DocsOverviewComponent } from './overview/overview.component';
 
 // Import available doc page components
 import { ProfilingGuideComponent } from './pages/profiling-guide/profiling-guide.component';
+import { FrameworkComparisonComponent } from './pages/framework-comparison/framework-comparison.component';
 
 interface DocMetadata {
   id: string;
@@ -22,6 +23,7 @@ interface DocMetadata {
     RouterModule,
     DocsOverviewComponent,
     ProfilingGuideComponent,
+    FrameworkComparisonComponent,
   ],
   templateUrl: './docs.component.html',
   styleUrls: ['./docs.component.scss'],
@@ -118,6 +120,7 @@ export class DocsComponent implements OnInit {
     { id: 'profiling-guide', title: 'CPU Profiling', category: 'Performance', hasComponent: true },
 
     // 15. Benchmarks - Performance comparisons
+    { id: 'framework-comparison', title: 'vs Actix vs Axum', category: 'Benchmarks', hasComponent: true },
     { id: 'armature-vs-nodejs', title: 'vs Node.js', category: 'Benchmarks' },
     { id: 'armature-vs-nextjs', title: 'vs Next.js', category: 'Benchmarks' },
   ];
