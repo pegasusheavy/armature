@@ -222,6 +222,9 @@ struct BufferHistory {
 }
 
 impl BufferHistory {
+    /// Maximum samples to retain (prevents unbounded growth under burst traffic)
+    const MAX_SAMPLES: usize = 1000;
+
     fn new(window: Duration, initial_size: usize) -> Self {
         Self {
             samples: Vec::with_capacity(1000),
@@ -233,9 +236,14 @@ impl BufferHistory {
     fn record(&mut self, size: usize, was_sufficient: bool) {
         let now = Instant::now();
 
-        // Prune old samples
+        // Prune old samples by time
         self.samples
             .retain(|s| now.duration_since(s.timestamp) < self.window);
+
+        // Prune by count if over capacity (prevents unbounded growth under burst)
+        while self.samples.len() >= Self::MAX_SAMPLES {
+            self.samples.remove(0);
+        }
 
         // Add new sample
         self.samples.push(BufferSample {
