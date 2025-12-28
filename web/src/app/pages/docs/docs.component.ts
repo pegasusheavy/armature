@@ -36,6 +36,7 @@ export class DocsComponent implements OnInit {
   docs: DocMetadata[] = [
     // 1. Getting Started - First things first
     { id: 'readme', title: 'Overview', category: 'Getting Started', hasComponent: true },
+    { id: 'micro-framework-guide', title: 'Micro-Framework Mode', category: 'Getting Started' },
     { id: 'project-templates', title: 'Project Templates', category: 'Getting Started' },
     { id: 'config-guide', title: 'Configuration', category: 'Getting Started' },
     { id: 'macro-overview', title: 'Macros Overview', category: 'Getting Started' },
