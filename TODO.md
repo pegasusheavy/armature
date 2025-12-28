@@ -22,12 +22,12 @@
 | WebSocket `closed` race | `client.rs:67` | ✅ Fixed with `AtomicBool` |
 | Room cleanup TOCTOU | `room.rs:95,165` | ⏳ Pending (use `remove_if()`) |
 
-### Priority 3: Cleanup
+### Priority 3: Cleanup (Fixed ✅)
 
-| Issue | Location | Fix |
-|-------|----------|-----|
-| Object pool overhead | `memory_benchmarks.rs` | Use `crossbeam::ArrayQueue` |
-| Dead code warnings | `memory_benchmarks.rs:15-44` | Remove `AllocationCounter` |
+| Issue | Location | Status |
+|-------|----------|--------|
+| Object pool overhead | `memory_benchmarks.rs` | ✅ Added `LockFreePool` with `crossbeam::ArrayQueue` |
+| Dead code warnings | `memory_benchmarks.rs:15-44` | ✅ Removed unused `AllocationCounter` |
 
 ---
 

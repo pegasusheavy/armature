@@ -3,48 +3,10 @@
 //! These benchmarks measure allocation patterns and help identify memory issues.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use crossbeam::queue::ArrayQueue;
 use std::collections::HashMap;
 use std::hint::black_box;
-
-// ============================================================================
-// Allocation Tracking
-// ============================================================================
-
-/// Simple allocation counter for benchmarking
-#[derive(Default)]
-struct AllocationCounter {
-    count: std::sync::atomic::AtomicUsize,
-    bytes: std::sync::atomic::AtomicUsize,
-}
-
-impl AllocationCounter {
-    fn track(&self, size: usize) {
-        self.count
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        self.bytes
-            .fetch_add(size, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    fn reset(&self) {
-        self.count
-            .store(0, std::sync::atomic::Ordering::Relaxed);
-        self.bytes
-            .store(0, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    fn count(&self) -> usize {
-        self.count.load(std::sync::atomic::Ordering::Relaxed)
-    }
-
-    fn bytes(&self) -> usize {
-        self.bytes.load(std::sync::atomic::Ordering::Relaxed)
-    }
-}
-
-static ALLOC_COUNTER: AllocationCounter = AllocationCounter {
-    count: std::sync::atomic::AtomicUsize::new(0),
-    bytes: std::sync::atomic::AtomicUsize::new(0),
-};
+use std::sync::Arc;
 
 // ============================================================================
 // String Allocation Benchmarks
@@ -367,12 +329,12 @@ fn bench_request_response_allocations(c: &mut Criterion) {
 // Memory Pool Simulation Benchmarks
 // ============================================================================
 
-/// Simple object pool for benchmarking
-struct ObjectPool<T> {
+/// Mutex-based object pool (baseline - has lock contention overhead)
+struct MutexPool<T> {
     available: std::sync::Mutex<Vec<T>>,
 }
 
-impl<T: Default> ObjectPool<T> {
+impl<T: Default> MutexPool<T> {
     fn new(initial_size: usize) -> Self {
         let mut items = Vec::with_capacity(initial_size);
         for _ in 0..initial_size {
@@ -396,6 +358,32 @@ impl<T: Default> ObjectPool<T> {
     }
 }
 
+/// Lock-free object pool using crossbeam's ArrayQueue (recommended)
+struct LockFreePool<T> {
+    available: Arc<ArrayQueue<T>>,
+}
+
+impl<T: Default> LockFreePool<T> {
+    fn new(capacity: usize) -> Self {
+        let queue = ArrayQueue::new(capacity);
+        for _ in 0..capacity {
+            let _ = queue.push(T::default());
+        }
+        Self {
+            available: Arc::new(queue),
+        }
+    }
+
+    fn get(&self) -> T {
+        self.available.pop().unwrap_or_else(|| T::default())
+    }
+
+    fn put(&self, item: T) {
+        // If full, just drop the item (bounded pool)
+        let _ = self.available.push(item);
+    }
+}
+
 fn bench_object_pool(c: &mut Criterion) {
     let mut group = c.benchmark_group("memory/object_pool");
 
@@ -414,13 +402,23 @@ fn bench_object_pool(c: &mut Criterion) {
         })
     });
 
-    // With pool
-    let pool: ObjectPool<PooledObject> = ObjectPool::new(100);
-    group.bench_function("with_pool_get_put", |b| {
+    // With Mutex-based pool (has lock overhead)
+    let mutex_pool: MutexPool<PooledObject> = MutexPool::new(100);
+    group.bench_function("mutex_pool", |b| {
         b.iter(|| {
-            let obj = pool.get();
+            let obj = mutex_pool.get();
             black_box(&obj);
-            pool.put(obj);
+            mutex_pool.put(obj);
+        })
+    });
+
+    // With lock-free pool (recommended - no lock contention)
+    let lockfree_pool: LockFreePool<PooledObject> = LockFreePool::new(100);
+    group.bench_function("lockfree_pool", |b| {
+        b.iter(|| {
+            let obj = lockfree_pool.get();
+            black_box(&obj);
+            lockfree_pool.put(obj);
         })
     });
 
