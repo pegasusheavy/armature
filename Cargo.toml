@@ -53,6 +53,7 @@ members = [
     "armature-seaorm",
     "armature-websocket",
     "armature-analytics",
+    "armature-files",
 ]
 exclude = [
     "templates/*",
