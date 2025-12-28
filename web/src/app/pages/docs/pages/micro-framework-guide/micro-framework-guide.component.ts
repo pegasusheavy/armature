@@ -92,11 +92,11 @@ async fn main() -> std::io::Result<()> {
                 code: `async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     // Extract :id from /users/:id
     let id = req.param("id").unwrap();
-    
+
     // Multiple params: /users/:user_id/posts/:post_id
     let user_id = req.param("user_id").unwrap();
     let post_id = req.param("post_id").unwrap();
-    
+
     HttpResponse::json(&User { id: id.parse()? })
 }
 
@@ -119,7 +119,7 @@ App::new()
     let page = req.query("page")
         .and_then(|p| p.parse::<u32>().ok())
         .unwrap_or(1);
-    
+
     HttpResponse::json(&SearchResults { query, page })
 }`
               }
@@ -167,16 +167,16 @@ impl Middleware for Timing {
     ) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> {
         Box::pin(async move {
             let start = std::time::Instant::now();
-            
+
             // Call next handler in chain
             let mut response = next(req).await?;
-            
+
             // Add timing header
             response.headers.insert(
                 "X-Response-Time".to_string(),
                 format!("{}ms", start.elapsed().as_millis()),
             );
-            
+
             Ok(response)
         })
     }
@@ -389,7 +389,7 @@ async fn get_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     let id: u64 = req.param("id")
         .and_then(|s| s.parse().ok())
         .ok_or_else(|| Error::validation("Invalid user ID"))?;
-    
+
     HttpResponse::json(&User { id, name: "Alice".to_string() })
 }
 
