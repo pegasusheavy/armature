@@ -207,6 +207,13 @@ messaging-full = ["armature-messaging/full"]
 # Performance features
 simd-json = ["armature-core/simd-json"]
 
+# Memory profiling (for leak detection)
+memory-profiling = ["dhat"]
+
+[dependencies.dhat]
+version = "0.3"
+optional = true
+
 [dev-dependencies]
 tokio-test = "0.4"
 criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
@@ -615,10 +622,18 @@ harness = false
 name = "database_benchmarks"
 harness = false
 
+[[bench]]
+name = "memory_benchmarks"
+harness = false
+
 # Benchmark Examples
 [[example]]
 name = "benchmark_server"
 path = "examples/benchmark_server.rs"
+
+[[example]]
+name = "memory_profile_server"
+path = "examples/memory_profile_server.rs"
 
 # Benchmark Tools
 [[bin]]
