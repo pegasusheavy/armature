@@ -3,6 +3,7 @@
 use crate::error::{WebSocketError, WebSocketResult};
 use crate::message::Message;
 use futures_util::{SinkExt, StreamExt};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message as TungsteniteMessage};
@@ -64,7 +65,9 @@ impl WebSocketClientBuilder {
 pub struct WebSocketClient {
     tx: mpsc::UnboundedSender<Message>,
     rx: mpsc::UnboundedReceiver<Message>,
-    closed: bool,
+    /// Thread-safe closed flag using AtomicBool to prevent data races
+    /// between send() and close() when client is shared across tasks.
+    closed: AtomicBool,
 }
 
 impl WebSocketClient {
@@ -104,7 +107,7 @@ impl WebSocketClient {
         Ok(Self {
             tx: outgoing_tx,
             rx: incoming_rx,
-            closed: false,
+            closed: AtomicBool::new(false),
         })
     }
 
@@ -165,7 +168,7 @@ impl WebSocketClient {
 
     /// Send a message to the server.
     pub fn send(&self, message: Message) -> WebSocketResult<()> {
-        if self.closed {
+        if self.closed.load(Ordering::Acquire) {
             return Err(WebSocketError::ConnectionClosed);
         }
         self.tx
@@ -200,21 +203,29 @@ impl WebSocketClient {
     }
 
     /// Close the connection.
-    pub fn close(&mut self) {
-        if !self.closed {
-            self.closed = true;
+    ///
+    /// This method uses atomic compare-and-exchange to ensure only one task
+    /// sends the close message, even when called concurrently.
+    pub fn close(&self) {
+        // Atomically set closed from false to true; only proceed if we won the race
+        if self
+            .closed
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_ok()
+        {
             let _ = self.tx.send(Message::close());
         }
     }
 
     /// Check if the connection is closed.
     pub fn is_closed(&self) -> bool {
-        self.closed
+        self.closed.load(Ordering::Acquire)
     }
 }
 
 impl Drop for WebSocketClient {
     fn drop(&mut self) {
+        // close() now takes &self, but we have &mut self which coerces
         self.close();
     }
 }
