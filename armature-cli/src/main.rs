@@ -34,7 +34,7 @@ mod generators;
 mod templates;
 mod watcher;
 
-use commands::{build, config, dev, generate, info, new, openapi, repl, routes};
+use commands::{build, config, dev, generate, info, mock, new, openapi, repl, routes};
 use error::{CliError, CliResult};
 
 /// Armature CLI - Modern Rust Web Framework Tools
@@ -167,6 +167,49 @@ enum Commands {
         #[command(subcommand)]
         command: OpenapiCommands,
     },
+
+    /// Run mock server with fake data from OpenAPI spec
+    #[command(alias = "m")]
+    Mock(MockArgs),
+}
+
+// =============================================================================
+// MOCK ARGS
+// =============================================================================
+
+#[derive(Args)]
+struct MockArgs {
+    /// Path to OpenAPI spec (JSON or YAML)
+    #[arg(short, long, default_value = "openapi.yaml")]
+    spec: String,
+
+    /// Port to run mock server on
+    #[arg(short, long, default_value = "3000")]
+    port: u16,
+
+    /// Host to bind to
+    #[arg(long, default_value = "127.0.0.1")]
+    host: String,
+
+    /// Directory containing custom mock data files
+    #[arg(short, long)]
+    data: Option<String>,
+
+    /// Simulated response delay in milliseconds
+    #[arg(long, default_value = "0")]
+    delay: u64,
+
+    /// Enable CORS headers
+    #[arg(long, default_value = "true")]
+    cors: bool,
+
+    /// Seed for random data generation (for reproducibility)
+    #[arg(long)]
+    seed: Option<u64>,
+
+    /// Watch spec file for changes
+    #[arg(short, long)]
+    watch: bool,
 }
 
 // =============================================================================
@@ -2019,6 +2062,21 @@ async fn main() {
                     Ok(())
                 }
             }
+        }
+
+        Commands::Mock(args) => {
+            print_mini_banner();
+            let mock_args = mock::MockArgs {
+                spec: args.spec,
+                port: args.port,
+                host: args.host,
+                data_dir: args.data,
+                delay_ms: args.delay,
+                cors: args.cors,
+                seed: args.seed,
+                watch: args.watch,
+            };
+            mock::run(mock_args).await
         }
     };
 
