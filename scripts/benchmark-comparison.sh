@@ -43,11 +43,11 @@ start_server() {
     local name=$1
     local cmd=$2
     local port=$3
-    
+
     echo -e "${BLUE}Starting $name on port $port...${NC}"
     eval "$cmd" &
     sleep 2
-    
+
     # Check if server is running
     if ! curl -s "http://127.0.0.1:$port/health" > /dev/null; then
         echo -e "${RED}Failed to start $name${NC}"
@@ -70,9 +70,9 @@ run_benchmark() {
     local endpoint=$3
     local method=${4:-GET}
     local body=${5:-""}
-    
+
     local url="http://127.0.0.1:$port$endpoint"
-    
+
     if [ "$method" = "POST" ] && [ -n "$body" ]; then
         oha -n $REQUESTS -c $CONCURRENCY -m POST -H "Content-Type: application/json" -d "$body" --no-tui "$url" 2>/dev/null
     else
