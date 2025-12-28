@@ -8,6 +8,35 @@
 
 ## Open Issues
 
+### Framework Comparison (Armature vs Actix vs Axum)
+
+HTTP load testing with `oha` (50k requests, 100 concurrent):
+
+#### Plaintext (Hello World)
+| Framework | Req/sec | Avg Latency | p99 |
+|-----------|---------|-------------|-----|
+| **Armature** | **242,823** | 0.40ms | 2.62ms |
+| Actix-web | 144,069 | 0.53ms | 9.98ms |
+| Axum | 46,127 | 2.09ms | 29.58ms |
+
+#### JSON Response
+| Framework | Req/sec | Avg Latency | p99 |
+|-----------|---------|-------------|-----|
+| Axum | 239,594 | 0.40ms | 1.91ms |
+| Actix-web | 128,004 | 0.67ms | 16.95ms |
+| **Armature** | 35,622 | 2.65ms | 32.85ms |
+
+#### Path Parameters (/users/:id)
+| Framework | Req/sec | Avg Latency | p99 |
+|-----------|---------|-------------|-----|
+| Actix-web | 183,781 | 0.44ms | 10.00ms |
+| **Armature** | 59,077 | 1.51ms | 15.79ms |
+| Axum | 38,549 | 2.47ms | 28.28ms |
+
+**Analysis:** Armature leads on plaintext but needs JSON serialization optimization.
+
+---
+
 ### Micro-Framework Performance Optimizations
 
 Benchmark results show the micro-framework has **1.5-3x overhead** vs direct Router usage.
@@ -588,12 +617,12 @@ fn process_array<'py>(
 ) -> PyResult<&'py PyArray1<f64>> {
     // Zero-copy access to NumPy array
     let slice = data.as_slice()?;
-    
+
     // Process in Rust (releases GIL)
     let result = py.allow_threads(|| {
         process_data(slice)
     });
-    
+
     // Return as NumPy array (zero-copy if possible)
     Ok(PyArray1::from_vec(py, result))
 }
@@ -609,7 +638,7 @@ async fn handle_request(py: Python<'_>, req: HttpRequest) -> PyResult<HttpRespon
         // All network I/O happens here without GIL
         fetch_from_database(&req).await
     }).await?;
-    
+
     Ok(response)
 }
 ```
