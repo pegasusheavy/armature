@@ -16,11 +16,11 @@ None - all issues resolved! ✅
 
 ### P0: Critical Gaps (vs Competitors)
 
-| Feature | RICE Score | Description | Effort |
-|---------|------------|-------------|--------|
-| **HTTP/2 Support** | 8.0 | Actix/Axum support HTTP/2; required for modern deployments | M |
-| **Database Migrations** | 7.5 | CLI-driven migrations like `armature migrate` (NestJS, Rails pattern) | M |
-| **OpenAPI Client Gen** | 6.0 | Generate TypeScript/Rust clients from OpenAPI spec | S |
+| Feature | RICE Score | Description | Effort | Status |
+|---------|------------|-------------|--------|--------|
+| **HTTP/2 Support** | 8.0 | Actix/Axum support HTTP/2; required for modern deployments | M | ✅ Done |
+| **Database Migrations** | 7.5 | CLI-driven migrations like `armature migrate` (NestJS, Rails pattern) | M | ⏳ |
+| **OpenAPI Client Gen** | 6.0 | Generate TypeScript/Rust clients from OpenAPI spec | S | ⏳ |
 
 ### P1: High-Value Enterprise Features
 
@@ -79,7 +79,7 @@ Effort: S=1, M=2, L=4, XL=8 (person-weeks)
 
 | Feature | Armature | Actix | Axum | NestJS |
 |---------|----------|-------|------|--------|
-| HTTP/2 | ❌ | ✅ | ✅ | ✅ |
+| HTTP/2 | ✅ | ✅ | ✅ | ✅ |
 | GraphQL | ✅ | ✅ | ✅ | ✅ |
 | WebSocket | ✅ | ✅ | ✅ | ✅ |
 | Built-in DI | ✅ | ❌ | ❌ | ✅ |
