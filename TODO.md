@@ -1,8 +1,81 @@
 # Armature Framework - TODO
 
-## Status: 100% Complete ✅
+## Status: Memory Profiling Findings
 
-**113 optimizations implemented** | **0 remaining** | Axum/Actix-competitive performance achieved
+**113 optimizations implemented** | **5 memory issues identified** | Axum/Actix-competitive performance achieved
+
+---
+
+## Memory Issues Identified (December 2024)
+
+### Priority 1: Potential Memory Leaks
+
+| Issue | Location | Description | Fix |
+|-------|----------|-------------|-----|
+| **Unbounded HashMap** | `serialization_pool.rs:286` | `SizeTracker::type_sizes` can grow unbounded with many type names | Replace with LRU cache (max 256 entries) |
+| **BufferHistory samples** | `connection_manager.rs:219` | `BufferHistory::samples` prunes by time but not count; can grow under burst traffic | Add hard cap (1000 samples max) |
+
+### Priority 2: Thread-Safety Fixes (Completed ✅)
+
+| Issue | Location | Status |
+|-------|----------|--------|
+| WebSocket `closed` flag race | `armature-websocket/src/client.rs:67` | ✅ Fixed with `AtomicBool` |
+| Room cleanup TOCTOU race | `armature-websocket/src/room.rs:95,165` | ✅ Fixed with `remove_if()` |
+
+### Priority 3: Optimization Opportunities
+
+| Issue | Location | Description | Recommendation |
+|-------|----------|-------------|----------------|
+| **Object pool overhead** | `benches/memory_benchmarks.rs` | Mutex-based pool (19ns) slower than direct alloc (9.5ns) | Use `crossbeam::ArrayQueue` for lock-free pooling |
+| **Unused AllocationCounter** | `benches/memory_benchmarks.rs:15-44` | Dead code generating warnings | Remove or integrate with DHAT |
+
+### Memory Benchmark Results
+
+```
+Allocation Patterns:
+├── Vec (64B → 64KB):     5ns → 856ns
+├── String (64B → 64KB):  24ns → 960ns  
+├── HashMap (100 entries): 4.4µs (with capacity) vs 5.2µs (without)
+└── Object Pool:          19ns (2x overhead vs direct alloc)
+
+Leak Patterns:
+├── Unbounded cache:      88µs (grows without limit)
+├── Bounded cache (LRU):  85µs (stable memory)
+└── Weak references:      29ns (automatic cleanup)
+
+Drop Timing:
+├── Small Vec (100):      19-23ns
+├── Large Vec (100K):     157-187ns
+├── Nested structures:    10-11µs
+└── HashMap (1000):       50-54µs
+```
+
+### Recommended Actions
+
+1. **`serialization_pool.rs`** - Add LRU bound to `type_sizes`:
+   ```rust
+   // Before
+   type_sizes: HashMap<String, TypeSizeInfo>,
+   
+   // After
+   type_sizes: lru::LruCache<String, TypeSizeInfo>,  // max 256
+   ```
+
+2. **`connection_manager.rs`** - Cap `BufferHistory::samples`:
+   ```rust
+   fn record(&mut self, size: usize, was_sufficient: bool) {
+       // Existing prune by time...
+       
+       // Add: prune by count if over capacity
+       while self.samples.len() >= 1000 {
+           self.samples.remove(0);
+       }
+   }
+   ```
+
+3. **`memory_benchmarks.rs`** - Clean up dead code:
+   - Remove unused `AllocationCounter` struct
+   - Remove unused `ALLOC_COUNTER` static
 
 ---
 
