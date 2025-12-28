@@ -1,6 +1,7 @@
 // Application bootstrapper and HTTP server
 
 use crate::http2::{Http2Builder, Http2Config, Http2Stats};
+use crate::http3::{Http3Config, Http3Stats};
 use crate::logging::{debug, error, info, trace, warn};
 use crate::pipeline::{PipelineConfig, PipelineStats, PipelinedHttp1Builder};
 use crate::{
@@ -30,6 +31,10 @@ pub struct Application {
     http2_config: Http2Config,
     /// Shared HTTP/2 statistics
     http2_stats: Arc<Http2Stats>,
+    /// HTTP/3 (QUIC) configuration
+    http3_config: Http3Config,
+    /// Shared HTTP/3 statistics
+    http3_stats: Arc<Http3Stats>,
 }
 
 impl Application {
@@ -43,6 +48,8 @@ impl Application {
             pipeline_stats: Arc::new(PipelineStats::new()),
             http2_config: Http2Config::default(),
             http2_stats: Arc::new(Http2Stats::new()),
+            http3_config: Http3Config::default(),
+            http3_stats: Arc::new(Http3Stats::new()),
         }
     }
 
@@ -98,6 +105,33 @@ impl Application {
     /// Get the HTTP/2 configuration
     pub fn http2_config(&self) -> &Http2Config {
         &self.http2_config
+    }
+
+    /// Set the HTTP/3 (QUIC) configuration
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, Http3Config};
+    ///
+    /// let app = Application::new(container, router)
+    ///     .with_http3_config(Http3Config::low_latency());
+    /// ```
+    pub fn with_http3_config(mut self, config: Http3Config) -> Self {
+        self.http3_config = config;
+        self
+    }
+
+    /// Get the HTTP/3 (QUIC) statistics
+    ///
+    /// Use this to monitor HTTP/3 connection, stream, and transfer metrics.
+    pub fn http3_stats(&self) -> Arc<Http3Stats> {
+        Arc::clone(&self.http3_stats)
+    }
+
+    /// Get the HTTP/3 (QUIC) configuration
+    pub fn http3_config(&self) -> &Http3Config {
+        &self.http3_config
     }
 
     /// Create a new application from a root module with lifecycle support
@@ -160,6 +194,8 @@ impl Application {
             pipeline_stats: Arc::new(PipelineStats::new()),
             http2_config: Http2Config::default(),
             http2_stats: Arc::new(Http2Stats::new()),
+            http3_config: Http3Config::default(),
+            http3_stats: Arc::new(Http3Stats::new()),
         }
     }
 
@@ -825,6 +861,117 @@ impl Application {
                 }
             });
         }
+    }
+
+    /// Start HTTP/3 (QUIC) server
+    ///
+    /// HTTP/3 uses QUIC (UDP) instead of TCP, providing:
+    /// - 0-RTT connection establishment
+    /// - No head-of-line blocking
+    /// - Connection migration (mobile-friendly)
+    /// - Built-in encryption (TLS 1.3)
+    ///
+    /// **Note**: Requires the `http3` feature to be enabled.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, TlsConfig, Http3Config};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::new(container, router)
+    ///     .with_http3_config(Http3Config::low_latency());
+    ///
+    /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
+    /// app.listen_h3(443, tls).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[cfg(feature = "http3")]
+    pub async fn listen_h3(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
+        use crate::http3::Http3Server;
+
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+        info!(
+            address = %addr,
+            max_concurrent_streams = self.http3_config.max_concurrent_bidi_streams,
+            enable_0rtt = self.http3_config.enable_0rtt,
+            "Starting HTTP/3 (QUIC) server"
+        );
+
+        let server = Http3Server::new(self.http3_config.clone(), self.router.clone());
+
+        server.listen(addr, tls_config.server_config).await
+    }
+
+    /// Start dual-stack server: HTTP/3 (QUIC/UDP) + HTTPS (TCP)
+    ///
+    /// This runs both servers on the same port number (different protocols):
+    /// - HTTP/3 on UDP port (for modern clients)
+    /// - HTTPS with HTTP/2/HTTP/1.1 on TCP port (for compatibility)
+    ///
+    /// Add `Alt-Svc` header to responses to advertise HTTP/3:
+    /// ```text
+    /// Alt-Svc: h3=":443"; ma=86400
+    /// ```
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use armature_core::{Application, TlsConfig};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let app = Application::new(container, router);
+    /// let tls = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
+    ///
+    /// // Runs both HTTP/3 (UDP) and HTTPS (TCP) on port 443
+    /// app.listen_dual_stack(443, tls).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[cfg(feature = "http3")]
+    pub async fn listen_dual_stack(self, port: u16, tls_config: TlsConfig) -> Result<(), Error> {
+        use crate::http3::Http3Server;
+
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
+
+        info!(
+            address = %addr,
+            "Starting dual-stack server (HTTP/3 + HTTPS)"
+        );
+
+        // Clone for the two servers
+        let tls_config_h3 = tls_config.clone();
+        let router_h3 = Arc::clone(&self.router);
+        let http3_config = self.http3_config.clone();
+
+        // Start HTTP/3 server (UDP)
+        let h3_handle = tokio::spawn(async move {
+            let server = Http3Server::new(http3_config, router_h3);
+            if let Err(e) = server.listen(addr, tls_config_h3.server_config).await {
+                error!(error = %e, "HTTP/3 server error");
+            }
+        });
+
+        // Start HTTPS server with HTTP/2 (TCP)
+        let https_handle = tokio::spawn(async move {
+            if let Err(e) = self.listen_https_h2(port, tls_config).await {
+                error!(error = %e, "HTTPS server error");
+            }
+        });
+
+        // Wait for either to finish (usually they run forever)
+        tokio::select! {
+            _ = h3_handle => {
+                warn!("HTTP/3 server stopped");
+            }
+            _ = https_handle => {
+                warn!("HTTPS server stopped");
+            }
+        }
+
+        Ok(())
     }
 
     /// Get a reference to the DI container
