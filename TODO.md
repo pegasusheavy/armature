@@ -94,7 +94,245 @@ Benchmark results show the micro-framework has **1.5-3x overhead** vs direct Rou
 | **HTTP/3 (QUIC)** | 4.0 | Next-gen HTTP protocol support | L | ✅ Done |
 | **File Processing Pipeline** | 3.8 | Image resize, PDF gen, format conversion | M | ✅ Done |
 | **Real-time Collaboration** | 3.5 | CRDTs/OT for collaborative features | L | ✅ Done |
+| **Node.js FFI Bindings** | 7.5 | Expose Armature to TypeScript/Node.js via NAPI-RS | XL | ⏳ |
 | **ML Model Serving** | 3.0 | ONNX/TensorFlow Lite inference endpoints | L | ⏳ |
+
+---
+
+## Node.js FFI Roadmap
+
+Expose Armature's high-performance Rust core to TypeScript/Node.js developers via native bindings.
+
+### Value Proposition
+
+- **10-100x faster** than Express/Fastify for CPU-bound operations
+- **NestJS-familiar API** for easy adoption
+- **Type-safe** with auto-generated TypeScript definitions
+- **Zero-copy** where possible for maximum performance
+
+### Technology Stack
+
+| Component | Choice | Rationale |
+|-----------|--------|-----------|
+| FFI Layer | **NAPI-RS** | Best Node.js binding library, async support, N-API stability |
+| Package | `@armature/core` | Scoped npm package |
+| TypeScript | Auto-generated `.d.ts` | From Rust types via `ts-rs` or NAPI-RS |
+| Runtime | Node.js 18+ | N-API v8, stable async support |
+
+### Phase 1: Core Bindings (Effort: L)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **1.1 Project Setup** | Create `armature-node` crate with NAPI-RS | ⏳ |
+| **1.2 HttpRequest Binding** | Expose request object with headers, body, params | ⏳ |
+| **1.3 HttpResponse Binding** | Response builder with status, headers, body | ⏳ |
+| **1.4 Router Binding** | Route registration and matching | ⏳ |
+| **1.5 Async Handler Support** | JS Promise → Rust Future bridging | ⏳ |
+
+```typescript
+// Target API (Phase 1)
+import { Router, HttpRequest, HttpResponse } from '@armature/core';
+
+const router = new Router();
+
+router.get('/users/:id', async (req: HttpRequest): Promise<HttpResponse> => {
+  const id = req.param('id');
+  return HttpResponse.json({ id, name: 'Alice' });
+});
+
+await router.listen(3000);
+```
+
+### Phase 2: Micro-Framework API (Effort: M)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **2.1 App Builder** | `App.new()` fluent builder in JS | ⏳ |
+| **2.2 Route Helpers** | `get()`, `post()`, etc. as JS functions | ⏳ |
+| **2.3 Middleware System** | `wrap()` with JS middleware functions | ⏳ |
+| **2.4 Scope/Service** | Route grouping and nested scopes | ⏳ |
+| **2.5 Data/State** | Shared state via `app.data()` | ⏳ |
+
+```typescript
+// Target API (Phase 2)
+import { App, get, post, scope, Logger, Cors } from '@armature/core';
+
+const app = App.new()
+  .wrap(Logger.default())
+  .wrap(Cors.permissive())
+  .route('/', get(async () => HttpResponse.ok()))
+  .service(
+    scope('/api/v1')
+      .route('/users', get(listUsers).post(createUser))
+      .route('/users/:id', get(getUser))
+  );
+
+await app.run('0.0.0.0:8080');
+```
+
+### Phase 3: Advanced Features (Effort: L)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **3.1 WebSocket Support** | Real-time with `@armature/websocket` | ⏳ |
+| **3.2 Validation** | Schema validation via `@armature/validation` | ⏳ |
+| **3.3 OpenAPI Generation** | Auto-generate OpenAPI from routes | ⏳ |
+| **3.4 GraphQL** | GraphQL server via `@armature/graphql` | ⏳ |
+| **3.5 Caching** | Redis/in-memory cache bindings | ⏳ |
+
+### Phase 4: DX & Ecosystem (Effort: M)
+
+| Task | Description | Status |
+|------|-------------|--------|
+| **4.1 CLI Tool** | `npx @armature/cli new my-app` | ⏳ |
+| **4.2 TypeScript Plugin** | IDE support, route hints | ⏳ |
+| **4.3 ESBuild Plugin** | Bundle optimization | ⏳ |
+| **4.4 Vitest Integration** | Testing utilities | ⏳ |
+| **4.5 npm Publishing** | CI/CD for multi-platform binaries | ⏳ |
+
+### Technical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    TypeScript/JavaScript                     │
+│  import { App, get } from '@armature/core'                  │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      NAPI-RS Bridge                          │
+│  - JsFunction → Rust closure conversion                     │
+│  - Promise ↔ Future bridging                                │
+│  - Zero-copy Buffer handling                                │
+│  - ThreadsafeFunction for callbacks                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    armature-node crate                       │
+│  - Thin wrapper over armature-core                          │
+│  - JS-friendly error handling                               │
+│  - Async runtime integration (tokio)                        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      armature-core                           │
+│  - Router, HttpRequest, HttpResponse                        │
+│  - Middleware, State, Scopes                                │
+│  - All existing Rust optimizations                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Implementation Details
+
+#### Async Handler Bridging
+
+```rust
+// armature-node/src/handler.rs
+use napi::{JsFunction, Env, Result, threadsafe_function::*};
+use napi_derive::napi;
+
+#[napi]
+pub struct JsHandler {
+    callback: ThreadsafeFunction<HttpRequest, Promise<HttpResponse>>,
+}
+
+impl JsHandler {
+    pub async fn call(&self, req: HttpRequest) -> Result<HttpResponse> {
+        self.callback.call_async(req).await
+    }
+}
+```
+
+#### Zero-Copy Request Body
+
+```rust
+// Expose request body as Node.js Buffer without copying
+#[napi]
+impl HttpRequest {
+    #[napi]
+    pub fn body_buffer(&self, env: Env) -> Result<JsBuffer> {
+        // Create Buffer view over Rust Vec<u8>
+        env.create_buffer_with_borrowed_data(
+            self.body.as_slice(),
+            self.body.len(),
+            self.body.clone(), // prevent deallocation
+            |_, _| {}
+        )
+    }
+}
+```
+
+#### Multi-Platform Binary Distribution
+
+```yaml
+# .github/workflows/node-publish.yml
+strategy:
+  matrix:
+    include:
+      - os: ubuntu-latest
+        target: x86_64-unknown-linux-gnu
+      - os: ubuntu-latest
+        target: aarch64-unknown-linux-gnu
+      - os: macos-latest
+        target: x86_64-apple-darwin
+      - os: macos-latest
+        target: aarch64-apple-darwin
+      - os: windows-latest
+        target: x86_64-pc-windows-msvc
+```
+
+### Performance Targets
+
+| Benchmark | Express | Fastify | Armature-Node | Goal |
+|-----------|---------|---------|---------------|------|
+| Hello World (req/s) | 15k | 45k | 120k+ | 3x Fastify |
+| JSON serialize | 10µs | 5µs | 0.5µs | 10x faster |
+| Route matching | 2µs | 0.8µs | 0.05µs | 16x faster |
+| Memory per request | 50KB | 20KB | 5KB | 4x less |
+
+### npm Package Structure
+
+```
+@armature/
+├── core/           # Main package (router, app, middleware)
+├── websocket/      # WebSocket support
+├── graphql/        # GraphQL server
+├── validation/     # Schema validation
+├── cache/          # Caching (Redis, memory)
+├── queue/          # Background jobs
+├── cli/            # CLI tool
+└── create-app/     # Project scaffolding
+```
+
+### RICE Score Calculation
+
+- **Reach:** 9 (massive Node.js ecosystem)
+- **Impact:** 3 (game-changing performance for Node devs)
+- **Confidence:** 0.8 (NAPI-RS is proven, but XL effort)
+- **Effort:** XL (8 person-weeks)
+
+**Score:** (9 × 3 × 0.8) / 8 = **2.7** (but strategic value much higher)
+
+### Dependencies
+
+| Crate | Purpose |
+|-------|---------|
+| `napi` | N-API bindings |
+| `napi-derive` | Proc macros for `#[napi]` |
+| `napi-build` | Build script for native module |
+| `tokio` | Async runtime |
+| `ts-rs` | TypeScript type generation (optional) |
+
+### Milestones
+
+| Milestone | Target | Deliverable |
+|-----------|--------|-------------|
+| M1: Alpha | +4 weeks | Basic router, handlers, `npm install` works |
+| M2: Beta | +8 weeks | Full micro-framework API, middleware |
+| M3: RC | +12 weeks | WebSocket, validation, OpenAPI |
+| M4: 1.0 | +16 weeks | Production-ready, docs, examples |
 
 ---
 
@@ -138,8 +376,9 @@ Effort: S=1, M=2, L=4, XL=8 (person-weeks)
 | OpenAPI | ✅ | 🔶 | 🔶 | ✅ |
 | CLI Tooling | ✅ | ❌ | ❌ | ✅ |
 | Payment Processing | ✅ | ❌ | ❌ | 🔶 |
+| Node.js Bindings | 🔶 | ❌ | ❌ | N/A |
 
-✅ = Built-in | 🔶 = Via plugin | ❌ = Not available
+✅ = Built-in | 🔶 = Planned/Via plugin | ❌ = Not available
 
 ---
 
