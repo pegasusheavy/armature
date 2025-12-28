@@ -261,7 +261,7 @@ mod tests {
     fn test_logical_clock() {
         let replica = ReplicaId::new();
         let mut clock = LogicalClock::new(0, replica);
-        
+
         assert_eq!(clock.counter, 0);
         clock.tick();
         assert_eq!(clock.counter, 1);
@@ -271,16 +271,16 @@ mod tests {
     fn test_vector_clock() {
         let replica1 = ReplicaId::new();
         let replica2 = ReplicaId::new();
-        
+
         let mut vc1 = VectorClock::new();
         vc1.increment(replica1);
         vc1.increment(replica1);
-        
+
         let mut vc2 = VectorClock::new();
         vc2.increment(replica2);
-        
+
         assert!(vc1.is_concurrent(&vc2));
-        
+
         vc1.merge(&vc2);
         assert_eq!(vc1.get(&replica1), 2);
         assert_eq!(vc1.get(&replica2), 1);
@@ -289,13 +289,13 @@ mod tests {
     #[test]
     fn test_happens_before() {
         let replica = ReplicaId::new();
-        
+
         let mut vc1 = VectorClock::new();
         vc1.increment(replica);
-        
+
         let mut vc2 = vc1.clone();
         vc2.increment(replica);
-        
+
         assert!(vc1.happens_before(&vc2));
         assert!(!vc2.happens_before(&vc1));
     }

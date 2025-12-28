@@ -476,13 +476,13 @@ mod tests {
     fn test_lww_register() {
         let replica = ReplicaId::new();
         let mut reg = LwwRegister::new("a", LogicalClock::new(1, replica));
-        
+
         assert_eq!(reg.get(), &"a");
-        
+
         // Higher timestamp wins
         reg.set("b", LogicalClock::new(2, replica));
         assert_eq!(reg.get(), &"b");
-        
+
         // Lower timestamp loses
         reg.set("c", LogicalClock::new(1, replica));
         assert_eq!(reg.get(), &"b");
@@ -492,14 +492,14 @@ mod tests {
     fn test_gcounter() {
         let replica1 = ReplicaId::new();
         let replica2 = ReplicaId::new();
-        
+
         let mut counter1 = GCounter::new();
         counter1.increment(replica1);
         counter1.increment(replica1);
-        
+
         let mut counter2 = GCounter::new();
         counter2.increment(replica2);
-        
+
         counter1.merge(&counter2);
         assert_eq!(counter1.value(), 3);
     }
@@ -508,11 +508,11 @@ mod tests {
     fn test_pncounter() {
         let replica = ReplicaId::new();
         let mut counter = PnCounter::new();
-        
+
         counter.increment(replica);
         counter.increment(replica);
         counter.decrement(replica);
-        
+
         assert_eq!(counter.value(), 1);
     }
 
@@ -521,11 +521,11 @@ mod tests {
         let mut set1 = GSet::new();
         set1.add("a");
         set1.add("b");
-        
+
         let mut set2 = GSet::new();
         set2.add("b");
         set2.add("c");
-        
+
         set1.merge(&set2);
         assert!(set1.contains(&"a"));
         assert!(set1.contains(&"b"));
@@ -536,14 +536,14 @@ mod tests {
     fn test_orset() {
         let replica = ReplicaId::new();
         let mut clock = LogicalClock::new(0, replica);
-        
+
         let mut set = OrSet::new();
         set.add("a", clock.tick());
         set.add("b", clock.tick());
-        
+
         assert!(set.contains(&"a"));
         assert!(set.contains(&"b"));
-        
+
         set.remove(&"a");
         assert!(!set.contains(&"a"));
         assert!(set.contains(&"b"));
@@ -553,14 +553,14 @@ mod tests {
     fn test_lwwmap() {
         let replica = ReplicaId::new();
         let mut clock = LogicalClock::new(0, replica);
-        
+
         let mut map = LwwMap::new();
         map.set("name", "Alice", clock.tick());
         map.set("age", "30", clock.tick());
-        
+
         assert_eq!(map.get(&"name"), Some(&"Alice"));
         assert_eq!(map.get(&"age"), Some(&"30"));
-        
+
         map.remove(&"age", clock.tick());
         assert_eq!(map.get(&"age"), None);
     }
