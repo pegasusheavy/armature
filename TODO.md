@@ -34,7 +34,7 @@
 ```
 Allocation Patterns:
 ├── Vec (64B → 64KB):     5ns → 856ns
-├── String (64B → 64KB):  24ns → 960ns  
+├── String (64B → 64KB):  24ns → 960ns
 ├── HashMap (100 entries): 4.4µs (with capacity) vs 5.2µs (without)
 └── Object Pool:          19ns (2x overhead vs direct alloc)
 
@@ -56,7 +56,7 @@ Drop Timing:
    ```rust
    // Before
    type_sizes: HashMap<String, TypeSizeInfo>,
-   
+
    // After
    type_sizes: lru::LruCache<String, TypeSizeInfo>,  // max 256
    ```
@@ -65,7 +65,7 @@ Drop Timing:
    ```rust
    fn record(&mut self, size: usize, was_sufficient: bool) {
        // Existing prune by time...
-       
+
        // Add: prune by count if over capacity
        while self.samples.len() >= 1000 {
            self.samples.remove(0);
