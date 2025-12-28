@@ -33,12 +33,12 @@ None - all issues resolved! ✅
 
 ### P2: Developer Experience
 
-| Feature | RICE Score | Description | Effort |
-|---------|------------|-------------|--------|
-| **Mock Server Mode** | 5.5 | `armature mock` to run API with fake data for frontend dev | S |
-| **Database Seeding** | 5.0 | `armature db:seed` with factories and fixtures | S |
-| **VS Code Extension** | 4.8 | Syntax highlighting, snippets, route navigation | M |
-| **Interactive Docs** | 4.5 | Embedded try-it-out in generated OpenAPI docs | S |
+| Feature | RICE Score | Description | Effort | Status |
+|---------|------------|-------------|--------|--------|
+| **Mock Server Mode** | 5.5 | `armature mock` to run API with fake data for frontend dev | S | ✅ Done |
+| **Database Seeding** | 5.0 | `armature db:seed` with factories and fixtures | S | ⏳ |
+| **VS Code Extension** | 4.8 | Syntax highlighting, snippets, route navigation | M | ⏳ |
+| **Interactive Docs** | 4.5 | Embedded try-it-out in generated OpenAPI docs | S | ⏳ |
 
 ### P3: Advanced Capabilities
 
