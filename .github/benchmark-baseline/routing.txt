@@ -1,5 +1,6 @@
 [1m[92m    Updating[0m crates.io index
-[1m[92m     Locking[0m 1109 packages to latest compatible versions
+[1m[92m     Locking[0m 1309 packages to latest compatible versions
+[1m[92m      Adding[0m askama v0.12.1 [1m[33m(available: v0.15.1)[0m
 [1m[92m      Adding[0m azure_core v0.21.0 [1m[33m(available: v0.30.1)[0m
 [1m[92m      Adding[0m azure_data_cosmos v0.21.0 [1m[33m(available: v0.29.0)[0m
 [1m[92m      Adding[0m azure_identity v0.21.0 [1m[33m(available: v0.30.0)[0m
@@ -33,6 +34,8 @@
 [1m[92m      Adding[0m lambda_http v0.13.0 [1m[33m(available: v1.0.2)[0m
 [1m[92m      Adding[0m lambda_runtime v0.13.0 [1m[33m(available: v1.0.2)[0m
 [1m[92m      Adding[0m libxml v0.3.3 [1m[33m(available: v0.3.8)[0m
+[1m[92m      Adding[0m lopdf v0.36.0 [1m[33m(available: v0.38.0)[0m
+[1m[92m      Adding[0m lru v0.12.5 [1m[33m(available: v0.16.2)[0m
 [1m[92m      Adding[0m mail-builder v0.3.2 [1m[33m(available: v0.4.4)[0m
 [1m[92m      Adding[0m matchit v0.8.4 [1m[33m(available: v0.8.6)[0m
 [1m[92m      Adding[0m migrations_internals v2.2.1 [1m[33m(available: v2.3.0)[0m
@@ -52,527 +55,1597 @@
 [1m[92m      Adding[0m tonic-health v0.13.1 [1m[33m(available: v0.14.2)[0m
 [1m[92m      Adding[0m tonic-reflection v0.13.1 [1m[33m(available: v0.14.2)[0m
 [1m[92m      Adding[0m tungstenite v0.26.2 [1m[33m(available: v0.28.0)[0m
+[1m[92m      Adding[0m validator v0.19.0 [1m[33m(available: v0.20.0)[0m
 [1m[92m      Adding[0m web-push v0.10.4 [1m[33m(available: v0.11.0)[0m
+[1m[92m      Adding[0m zip v2.4.2 [1m[33m(available: v7.0.0)[0m
+[1m[92m Downloading[0m crates ...
+[1m[92m  Downloaded[0m addr2line v0.25.1
+[1m[92m  Downloaded[0m aligned-vec v0.6.4
+[1m[92m  Downloaded[0m Inflector v0.11.4
+[1m[92m  Downloaded[0m adler2 v2.0.1
+[1m[92m  Downloaded[0m alloca v0.4.0
+[1m[92m  Downloaded[0m alloc-stdlib v0.2.2
+[1m[92m  Downloaded[0m aliasable v0.1.3
+[1m[92m  Downloaded[0m ctrlc v3.5.1
+[1m[92m  Downloaded[0m crossbeam-deque v0.8.6
+[1m[92m  Downloaded[0m alloc-no-stdlib v2.0.4
+[1m[92m  Downloaded[0m async-stream-impl v0.3.6
+[1m[92m  Downloaded[0m anstream v0.6.21
+[1m[92m  Downloaded[0m criterion-plot v0.5.0
+[1m[92m  Downloaded[0m async-graphql-derive v7.0.17
+[1m[92m  Downloaded[0m crossbeam-queue v0.3.12
+[1m[92m  Downloaded[0m async-graphql-parser v7.0.17
+[1m[92m  Downloaded[0m crypto-common v0.1.7
+[1m[92m  Downloaded[0m crossbeam v0.8.4
+[1m[92m  Downloaded[0m base16ct v0.2.0
+[1m[92m  Downloaded[0m curve25519-dalek-derive v0.1.1
+[1m[92m  Downloaded[0m hex v0.4.3
+[1m[92m  Downloaded[0m httpdate v1.0.3
+[1m[92m  Downloaded[0m inventory v0.3.21
+[1m[92m  Downloaded[0m ident_case v1.0.1
+[1m[92m  Downloaded[0m inotify-sys v0.1.5
+[1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+[1m[92m  Downloaded[0m is-terminal v0.4.17
+[1m[92m  Downloaded[0m litemap v0.8.1
+[1m[92m  Downloaded[0m icu_normalizer_data v2.1.1
+[1m[92m  Downloaded[0m futures-timer v3.0.3
+[1m[92m  Downloaded[0m num-conv v0.1.0
+[1m[92m  Downloaded[0m nu-ansi-term v0.50.3
+[1m[92m  Downloaded[0m ordered-float v4.6.0
+[1m[92m  Downloaded[0m pem v3.0.6
+[1m[92m  Downloaded[0m proc-macro-error-attr2 v2.0.0
+[1m[92m  Downloaded[0m prost-build v0.12.6
+[1m[92m  Downloaded[0m prost v0.12.6
+[1m[92m  Downloaded[0m sea-bae v0.2.1
+[1m[92m  Downloaded[0m simdutf8 v0.1.5
+[1m[92m  Downloaded[0m sqlx-macros-core v0.8.6
+[1m[92m  Downloaded[0m rkyv v0.7.45
+[1m[92m  Downloaded[0m toml_datetime v0.7.5+spec-1.1.0
+[1m[92m  Downloaded[0m toml_writer v1.0.6+spec-1.1.0
+[1m[92m  Downloaded[0m tower-service v0.3.3
+[1m[92m  Downloaded[0m sea-query v0.32.7
+[1m[92m  Downloaded[0m ryu v1.0.22
+[1m[92m  Downloaded[0m utf-8 v0.7.6
+[1m[92m  Downloaded[0m urlencoding v2.1.3
+[1m[92m  Downloaded[0m time v0.3.44
+[1m[92m  Downloaded[0m zerofrom-derive v0.1.6
+[1m[92m  Downloaded[0m zerovec-derive v0.11.2
+[1m[92m  Downloaded[0m zmij v1.0.2
+[1m[92m  Downloaded[0m unsafe-libyaml v0.2.11
+[1m[92m  Downloaded[0m utf8parse v0.2.2
+[1m[92m  Downloaded[0m tracing-attributes v0.1.31
+[1m[92m  Downloaded[0m thiserror-impl v2.0.17
+[1m[92m  Downloaded[0m tokio-util v0.7.17
+[1m[92m  Downloaded[0m typenum v1.19.0
+[1m[92m  Downloaded[0m url v2.5.7
+[1m[92m  Downloaded[0m zerotrie v0.2.3
+[1m[92m  Downloaded[0m zerocopy-derive v0.8.31
+[1m[92m  Downloaded[0m sqlx-sqlite v0.8.6
+[1m[92m  Downloaded[0m zerovec v0.11.5
+[1m[92m  Downloaded[0m unicode-normalization v0.1.25
+[1m[92m  Downloaded[0m winnow v0.6.26
+[1m[92m  Downloaded[0m winnow v0.7.14
+[1m[92m  Downloaded[0m symbolic-demangle v12.17.0
+[1m[92m  Downloaded[0m sqlx-postgres v0.8.6
+[1m[92m  Downloaded[0m zerocopy v0.8.31
+[1m[92m  Downloaded[0m syn v1.0.109
+[1m[92m  Downloaded[0m syn v2.0.111
+[1m[92m  Downloaded[0m vcpkg v0.2.15
+[1m[92m  Downloaded[0m tower-http v0.6.8
+[1m[92m  Downloaded[0m x509-parser v0.18.0
+[1m[92m  Downloaded[0m tower v0.5.2
+[1m[92m  Downloaded[0m tonic v0.14.2
+[1m[92m  Downloaded[0m sqlx-mysql v0.8.6
+[1m[92m  Downloaded[0m serde_json v1.0.148
+[1m[92m  Downloaded[0m serde v1.0.228
+[1m[92m  Downloaded[0m yansi v1.0.1
+[1m[92m  Downloaded[0m webpki-roots v1.0.4
+[1m[92m  Downloaded[0m unicode-width v0.1.14
+[1m[92m  Downloaded[0m redis v1.0.2
+[1m[92m  Downloaded[0m rayon-core v1.13.0
+[1m[92m  Downloaded[0m prettyplease v0.2.37
+[1m[92m  Downloaded[0m tungstenite v0.28.0
+[1m[92m  Downloaded[0m tracing-subscriber v0.3.22
+[1m[92m  Downloaded[0m pest v2.8.4
+[1m[92m  Downloaded[0m aws-lc-sys v0.35.0
+[1m[92m  Downloaded[0m tracing v0.1.44
+[1m[92m  Downloaded[0m libsqlite3-sys v0.30.1
+[1m[92m  Downloaded[0m tokio v1.48.0
+[1m[92m  Downloaded[0m tempfile v3.24.0
+[1m[92m  Downloaded[0m tracing-appender v0.2.4
+[1m[92m  Downloaded[0m thiserror-impl v1.0.69
+[1m[92m  Downloaded[0m thiserror v2.0.17
+[1m[92m  Downloaded[0m thiserror v1.0.69
+[1m[92m  Downloaded[0m synstructure v0.13.2
+[1m[92m  Downloaded[0m symbolic-common v12.17.0
+[1m[92m  Downloaded[0m subtle v2.6.1
+[1m[92m  Downloaded[0m strum_macros v0.26.4
+[1m[92m  Downloaded[0m sea-orm v1.1.19
+[1m[92m  Downloaded[0m utf8_iter v1.0.4
+[1m[92m  Downloaded[0m tower-layer v0.3.3
+[1m[92m  Downloaded[0m tonic-prost v0.14.2
+[1m[92m  Downloaded[0m toml_edit v0.23.10+spec-1.0.0
+[1m[92m  Downloaded[0m tap v1.0.1
+[1m[92m  Downloaded[0m sync_wrapper v1.0.2
+[1m[92m  Downloaded[0m sync_wrapper v0.1.2
+[1m[92m  Downloaded[0m strsim v0.11.1
+[1m[92m  Downloaded[0m plotters v0.3.7
+[1m[92m  Downloaded[0m unicode-properties v0.1.4
+[1m[92m  Downloaded[0m unicode-bidi v0.3.18
+[1m[92m  Downloaded[0m ucd-trie v0.1.7
+[1m[92m  Downloaded[0m strum v0.26.3
+[1m[92m  Downloaded[0m str_stack v0.1.0
+[1m[92m  Downloaded[0m static_assertions_next v1.1.2
+[1m[92m  Downloaded[0m static_assertions v1.1.0
+[1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+[1m[92m  Downloaded[0m petgraph v0.6.5
+[1m[92m  Downloaded[0m yoke v0.8.1
+[1m[92m  Downloaded[0m yasna v0.5.2
+[1m[92m  Downloaded[0m whoami v1.6.1
+[1m[92m  Downloaded[0m walkdir v2.5.0
+[1m[92m  Downloaded[0m uuid v1.19.0
+[1m[92m  Downloaded[0m unicase v2.8.1
+[1m[92m  Downloaded[0m stringprep v0.1.5
+[1m[92m  Downloaded[0m zeroize v1.8.2
+[1m[92m  Downloaded[0m zerofrom v0.1.6
+[1m[92m  Downloaded[0m yoke-derive v0.8.1
+[1m[92m  Downloaded[0m xxhash-rust v0.8.15
+[1m[92m  Downloaded[0m wyz v0.5.1
+[1m[92m  Downloaded[0m writeable v0.6.2
+[1m[92m  Downloaded[0m webpki-roots v0.26.11
+[1m[92m  Downloaded[0m want v0.3.1
+[1m[92m  Downloaded[0m version_check v0.9.5
+[1m[92m  Downloaded[0m untrusted v0.9.0
+[1m[92m  Downloaded[0m unicode-xid v0.2.6
+[1m[92m  Downloaded[0m unicode-ident v1.0.22
+[1m[92m  Downloaded[0m tracing-core v0.1.36
+[1m[92m  Downloaded[0m p384 v0.13.1
+[1m[92m  Downloaded[0m simple_asn1 v0.6.3
+[1m[92m  Downloaded[0m socket2 v0.5.10
+[1m[92m  Downloaded[0m slab v0.4.11
+[1m[92m  Downloaded[0m try-lock v0.2.5
+[1m[92m  Downloaded[0m tracing-serde v0.2.0
+[1m[92m  Downloaded[0m tracing-log v0.2.0
+[1m[92m  Downloaded[0m smallvec v1.15.1
+[1m[92m  Downloaded[0m serde_path_to_error v0.1.20
+[1m[92m  Downloaded[0m serde_derive v1.0.228
+[1m[92m  Downloaded[0m sqlx-core v0.8.6
+[1m[92m  Downloaded[0m sqlx v0.8.6
+[1m[92m  Downloaded[0m linux-raw-sys v0.11.0
+[1m[92m  Downloaded[0m rustls v0.23.35
+[1m[92m  Downloaded[0m rustix v1.1.3
+[1m[92m  Downloaded[0m rustix v0.38.44
+[1m[92m  Downloaded[0m rcgen v0.14.6
+[1m[92m  Downloaded[0m socket2 v0.6.1
+[1m[92m  Downloaded[0m serde_core v1.0.228
+[1m[92m  Downloaded[0m scheduled-thread-pool v0.2.7
+[1m[92m  Downloaded[0m rust_decimal v1.39.0
+[1m[92m  Downloaded[0m ring v0.17.14
+[1m[92m  Downloaded[0m prost-types v0.12.6
+[1m[92m  Downloaded[0m prost-derive v0.14.1
+[1m[92m  Downloaded[0m prost-derive v0.12.6
+[1m[92m  Downloaded[0m prost v0.14.1
+[1m[92m  Downloaded[0m proc-macro2-diagnostics v0.10.1
+[1m[92m  Downloaded[0m proc-macro2 v1.0.104
+[1m[92m  Downloaded[0m proc-macro-crate v3.4.0
+[1m[92m  Downloaded[0m primeorder v0.13.6
+[1m[92m  Downloaded[0m pq-sys v0.7.5
+[1m[92m  Downloaded[0m ppv-lite86 v0.2.21
+[1m[92m  Downloaded[0m pprof v0.14.1
+[1m[92m  Downloaded[0m plotters-svg v0.3.7
+[1m[92m  Downloaded[0m plotters-backend v0.3.7
+[1m[92m  Downloaded[0m pest_generator v2.8.4
+[1m[92m  Downloaded[0m pest_derive v2.8.4
+[1m[92m  Downloaded[0m parking_lot v0.12.5
+[1m[92m  Downloaded[0m opentelemetry-semantic-conventions v0.31.0
+[1m[92m  Downloaded[0m toml_parser v1.0.6+spec-1.1.0
+[1m[92m  Downloaded[0m toml v0.9.10+spec-1.1.0
+[1m[92m  Downloaded[0m tokio-tungstenite v0.28.0
+[1m[92m  Downloaded[0m tokio-stream v0.1.17
+[1m[92m  Downloaded[0m tokio-rustls v0.26.4
+[1m[92m  Downloaded[0m tokio-native-tls v0.3.1
+[1m[92m  Downloaded[0m tinyvec v1.10.0
+[1m[92m  Downloaded[0m tinytemplate v1.2.1
+[1m[92m  Downloaded[0m rustls-webpki v0.103.8
+[1m[92m  Downloaded[0m rsa v0.9.9
+[1m[92m  Downloaded[0m proc-macro-error2 v2.0.1
+[1m[92m  Downloaded[0m opentelemetry v0.31.0
+[1m[92m  Downloaded[0m openssl v0.10.75
+[1m[92m  Downloaded[0m tokio-test v0.4.4
+[1m[92m  Downloaded[0m tokio-macros v2.6.0
+[1m[92m  Downloaded[0m tinyvec_macros v0.1.1
+[1m[92m  Downloaded[0m tinystr v0.8.2
+[1m[92m  Downloaded[0m time-macros v0.2.24
+[1m[92m  Downloaded[0m time-core v0.1.6
+[1m[92m  Downloaded[0m thread_local v1.1.9
+[1m[92m  Downloaded[0m regex-syntax v0.8.8
+[1m[92m  Downloaded[0m regex-automata v0.4.13
+[1m[92m  Downloaded[0m powerfmt v0.2.0
+[1m[92m  Downloaded[0m pkg-config v0.3.32
+[1m[92m  Downloaded[0m pkcs8 v0.10.2
+[1m[92m  Downloaded[0m pin-project v1.1.10
+[1m[92m  Downloaded[0m page_size v0.6.0
+[1m[92m  Downloaded[0m p256 v0.13.2
+[1m[92m  Downloaded[0m ouroboros v0.18.5
+[1m[92m  Downloaded[0m openssl-sys v0.9.111
+[1m[92m  Downloaded[0m object v0.37.3
+[1m[92m  Downloaded[0m nix v0.30.1
+[1m[92m  Downloaded[0m nix v0.26.4
+[1m[92m  Downloaded[0m linux-raw-sys v0.4.15
+[1m[92m  Downloaded[0m reqwest v0.12.28
+[1m[92m  Downloaded[0m reqwest v0.11.27
+[1m[92m  Downloaded[0m regex v1.12.2
+[1m[92m  Downloaded[0m rayon v1.11.0
+[1m[92m  Downloaded[0m rand v0.9.2
+[1m[92m  Downloaded[0m rand v0.8.5
+[1m[92m  Downloaded[0m quinn-proto v0.11.13
+[1m[92m  Downloaded[0m quinn v0.11.9
+[1m[92m  Downloaded[0m quick-xml v0.38.4
+[1m[92m  Downloaded[0m quick-xml v0.26.0
+[1m[92m  Downloaded[0m protobuf v3.7.2
+[1m[92m  Downloaded[0m potential_utf v0.1.4
+[1m[92m  Downloaded[0m pest_meta v2.8.4
+[1m[92m  Downloaded[0m percent-encoding v2.3.2
+[1m[92m  Downloaded[0m pem-rfc7468 v0.7.0
+[1m[92m  Downloaded[0m ouroboros_macro v0.18.5
+[1m[92m  Downloaded[0m nom v7.1.3
+[1m[92m  Downloaded[0m mio v1.1.1
+[1m[92m  Downloaded[0m miniz_oxide v0.8.9
+[1m[92m  Downloaded[0m minimal-lexical v0.2.1
+[1m[92m  Downloaded[0m memchr v2.7.6
+[1m[92m  Downloaded[0m sqlx-macros v0.8.6
+[1m[92m  Downloaded[0m spki v0.7.3
+[1m[92m  Downloaded[0m spin v0.10.0
+[1m[92m  Downloaded[0m spin v0.9.8
+[1m[92m  Downloaded[0m simd-adler32 v0.3.8
+[1m[92m  Downloaded[0m signature v2.2.0
+[1m[92m  Downloaded[0m signal-hook-registry v1.4.8
+[1m[92m  Downloaded[0m shlex v1.3.0
+[1m[92m  Downloaded[0m sharded-slab v0.1.7
+[1m[92m  Downloaded[0m sha2 v0.10.9
+[1m[92m  Downloaded[0m sha1_smol v1.0.1
+[1m[92m  Downloaded[0m sha1 v0.10.6
+[1m[92m  Downloaded[0m serde_yaml v0.9.34+deprecated
+[1m[92m  Downloaded[0m serde_urlencoded v0.7.1
+[1m[92m  Downloaded[0m serde_spanned v1.0.4
+[1m[92m  Downloaded[0m semver v1.0.27
+[1m[92m  Downloaded[0m sec1 v0.7.3
+[1m[92m  Downloaded[0m seahash v4.1.0
+[1m[92m  Downloaded[0m sea-query-binder v0.7.0
+[1m[92m  Downloaded[0m sea-orm-macros v1.1.19
+[1m[92m  Downloaded[0m scopeguard v1.2.0
+[1m[92m  Downloaded[0m rustversion v1.0.22
+[1m[92m  Downloaded[0m rustls-pemfile v2.2.0
+[1m[92m  Downloaded[0m rusticata-macros v4.1.0
+[1m[92m  Downloaded[0m rustc_version v0.4.1
+[1m[92m  Downloaded[0m rustc-hash v2.1.1
+[1m[92m  Downloaded[0m rustc-demangle v0.1.26
+[1m[92m  Downloaded[0m prometheus v0.14.0
+[1m[92m  Downloaded[0m procfs-core v0.17.0
+[1m[92m  Downloaded[0m procfs v0.17.0
+[1m[92m  Downloaded[0m opentelemetry_sdk v0.31.0
+[1m[92m  Downloaded[0m mio v0.8.11
+[1m[92m  Downloaded[0m libm v0.2.15
+[1m[92m  Downloaded[0m rustls-pki-types v1.13.2
+[1m[92m  Downloaded[0m rkyv_derive v0.7.45
+[1m[92m  Downloaded[0m rgb v0.8.52
+[1m[92m  Downloaded[0m rfc6979 v0.4.0
+[1m[92m  Downloaded[0m rend v0.4.2
+[1m[92m  Downloaded[0m rand_core v0.9.3
+[1m[92m  Downloaded[0m rand_core v0.6.4
+[1m[92m  Downloaded[0m rand_chacha v0.9.0
+[1m[92m  Downloaded[0m rand_chacha v0.3.1
+[1m[92m  Downloaded[0m radium v0.7.0
+[1m[92m  Downloaded[0m r2d2 v0.8.10
+[1m[92m  Downloaded[0m quote v1.0.42
+[1m[92m  Downloaded[0m quinn-udp v0.5.14
+[1m[92m  Downloaded[0m ptr_meta_derive v0.1.4
+[1m[92m  Downloaded[0m ptr_meta v0.1.4
+[1m[92m  Downloaded[0m protobuf-support v3.7.2
+[1m[92m  Downloaded[0m opentelemetry-http v0.31.0
+[1m[92m  Downloaded[0m once_cell v1.21.3
+[1m[92m  Downloaded[0m num-bigint-dig v0.8.6
+[1m[92m  Downloaded[0m libc v0.2.178
+[1m[92m  Downloaded[0m encoding_rs v0.8.35
+[1m[92m  Downloaded[0m openssl-macros v0.1.1
+[1m[92m  Downloaded[0m oorandom v11.1.5
+[1m[92m  Downloaded[0m oauth2 v5.0.0
+[1m[92m  Downloaded[0m num-traits v0.2.19
+[1m[92m  Downloaded[0m nix v0.27.1
+[1m[92m  Downloaded[0m diesel v2.2.12
+[1m[92m  Downloaded[0m pkcs1 v0.7.5
+[1m[92m  Downloaded[0m pin-project-lite v0.2.16
+[1m[92m  Downloaded[0m pin-project-internal v1.1.10
+[1m[92m  Downloaded[0m pgvector v0.4.1
+[1m[92m  Downloaded[0m password-hash v0.5.0
+[1m[92m  Downloaded[0m opentelemetry-proto v0.31.0
+[1m[92m  Downloaded[0m opentelemetry-otlp v0.31.0
+[1m[92m  Downloaded[0m openssl-probe v0.1.6
+[1m[92m  Downloaded[0m oid-registry v0.8.1
+[1m[92m  Downloaded[0m num-order v1.2.0
+[1m[92m  Downloaded[0m num-modular v0.6.1
+[1m[92m  Downloaded[0m num-format v0.4.4
+[1m[92m  Downloaded[0m num-bigint v0.4.6
+[1m[92m  Downloaded[0m native-tls v0.2.14
+[1m[92m  Downloaded[0m multimap v0.10.1
+[1m[92m  Downloaded[0m multer v3.1.0
+[1m[92m  Downloaded[0m mime_guess v2.0.5
+[1m[92m  Downloaded[0m mime v0.3.17
+[1m[92m  Downloaded[0m miette v5.10.0
+[1m[92m  Downloaded[0m memmap2 v0.9.9
+[1m[92m  Downloaded[0m memcache v0.19.0
+[1m[92m  Downloaded[0m matchit v0.8.4
+[1m[92m  Downloaded[0m log v0.4.29
+[1m[92m  Downloaded[0m kdl v4.7.1
+[1m[92m  Downloaded[0m itertools v0.14.0
+[1m[92m  Downloaded[0m itertools v0.13.0
+[1m[92m  Downloaded[0m itertools v0.12.1
+[1m[92m  Downloaded[0m itertools v0.10.5
+[1m[92m  Downloaded[0m iri-string v0.7.9
+[1m[92m  Downloaded[0m inferno v0.12.4
+[1m[92m  Downloaded[0m inferno v0.11.21
+[1m[92m  Downloaded[0m icu_properties_data v2.1.2
+[1m[92m  Downloaded[0m hyper v1.8.1
+[1m[92m  Downloaded[0m http v0.2.12
+[1m[92m  Downloaded[0m hkdf v0.12.4
+[1m[92m  Downloaded[0m hashbrown v0.16.1
+[1m[92m  Downloaded[0m hashbrown v0.15.5
+[1m[92m  Downloaded[0m hashbrown v0.14.5
+[1m[92m  Downloaded[0m handlebars v6.3.2
+[1m[92m  Downloaded[0m h2 v0.4.12
+[1m[92m  Downloaded[0m h2 v0.3.27
+[1m[92m  Downloaded[0m gimli v0.32.3
+[1m[92m  Downloaded[0m futures-util v0.3.31
+[1m[92m  Downloaded[0m dependency-injector v0.1.0
+[1m[92m  Downloaded[0m curve25519-dalek v4.1.3
+[1m[92m  Downloaded[0m pin-utils v0.1.0
+[1m[92m  Downloaded[0m parking_lot_core v0.9.12
+[1m[92m  Downloaded[0m parking v2.2.1
+[1m[92m  Downloaded[0m num-iter v0.1.45
+[1m[92m  Downloaded[0m miette-derive v5.10.0
+[1m[92m  Downloaded[0m md-5 v0.10.6
+[1m[92m  Downloaded[0m hashbrown v0.12.3
+[1m[92m  Downloaded[0m handlebars v5.1.2
+[1m[92m  Downloaded[0m handlebars v4.5.0
+[1m[92m  Downloaded[0m derive_more-impl v2.1.1
+[1m[92m  Downloaded[0m derive_more v2.1.1
+[1m[92m  Downloaded[0m futures-intrusive v0.5.0
+[1m[92m  Downloaded[0m ed25519-dalek v2.2.0
+[1m[92m  Downloaded[0m der-parser v10.0.0
+[1m[92m  Downloaded[0m der v0.7.10
+[1m[92m  Downloaded[0m num-integer v0.1.46
+[1m[92m  Downloaded[0m notify v8.2.0
+[1m[92m  Downloaded[0m notify v6.1.1
+[1m[92m  Downloaded[0m lru-slab v0.1.2
+[1m[92m  Downloaded[0m lru v0.12.5
+[1m[92m  Downloaded[0m lock_api v0.4.14
+[1m[92m  Downloaded[0m icu_normalizer v2.1.1
+[1m[92m  Downloaded[0m flume v0.11.1
+[1m[92m  Downloaded[0m flate2 v1.1.5
+[1m[92m  Downloaded[0m diesel_derives v2.2.7
+[1m[92m  Downloaded[0m crypto-bigint v0.5.5
+[1m[92m  Downloaded[0m matchers v0.2.0
+[1m[92m  Downloaded[0m lazy_static v1.5.0
+[1m[92m  Downloaded[0m half v2.7.1
+[1m[92m  Downloaded[0m getrandom v0.3.4
+[1m[92m  Downloaded[0m futures v0.3.31
+[1m[92m  Downloaded[0m event-listener v5.4.1
+[1m[92m  Downloaded[0m elliptic-curve v0.13.8
+[1m[92m  Downloaded[0m derive_builder v0.20.2
+[1m[92m  Downloaded[0m dashmap v6.1.0
+[1m[92m  Downloaded[0m darling_core v0.20.11
+[1m[92m  Downloaded[0m notify-types v2.0.0
+[1m[92m  Downloaded[0m hmac v0.12.1
+[1m[92m  Downloaded[0m getrandom v0.2.16
+[1m[92m  Downloaded[0m futures-executor v0.3.31
+[1m[92m  Downloaded[0m findshlibs v0.10.2
+[1m[92m  Downloaded[0m find-msvc-tools v0.1.6
+[1m[92m  Downloaded[0m either v1.15.0
+[1m[92m  Downloaded[0m dotenvy v0.15.7
+[1m[92m  Downloaded[0m digest v0.10.7
+[1m[92m  Downloaded[0m icu_locale_core v2.1.1
+[1m[92m  Downloaded[0m icu_collections v2.1.1
+[1m[92m  Downloaded[0m hashlink v0.10.0
+[1m[92m  Downloaded[0m group v0.13.0
+[1m[92m  Downloaded[0m futures-channel v0.3.31
+[1m[92m  Downloaded[0m fs_extra v1.3.0
+[1m[92m  Downloaded[0m form_urlencoded v1.2.2
+[1m[92m  Downloaded[0m foldhash v0.1.5
+[1m[92m  Downloaded[0m filetime v0.2.26
+[1m[92m  Downloaded[0m env_logger v0.11.8
+[1m[92m  Downloaded[0m ed25519 v2.2.3
+[1m[92m  Downloaded[0m displaydoc v0.2.5
+[1m[92m  Downloaded[0m diesel_table_macro_syntax v0.2.0
+[1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+[1m[92m  Downloaded[0m crossbeam-epoch v0.9.18
+[1m[92m  Downloaded[0m jsonwebtoken v10.2.0
+[1m[92m  Downloaded[0m jobserver v0.1.34
+[1m[92m  Downloaded[0m itoa v1.0.17
+[1m[92m  Downloaded[0m hyper-util v0.1.19
+[1m[92m  Downloaded[0m hyper-tls v0.6.0
+[1m[92m  Downloaded[0m heck v0.4.1
+[1m[92m  Downloaded[0m futures-sink v0.3.31
+[1m[92m  Downloaded[0m futures-io v0.3.31
+[1m[92m  Downloaded[0m funty v2.0.0
+[1m[92m  Downloaded[0m foreign-types-shared v0.1.1
+[1m[92m  Downloaded[0m foreign-types v0.3.2
+[1m[92m  Downloaded[0m ff v0.13.1
+[1m[92m  Downloaded[0m errno v0.3.14
+[1m[92m  Downloaded[0m equator-macro v0.4.2
+[1m[92m  Downloaded[0m enum_dispatch v0.3.13
+[1m[92m  Downloaded[0m ecdsa v0.16.9
+[1m[92m  Downloaded[0m dsl_auto_type v0.1.3
+[1m[92m  Downloaded[0m derive_builder_core v0.20.2
+[1m[92m  Downloaded[0m deranged v0.5.5
+[1m[92m  Downloaded[0m data-encoding v2.9.0
+[1m[92m  Downloaded[0m dashmap v5.5.3
+[1m[92m  Downloaded[0m crossbeam-channel v0.5.15
+[1m[92m  Downloaded[0m brotli v8.0.2
+[1m[92m  Downloaded[0m idna v1.1.0
+[1m[92m  Downloaded[0m http v1.4.0
+[1m[92m  Downloaded[0m generic-array v0.14.7
+[1m[92m  Downloaded[0m futures-task v0.3.31
+[1m[92m  Downloaded[0m fnv v1.0.7
+[1m[92m  Downloaded[0m fixedbitset v0.4.2
+[1m[92m  Downloaded[0m criterion v0.8.1
+[1m[92m  Downloaded[0m combine v4.6.7
+[1m[92m  Downloaded[0m clap_builder v4.5.53
+[1m[92m  Downloaded[0m brotli-decompressor v5.0.0
+[1m[92m  Downloaded[0m bitvec v1.0.1
+[1m[92m  Downloaded[0m ipnet v2.11.0
+[1m[92m  Downloaded[0m inout v0.1.4
+[1m[92m  Downloaded[0m inotify v0.11.0
+[1m[92m  Downloaded[0m inotify v0.9.6
+[1m[92m  Downloaded[0m inherent v1.0.13
+[1m[92m  Downloaded[0m indexmap v2.12.1
+[1m[92m  Downloaded[0m chrono v0.4.39
+[1m[92m  Downloaded[0m bumpalo v3.19.1
+[1m[92m  Downloaded[0m idna_adapter v1.2.1
+[1m[92m  Downloaded[0m icu_provider v2.1.1
+[1m[92m  Downloaded[0m icu_properties v2.1.2
+[1m[92m  Downloaded[0m heck v0.5.0
+[1m[92m  Downloaded[0m futures-macro v0.3.31
+[1m[92m  Downloaded[0m futures-core v0.3.31
+[1m[92m  Downloaded[0m fast_chemail v0.9.6
+[1m[92m  Downloaded[0m criterion v0.5.1
+[1m[92m  Downloaded[0m cpp_demangle v0.4.5
+[1m[92m  Downloaded[0m cc v1.2.51
+[1m[92m  Downloaded[0m bytes v1.11.0
+[1m[92m  Downloaded[0m borsh v1.6.0
+[1m[92m  Downloaded[0m iana-time-zone v0.1.64
+[1m[92m  Downloaded[0m home v0.5.12
+[1m[92m  Downloaded[0m darling v0.20.11
+[1m[92m  Downloaded[0m criterion-plot v0.8.1
+[1m[92m  Downloaded[0m bigdecimal v0.4.10
+[1m[92m  Downloaded[0m base64 v0.22.1
+[1m[92m  Downloaded[0m backtrace v0.3.76
+[1m[92m  Downloaded[0m axum v0.8.8
+[1m[92m  Downloaded[0m aws-lc-rs v1.15.2
+[1m[92m  Downloaded[0m hyper-timeout v0.5.2
+[1m[92m  Downloaded[0m hyper-rustls v0.27.7
+[1m[92m  Downloaded[0m hyper v0.14.32
+[1m[92m  Downloaded[0m httparse v1.10.1
+[1m[92m  Downloaded[0m http-body-util v0.1.3
+[1m[92m  Downloaded[0m equivalent v1.0.2
+[1m[92m  Downloaded[0m derive_builder_macro v0.20.2
+[1m[92m  Downloaded[0m cron v0.15.0
+[1m[92m  Downloaded[0m clap v4.5.53
+[1m[92m  Downloaded[0m ciborium v0.2.2
+[1m[92m  Downloaded[0m bytemuck v1.24.0
+[1m[92m  Downloaded[0m ascii_utils v0.9.3
+[1m[92m  Downloaded[0m http-body v1.0.1
+[1m[92m  Downloaded[0m http-body v0.4.6
+[1m[92m  Downloaded[0m concurrent-queue v2.5.0
+[1m[92m  Downloaded[0m compression-codecs v0.4.35
+[1m[92m  Downloaded[0m cmake v0.1.57
+[1m[92m  Downloaded[0m cfg_aliases v0.2.1
+[1m[92m  Downloaded[0m byteorder v1.5.0
+[1m[92m  Downloaded[0m anstyle-query v1.1.5
+[1m[92m  Downloaded[0m fastrand v2.3.0
+[1m[92m  Downloaded[0m equator v0.4.2
+[1m[92m  Downloaded[0m env_filter v0.1.4
+[1m[92m  Downloaded[0m dunce v1.0.5
+[1m[92m  Downloaded[0m debugid v0.8.0
+[1m[92m  Downloaded[0m darling_macro v0.20.11
+[1m[92m  Downloaded[0m crc32fast v1.5.0
+[1m[92m  Downloaded[0m crc16 v0.4.0
+[1m[92m  Downloaded[0m crc-catalog v2.4.0
+[1m[92m  Downloaded[0m crc v3.4.0
+[1m[92m  Downloaded[0m cpufeatures v0.2.17
+[1m[92m  Downloaded[0m compression-core v0.4.31
+[1m[92m  Downloaded[0m cipher v0.4.4
+[1m[92m  Downloaded[0m ciborium-io v0.2.2
+[1m[92m  Downloaded[0m cargo-husky v1.5.0
+[1m[92m  Downloaded[0m borsh-derive v1.6.0
+[1m[92m  Downloaded[0m bitflags v2.10.0
+[1m[92m  Downloaded[0m bb8-redis v0.26.0
+[1m[92m  Downloaded[0m backon v1.6.0
+[1m[92m  Downloaded[0m autocfg v1.5.0
+[1m[92m  Downloaded[0m colorchoice v1.0.4
+[1m[92m  Downloaded[0m clap_lex v0.7.6
+[1m[92m  Downloaded[0m clap_derive v4.5.49
+[1m[92m  Downloaded[0m cfg-if v1.0.4
+[1m[92m  Downloaded[0m castaway v0.2.4
+[1m[92m  Downloaded[0m cast v0.3.0
+[1m[92m  Downloaded[0m bytecheck_derive v0.6.12
+[1m[92m  Downloaded[0m blowfish v0.9.1
+[1m[92m  Downloaded[0m block-buffer v0.10.4
+[1m[92m  Downloaded[0m blake2 v0.10.6
+[1m[92m  Downloaded[0m bitflags v1.3.2
+[1m[92m  Downloaded[0m bcrypt v0.17.1
+[1m[92m  Downloaded[0m bb8 v0.9.1
+[1m[92m  Downloaded[0m base64ct v1.8.1
+[1m[92m  Downloaded[0m axum-core v0.5.6
+[1m[92m  Downloaded[0m atomic-waker v1.1.2
+[1m[92m  Downloaded[0m atoi v2.0.0
+[1m[92m  Downloaded[0m async-trait v0.1.89
+[1m[92m  Downloaded[0m async-graphql v7.0.17
+[1m[92m  Downloaded[0m async-compression v0.4.36
+[1m[92m  Downloaded[0m asn1-rs-impl v0.2.0
+[1m[92m  Downloaded[0m aho-corasick v1.1.4
+[1m[92m  Downloaded[0m compact_str v0.8.1
+[1m[92m  Downloaded[0m base64 v0.21.7
+[1m[92m  Downloaded[0m asn1-rs v0.7.1
+[1m[92m  Downloaded[0m arc-swap v1.8.0
+[1m[92m  Downloaded[0m anstyle v1.0.13
+[1m[92m  Downloaded[0m anyhow v1.0.100
+[1m[92m  Downloaded[0m anstyle-parse v0.2.7
+[1m[92m  Downloaded[0m allocator-api2 v0.2.21
+[1m[92m  Downloaded[0m ahash v0.8.12
+[1m[92m  Downloaded[0m const-oid v0.9.6
+[1m[92m  Downloaded[0m arcstr v1.2.0
+[1m[92m  Downloaded[0m anes v0.1.6
+[1m[92m  Downloaded[0m ahash v0.7.8
+[1m[92m  Downloaded[0m async-graphql-value v7.0.17
+[1m[92m  Downloaded[0m argon2 v0.5.3
+[1m[92m  Downloaded[0m async-stream v0.3.6
+[1m[92m  Downloaded[0m async-graphql-axum v7.0.17
+[1m[92m  Downloaded[0m arrayvec v0.7.6
+[1m[92m  Downloaded[0m ciborium-ll v0.2.2
+[1m[92m  Downloaded[0m asn1-rs-derive v0.6.0
+[1m[92m  Downloaded[0m bytecheck v0.6.12
+[1m[92m   Compiling[0m proc-macro2 v1.0.104
+[1m[92m   Compiling[0m unicode-ident v1.0.22
+[1m[92m   Compiling[0m quote v1.0.42
+[1m[92m   Compiling[0m serde v1.0.228
+[1m[92m   Compiling[0m libc v0.2.178
+[1m[92m   Compiling[0m cfg-if v1.0.4
+[1m[92m   Compiling[0m serde_core v1.0.228
+[1m[92m   Compiling[0m version_check v0.9.5
+[1m[92m   Compiling[0m log v0.4.29
+[1m[92m   Compiling[0m memchr v2.7.6
+[1m[92m   Compiling[0m syn v2.0.111
+[1m[92m   Compiling[0m itoa v1.0.17
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m once_cell v1.21.3
+[1m[92m   Compiling[0m pin-project-lite v0.2.16
+[1m[92m   Compiling[0m scopeguard v1.2.0
+[1m[92m   Compiling[0m lock_api v0.4.14
+[1m[92m   Compiling[0m zeroize v1.8.2
+[1m[92m   Compiling[0m typenum v1.19.0
+[1m[92m   Compiling[0m autocfg v1.5.0
+[1m[92m   Compiling[0m futures-core v0.3.31
+[1m[92m   Compiling[0m zmij v1.0.2
+[1m[92m   Compiling[0m jobserver v0.1.34
+[1m[92m   Compiling[0m find-msvc-tools v0.1.6
+[1m[92m   Compiling[0m shlex v1.3.0
+[1m[92m   Compiling[0m cc v1.2.51
+[1m[92m   Compiling[0m serde_json v1.0.148
+[1m[92m   Compiling[0m errno v0.3.14
+[1m[92m   Compiling[0m mio v1.1.1
+[1m[92m   Compiling[0m signal-hook-registry v1.4.8
+[1m[92m   Compiling[0m socket2 v0.6.1
+[1m[92m   Compiling[0m futures-sink v0.3.31
+[1m[92m   Compiling[0m futures-io v0.3.31
+[1m[92m   Compiling[0m libm v0.2.15
+[1m[92m   Compiling[0m subtle v2.6.1
+[1m[92m   Compiling[0m slab v0.4.11
+[1m[92m   Compiling[0m futures-channel v0.3.31
+[1m[92m   Compiling[0m tracing-core v0.1.36
+[1m[92m   Compiling[0m generic-array v0.14.7
+[1m[92m   Compiling[0m pin-utils v0.1.0
+[1m[92m   Compiling[0m getrandom v0.3.4
+[1m[92m   Compiling[0m futures-task v0.3.31
+[1m[92m   Compiling[0m zerocopy v0.8.31
+[1m[92m   Compiling[0m num-traits v0.2.19
+[1m[92m   Compiling[0m const-oid v0.9.6
+[1m[92m   Compiling[0m thiserror v2.0.17
+[1m[92m   Compiling[0m equivalent v1.0.2
+[1m[92m   Compiling[0m serde_derive v1.0.228
+[1m[92m   Compiling[0m tokio-macros v2.6.0
+[1m[92m   Compiling[0m tracing-attributes v0.1.31
+[1m[92m   Compiling[0m futures-macro v0.3.31
+[1m[92m   Compiling[0m zerocopy-derive v0.8.31
+[1m[92m   Compiling[0m tracing v0.1.44
+[1m[92m   Compiling[0m futures-util v0.3.31
+[1m[92m   Compiling[0m thiserror-impl v2.0.17
+[1m[92m   Compiling[0m smallvec v1.15.1
+[1m[92m   Compiling[0m bytes v1.11.0
+[1m[92m   Compiling[0m parking_lot v0.12.5
+[1m[92m   Compiling[0m tokio v1.48.0
+[1m[92m   Compiling[0m crypto-common v0.1.7
+[1m[92m   Compiling[0m synstructure v0.13.2
+[1m[92m   Compiling[0m getrandom v0.2.16
+[1m[92m   Compiling[0m hashbrown v0.16.1
+[1m[92m   Compiling[0m block-buffer v0.10.4
+[1m[92m   Compiling[0m digest v0.10.7
+[1m[92m   Compiling[0m zerofrom-derive v0.1.6
+[1m[92m   Compiling[0m yoke-derive v0.8.1
+[1m[92m   Compiling[0m indexmap v2.12.1
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m bitflags v2.10.0
+[1m[92m   Compiling[0m zerovec-derive v0.11.2
+[1m[92m   Compiling[0m ppv-lite86 v0.2.21
+[1m[92m   Compiling[0m displaydoc v0.2.5
+[1m[92m   Compiling[0m ring v0.17.14
+[1m[92m   Compiling[0m form_urlencoded v1.2.2
+[1m[92m   Compiling[0m http v1.4.0
+[1m[92m   Compiling[0m httparse v1.10.1
+[1m[92m   Compiling[0m base64 v0.22.1
+[1m[92m   Compiling[0m crossbeam-utils v0.8.21
+[1m[92m   Compiling[0m fnv v1.0.7
+[1m[92m   Compiling[0m cpufeatures v0.2.17
+[1m[92m   Compiling[0m ryu v1.0.22
+[1m[92m   Compiling[0m cmake v0.1.57
+[1m[92m   Compiling[0m tokio-util v0.7.17
+[1m[92m   Compiling[0m tower-service v0.3.3
+[1m[92m   Compiling[0m dunce v1.0.5
+[1m[92m   Compiling[0m fs_extra v1.3.0
+[1m[92m   Compiling[0m try-lock v0.2.5
+[1m[92m   Compiling[0m icu_properties_data v2.1.2
+[1m[92m   Compiling[0m icu_normalizer_data v2.1.1
+[1m[92m   Compiling[0m aws-lc-sys v0.35.0
+[1m[92m   Compiling[0m stable_deref_trait v1.2.1
+[1m[92m   Compiling[0m iana-time-zone v0.1.64
+[1m[92m   Compiling[0m chrono v0.4.39
+[1m[92m   Compiling[0m want v0.3.1
+[1m[92m   Compiling[0m http-body v1.0.1
+[1m[92m   Compiling[0m async-trait v0.1.89
+[1m[92m   Compiling[0m rustls-pki-types v1.13.2
+[1m[92m   Compiling[0m httpdate v1.0.3
+[1m[92m   Compiling[0m num-conv v0.1.0
+[1m[92m   Compiling[0m time-core v0.1.6
+[1m[92m   Compiling[0m tower-layer v0.3.3
+[1m[92m   Compiling[0m aws-lc-rs v1.15.2
+[1m[92m   Compiling[0m time-macros v0.2.24
+[1m[92m   Compiling[0m zerofrom v0.1.6
+[1m[92m   Compiling[0m rand_core v0.9.3
+[1m[92m   Compiling[0m uuid v1.19.0
+[1m[92m   Compiling[0m ipnet v2.11.0
+[1m[92m   Compiling[0m atomic-waker v1.1.2
+[1m[92m   Compiling[0m untrusted v0.9.0
+[1m[92m   Compiling[0m h2 v0.4.12
+[1m[92m   Compiling[0m rand_chacha v0.9.0
+[1m[92m   Compiling[0m yoke v0.8.1
+[1m[92m   Compiling[0m rand v0.9.2
+[1m[92m   Compiling[0m rustversion v1.0.22
+[1m[92m   Compiling[0m rustls v0.23.35
+[1m[92m   Compiling[0m zerovec v0.11.5
+[1m[92m   Compiling[0m http-body-util v0.1.3
+[1m[92m   Compiling[0m serde_urlencoded v0.7.1
+[1m[92m   Compiling[0m sync_wrapper v1.0.2
+[1m[92m   Compiling[0m powerfmt v0.2.0
+[1m[92m   Compiling[0m simd-adler32 v0.3.8
+[1m[92m   Compiling[0m hyper v1.8.1
+[1m[92m   Compiling[0m hyper-util v0.1.19
+[1m[92m   Compiling[0m adler2 v2.0.1
+[1m[92m   Compiling[0m miniz_oxide v0.8.9
+[1m[92m   Compiling[0m deranged v0.5.5
+[1m[92m   Compiling[0m tower v0.5.2
+[1m[92m   Compiling[0m tokio-stream v0.1.17
+[1m[92m   Compiling[0m spin v0.9.8
+[1m[92m   Compiling[0m crc32fast v1.5.0
+[1m[92m   Compiling[0m alloc-no-stdlib v2.0.4
+[1m[92m   Compiling[0m alloc-stdlib v0.2.2
+[1m[92m   Compiling[0m time v0.3.44
+[1m[92m   Compiling[0m tinystr v0.8.2
+[1m[92m   Compiling[0m litemap v0.8.1
+[1m[92m   Compiling[0m writeable v0.6.2
+[1m[92m   Compiling[0m icu_locale_core v2.1.1
+[1m[92m   Compiling[0m brotli-decompressor v5.0.0
+[1m[92m   Compiling[0m potential_utf v0.1.4
+[1m[92m   Compiling[0m zerotrie v0.2.3
+[1m[92m   Compiling[0m aho-corasick v1.1.4
+[1m[92m   Compiling[0m regex-syntax v0.8.8
+[1m[92m   Compiling[0m regex-automata v0.4.13
+[1m[92m   Compiling[0m icu_provider v2.1.1
+[1m[92m   Compiling[0m brotli v8.0.2
+[1m[92m   Compiling[0m icu_collections v2.1.1
+[1m[92m   Compiling[0m flate2 v1.1.5
+[1m[92m   Compiling[0m sha1 v0.10.6
+[1m[92m   Compiling[0m utf-8 v0.7.6
+[1m[92m   Compiling[0m foldhash v0.1.5
+[1m[92m   Compiling[0m data-encoding v2.9.0
+[1m[92m   Compiling[0m allocator-api2 v0.2.21
+[1m[92m   Compiling[0m hashbrown v0.15.5
+[1m[92m   Compiling[0m tungstenite v0.28.0
+[1m[92m   Compiling[0m icu_normalizer v2.1.1
+[1m[92m   Compiling[0m icu_properties v2.1.2
+[1m[92m   Compiling[0m lazy_static v1.5.0
+[1m[92m   Compiling[0m rand_core v0.6.4
+[1m[92m   Compiling[0m same-file v1.0.6
+[1m[92m   Compiling[0m hashbrown v0.14.5
+[1m[92m   Compiling[0m idna_adapter v1.2.1
+[1m[92m   Compiling[0m walkdir v2.5.0
+[1m[92m   Compiling[0m tokio-tungstenite v0.28.0
+[1m[92m   Compiling[0m either v1.15.0
+[1m[92m   Compiling[0m ahash v0.8.12
+[1m[92m   Compiling[0m matchit v0.8.4
+[1m[92m   Compiling[0m utf8_iter v1.0.4
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m regex v1.12.2
+[1m[92m   Compiling[0m crossbeam-channel v0.5.15
+[1m[92m   Compiling[0m inotify-sys v0.1.5
+[1m[92m   Compiling[0m url v2.5.7
+[1m[92m   Compiling[0m heck v0.5.0
+[1m[92m   Compiling[0m pkg-config v0.3.32
+[1m[92m   Compiling[0m static_assertions v1.1.0
+[1m[92m   Compiling[0m mime v0.3.17
+[1m[92m   Compiling[0m dashmap v6.1.0
+[1m[92m   Compiling[0m sharded-slab v0.1.7
+[1m[92m   Compiling[0m matchers v0.2.0
+[1m[92m   Compiling[0m tracing-serde v0.2.0
+[1m[92m   Compiling[0m tracing-log v0.2.0
+[1m[92m   Compiling[0m thread_local v1.1.9
+[1m[92m   Compiling[0m nu-ansi-term v0.50.3
+[1m[92m   Compiling[0m inotify v0.11.0
+[1m[92m   Compiling[0m castaway v0.2.4
+[1m[92m   Compiling[0m tracing-subscriber v0.3.22
 [1m[92m   Compiling[0m armature-log v0.1.0 (/home/runner/work/armature/armature/armature-log)
+[1m[92m   Compiling[0m num-integer v0.1.46
+[1m[92m   Compiling[0m notify-types v2.0.0
+[1m[92m   Compiling[0m notify v8.2.0
+[1m[92m   Compiling[0m tracing-appender v0.2.4
+[1m[92m   Compiling[0m compact_str v0.8.1
+[1m[92m   Compiling[0m dependency-injector v0.1.0
+[1m[92m   Compiling[0m lru v0.12.5
+[1m[92m   Compiling[0m rustls-pemfile v2.2.0
+[1m[92m   Compiling[0m bumpalo v3.19.1
+[1m[92m   Compiling[0m thiserror v1.0.69
+[1m[92m   Compiling[0m urlencoding v2.1.3
+[1m[92m   Compiling[0m inventory v0.3.21
+[1m[92m   Compiling[0m vcpkg v0.2.15
+[1m[92m   Compiling[0m base64ct v1.8.1
+[1m[92m   Compiling[0m thiserror-impl v1.0.69
+[1m[92m   Compiling[0m openssl-sys v0.9.111
+[1m[92m   Compiling[0m num-bigint v0.4.6
+[1m[92m   Compiling[0m webpki-roots v1.0.4
+[1m[92m   Compiling[0m sha2 v0.10.9
+[1m[92m   Compiling[0m futures-executor v0.3.31
+[1m[92m   Compiling[0m encoding_rs v0.8.35
+[1m[92m   Compiling[0m pem-rfc7468 v0.7.0
+[1m[92m   Compiling[0m anyhow v1.0.100
+[1m[92m   Compiling[0m der v0.7.10
+[1m[92m   Compiling[0m hmac v0.12.1
+[1m[92m   Compiling[0m openssl v0.10.75
+[1m[92m   Compiling[0m foreign-types-shared v0.1.1
+[1m[92m   Compiling[0m foreign-types v0.3.2
+[1m[92m   Compiling[0m spki v0.7.3
+[1m[92m   Compiling[0m openssl-macros v0.1.1
+[1m[92m   Compiling[0m native-tls v0.2.14
+[1m[92m   Compiling[0m hex v0.4.3
+[1m[92m   Compiling[0m ident_case v1.0.1
+[1m[92m   Compiling[0m strsim v0.11.1
+[1m[92m   Compiling[0m rustix v1.1.3
+[1m[92m   Compiling[0m darling_core v0.20.11
+[1m[92m   Compiling[0m pkcs8 v0.10.2
+[1m[92m   Compiling[0m rand_chacha v0.3.1
+[1m[92m   Compiling[0m ucd-trie v0.1.7
+[1m[92m   Compiling[0m openssl-probe v0.1.6
+[1m[92m   Compiling[0m fastrand v2.3.0
+[1m[92m   Compiling[0m compression-core v0.4.31
+[1m[92m   Compiling[0m compression-codecs v0.4.35
+[1m[92m   Compiling[0m pest v2.8.4
+[1m[92m   Compiling[0m rand v0.8.5
+[1m[92m   Compiling[0m darling_macro v0.20.11
+[1m[92m   Compiling[0m hkdf v0.12.4
+[1m[92m   Compiling[0m futures v0.3.31
+[1m[92m   Compiling[0m darling v0.20.11
+[1m[92m   Compiling[0m tokio-native-tls v0.3.1
+[1m[92m   Compiling[0m async-compression v0.4.36
+[1m[92m   Compiling[0m iri-string v0.7.9
+[1m[92m   Compiling[0m tower-http v0.6.8
+[1m[92m   Compiling[0m hyper-tls v0.6.0
+[1m[92m   Compiling[0m serde_path_to_error v0.1.20
+[1m[92m   Compiling[0m byteorder v1.5.0
+[1m[92m   Compiling[0m pest_meta v2.8.4
+[1m[92m   Compiling[0m signature v2.2.0
+[1m[92m   Compiling[0m ff v0.13.1
+[1m[92m   Compiling[0m base16ct v0.2.0
+[1m[92m   Compiling[0m arrayvec v0.7.6
+[1m[92m   Compiling[0m pest_generator v2.8.4
+[1m[92m   Compiling[0m sec1 v0.7.3
+[1m[92m   Compiling[0m group v0.13.0
+[1m[92m   Compiling[0m axum-core v0.5.6
+[1m[92m   Compiling[0m crypto-bigint v0.5.5
+[1m[92m   Compiling[0m crc16 v0.4.0
+[1m[92m   Compiling[0m semver v1.0.27
+[1m[92m   Compiling[0m axum v0.8.8
+[1m[92m   Compiling[0m elliptic-curve v0.13.8
+[1m[92m   Compiling[0m rustc_version v0.4.1
+[1m[92m   Compiling[0m pest_derive v2.8.4
+[1m[92m   Compiling[0m bigdecimal v0.4.10
+[1m[92m   Compiling[0m rust_decimal v1.39.0
+[1m[92m   Compiling[0m linux-raw-sys v0.11.0
+[1m[92m   Compiling[0m tinyvec_macros v0.1.1
+[1m[92m   Compiling[0m winnow v0.7.14
+[1m[92m   Compiling[0m toml_parser v1.0.6+spec-1.1.0
+[1m[92m   Compiling[0m tinyvec v1.10.0
+[1m[92m   Compiling[0m rustls-webpki v0.103.8
+[1m[92m   Compiling[0m curve25519-dalek v4.1.3
+[1m[92m   Compiling[0m concurrent-queue v2.5.0
+[1m[92m   Compiling[0m backon v1.6.0
+[1m[92m   Compiling[0m rfc6979 v0.4.0
+[1m[92m   Compiling[0m itertools v0.14.0
+[1m[92m   Compiling[0m itertools v0.12.1
+[1m[92m   Compiling[0m arc-swap v1.8.0
+[1m[92m   Compiling[0m combine v4.6.7
+[1m[92m   Compiling[0m pin-project-internal v1.1.10
+[1m[92m   Compiling[0m async-stream-impl v0.3.6
+[1m[92m   Compiling[0m multer v3.1.0
+[1m[92m   Compiling[0m toml_datetime v0.7.5+spec-1.1.0
+[1m[92m   Compiling[0m sha1_smol v1.0.1
+[1m[92m   Compiling[0m arcstr v1.2.0
+[1m[92m   Compiling[0m xxhash-rust v0.8.15
+[1m[92m   Compiling[0m utf8parse v0.2.2
+[1m[92m   Compiling[0m crc-catalog v2.4.0
+[1m[92m   Compiling[0m num-bigint-dig v0.8.6
+[1m[92m   Compiling[0m parking v2.2.1
+[1m[92m   Compiling[0m event-listener v5.4.1
+[1m[92m   Compiling[0m crc v3.4.0
+[1m[92m   Compiling[0m anstyle-parse v0.2.7
+[1m[92m   Compiling[0m toml_edit v0.23.10+spec-1.0.0
+[1m[92m   Compiling[0m redis v1.0.2
+[1m[92m   Compiling[0m pin-project v1.1.10
+[1m[92m   Compiling[0m async-stream v0.3.6
+[1m[92m   Compiling[0m prost-derive v0.12.6
+[1m[92m   Compiling[0m prost-derive v0.14.1
+[1m[92m   Compiling[0m ecdsa v0.16.9
+[1m[92m   Compiling[0m webpki-roots v0.26.11
+[1m[92m   Compiling[0m futures-intrusive v0.5.0
+[1m[92m   Compiling[0m tempfile v3.24.0
+[1m[92m   Compiling[0m unicode-normalization v0.1.25
+[1m[92m   Compiling[0m hashlink v0.10.0
+[1m[92m   Compiling[0m primeorder v0.13.6
+[1m[92m   Compiling[0m crossbeam-queue v0.3.12
+[1m[92m   Compiling[0m async-graphql-value v7.0.17
+[1m[92m   Compiling[0m num-iter v0.1.45
+[1m[92m   Compiling[0m strum_macros v0.26.4
+[1m[92m   Compiling[0m hyper-timeout v0.5.2
+[1m[92m   Compiling[0m crossbeam-epoch v0.9.18
+[1m[92m   Compiling[0m bb8 v0.9.1
+[1m[92m   Compiling[0m pem v3.0.6
+[1m[92m   Compiling[0m opentelemetry v0.31.0
+[1m[92m   Compiling[0m curve25519-dalek-derive v0.1.1
+[1m[92m   Compiling[0m colorchoice v1.0.4
+[1m[92m   Compiling[0m is_terminal_polyfill v1.70.2
+[1m[92m   Compiling[0m unicode-bidi v0.3.18
+[1m[92m   Compiling[0m unicode-properties v0.1.4
+[1m[92m   Compiling[0m dotenvy v0.15.7
+[1m[92m   Compiling[0m anstyle v1.0.13
+[1m[92m   Compiling[0m anstyle-query v1.1.5
+[1m[92m   Compiling[0m anstream v0.6.21
+[1m[92m   Compiling[0m Inflector v0.11.4
+[1m[92m   Compiling[0m sqlx-core v0.8.6
+[1m[92m   Compiling[0m stringprep v0.1.5
+[1m[92m   Compiling[0m bb8-redis v0.26.0
+[1m[92m   Compiling[0m strum v0.26.3
+[1m[92m   Compiling[0m crossbeam-deque v0.8.6
+[1m[92m   Compiling[0m tonic v0.14.2
+[1m[92m   Compiling[0m async-graphql-parser v7.0.17
+[1m[92m   Compiling[0m prost v0.14.1
+[1m[92m   Compiling[0m proc-macro-crate v3.4.0
+[1m[92m   Compiling[0m ed25519 v2.2.3
+[1m[92m   Compiling[0m atoi v2.0.0
+[1m[92m   Compiling[0m md-5 v0.10.6
+[1m[92m   Compiling[0m pkcs1 v0.7.5
+[1m[92m   Compiling[0m scheduled-thread-pool v0.2.7
+[1m[92m   Compiling[0m inout v0.1.4
+[1m[92m   Compiling[0m whoami v1.6.1
+[1m[92m   Compiling[0m ascii_utils v0.9.3
+[1m[92m   Compiling[0m clap_lex v0.7.6
+[1m[92m   Compiling[0m rayon-core v1.13.0
+[1m[92m   Compiling[0m prettyplease v0.2.37
+[1m[92m   Compiling[0m home v0.5.12
+[1m[92m   Compiling[0m clap_builder v4.5.53
+[1m[92m   Compiling[0m sqlx-postgres v0.8.6
+[1m[92m   Compiling[0m fast_chemail v0.9.6
+[1m[92m   Compiling[0m cipher v0.4.4
+[1m[92m   Compiling[0m r2d2 v0.8.10
+[1m[92m   Compiling[0m rsa v0.9.9
+[1m[92m   Compiling[0m ed25519-dalek v2.2.0
+[1m[92m   Compiling[0m async-graphql-derive v7.0.17
+[1m[92m   Compiling[0m tonic-prost v0.14.2
 [1m[92m   Compiling[0m armature-redis v0.1.0 (/home/runner/work/armature/armature/armature-redis)
+[1m[92m   Compiling[0m opentelemetry_sdk v0.31.0
+[1m[92m   Compiling[0m p256 v0.13.2
+[1m[92m   Compiling[0m p384 v0.13.1
+[1m[92m   Compiling[0m prost v0.12.6
+[1m[92m   Compiling[0m handlebars v5.1.2
+[1m[92m   Compiling[0m simple_asn1 v0.6.3
+[1m[92m   Compiling[0m clap_derive v4.5.49
+[1m[92m   Compiling[0m tokio-rustls v0.26.4
+[1m[92m   Compiling[0m armature-core v0.2.0 (/home/runner/work/armature/armature/armature-core)
+[1m[92m   Compiling[0m hyper-rustls v0.27.7
+[1m[92m   Compiling[0m reqwest v0.12.28
+[1m[92m   Compiling[0m http v0.2.12
+[1m[92m   Compiling[0m half v2.7.1
+[1m[92m   Compiling[0m proc-macro2-diagnostics v0.10.1
+[1m[92m   Compiling[0m plotters-backend v0.3.7
+[1m[92m   Compiling[0m static_assertions_next v1.1.2
+[1m[92m   Compiling[0m fixedbitset v0.4.2
+[1m[92m   Compiling[0m cast v0.3.0
+[1m[92m   Compiling[0m heck v0.4.1
+[1m[92m   Compiling[0m rustix v0.38.44
+[1m[92m   Compiling[0m ciborium-io v0.2.2
+[1m[92m   Compiling[0m futures-timer v3.0.3
+[1m[92m   Compiling[0m bitflags v1.3.2
+[1m[92m   Compiling[0m async-graphql v7.0.17
+[1m[92m   Compiling[0m ciborium-ll v0.2.2
+[1m[92m   Compiling[0m petgraph v0.6.5
+[1m[92m   Compiling[0m plotters-svg v0.3.7
+[1m[92m   Compiling[0m opentelemetry-http v0.31.0
+[1m[92m   Compiling[0m clap v4.5.53
+[1m[92m   Compiling[0m jsonwebtoken v10.2.0
+[1m[92m   Compiling[0m prost-types v0.12.6
+[1m[92m   Compiling[0m opentelemetry-proto v0.31.0
+[1m[92m   Compiling[0m sqlx-macros-core v0.8.6
+[1m[92m   Compiling[0m blowfish v0.9.1
+[1m[92m   Compiling[0m enum_dispatch v0.3.13
+[1m[92m   Compiling[0m password-hash v0.5.0
+[1m[92m   Compiling[0m yasna v0.5.2
+[1m[92m   Compiling[0m blake2 v0.10.6
+[1m[92m   Compiling[0m serde_spanned v1.0.4
+[1m[92m   Compiling[0m proc-macro-error-attr2 v2.0.0
+[1m[92m   Compiling[0m cpp_demangle v0.4.5
+[1m[92m   Compiling[0m toml_writer v1.0.6+spec-1.1.0
+[1m[92m   Compiling[0m winnow v0.6.26
+[1m[92m   Compiling[0m procfs v0.17.0
+[1m[92m   Compiling[0m bytemuck v1.24.0
+[1m[92m   Compiling[0m multimap v0.10.1
+[1m[92m   Compiling[0m protobuf v3.7.2
+[1m[92m   Compiling[0m cfg_aliases v0.2.1
+[1m[92m   Compiling[0m yansi v1.0.1
+[1m[92m   Compiling[0m object v0.37.3
+[1m[92m   Compiling[0m unicase v2.8.1
+[1m[92m   Compiling[0m unsafe-libyaml v0.2.11
+[1m[92m   Compiling[0m linux-raw-sys v0.4.15
+[1m[92m   Compiling[0m cron v0.15.0
+[1m[92m   Compiling[0m serde_yaml v0.9.34+deprecated
+[1m[92m   Compiling[0m mime_guess v2.0.5
+[1m[92m   Compiling[0m nix v0.30.1
+[1m[92m   Compiling[0m rgb v0.8.52
+[1m[92m   Compiling[0m prost-build v0.12.6
+[1m[92m   Compiling[0m toml v0.9.10+spec-1.1.0
+[1m[92m   Compiling[0m proc-macro-error2 v2.0.1
+[1m[92m   Compiling[0m rcgen v0.14.6
+[1m[92m   Compiling[0m argon2 v0.5.3
+[1m[92m   Compiling[0m memcache v0.19.0
+[1m[92m   Compiling[0m rayon v1.11.0
+[1m[92m   Compiling[0m bcrypt v0.17.1
+[1m[92m   Compiling[0m sqlx-macros v0.8.6
+[1m[92m   Compiling[0m opentelemetry-otlp v0.31.0
+[1m[92m   Compiling[0m armature-jwt v0.1.1 (/home/runner/work/armature/armature/armature-jwt)
+[1m[92m   Compiling[0m async-graphql-axum v7.0.17
+[1m[92m   Compiling[0m plotters v0.3.7
+[1m[92m   Compiling[0m ciborium v0.2.2
+[1m[92m   Compiling[0m h2 v0.3.27
+[1m[92m   Compiling[0m http-body v0.4.6
+[1m[92m   Compiling[0m oauth2 v5.0.0
+[1m[92m   Compiling[0m num-format v0.4.4
+[1m[92m   Compiling[0m itertools v0.10.5
+[1m[92m   Compiling[0m derive_builder_core v0.20.2
+[1m[92m   Compiling[0m procfs-core v0.17.0
+[1m[92m   Compiling[0m protobuf-support v3.7.2
+[1m[92m   Compiling[0m pq-sys v0.7.5
+[1m[92m   Compiling[0m dashmap v5.5.3
+[1m[92m   Compiling[0m debugid v0.8.0
+[1m[92m   Compiling[0m tinytemplate v1.2.1
+[1m[92m   Compiling[0m ordered-float v4.6.0
+[1m[92m   Compiling[0m miette-derive v5.10.0
+[1m[92m   Compiling[0m inherent v1.0.13
+[1m[92m   Compiling[0m equator-macro v0.4.2
+[1m[92m   Compiling[0m alloca v0.4.0
+[1m[92m   Compiling[0m findshlibs v0.10.2
+[1m[92m   Compiling[0m memmap2 v0.9.9
+[1m[92m   Compiling[0m socket2 v0.5.10
+[1m[92m   Compiling[0m is-terminal v0.4.17
+[1m[92m   Compiling[0m unicode-width v0.1.14
+[1m[92m   Compiling[0m opentelemetry-semantic-conventions v0.31.0
+[1m[92m   Compiling[0m gimli v0.32.3
+[1m[92m   Compiling[0m rustc-demangle v0.1.26
+[1m[92m   Compiling[0m symbolic-demangle v12.17.0
+[1m[92m   Compiling[0m str_stack v0.1.0
+[1m[92m   Compiling[0m anes v0.1.6
+[1m[92m   Compiling[0m unicode-xid v0.2.6
+[1m[92m   Compiling[0m minimal-lexical v0.2.1
+[1m[92m   Compiling[0m oorandom v11.1.5
+[1m[92m   Compiling[0m prometheus v0.14.0
+[1m[92m   Compiling[0m nom v7.1.3
+[1m[92m   Compiling[0m derive_more-impl v2.1.1
+[1m[92m   Compiling[0m hyper v0.14.32
+[1m[92m   Compiling[0m miette v5.10.0
+[1m[92m   Compiling[0m addr2line v0.25.1
+[1m[92m   Compiling[0m armature-opentelemetry v0.1.1 (/home/runner/work/armature/armature/armature-opentelemetry)
+[1m[92m   Compiling[0m equator v0.4.2
+[1m[92m   Compiling[0m symbolic-common v12.17.0
+[1m[92m   Compiling[0m sea-query v0.32.7
 [1m[92m   Compiling[0m armature-events v0.1.0 (/home/runner/work/armature/armature/armature-events)
-[1m[92m   Compiling[0m armature-messaging v0.1.0 (/home/runner/work/armature/armature/armature-messaging)
-[1m[92m   Compiling[0m armature-core v0.1.0 (/home/runner/work/armature/armature/armature-core)
+[1m[92m   Compiling[0m derive_builder_macro v0.20.2
+[1m[92m   Compiling[0m criterion-plot v0.5.0
+[1m[92m   Compiling[0m armature-auth v0.1.1 (/home/runner/work/armature/armature/armature-auth)
+[1m[92m   Compiling[0m armature-graphql v0.2.0 (/home/runner/work/armature/armature/armature-graphql)
+[1m[92m   Compiling[0m sqlx v0.8.6
 [1m[92m   Compiling[0m armature-cache v0.1.0 (/home/runner/work/armature/armature/armature-cache)
+[1m[92m   Compiling[0m armature-acme v0.1.1 (/home/runner/work/armature/armature/armature-acme)
+[1m[92m   Compiling[0m armature-config v0.1.1 (/home/runner/work/armature/armature/armature-config)
+[1m[92m   Compiling[0m pprof v0.14.1
+[1m[92m   Compiling[0m sea-bae v0.2.1
+[1m[92m   Compiling[0m ouroboros_macro v0.18.5
+[1m[92m   Compiling[0m armature-openapi v0.1.1 (/home/runner/work/armature/armature/armature-openapi)
+[1m[92m   Compiling[0m armature-cron v0.1.1 (/home/runner/work/armature/armature/armature-cron)
+[1m[92m   Compiling[0m inotify v0.9.6
+[1m[92m   Compiling[0m armature-ratelimit v0.1.1 (/home/runner/work/armature/armature/armature-ratelimit)
+[1m[92m   Compiling[0m armature-queue v0.1.1 (/home/runner/work/armature/armature/armature-queue)
+[1m[92m   Compiling[0m armature-webhooks v0.1.1 (/home/runner/work/armature/armature/armature-webhooks)
+[1m[92m   Compiling[0m armature-validation v0.1.1 (/home/runner/work/armature/armature/armature-validation)
+[1m[92m   Compiling[0m armature-testing v0.1.1 (/home/runner/work/armature/armature/armature-testing)
+[1m[92m   Compiling[0m armature-security v0.1.1 (/home/runner/work/armature/armature/armature-security)
+[1m[92m   Compiling[0m armature-compression v0.1.1 (/home/runner/work/armature/armature/armature-compression)
+[1m[92m   Compiling[0m itertools v0.13.0
+[1m[92m   Compiling[0m dsl_auto_type v0.1.3
+[1m[92m   Compiling[0m armature-messaging v0.1.0 (/home/runner/work/armature/armature/armature-messaging)
 [1m[92m   Compiling[0m armature-proc-macro v0.1.0 (/home/runner/work/armature/armature/armature-proc-macro)
+[1m[92m   Compiling[0m diesel_table_macro_syntax v0.2.0
+[1m[92m   Compiling[0m filetime v0.2.26
+[1m[92m   Compiling[0m mio v0.8.11
+[1m[92m   Compiling[0m quick-xml v0.26.0
+[1m[92m   Compiling[0m env_filter v0.1.4
+[1m[92m   Compiling[0m sync_wrapper v0.1.2
+[1m[92m   Compiling[0m num-modular v0.6.1
+[1m[92m   Compiling[0m aliasable v0.1.3
+[1m[92m   Compiling[0m base64 v0.21.7
+[1m[92m   Compiling[0m cargo-husky v1.5.0
+[1m[92m   Compiling[0m num-order v1.2.0
+[1m[92m   Compiling[0m reqwest v0.11.27
+[1m[92m   Compiling[0m ouroboros v0.18.5
+[1m[92m   Compiling[0m armature-framework v0.2.0 (/home/runner/work/armature/armature)
+[1m[92m   Compiling[0m inferno v0.11.21
+[1m[92m   Compiling[0m env_logger v0.11.8
+[1m[92m   Compiling[0m notify v6.1.1
+[1m[92m   Compiling[0m diesel_derives v2.2.7
+[1m[92m   Compiling[0m criterion-plot v0.8.1
+[1m[92m   Compiling[0m backtrace v0.3.76
+[1m[92m   Compiling[0m sea-orm-macros v1.1.19
+[1m[92m   Compiling[0m sea-query-binder v0.7.0
+[1m[92m   Compiling[0m criterion v0.5.1
+[1m[92m   Compiling[0m derive_builder v0.20.2
 [1m[92m   Compiling[0m armature-eventsourcing v0.1.0 (/home/runner/work/armature/armature/armature-eventsourcing)
+[1m[92m   Compiling[0m aligned-vec v0.6.4
+[1m[92m   Compiling[0m kdl v4.7.1
+[1m[92m   Compiling[0m derive_more v2.1.1
+[1m[92m   Compiling[0m nix v0.26.4
+[1m[92m   Compiling[0m handlebars v4.5.0
+[1m[92m   Compiling[0m nix v0.27.1
+[1m[92m   Compiling[0m spin v0.10.0
+[1m[92m   Compiling[0m page_size v0.6.0
+[1m[92m   Compiling[0m quick-xml v0.38.4
+[1m[92m   Compiling[0m sea-orm v1.1.19
+[1m[92m   Compiling[0m inferno v0.12.4
 [1m[92m   Compiling[0m armature-ferron v0.1.0 (/home/runner/work/armature/armature/armature-ferron)
+[1m[92m   Compiling[0m criterion v0.8.1
 [1m[92m   Compiling[0m armature-cqrs v0.1.0 (/home/runner/work/armature/armature/armature-cqrs)
+[1m[92m   Compiling[0m diesel v2.2.12
+[1m[92m   Compiling[0m handlebars v6.3.2
+[1m[92m   Compiling[0m armature-metrics v0.1.1 (/home/runner/work/armature/armature/armature-metrics)
+[1m[92m   Compiling[0m ctrlc v3.5.1
 [1m[92m   Compiling[0m armature-storage v0.1.0 (/home/runner/work/armature/armature/armature-storage)
-[1m[92m   Compiling[0m armature-distributed v0.1.0 (/home/runner/work/armature/armature/armature-distributed)
+[1m[92m   Compiling[0m armature-audit v0.1.1 (/home/runner/work/armature/armature/armature-audit)
+[1m[92m   Compiling[0m armature-features v0.1.1 (/home/runner/work/armature/armature/armature-features)
+[1m[92m   Compiling[0m armature-tenancy v0.1.1 (/home/runner/work/armature/armature/armature-tenancy)
 [1m[92m   Compiling[0m armature-http-client v0.1.0 (/home/runner/work/armature/armature/armature-http-client)
 [1m[92m   Compiling[0m armature-discovery v0.1.0 (/home/runner/work/armature/armature/armature-discovery)
-[1m[92m   Compiling[0m armature-jwt v0.1.0 (/home/runner/work/armature/armature/armature-jwt)
-[1m[92m   Compiling[0m armature-validation v0.1.0 (/home/runner/work/armature/armature/armature-validation)
-[1m[92m   Compiling[0m armature-auth v0.1.0 (/home/runner/work/armature/armature/armature-auth)
-[1m[92m   Compiling[0m armature-openapi v0.1.0 (/home/runner/work/armature/armature/armature-openapi)
-[1m[92m   Compiling[0m armature-security v0.1.0 (/home/runner/work/armature/armature/armature-security)
-[1m[92m   Compiling[0m armature-cron v0.1.0 (/home/runner/work/armature/armature/armature-cron)
-[1m[92m   Compiling[0m armature-graphql v0.1.0 (/home/runner/work/armature/armature/armature-graphql)
-[1m[92m   Compiling[0m armature-opentelemetry v0.1.0 (/home/runner/work/armature/armature/armature-opentelemetry)
-[1m[92m   Compiling[0m armature-config v0.1.0 (/home/runner/work/armature/armature/armature-config)
-[1m[92m   Compiling[0m armature-acme v0.1.0 (/home/runner/work/armature/armature/armature-acme)
-[1m[92m   Compiling[0m armature-ratelimit v0.1.0 (/home/runner/work/armature/armature/armature-ratelimit)
-[1m[92m   Compiling[0m armature-queue v0.1.0 (/home/runner/work/armature/armature/armature-queue)
-[1m[92m   Compiling[0m armature-webhooks v0.1.0 (/home/runner/work/armature/armature/armature-webhooks)
-[1m[92m   Compiling[0m armature-testing v0.1.0 (/home/runner/work/armature/armature/armature-testing)
-[1m[92m   Compiling[0m armature-compression v0.1.0 (/home/runner/work/armature/armature/armature-compression)
-[1m[92m   Compiling[0m armature-framework v0.1.1 (/home/runner/work/armature/armature)
-[1m[92m   Compiling[0m armature-features v0.1.0 (/home/runner/work/armature/armature/armature-features)
-[1m[92m   Compiling[0m armature-metrics v0.1.0 (/home/runner/work/armature/armature/armature-metrics)
-[1m[92m   Compiling[0m armature-audit v0.1.0 (/home/runner/work/armature/armature/armature-audit)
-[1m[92m   Compiling[0m armature-tenancy v0.1.0 (/home/runner/work/armature/armature/armature-tenancy)
-[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 48.40s
-[1m[92m     Running[0m benches/framework_comparison.rs (target/release/deps/framework_comparison-cea31d8df5e3f297)
+[1m[92m   Compiling[0m armature-distributed v0.1.0 (/home/runner/work/armature/armature/armature-distributed)
+[1m[92m   Compiling[0m crossbeam v0.8.4
+[1m[92m   Compiling[0m tokio-test v0.4.4
+[1m[92m    Finished[0m `bench` profile [optimized] target(s) in 4m 25s
+[1m[92m     Running[0m benches/framework_comparison.rs (target/release/deps/framework_comparison-f7445e18c9b76a8a)
 Gnuplot not found, using plotters backend
 Benchmarking request_creation/minimal
 Benchmarking request_creation/minimal: Warming up for 1.0000 s
-Benchmarking request_creation/minimal: Collecting 100 samples in estimated 5.0001 s (113M iterations)
+Benchmarking request_creation/minimal: Collecting 100 samples in estimated 5.0002 s (114M iterations)
 Benchmarking request_creation/minimal: Analyzing
 request_creation/minimal
-                        time:   [43.676 ns 43.743 ns 43.827 ns]
-                        thrpt:  [22.817 Melem/s 22.861 Melem/s 22.896 Melem/s]
-Found 5 outliers among 100 measurements (5.00%)
-  2 (2.00%) high mild
-  3 (3.00%) high severe
+                        time:   [43.553 ns 43.620 ns 43.686 ns]
+                        thrpt:  [22.890 Melem/s 22.926 Melem/s 22.960 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
 Benchmarking request_creation/with_path_params
 Benchmarking request_creation/with_path_params: Warming up for 1.0000 s
-Benchmarking request_creation/with_path_params: Collecting 100 samples in estimated 5.0000 s (45M iterations)
+Benchmarking request_creation/with_path_params: Collecting 100 samples in estimated 5.0003 s (46M iterations)
 Benchmarking request_creation/with_path_params: Analyzing
 request_creation/with_path_params
-                        time:   [110.95 ns 111.16 ns 111.39 ns]
-                        thrpt:  [8.9778 Melem/s 8.9963 Melem/s 9.0130 Melem/s]
-Found 19 outliers among 100 measurements (19.00%)
-  16 (16.00%) high mild
+                        time:   [110.29 ns 110.51 ns 110.77 ns]
+                        thrpt:  [9.0278 Melem/s 9.0491 Melem/s 9.0670 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  4 (4.00%) high mild
   3 (3.00%) high severe
 Benchmarking request_creation/with_query_params
 Benchmarking request_creation/with_query_params: Warming up for 1.0000 s
-Benchmarking request_creation/with_query_params: Collecting 100 samples in estimated 5.0005 s (23M iterations)
+Benchmarking request_creation/with_query_params: Collecting 100 samples in estimated 5.0003 s (23M iterations)
 Benchmarking request_creation/with_query_params: Analyzing
 request_creation/with_query_params
-                        time:   [213.65 ns 213.97 ns 214.35 ns]
-                        thrpt:  [4.6653 Melem/s 4.6736 Melem/s 4.6806 Melem/s]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
+                        time:   [212.80 ns 213.09 ns 213.47 ns]
+                        thrpt:  [4.6846 Melem/s 4.6928 Melem/s 4.6992 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
 Benchmarking request_creation/with_headers
 Benchmarking request_creation/with_headers: Warming up for 1.0000 s
-Benchmarking request_creation/with_headers: Collecting 100 samples in estimated 5.0003 s (23M iterations)
+Benchmarking request_creation/with_headers: Collecting 100 samples in estimated 5.0010 s (23M iterations)
 Benchmarking request_creation/with_headers: Analyzing
 request_creation/with_headers
-                        time:   [220.36 ns 220.57 ns 220.76 ns]
-                        thrpt:  [4.5298 Melem/s 4.5338 Melem/s 4.5380 Melem/s]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
+                        time:   [220.43 ns 220.66 ns 220.92 ns]
+                        thrpt:  [4.5265 Melem/s 4.5318 Melem/s 4.5366 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
   1 (1.00%) high severe
 Benchmarking request_creation/with_json_body
 Benchmarking request_creation/with_json_body: Warming up for 1.0000 s
-Benchmarking request_creation/with_json_body: Collecting 100 samples in estimated 5.0003 s (38M iterations)
+Benchmarking request_creation/with_json_body: Collecting 100 samples in estimated 5.0003 s (36M iterations)
 Benchmarking request_creation/with_json_body: Analyzing
 request_creation/with_json_body
-                        time:   [130.96 ns 131.31 ns 131.73 ns]
-                        thrpt:  [7.5915 Melem/s 7.6155 Melem/s 7.6361 Melem/s]
-Found 4 outliers among 100 measurements (4.00%)
-  1 (1.00%) high mild
-  3 (3.00%) high severe
+                        time:   [133.50 ns 134.07 ns 134.75 ns]
+                        thrpt:  [7.4213 Melem/s 7.4585 Melem/s 7.4907 Melem/s]
+Found 15 outliers among 100 measurements (15.00%)
+  6 (6.00%) high mild
+  9 (9.00%) high severe
 
 Benchmarking response_creation/empty_ok
 Benchmarking response_creation/empty_ok: Warming up for 1.0000 s
 Benchmarking response_creation/empty_ok: Collecting 100 samples in estimated 5.0000 s (3.2B iterations)
 Benchmarking response_creation/empty_ok: Analyzing
 response_creation/empty_ok
-                        time:   [1.6851 ns 1.7509 ns 1.8222 ns]
-                        thrpt:  [548.79 Melem/s 571.13 Melem/s 593.43 Melem/s]
+                        time:   [1.6426 ns 1.6894 ns 1.7437 ns]
+                        thrpt:  [573.49 Melem/s 591.93 Melem/s 608.78 Melem/s]
+Found 19 outliers among 100 measurements (19.00%)
+  19 (19.00%) high mild
 Benchmarking response_creation/status_codes
 Benchmarking response_creation/status_codes: Warming up for 1.0000 s
 Benchmarking response_creation/status_codes: Collecting 100 samples in estimated 5.0000 s (16B iterations)
 Benchmarking response_creation/status_codes: Analyzing
 response_creation/status_codes
-                        time:   [311.03 ps 311.24 ps 311.48 ps]
-                        thrpt:  [3.2104 Gelem/s 3.2129 Gelem/s 3.2151 Gelem/s]
-Found 9 outliers among 100 measurements (9.00%)
-  1 (1.00%) high mild
+                        time:   [310.89 ps 311.09 ps 311.33 ps]
+                        thrpt:  [3.2121 Gelem/s 3.2145 Gelem/s 3.2166 Gelem/s]
+Found 14 outliers among 100 measurements (14.00%)
+  1 (1.00%) low mild
+  5 (5.00%) high mild
   8 (8.00%) high severe
 Benchmarking response_creation/with_json_small
 Benchmarking response_creation/with_json_small: Warming up for 1.0000 s
-Benchmarking response_creation/with_json_small: Collecting 100 samples in estimated 5.0002 s (37M iterations)
+Benchmarking response_creation/with_json_small: Collecting 100 samples in estimated 5.0001 s (37M iterations)
 Benchmarking response_creation/with_json_small: Analyzing
 response_creation/with_json_small
-                        time:   [133.93 ns 134.65 ns 135.47 ns]
-                        thrpt:  [7.3816 Melem/s 7.4269 Melem/s 7.4665 Melem/s]
+                        time:   [135.77 ns 136.44 ns 137.26 ns]
+                        thrpt:  [7.2853 Melem/s 7.3294 Melem/s 7.3655 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+Benchmarking response_creation/with_json_medium
+Benchmarking response_creation/with_json_medium: Warming up for 1.0000 s
+Benchmarking response_creation/with_json_medium: Collecting 100 samples in estimated 5.0003 s (16M iterations)
+Benchmarking response_creation/with_json_medium: Analyzing
+response_creation/with_json_medium
+                        time:   [318.08 ns 318.46 ns 319.06 ns]
+                        thrpt:  [3.1342 Melem/s 3.1401 Melem/s 3.1439 Melem/s]
 Found 6 outliers among 100 measurements (6.00%)
   1 (1.00%) high mild
   5 (5.00%) high severe
-Benchmarking response_creation/with_json_medium
-Benchmarking response_creation/with_json_medium: Warming up for 1.0000 s
-Benchmarking response_creation/with_json_medium: Collecting 100 samples in estimated 5.0012 s (15M iterations)
-Benchmarking response_creation/with_json_medium: Analyzing
-response_creation/with_json_medium
-                        time:   [330.89 ns 337.09 ns 344.28 ns]
-                        thrpt:  [2.9046 Melem/s 2.9666 Melem/s 3.0221 Melem/s]
-Found 5 outliers among 100 measurements (5.00%)
-  1 (1.00%) high mild
-  4 (4.00%) high severe
 Benchmarking response_creation/with_json_large
 Benchmarking response_creation/with_json_large: Warming up for 1.0000 s
-Benchmarking response_creation/with_json_large: Collecting 100 samples in estimated 5.0736 s (162k iterations)
+Benchmarking response_creation/with_json_large: Collecting 100 samples in estimated 5.0436 s (157k iterations)
 Benchmarking response_creation/with_json_large: Analyzing
 response_creation/with_json_large
-                        time:   [31.361 µs 31.401 µs 31.447 µs]
-                        thrpt:  [31.800 Kelem/s 31.847 Kelem/s 31.887 Kelem/s]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
-  2 (2.00%) high severe
+                        time:   [32.128 µs 32.186 µs 32.255 µs]
+                        thrpt:  [31.003 Kelem/s 31.069 Kelem/s 31.125 Kelem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high severe
 Benchmarking response_creation/with_headers
 Benchmarking response_creation/with_headers: Warming up for 1.0000 s
-Benchmarking response_creation/with_headers: Collecting 100 samples in estimated 5.0007 s (26M iterations)
+Benchmarking response_creation/with_headers: Collecting 100 samples in estimated 5.0008 s (26M iterations)
 Benchmarking response_creation/with_headers: Analyzing
 response_creation/with_headers
-                        time:   [193.07 ns 193.16 ns 193.25 ns]
-                        thrpt:  [5.1745 Melem/s 5.1771 Melem/s 5.1794 Melem/s]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
-  1 (1.00%) high severe
+                        time:   [193.03 ns 193.70 ns 194.90 ns]
+                        thrpt:  [5.1309 Melem/s 5.1627 Melem/s 5.1805 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  4 (4.00%) high severe
 
 Benchmarking json_operations/serialize_small
 Benchmarking json_operations/serialize_small: Warming up for 1.0000 s
-Benchmarking json_operations/serialize_small: Collecting 100 samples in estimated 5.0002 s (136M iterations)
+Benchmarking json_operations/serialize_small: Collecting 100 samples in estimated 5.0001 s (135M iterations)
 Benchmarking json_operations/serialize_small: Analyzing
 json_operations/serialize_small
-                        time:   [36.507 ns 36.544 ns 36.594 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
-  2 (2.00%) high severe
+                        time:   [37.039 ns 37.071 ns 37.119 ns]
+Found 13 outliers among 100 measurements (13.00%)
+  9 (9.00%) high mild
+  4 (4.00%) high severe
 Benchmarking json_operations/serialize_medium
 Benchmarking json_operations/serialize_medium: Warming up for 1.0000 s
-Benchmarking json_operations/serialize_medium: Collecting 100 samples in estimated 5.0004 s (22M iterations)
+Benchmarking json_operations/serialize_medium: Collecting 100 samples in estimated 5.0012 s (21M iterations)
 Benchmarking json_operations/serialize_medium: Analyzing
 json_operations/serialize_medium
-                        time:   [228.94 ns 229.15 ns 229.40 ns]
-Found 11 outliers among 100 measurements (11.00%)
-  1 (1.00%) low mild
-  6 (6.00%) high mild
+                        time:   [243.05 ns 243.28 ns 243.61 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) high mild
   4 (4.00%) high severe
 Benchmarking json_operations/serialize_large
 Benchmarking json_operations/serialize_large: Warming up for 1.0000 s
-Benchmarking json_operations/serialize_large: Collecting 100 samples in estimated 5.0992 s (162k iterations)
+Benchmarking json_operations/serialize_large: Collecting 100 samples in estimated 5.1562 s (162k iterations)
 Benchmarking json_operations/serialize_large: Analyzing
 json_operations/serialize_large
-                        time:   [31.442 µs 31.472 µs 31.511 µs]
-Found 11 outliers among 100 measurements (11.00%)
-  7 (7.00%) low mild
-  2 (2.00%) high mild
-  2 (2.00%) high severe
+                        time:   [32.014 µs 32.126 µs 32.271 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
 Benchmarking json_operations/deserialize_small
 Benchmarking json_operations/deserialize_small: Warming up for 1.0000 s
-Benchmarking json_operations/deserialize_small: Collecting 100 samples in estimated 5.0000 s (76M iterations)
+Benchmarking json_operations/deserialize_small: Collecting 100 samples in estimated 5.0002 s (76M iterations)
 Benchmarking json_operations/deserialize_small: Analyzing
 json_operations/deserialize_small
-                        time:   [65.825 ns 65.940 ns 66.076 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
+                        time:   [65.883 ns 65.947 ns 66.019 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
   2 (2.00%) high severe
 Benchmarking json_operations/deserialize_medium
 Benchmarking json_operations/deserialize_medium: Warming up for 1.0000 s
-Benchmarking json_operations/deserialize_medium: Collecting 100 samples in estimated 5.0010 s (13M iterations)
+Benchmarking json_operations/deserialize_medium: Collecting 100 samples in estimated 5.0005 s (13M iterations)
 Benchmarking json_operations/deserialize_medium: Analyzing
 json_operations/deserialize_medium
-                        time:   [392.30 ns 392.74 ns 393.21 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+                        time:   [416.11 ns 426.18 ns 437.10 ns]
+Found 17 outliers among 100 measurements (17.00%)
+  17 (17.00%) high severe
 Benchmarking json_operations/deserialize_large
 Benchmarking json_operations/deserialize_large: Warming up for 1.0000 s
-Benchmarking json_operations/deserialize_large: Collecting 100 samples in estimated 5.2660 s (56k iterations)
+Benchmarking json_operations/deserialize_large: Collecting 100 samples in estimated 5.1832 s (56k iterations)
 Benchmarking json_operations/deserialize_large: Analyzing
 json_operations/deserialize_large
-                        time:   [94.538 µs 94.688 µs 94.896 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  2 (2.00%) high severe
+                        time:   [93.234 µs 93.320 µs 93.417 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
 
 Benchmarking routing/match_first/10
 Benchmarking routing/match_first/10: Warming up for 1.0000 s
-Benchmarking routing/match_first/10: Collecting 100 samples in estimated 5.0001 s (50M iterations)
+Benchmarking routing/match_first/10: Collecting 100 samples in estimated 5.0003 s (51M iterations)
 Benchmarking routing/match_first/10: Analyzing
-routing/match_first/10  time:   [99.571 ns 99.668 ns 99.763 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
+routing/match_first/10  time:   [99.408 ns 99.474 ns 99.544 ns]
+Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high severe
 Benchmarking routing/match_middle/10
 Benchmarking routing/match_middle/10: Warming up for 1.0000 s
 Benchmarking routing/match_middle/10: Collecting 100 samples in estimated 5.0002 s (18M iterations)
 Benchmarking routing/match_middle/10: Analyzing
-routing/match_middle/10 time:   [274.94 ns 275.12 ns 275.30 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  2 (2.00%) high mild
-  1 (1.00%) high severe
+routing/match_middle/10 time:   [277.61 ns 277.95 ns 278.40 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
 Benchmarking routing/match_last/10
 Benchmarking routing/match_last/10: Warming up for 1.0000 s
-Benchmarking routing/match_last/10: Collecting 100 samples in estimated 5.0011 s (19M iterations)
+Benchmarking routing/match_last/10: Collecting 100 samples in estimated 5.0005 s (18M iterations)
 Benchmarking routing/match_last/10: Analyzing
-routing/match_last/10   time:   [271.09 ns 271.33 ns 271.57 ns]
-Found 6 outliers among 100 measurements (6.00%)
-  5 (5.00%) high mild
-  1 (1.00%) high severe
+routing/match_last/10   time:   [272.79 ns 273.02 ns 273.27 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
 Benchmarking routing/match_not_found/10
 Benchmarking routing/match_not_found/10: Warming up for 1.0000 s
-Benchmarking routing/match_not_found/10: Collecting 100 samples in estimated 5.0001 s (26M iterations)
+Benchmarking routing/match_not_found/10: Collecting 100 samples in estimated 5.0009 s (26M iterations)
 Benchmarking routing/match_not_found/10: Analyzing
 routing/match_not_found/10
-                        time:   [192.06 ns 193.07 ns 194.47 ns]
-Found 9 outliers among 100 measurements (9.00%)
-  5 (5.00%) high mild
-  4 (4.00%) high severe
+                        time:   [190.22 ns 190.38 ns 190.56 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
 Benchmarking routing/match_first/50
 Benchmarking routing/match_first/50: Warming up for 1.0000 s
-Benchmarking routing/match_first/50: Collecting 100 samples in estimated 5.0002 s (50M iterations)
+Benchmarking routing/match_first/50: Collecting 100 samples in estimated 5.0001 s (50M iterations)
 Benchmarking routing/match_first/50: Analyzing
-routing/match_first/50  time:   [99.330 ns 99.494 ns 99.699 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
+routing/match_first/50  time:   [99.342 ns 99.476 ns 99.682 ns]
+Found 2 outliers among 100 measurements (2.00%)
   2 (2.00%) high severe
 Benchmarking routing/match_middle/50
 Benchmarking routing/match_middle/50: Warming up for 1.0000 s
-Benchmarking routing/match_middle/50: Collecting 100 samples in estimated 5.0024 s (5.9M iterations)
+Benchmarking routing/match_middle/50: Collecting 100 samples in estimated 5.0034 s (5.9M iterations)
 Benchmarking routing/match_middle/50: Analyzing
-routing/match_middle/50 time:   [844.42 ns 845.33 ns 846.31 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  1 (1.00%) low mild
+routing/match_middle/50 time:   [860.49 ns 861.10 ns 861.68 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low severe
+  2 (2.00%) low mild
   2 (2.00%) high mild
   1 (1.00%) high severe
 Benchmarking routing/match_last/50
 Benchmarking routing/match_last/50: Warming up for 1.0000 s
-Benchmarking routing/match_last/50: Collecting 100 samples in estimated 5.0005 s (18M iterations)
+Benchmarking routing/match_last/50: Collecting 100 samples in estimated 5.0011 s (18M iterations)
 Benchmarking routing/match_last/50: Analyzing
-routing/match_last/50   time:   [271.31 ns 271.47 ns 271.65 ns]
-Found 9 outliers among 100 measurements (9.00%)
-  2 (2.00%) low mild
+routing/match_last/50   time:   [274.48 ns 274.79 ns 275.23 ns]
+Found 6 outliers among 100 measurements (6.00%)
   3 (3.00%) high mild
-  4 (4.00%) high severe
+  3 (3.00%) high severe
 Benchmarking routing/match_not_found/50
 Benchmarking routing/match_not_found/50: Warming up for 1.0000 s
-Benchmarking routing/match_not_found/50: Collecting 100 samples in estimated 5.0001 s (3.9M iterations)
+Benchmarking routing/match_not_found/50: Collecting 100 samples in estimated 5.0029 s (3.9M iterations)
 Benchmarking routing/match_not_found/50: Analyzing
 routing/match_not_found/50
-                        time:   [1.2795 µs 1.2804 µs 1.2814 µs]
+                        time:   [1.2920 µs 1.2927 µs 1.2935 µs]
 Found 5 outliers among 100 measurements (5.00%)
-  3 (3.00%) high mild
+  1 (1.00%) low mild
+  2 (2.00%) high mild
   2 (2.00%) high severe
 Benchmarking routing/match_first/100
 Benchmarking routing/match_first/100: Warming up for 1.0000 s
-Benchmarking routing/match_first/100: Collecting 100 samples in estimated 5.0002 s (50M iterations)
+Benchmarking routing/match_first/100: Collecting 100 samples in estimated 5.0001 s (50M iterations)
 Benchmarking routing/match_first/100: Analyzing
-routing/match_first/100 time:   [99.488 ns 99.593 ns 99.705 ns]
+routing/match_first/100 time:   [99.538 ns 99.665 ns 99.858 ns]
 Found 4 outliers among 100 measurements (4.00%)
-  3 (3.00%) high mild
-  1 (1.00%) high severe
+  1 (1.00%) high mild
+  3 (3.00%) high severe
 Benchmarking routing/match_middle/100
 Benchmarking routing/match_middle/100: Warming up for 1.0000 s
-Benchmarking routing/match_middle/100: Collecting 100 samples in estimated 5.0008 s (7.2M iterations)
+Benchmarking routing/match_middle/100: Collecting 100 samples in estimated 5.0009 s (6.9M iterations)
 Benchmarking routing/match_middle/100: Analyzing
 routing/match_middle/100
-                        time:   [694.36 ns 695.35 ns 696.91 ns]
-Found 5 outliers among 100 measurements (5.00%)
+                        time:   [723.64 ns 724.08 ns 724.59 ns]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) low severe
   2 (2.00%) low mild
-  3 (3.00%) high severe
+  4 (4.00%) high mild
+  2 (2.00%) high severe
 Benchmarking routing/match_last/100
 Benchmarking routing/match_last/100: Warming up for 1.0000 s
-Benchmarking routing/match_last/100: Collecting 100 samples in estimated 5.0006 s (5.2M iterations)
+Benchmarking routing/match_last/100: Collecting 100 samples in estimated 5.0009 s (5.0M iterations)
 Benchmarking routing/match_last/100: Analyzing
-routing/match_last/100  time:   [965.70 ns 967.10 ns 968.56 ns]
+routing/match_last/100  time:   [1.0047 µs 1.0053 µs 1.0060 µs]
 Found 4 outliers among 100 measurements (4.00%)
-  1 (1.00%) low mild
-  2 (2.00%) high mild
+  2 (2.00%) low mild
+  1 (1.00%) high mild
   1 (1.00%) high severe
 Benchmarking routing/match_not_found/100
 Benchmarking routing/match_not_found/100: Warming up for 1.0000 s
-Benchmarking routing/match_not_found/100: Collecting 100 samples in estimated 5.0022 s (1.9M iterations)
+Benchmarking routing/match_not_found/100: Collecting 100 samples in estimated 5.0114 s (1.9M iterations)
 Benchmarking routing/match_not_found/100: Analyzing
 routing/match_not_found/100
-                        time:   [2.6531 µs 2.6544 µs 2.6560 µs]
-Found 6 outliers among 100 measurements (6.00%)
-  4 (4.00%) high mild
-  2 (2.00%) high severe
+                        time:   [2.6087 µs 2.6131 µs 2.6188 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
 Benchmarking routing/match_first/500
 Benchmarking routing/match_first/500: Warming up for 1.0000 s
-Benchmarking routing/match_first/500: Collecting 100 samples in estimated 5.0005 s (50M iterations)
+Benchmarking routing/match_first/500: Collecting 100 samples in estimated 5.0003 s (50M iterations)
 Benchmarking routing/match_first/500: Analyzing
-routing/match_first/500 time:   [100.29 ns 100.45 ns 100.62 ns]
-Found 1 outliers among 100 measurements (1.00%)
+routing/match_first/500 time:   [99.193 ns 99.259 ns 99.329 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
   1 (1.00%) high severe
 Benchmarking routing/match_middle/500
 Benchmarking routing/match_middle/500: Warming up for 1.0000 s
-Benchmarking routing/match_middle/500: Collecting 100 samples in estimated 5.0026 s (7.6M iterations)
+Benchmarking routing/match_middle/500: Collecting 100 samples in estimated 5.0003 s (7.7M iterations)
 Benchmarking routing/match_middle/500: Analyzing
 routing/match_middle/500
-                        time:   [646.44 ns 647.01 ns 647.62 ns]
-Found 6 outliers among 100 measurements (6.00%)
+                        time:   [651.29 ns 652.21 ns 653.04 ns]
+Found 17 outliers among 100 measurements (17.00%)
+  11 (11.00%) low mild
   4 (4.00%) high mild
   2 (2.00%) high severe
 Benchmarking routing/match_last/500
 Benchmarking routing/match_last/500: Warming up for 1.0000 s
-Benchmarking routing/match_last/500: Collecting 100 samples in estimated 5.0020 s (5.6M iterations)
+Benchmarking routing/match_last/500: Collecting 100 samples in estimated 5.0018 s (5.5M iterations)
 Benchmarking routing/match_last/500: Analyzing
-routing/match_last/500  time:   [893.46 ns 894.57 ns 895.60 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  1 (1.00%) high mild
-  2 (2.00%) high severe
+routing/match_last/500  time:   [916.54 ns 917.35 ns 918.17 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) low mild
+  2 (2.00%) high mild
+  1 (1.00%) high severe
 Benchmarking routing/match_not_found/500
 Benchmarking routing/match_not_found/500: Warming up for 1.0000 s
-Benchmarking routing/match_not_found/500: Collecting 100 samples in estimated 5.0572 s (404k iterations)
+Benchmarking routing/match_not_found/500: Collecting 100 samples in estimated 5.0222 s (404k iterations)
 Benchmarking routing/match_not_found/500: Analyzing
 routing/match_not_found/500
-                        time:   [12.498 µs 12.505 µs 12.513 µs]
-Found 8 outliers among 100 measurements (8.00%)
-  4 (4.00%) high mild
-  4 (4.00%) high severe
+                        time:   [12.411 µs 12.420 µs 12.428 µs]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
 
 Benchmarking middleware_creation/logger
 Benchmarking middleware_creation/logger: Warming up for 1.0000 s
 Benchmarking middleware_creation/logger: Collecting 100 samples in estimated 5.0000 s (16B iterations)
 Benchmarking middleware_creation/logger: Analyzing
 middleware_creation/logger
-                        time:   [310.76 ps 310.97 ps 311.22 ps]
-Found 14 outliers among 100 measurements (14.00%)
-  4 (4.00%) high mild
-  10 (10.00%) high severe
+                        time:   [310.99 ps 311.14 ps 311.32 ps]
+Found 10 outliers among 100 measurements (10.00%)
+  6 (6.00%) high mild
+  4 (4.00%) high severe
 Benchmarking middleware_creation/cors
 Benchmarking middleware_creation/cors: Warming up for 1.0000 s
-Benchmarking middleware_creation/cors: Collecting 100 samples in estimated 5.0000 s (120M iterations)
+Benchmarking middleware_creation/cors: Collecting 100 samples in estimated 5.0001 s (121M iterations)
 Benchmarking middleware_creation/cors: Analyzing
 middleware_creation/cors
-                        time:   [41.657 ns 41.766 ns 41.885 ns]
+                        time:   [41.887 ns 41.977 ns 42.077 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
 Benchmarking middleware_creation/request_id
 Benchmarking middleware_creation/request_id: Warming up for 1.0000 s
-Benchmarking middleware_creation/request_id: Collecting 100 samples in estimated 5.0024 s (10M iterations)
+Benchmarking middleware_creation/request_id: Collecting 100 samples in estimated 5.0004 s (10M iterations)
 Benchmarking middleware_creation/request_id: Analyzing
 middleware_creation/request_id
-                        time:   [482.13 ns 482.41 ns 482.67 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+                        time:   [490.33 ns 490.63 ns 490.94 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high severe
 
 Benchmarking dependency_injection/container_new
 Benchmarking dependency_injection/container_new: Warming up for 1.0000 s
-Benchmarking dependency_injection/container_new: Collecting 100 samples in estimated 5.0007 s (31M iterations)
+Benchmarking dependency_injection/container_new: Collecting 100 samples in estimated 5.0003 s (30M iterations)
 Benchmarking dependency_injection/container_new: Analyzing
 dependency_injection/container_new
-                        time:   [163.76 ns 164.08 ns 164.44 ns]
-Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+                        time:   [162.65 ns 162.91 ns 163.26 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  1 (1.00%) low mild
+  3 (3.00%) high mild
+  4 (4.00%) high severe
 Benchmarking dependency_injection/register_simple
 Benchmarking dependency_injection/register_simple: Warming up for 1.0000 s
-Benchmarking dependency_injection/register_simple: Collecting 100 samples in estimated 5.0004 s (17M iterations)
+Benchmarking dependency_injection/register_simple: Collecting 100 samples in estimated 5.0004 s (21M iterations)
 Benchmarking dependency_injection/register_simple: Analyzing
 dependency_injection/register_simple
-                        time:   [290.93 ns 291.07 ns 291.23 ns]
-Found 11 outliers among 100 measurements (11.00%)
-  8 (8.00%) high mild
+                        time:   [241.16 ns 241.27 ns 241.40 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
   3 (3.00%) high severe
 Benchmarking dependency_injection/register_complex
 Benchmarking dependency_injection/register_complex: Warming up for 1.0000 s
-Benchmarking dependency_injection/register_complex: Collecting 100 samples in estimated 5.0012 s (12M iterations)
+Benchmarking dependency_injection/register_complex: Collecting 100 samples in estimated 5.0011 s (12M iterations)
 Benchmarking dependency_injection/register_complex: Analyzing
 dependency_injection/register_complex
-                        time:   [403.09 ns 403.41 ns 403.78 ns]
+                        time:   [406.84 ns 407.14 ns 407.54 ns]
 Found 5 outliers among 100 measurements (5.00%)
-  3 (3.00%) high mild
-  2 (2.00%) high severe
+  2 (2.00%) high mild
+  3 (3.00%) high severe
 Benchmarking dependency_injection/resolve_simple
 Benchmarking dependency_injection/resolve_simple: Warming up for 1.0000 s
-Benchmarking dependency_injection/resolve_simple: Collecting 100 samples in estimated 5.0001 s (122M iterations)
+Benchmarking dependency_injection/resolve_simple: Collecting 100 samples in estimated 5.0001 s (109M iterations)
 Benchmarking dependency_injection/resolve_simple: Analyzing
 dependency_injection/resolve_simple
-                        time:   [39.105 ns 40.082 ns 40.897 ns]
-Found 26 outliers among 100 measurements (26.00%)
-  10 (10.00%) low severe
-  1 (1.00%) low mild
-  3 (3.00%) high mild
-  12 (12.00%) high severe
+                        time:   [39.404 ns 40.072 ns 40.590 ns]
+Found 23 outliers among 100 measurements (23.00%)
+  19 (19.00%) low severe
+  4 (4.00%) high mild
 Benchmarking dependency_injection/resolve_multiple
 Benchmarking dependency_injection/resolve_multiple: Warming up for 1.0000 s
-Benchmarking dependency_injection/resolve_multiple: Collecting 100 samples in estimated 5.0002 s (99M iterations)
+Benchmarking dependency_injection/resolve_multiple: Collecting 100 samples in estimated 5.0002 s (102M iterations)
 Benchmarking dependency_injection/resolve_multiple: Analyzing
 dependency_injection/resolve_multiple
-                        time:   [44.096 ns 45.406 ns 46.671 ns]
+                        time:   [49.259 ns 49.629 ns 50.019 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
 Benchmarking dependency_injection/scoped_resolution
 Benchmarking dependency_injection/scoped_resolution: Warming up for 1.0000 s
-Benchmarking dependency_injection/scoped_resolution: Collecting 100 samples in estimated 5.0003 s (26M iterations)
+Benchmarking dependency_injection/scoped_resolution: Collecting 100 samples in estimated 5.0009 s (26M iterations)
 Benchmarking dependency_injection/scoped_resolution: Analyzing
 dependency_injection/scoped_resolution
-                        time:   [189.16 ns 189.26 ns 189.38 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  2 (2.00%) high mild
-  2 (2.00%) high severe
+                        time:   [192.79 ns 192.95 ns 193.13 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  4 (4.00%) high severe
 
 Benchmarking handler_invocation/simple_handler
 Benchmarking handler_invocation/simple_handler: Warming up for 1.0000 s
-Benchmarking handler_invocation/simple_handler: Collecting 100 samples in estimated 5.0003 s (29M iterations)
+Benchmarking handler_invocation/simple_handler: Collecting 100 samples in estimated 5.0000 s (33M iterations)
 Benchmarking handler_invocation/simple_handler: Analyzing
 handler_invocation/simple_handler
-                        time:   [163.40 ns 164.32 ns 165.22 ns]
+                        time:   [151.58 ns 152.15 ns 152.69 ns]
 Benchmarking handler_invocation/json_handler
 Benchmarking handler_invocation/json_handler: Warming up for 1.0000 s
-Benchmarking handler_invocation/json_handler: Collecting 100 samples in estimated 5.0014 s (17M iterations)
+Benchmarking handler_invocation/json_handler: Collecting 100 samples in estimated 5.0001 s (17M iterations)
 Benchmarking handler_invocation/json_handler: Analyzing
 handler_invocation/json_handler
-                        time:   [296.92 ns 297.54 ns 298.48 ns]
-Found 3 outliers among 100 measurements (3.00%)
-  3 (3.00%) high severe
+                        time:   [299.85 ns 300.27 ns 300.66 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
 Benchmarking handler_invocation/param_handler
 Benchmarking handler_invocation/param_handler: Warming up for 1.0000 s
-Benchmarking handler_invocation/param_handler: Collecting 100 samples in estimated 5.0018 s (10M iterations)
+Benchmarking handler_invocation/param_handler: Collecting 100 samples in estimated 5.0015 s (10M iterations)
 Benchmarking handler_invocation/param_handler: Analyzing
 handler_invocation/param_handler
-                        time:   [480.00 ns 481.97 ns 484.09 ns]
+                        time:   [469.50 ns 470.65 ns 471.86 ns]
 Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high severe
+  1 (1.00%) high mild
 Benchmarking handler_invocation/body_handler
 Benchmarking handler_invocation/body_handler: Warming up for 1.0000 s
-Benchmarking handler_invocation/body_handler: Collecting 100 samples in estimated 5.0010 s (5.4M iterations)
+Benchmarking handler_invocation/body_handler: Collecting 100 samples in estimated 5.0012 s (5.9M iterations)
 Benchmarking handler_invocation/body_handler: Analyzing
 handler_invocation/body_handler
-                        time:   [915.55 ns 918.87 ns 921.74 ns]
+                        time:   [863.33 ns 868.32 ns 874.55 ns]
+Found 20 outliers among 100 measurements (20.00%)
+  15 (15.00%) high mild
+  5 (5.00%) high severe
 
 Benchmarking full_cycle/health_check
 Benchmarking full_cycle/health_check: Warming up for 1.0000 s
-Benchmarking full_cycle/health_check: Collecting 100 samples in estimated 10.000 s (14M iterations)
+Benchmarking full_cycle/health_check: Collecting 100 samples in estimated 10.003 s (15M iterations)
 Benchmarking full_cycle/health_check: Analyzing
-full_cycle/health_check time:   [675.60 ns 677.44 ns 679.53 ns]
+full_cycle/health_check time:   [670.27 ns 673.35 ns 676.31 ns]
 Found 1 outliers among 100 measurements (1.00%)
-  1 (1.00%) high mild
+  1 (1.00%) high severe
 Benchmarking full_cycle/get_with_param
 Benchmarking full_cycle/get_with_param: Warming up for 1.0000 s
-Benchmarking full_cycle/get_with_param: Collecting 100 samples in estimated 10.004 s (8.8M iterations)
+Benchmarking full_cycle/get_with_param: Collecting 100 samples in estimated 10.001 s (8.8M iterations)
 Benchmarking full_cycle/get_with_param: Analyzing
 full_cycle/get_with_param
-                        time:   [1.1164 µs 1.1187 µs 1.1215 µs]
-Found 5 outliers among 100 measurements (5.00%)
-  3 (3.00%) high mild
-  2 (2.00%) high severe
+                        time:   [1.1179 µs 1.1210 µs 1.1240 µs]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
 Benchmarking full_cycle/post_with_body
 Benchmarking full_cycle/post_with_body: Warming up for 1.0000 s
-Benchmarking full_cycle/post_with_body: Collecting 100 samples in estimated 10.004 s (7.4M iterations)
+Benchmarking full_cycle/post_with_body: Collecting 100 samples in estimated 10.000 s (7.5M iterations)
 Benchmarking full_cycle/post_with_body: Analyzing
 full_cycle/post_with_body
-                        time:   [1.3505 µs 1.3517 µs 1.3529 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
+                        time:   [1.3495 µs 1.3505 µs 1.3516 µs]
+Found 1 outliers among 100 measurements (1.00%)
   1 (1.00%) high severe
 
 Benchmarking allocations/string_small
 Benchmarking allocations/string_small: Warming up for 1.0000 s
-Benchmarking allocations/string_small: Collecting 100 samples in estimated 5.0000 s (366M iterations)
+Benchmarking allocations/string_small: Collecting 100 samples in estimated 5.0001 s (364M iterations)
 Benchmarking allocations/string_small: Analyzing
 allocations/string_small
-                        time:   [13.681 ns 13.686 ns 13.692 ns]
-Found 12 outliers among 100 measurements (12.00%)
-  4 (4.00%) high mild
-  8 (8.00%) high severe
+                        time:   [13.411 ns 13.434 ns 13.463 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high severe
 Benchmarking allocations/string_medium
 Benchmarking allocations/string_medium: Warming up for 1.0000 s
-Benchmarking allocations/string_medium: Collecting 100 samples in estimated 5.0000 s (402M iterations)
+Benchmarking allocations/string_medium: Collecting 100 samples in estimated 5.0001 s (401M iterations)
 Benchmarking allocations/string_medium: Analyzing
 allocations/string_medium
-                        time:   [12.446 ns 12.464 ns 12.492 ns]
-Found 16 outliers among 100 measurements (16.00%)
-  7 (7.00%) high mild
+                        time:   [12.446 ns 12.458 ns 12.475 ns]
+Found 11 outliers among 100 measurements (11.00%)
+  2 (2.00%) high mild
   9 (9.00%) high severe
 Benchmarking allocations/vec_small
 Benchmarking allocations/vec_small: Warming up for 1.0000 s
 Benchmarking allocations/vec_small: Collecting 100 samples in estimated 5.0000 s (487M iterations)
 Benchmarking allocations/vec_small: Analyzing
-allocations/vec_small   time:   [10.259 ns 10.262 ns 10.266 ns]
-Found 13 outliers among 100 measurements (13.00%)
-  6 (6.00%) high mild
-  7 (7.00%) high severe
+allocations/vec_small   time:   [10.264 ns 10.276 ns 10.291 ns]
+Found 10 outliers among 100 measurements (10.00%)
+  2 (2.00%) high mild
+  8 (8.00%) high severe
 Benchmarking allocations/vec_large
 Benchmarking allocations/vec_large: Warming up for 1.0000 s
-Benchmarking allocations/vec_large: Collecting 100 samples in estimated 5.0001 s (208M iterations)
+Benchmarking allocations/vec_large: Collecting 100 samples in estimated 5.0001 s (210M iterations)
 Benchmarking allocations/vec_large: Analyzing
-allocations/vec_large   time:   [23.990 ns 24.012 ns 24.037 ns]
-Found 4 outliers among 100 measurements (4.00%)
-  3 (3.00%) high mild
-  1 (1.00%) high severe
+allocations/vec_large   time:   [23.878 ns 23.933 ns 24.010 ns]
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
 Benchmarking allocations/hashmap_small
 Benchmarking allocations/hashmap_small: Warming up for 1.0000 s
-Benchmarking allocations/hashmap_small: Collecting 100 samples in estimated 5.0001 s (71M iterations)
+Benchmarking allocations/hashmap_small: Collecting 100 samples in estimated 5.0002 s (70M iterations)
 Benchmarking allocations/hashmap_small: Analyzing
 allocations/hashmap_small
-                        time:   [71.202 ns 71.254 ns 71.310 ns]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+                        time:   [71.637 ns 71.677 ns 71.729 ns]
+Found 7 outliers among 100 measurements (7.00%)
+  1 (1.00%) low mild
+  3 (3.00%) high mild
+  3 (3.00%) high severe
 Benchmarking allocations/hashmap_large
 Benchmarking allocations/hashmap_large: Warming up for 1.0000 s
-Benchmarking allocations/hashmap_large: Collecting 100 samples in estimated 5.0114 s (288k iterations)
+Benchmarking allocations/hashmap_large: Collecting 100 samples in estimated 5.0376 s (288k iterations)
 Benchmarking allocations/hashmap_large: Analyzing
 allocations/hashmap_large
-                        time:   [17.363 µs 17.385 µs 17.408 µs]
-Found 2 outliers among 100 measurements (2.00%)
-  1 (1.00%) high mild
-  1 (1.00%) high severe
+                        time:   [17.460 µs 17.471 µs 17.483 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  2 (2.00%) low mild
+  4 (4.00%) high mild
+  3 (3.00%) high severe
 
