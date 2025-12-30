@@ -415,6 +415,116 @@ enum GeneratorType {
         #[arg(short, long)]
         fields: Option<String>,
     },
+
+    /// Generate a repository (data access layer)
+    #[command(alias = "repo")]
+    Repository {
+        /// Repository name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a WebSocket handler
+    #[command(alias = "ws")]
+    Websocket {
+        /// WebSocket handler name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a GraphQL resolver
+    #[command(alias = "gql")]
+    Graphql {
+        /// Resolver name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate an interceptor
+    Interceptor {
+        /// Interceptor name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a validation pipe
+    Pipe {
+        /// Pipe name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate an exception filter
+    #[command(alias = "filter")]
+    ExceptionFilter {
+        /// Filter name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a configuration module
+    #[command(alias = "cfg")]
+    Config {
+        /// Config module name
+        name: String,
+    },
+
+    /// Generate a database entity
+    #[command(alias = "ent")]
+    Entity {
+        /// Entity name
+        name: String,
+    },
+
+    /// Generate a scheduled task
+    #[command(alias = "task", alias = "cron")]
+    Scheduler {
+        /// Task name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a cache service
+    #[command(alias = "cache")]
+    CacheService {
+        /// Cache service name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate an API client
+    #[command(alias = "client")]
+    ApiClient {
+        /// Client name
+        name: String,
+    },
+
+    /// Generate a health check controller
+    Health,
 }
 
 #[derive(Clone, ValueEnum)]
@@ -1780,27 +1890,75 @@ async fn main() {
             }
 
             GeneratorType::Job { name, job_type: _ } => {
-                info(&format!("Generating job: {}", name.cyan()));
-                warn("Job generation is coming soon!");
-                Ok(())
+                generate::job(&name, false).await
             }
 
             GeneratorType::Event { name } => {
-                info(&format!("Generating event: {}", name.cyan()));
-                warn("Event generation is coming soon!");
-                Ok(())
+                generate::event_handler(&name, false).await
             }
 
             GeneratorType::Dto { name, fields: _ } => {
-                info(&format!("Generating DTO: {}", name.cyan()));
-                warn("DTO generation is coming soon!");
-                Ok(())
+                generate::dto(&name).await
             }
 
             GeneratorType::Scaffold { name, fields: _ } => {
-                info(&format!("Generating scaffold: {}", name.cyan()));
-                warn("Scaffold generation is coming soon!");
-                Ok(())
+                // Generate all layers: entity, repository, dto, service, controller
+                info(&format!("Generating full scaffold for: {}", name.cyan()));
+                async {
+                    generate::entity(&name).await?;
+                    generate::repository(&name, false).await?;
+                    generate::dto(&name).await?;
+                    generate::service(&name, false).await?;
+                    generate::controller(&name, true, false).await
+                }.await
+            }
+
+            GeneratorType::Repository { name, skip_tests } => {
+                generate::repository(&name, skip_tests).await
+            }
+
+            GeneratorType::Websocket { name, skip_tests } => {
+                generate::websocket(&name, skip_tests).await
+            }
+
+            GeneratorType::Graphql { name, skip_tests } => {
+                generate::graphql_resolver(&name, skip_tests).await
+            }
+
+            GeneratorType::Interceptor { name, skip_tests } => {
+                generate::interceptor(&name, skip_tests).await
+            }
+
+            GeneratorType::Pipe { name, skip_tests } => {
+                generate::pipe(&name, skip_tests).await
+            }
+
+            GeneratorType::ExceptionFilter { name, skip_tests } => {
+                generate::exception_filter(&name, skip_tests).await
+            }
+
+            GeneratorType::Config { name } => {
+                generate::config(&name).await
+            }
+
+            GeneratorType::Entity { name } => {
+                generate::entity(&name).await
+            }
+
+            GeneratorType::Scheduler { name, skip_tests } => {
+                generate::scheduler(&name, skip_tests).await
+            }
+
+            GeneratorType::CacheService { name, skip_tests } => {
+                generate::cache_service(&name, skip_tests).await
+            }
+
+            GeneratorType::ApiClient { name } => {
+                generate::api_client(&name).await
+            }
+
+            GeneratorType::Health => {
+                generate::health_controller().await
             }
         },
 

@@ -18,9 +18,9 @@ if method == "GET" {
 } else if method == "POST" {
     // Parse JSON body
     let body = request.json();
-    
+
     log_info(`Received: ${to_json(body)}`);
-    
+
     // Echo back with created status
     let resp = created();
     resp.json(#{
