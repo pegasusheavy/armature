@@ -676,11 +676,11 @@ impl<T: Clone> CachedValue<T> {
         // Fast path: check read lock first
         {
             let guard = self.value.read().unwrap();
-            if let Some(ref entry) = *guard
-                && entry.created_at.elapsed() < self.ttl
-            {
-                COW_STATS.record_cache_hit();
-                return Arc::clone(&entry.value);
+            if let Some(ref entry) = *guard {
+                if entry.created_at.elapsed() < self.ttl {
+                    COW_STATS.record_cache_hit();
+                    return Arc::clone(&entry.value);
+                }
             }
         }
 
@@ -689,10 +689,10 @@ impl<T: Clone> CachedValue<T> {
         let mut guard = self.value.write().unwrap();
 
         // Double-check after acquiring write lock
-        if let Some(ref entry) = *guard
-            && entry.created_at.elapsed() < self.ttl
-        {
-            return Arc::clone(&entry.value);
+        if let Some(ref entry) = *guard {
+            if entry.created_at.elapsed() < self.ttl {
+                return Arc::clone(&entry.value);
+            }
         }
 
         let value = Arc::new(f());
@@ -714,11 +714,11 @@ impl<T: Clone> CachedValue<T> {
         // Fast path
         {
             let guard = self.value.read().unwrap();
-            if let Some(ref entry) = *guard
-                && entry.created_at.elapsed() < self.ttl
-            {
-                COW_STATS.record_cache_hit();
-                return Arc::clone(&entry.value);
+            if let Some(ref entry) = *guard {
+                if entry.created_at.elapsed() < self.ttl {
+                    COW_STATS.record_cache_hit();
+                    return Arc::clone(&entry.value);
+                }
             }
         }
 
