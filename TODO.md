@@ -123,6 +123,7 @@ Benchmark results show the micro-framework has **1.5-3x overhead** vs direct Rou
 | **HTTP/3 (QUIC)** | 4.0 | Next-gen HTTP protocol support | L | ✅ Done |
 | **File Processing Pipeline** | 3.8 | Image resize, PDF gen, format conversion | M | ✅ Done |
 | **Real-time Collaboration** | 3.5 | CRDTs/OT for collaborative features | L | ✅ Done |
+| **Rhai Scripting** | 6.5 | Embedded scripting for dynamic handlers and config | M | ✅ Done |
 | **Node.js FFI Bindings** | 7.5 | Expose Armature to TypeScript/Node.js via NAPI-RS | XL | ⏳ |
 | **Python FFI Bindings** | 7.0 | Expose Armature to Python via PyO3 | XL | ⏳ |
 | **ML Model Serving** | 3.0 | ONNX/TensorFlow Lite inference endpoints | L | ⏳ |
