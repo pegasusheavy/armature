@@ -314,8 +314,37 @@ pub async fn config(name: &str) -> CliResult<()> {
     Ok(())
 }
 
+/// ORM type for entity generation.
+#[derive(Debug, Clone, Copy, Default)]
+pub enum OrmType {
+    #[default]
+    Generic,
+    Diesel,
+    SeaOrm,
+    Prax,
+}
+
+impl std::str::FromStr for OrmType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "generic" | "none" => Ok(OrmType::Generic),
+            "diesel" => Ok(OrmType::Diesel),
+            "seaorm" | "sea-orm" | "sea_orm" => Ok(OrmType::SeaOrm),
+            "prax" | "prax-orm" | "prax_orm" => Ok(OrmType::Prax),
+            _ => Err(format!("Unknown ORM type: {}. Valid options: generic, diesel, seaorm, prax", s)),
+        }
+    }
+}
+
 /// Generate a database entity.
 pub async fn entity(name: &str) -> CliResult<()> {
+    entity_with_orm(name, OrmType::Generic).await
+}
+
+/// Generate a database entity with specific ORM support.
+pub async fn entity_with_orm(name: &str, orm: OrmType) -> CliResult<()> {
     let names = NameCases::from(name);
     let src_dir = get_src_dir()?;
     let entities_dir = src_dir.join("entities");
@@ -329,8 +358,13 @@ pub async fn entity(name: &str) -> CliResult<()> {
         name_kebab: names.kebab.clone(),
     };
 
+    let template_name = match orm {
+        OrmType::Prax => "entity_prax",
+        _ => "entity",
+    };
+
     let content = templates
-        .render("entity", &data)
+        .render(template_name, &data)
         .map_err(CliError::Template)?;
 
     let file_path = entities_dir.join(format!("{}.rs", names.snake));
@@ -345,7 +379,193 @@ pub async fn entity(name: &str) -> CliResult<()> {
         entities_dir.join("mod.rs").display()
     );
 
-    println!("\n{} Generated {} entity", "✓".green().bold(), names.pascal);
+    let orm_name = match orm {
+        OrmType::Generic => "generic",
+        OrmType::Diesel => "Diesel",
+        OrmType::SeaOrm => "SeaORM",
+        OrmType::Prax => "Prax",
+    };
+
+    println!(
+        "\n{} Generated {} entity ({})",
+        "✓".green().bold(),
+        names.pascal,
+        orm_name.cyan()
+    );
+    Ok(())
+}
+
+/// Generate a Prax ORM schema file.
+pub async fn prax_schema(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let schema_dir = src_dir.parent().unwrap_or(&src_dir).to_path_buf();
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    let content = templates
+        .render("prax_schema", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = schema_dir.join("schema.prax");
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+    println!(
+        "\n{} Generated Prax schema for {}",
+        "✓".green().bold(),
+        names.pascal
+    );
+    println!(
+        "  {} Run {} to generate Rust code",
+        "→".yellow(),
+        "prax generate".cyan()
+    );
+    Ok(())
+}
+
+/// Generate a Prax ORM repository.
+pub async fn prax_repository(name: &str, skip_tests: bool) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let repo_dir = src_dir.join("repositories");
+    ensure_dir(&repo_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    // Generate repository
+    let content = templates
+        .render("prax_repository", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = repo_dir.join(format!("{}_repository.rs", names.snake));
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&repo_dir, &format!("{}_repository", names.snake))?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        repo_dir.join("mod.rs").display()
+    );
+
+    // Generate test file
+    if !skip_tests {
+        let test_content = templates
+            .render("prax_repository_test", &data)
+            .map_err(CliError::Template)?;
+
+        let tests_dir = repo_dir.join("tests");
+        ensure_dir(&tests_dir)?;
+
+        let test_file = tests_dir.join(format!("{}_repository_test.rs", names.snake));
+        write_file(&test_file, &test_content, false)?;
+
+        println!("  {} {}", "CREATE".green().bold(), test_file.display());
+    }
+
+    println!(
+        "\n{} Generated {}Repository (Prax ORM)",
+        "✓".green().bold(),
+        names.pascal
+    );
+    Ok(())
+}
+
+/// Generate a complete Prax ORM module with entity, repository, and service.
+pub async fn prax_module(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    println!(
+        "  {} Generating Prax ORM module: {}",
+        "→".cyan().bold(),
+        name.cyan()
+    );
+    println!();
+
+    // 1. Generate schema file
+    println!("  {} Generating Prax schema...", "1/5".dimmed());
+    prax_schema(name).await?;
+    println!();
+
+    // 2. Generate entity
+    println!("  {} Generating entity...", "2/5".dimmed());
+    entity_with_orm(name, OrmType::Prax).await?;
+    println!();
+
+    // 3. Generate repository
+    println!("  {} Generating repository...", "3/5".dimmed());
+    prax_repository(name, false).await?;
+    println!();
+
+    // 4. Generate service
+    println!("  {} Generating service...", "4/5".dimmed());
+    service(name, false).await?;
+    println!();
+
+    // 5. Generate module file
+    println!("  {} Generating module...", "5/5".dimmed());
+    let module_dir = src_dir.join(&names.snake);
+    ensure_dir(&module_dir)?;
+
+    let module_content = templates
+        .render("prax_module", &data)
+        .map_err(CliError::Template)?;
+
+    let module_file = module_dir.join("mod.rs");
+    write_file(&module_file, &module_content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), module_file.display());
+
+    update_mod_file(&src_dir, &names.snake)?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        src_dir.join("mod.rs").display()
+    );
+
+    println!(
+        "\n{} Prax module {} generated successfully!",
+        "✓".green().bold(),
+        name.green()
+    );
+    println!();
+    println!("  {} Next steps:", "💡".yellow());
+    println!("    {} Add prax-armature to Cargo.toml:", "1.".dimmed());
+    println!(
+        "       {}",
+        r#"prax-armature = "0.4""#.cyan()
+    );
+    println!("    {} Run Prax code generation:", "2.".dimmed());
+    println!("       {}", "prax generate".cyan());
+    println!("    {} Import the module in main.rs:", "3.".dimmed());
+    println!(
+        "       {}",
+        format!("use {}::{}Module;", names.snake, names.pascal).cyan()
+    );
+
     Ok(())
 }
 

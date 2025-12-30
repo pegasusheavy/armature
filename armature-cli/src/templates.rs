@@ -83,6 +83,16 @@ impl TemplateRegistry {
             .expect("Failed to register config template");
         hbs.register_template_string("entity", ENTITY_TEMPLATE)
             .expect("Failed to register entity template");
+        hbs.register_template_string("entity_prax", ENTITY_PRAX_TEMPLATE)
+            .expect("Failed to register Prax entity template");
+        hbs.register_template_string("prax_schema", PRAX_SCHEMA_TEMPLATE)
+            .expect("Failed to register Prax schema template");
+        hbs.register_template_string("prax_repository", PRAX_REPOSITORY_TEMPLATE)
+            .expect("Failed to register Prax repository template");
+        hbs.register_template_string("prax_repository_test", PRAX_REPOSITORY_TEST_TEMPLATE)
+            .expect("Failed to register Prax repository test template");
+        hbs.register_template_string("prax_module", PRAX_MODULE_TEMPLATE)
+            .expect("Failed to register Prax module template");
         hbs.register_template_string("rhai_handler", RHAI_HANDLER_TEMPLATE)
             .expect("Failed to register Rhai handler template");
         hbs.register_template_string("health_controller", HEALTH_CONTROLLER_TEMPLATE)
@@ -1995,6 +2005,572 @@ pub use sea_orm_entity::*;
 "#;
 
 // =============================================================================
+// PRAX ORM TEMPLATES
+// =============================================================================
+
+const ENTITY_PRAX_TEMPLATE: &str = r#"//! {{name_pascal}} Prax ORM model.
+//!
+//! This file is auto-generated from the Prax schema.
+//! Manual changes may be overwritten when regenerating.
+
+use prax::prelude::*;
+use serde::{Deserialize, Serialize};
+
+/// {{name_pascal}} model generated from Prax schema.
+#[derive(Debug, Clone, Model, Serialize, Deserialize)]
+#[prax(table = "{{name_snake}}s")]
+pub struct {{name_pascal}} {
+    #[prax(id, auto)]
+    pub id: i64,
+
+    #[prax(unique)]
+    pub name: String,
+
+    pub description: Option<String>,
+
+    #[prax(default = true)]
+    pub active: bool,
+
+    #[prax(default = "now()")]
+    pub created_at: DateTime<Utc>,
+
+    #[prax(default = "now()", on_update = "now()")]
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Input for creating a new {{name_pascal}}.
+#[derive(Debug, Clone, Deserialize)]
+pub struct Create{{name_pascal}}Input {
+    pub name: String,
+    pub description: Option<String>,
+    #[serde(default = "default_active")]
+    pub active: bool,
+}
+
+fn default_active() -> bool {
+    true
+}
+
+/// Input for updating an existing {{name_pascal}}.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct Update{{name_pascal}}Input {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub active: Option<bool>,
+}
+
+/// Filter options for querying {{name_pascal}}s.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct {{name_pascal}}Filter {
+    pub name_contains: Option<String>,
+    pub active: Option<bool>,
+    pub created_after: Option<DateTime<Utc>>,
+    pub created_before: Option<DateTime<Utc>>,
+}
+
+/// Sort options for {{name_pascal}} queries.
+#[derive(Debug, Clone, Default)]
+pub struct {{name_pascal}}OrderBy {
+    pub field: {{name_pascal}}SortField,
+    pub direction: SortDirection,
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum {{name_pascal}}SortField {
+    #[default]
+    CreatedAt,
+    UpdatedAt,
+    Name,
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum SortDirection {
+    #[default]
+    Desc,
+    Asc,
+}
+"#;
+
+const PRAX_SCHEMA_TEMPLATE: &str = r#"// Prax Schema Definition
+// This file defines your database models using Prax's schema language.
+// Run `prax generate` to generate Rust code from this schema.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prax-codegen"
+  output   = "./src/generated"
+}
+
+model {{name_pascal}} {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("{{name_snake}}s")
+}
+"#;
+
+const PRAX_REPOSITORY_TEMPLATE: &str = r#"//! {{name_pascal}} repository using Prax ORM.
+
+use armature::prelude::*;
+use prax_armature::PraxClient;
+use std::sync::Arc;
+
+use crate::entities::{{name_snake}}::{
+    {{name_pascal}}, Create{{name_pascal}}Input, Update{{name_pascal}}Input, {{name_pascal}}Filter,
+};
+
+/// Repository for {{name_pascal}} operations using Prax ORM.
+#[derive(Clone)]
+#[injectable]
+pub struct {{name_pascal}}Repository {
+    db: Arc<PraxClient>,
+}
+
+impl {{name_pascal}}Repository {
+    /// Create a new repository instance.
+    pub fn new(db: Arc<PraxClient>) -> Self {
+        Self { db }
+    }
+
+    /// Find all {{name_snake}}s with optional filtering.
+    pub async fn find_many(&self, filter: Option<{{name_pascal}}Filter>) -> Result<Vec<{{name_pascal}}>, Error> {
+        let mut query = self.db.{{name_snake}}().find_many();
+
+        if let Some(f) = filter {
+            if let Some(name) = f.name_contains {
+                query = query.filter({{name_snake}}::name.contains(name));
+            }
+            if let Some(active) = f.active {
+                query = query.filter({{name_snake}}::active.equals(active));
+            }
+            if let Some(after) = f.created_after {
+                query = query.filter({{name_snake}}::created_at.gte(after));
+            }
+            if let Some(before) = f.created_before {
+                query = query.filter({{name_snake}}::created_at.lte(before));
+            }
+        }
+
+        query
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Find a single {{name_snake}} by ID.
+    pub async fn find_by_id(&self, id: i64) -> Result<Option<{{name_pascal}}>, Error> {
+        self.db
+            .{{name_snake}}()
+            .find_unique({{name_snake}}::id.equals(id))
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Find a single {{name_snake}} by name.
+    pub async fn find_by_name(&self, name: &str) -> Result<Option<{{name_pascal}}>, Error> {
+        self.db
+            .{{name_snake}}()
+            .find_unique({{name_snake}}::name.equals(name.to_string()))
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Find the first {{name_snake}} matching the filter.
+    pub async fn find_first(&self, filter: {{name_pascal}}Filter) -> Result<Option<{{name_pascal}}>, Error> {
+        let mut query = self.db.{{name_snake}}().find_first();
+
+        if let Some(name) = filter.name_contains {
+            query = query.filter({{name_snake}}::name.contains(name));
+        }
+        if let Some(active) = filter.active {
+            query = query.filter({{name_snake}}::active.equals(active));
+        }
+
+        query
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Create a new {{name_snake}}.
+    pub async fn create(&self, input: Create{{name_pascal}}Input) -> Result<{{name_pascal}}, Error> {
+        self.db
+            .{{name_snake}}()
+            .create(
+                {{name_snake}}::name.set(input.name),
+                vec![
+                    {{name_snake}}::description.set(input.description),
+                    {{name_snake}}::active.set(input.active),
+                ],
+            )
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Create multiple {{name_snake}}s.
+    pub async fn create_many(&self, inputs: Vec<Create{{name_pascal}}Input>) -> Result<i64, Error> {
+        let data: Vec<_> = inputs
+            .into_iter()
+            .map(|input| {
+                (
+                    {{name_snake}}::name.set(input.name),
+                    vec![
+                        {{name_snake}}::description.set(input.description),
+                        {{name_snake}}::active.set(input.active),
+                    ],
+                )
+            })
+            .collect();
+
+        self.db
+            .{{name_snake}}()
+            .create_many(data)
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Update an existing {{name_snake}}.
+    pub async fn update(&self, id: i64, input: Update{{name_pascal}}Input) -> Result<{{name_pascal}}, Error> {
+        let mut updates = vec![];
+
+        if let Some(name) = input.name {
+            updates.push({{name_snake}}::name.set(name));
+        }
+        if let Some(description) = input.description {
+            updates.push({{name_snake}}::description.set(Some(description)));
+        }
+        if let Some(active) = input.active {
+            updates.push({{name_snake}}::active.set(active));
+        }
+
+        self.db
+            .{{name_snake}}()
+            .update({{name_snake}}::id.equals(id), updates)
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Update many {{name_snake}}s matching a filter.
+    pub async fn update_many(
+        &self,
+        filter: {{name_pascal}}Filter,
+        input: Update{{name_pascal}}Input,
+    ) -> Result<i64, Error> {
+        let mut filters = vec![];
+        let mut updates = vec![];
+
+        if let Some(active) = filter.active {
+            filters.push({{name_snake}}::active.equals(active));
+        }
+
+        if let Some(name) = input.name {
+            updates.push({{name_snake}}::name.set(name));
+        }
+        if let Some(active) = input.active {
+            updates.push({{name_snake}}::active.set(active));
+        }
+
+        self.db
+            .{{name_snake}}()
+            .update_many(filters, updates)
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Delete a {{name_snake}} by ID.
+    pub async fn delete(&self, id: i64) -> Result<{{name_pascal}}, Error> {
+        self.db
+            .{{name_snake}}()
+            .delete({{name_snake}}::id.equals(id))
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Delete many {{name_snake}}s matching a filter.
+    pub async fn delete_many(&self, filter: {{name_pascal}}Filter) -> Result<i64, Error> {
+        let mut filters = vec![];
+
+        if let Some(active) = filter.active {
+            filters.push({{name_snake}}::active.equals(active));
+        }
+
+        self.db
+            .{{name_snake}}()
+            .delete_many(filters)
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Count {{name_snake}}s with optional filter.
+    pub async fn count(&self, filter: Option<{{name_pascal}}Filter>) -> Result<i64, Error> {
+        let mut query = self.db.{{name_snake}}().count();
+
+        if let Some(f) = filter {
+            if let Some(active) = f.active {
+                query = query.filter({{name_snake}}::active.equals(active));
+            }
+        }
+
+        query
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    /// Check if a {{name_snake}} exists by ID.
+    pub async fn exists(&self, id: i64) -> Result<bool, Error> {
+        let count = self
+            .db
+            .{{name_snake}}()
+            .count()
+            .filter({{name_snake}}::id.equals(id))
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
+
+        Ok(count > 0)
+    }
+
+    /// Upsert a {{name_snake}} (create if not exists, update if exists).
+    pub async fn upsert(
+        &self,
+        name: String,
+        create: Create{{name_pascal}}Input,
+        update: Update{{name_pascal}}Input,
+    ) -> Result<{{name_pascal}}, Error> {
+        let mut updates = vec![];
+
+        if let Some(new_name) = update.name {
+            updates.push({{name_snake}}::name.set(new_name));
+        }
+        if let Some(description) = update.description {
+            updates.push({{name_snake}}::description.set(Some(description)));
+        }
+        if let Some(active) = update.active {
+            updates.push({{name_snake}}::active.set(active));
+        }
+
+        self.db
+            .{{name_snake}}()
+            .upsert(
+                {{name_snake}}::name.equals(name),
+                (
+                    {{name_snake}}::name.set(create.name),
+                    vec![
+                        {{name_snake}}::description.set(create.description),
+                        {{name_snake}}::active.set(create.active),
+                    ],
+                ),
+                updates,
+            )
+            .exec()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))
+    }
+}
+"#;
+
+const PRAX_REPOSITORY_TEST_TEMPLATE: &str = r#"//! Tests for {{name_pascal}}Repository.
+
+use super::*;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Note: These tests require a running database and Prax client.
+    // Use test containers or a test database for integration testing.
+
+    #[tokio::test]
+    #[ignore] // Requires database
+    async fn test_create_and_find() {
+        // Setup: Create a test Prax client
+        let db = setup_test_db().await;
+        let repo = {{name_pascal}}Repository::new(db);
+
+        // Create
+        let input = Create{{name_pascal}}Input {
+            name: "Test {{name_pascal}}".to_string(),
+            description: Some("Test description".to_string()),
+            active: true,
+        };
+
+        let created = repo.create(input).await.expect("Failed to create");
+        assert!(created.id > 0);
+        assert_eq!(created.name, "Test {{name_pascal}}");
+
+        // Find by ID
+        let found = repo.find_by_id(created.id).await.expect("Failed to find");
+        assert!(found.is_some());
+        assert_eq!(found.unwrap().name, "Test {{name_pascal}}");
+
+        // Cleanup
+        repo.delete(created.id).await.expect("Failed to delete");
+    }
+
+    #[tokio::test]
+    #[ignore] // Requires database
+    async fn test_update() {
+        let db = setup_test_db().await;
+        let repo = {{name_pascal}}Repository::new(db);
+
+        // Create
+        let created = repo
+            .create(Create{{name_pascal}}Input {
+                name: "Original".to_string(),
+                description: None,
+                active: true,
+            })
+            .await
+            .expect("Failed to create");
+
+        // Update
+        let updated = repo
+            .update(
+                created.id,
+                Update{{name_pascal}}Input {
+                    name: Some("Updated".to_string()),
+                    ..Default::default()
+                },
+            )
+            .await
+            .expect("Failed to update");
+
+        assert_eq!(updated.name, "Updated");
+
+        // Cleanup
+        repo.delete(created.id).await.expect("Failed to delete");
+    }
+
+    #[tokio::test]
+    #[ignore] // Requires database
+    async fn test_find_many_with_filter() {
+        let db = setup_test_db().await;
+        let repo = {{name_pascal}}Repository::new(db);
+
+        // Create test data
+        let _ = repo
+            .create(Create{{name_pascal}}Input {
+                name: "Active Item".to_string(),
+                description: None,
+                active: true,
+            })
+            .await;
+
+        let _ = repo
+            .create(Create{{name_pascal}}Input {
+                name: "Inactive Item".to_string(),
+                description: None,
+                active: false,
+            })
+            .await;
+
+        // Find active only
+        let filter = {{name_pascal}}Filter {
+            active: Some(true),
+            ..Default::default()
+        };
+
+        let results = repo.find_many(Some(filter)).await.expect("Failed to find");
+        assert!(results.iter().all(|r| r.active));
+    }
+
+    async fn setup_test_db() -> Arc<PraxClient> {
+        let url = std::env::var("TEST_DATABASE_URL")
+            .unwrap_or_else(|_| "postgresql://localhost/test".to_string());
+
+        let client = PraxClientBuilder::new()
+            .url(&url)
+            .build()
+            .await
+            .expect("Failed to connect to test database");
+
+        Arc::new(client)
+    }
+}
+"#;
+
+const PRAX_MODULE_TEMPLATE: &str = r#"//! {{name_pascal}} module with Prax ORM integration.
+
+use armature::prelude::*;
+use prax_armature::{PraxClient, PraxClientBuilder};
+use std::sync::Arc;
+
+mod entities;
+mod repositories;
+mod services;
+mod controllers;
+
+pub use entities::{{name_snake}}::*;
+pub use repositories::{{name_snake}}_repository::{{name_pascal}}Repository;
+pub use services::{{name_snake}}_service::{{name_pascal}}Service;
+pub use controllers::{{name_snake}}_controller::{{name_pascal}}Controller;
+
+/// {{name_pascal}} module with Prax ORM database integration.
+#[module(
+    controllers: [{{name_pascal}}Controller],
+    providers: [{{name_pascal}}Service, {{name_pascal}}Repository, PraxClientProvider]
+)]
+#[derive(Default)]
+pub struct {{name_pascal}}Module;
+
+/// Provider for the Prax ORM client.
+#[module_impl]
+impl {{name_pascal}}Module {
+    /// Create a Prax client singleton.
+    #[provider(singleton)]
+    async fn prax_client() -> Arc<PraxClient> {
+        let database_url = std::env::var("DATABASE_URL")
+            .expect("DATABASE_URL must be set");
+
+        let client = PraxClientBuilder::new()
+            .url(&database_url)
+            .max_connections(10)
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .build()
+            .await
+            .expect("Failed to connect to database");
+
+        Arc::new(client)
+    }
+}
+
+/// Database configuration for the {{name_snake}} module.
+pub struct {{name_pascal}}DbConfig {
+    pub url: String,
+    pub max_connections: u32,
+    pub connect_timeout_secs: u64,
+}
+
+impl Default for {{name_pascal}}DbConfig {
+    fn default() -> Self {
+        Self {
+            url: std::env::var("DATABASE_URL")
+                .unwrap_or_else(|_| "postgresql://localhost/{{name_snake}}".to_string()),
+            max_connections: 10,
+            connect_timeout_secs: 10,
+        }
+    }
+}
+"#;
+
+// =============================================================================
 // RHAI SCRIPT TEMPLATES
 // =============================================================================
 
@@ -2010,7 +2586,7 @@ log_info(`{{name_pascal}}Handler: ${method} ${path}`);
 if method == "GET" {
     // Check for ID parameter
     let id = request.param("id");
-    
+
     if id != () {
         // Get single item
         response.json(#{
@@ -2030,7 +2606,7 @@ if method == "GET" {
 } else if method == "POST" {
     // Create new item
     let body = request.json();
-    
+
     if body.name == () {
         bad_request().json(#{
             error: "Validation Error",
@@ -2046,7 +2622,7 @@ if method == "GET" {
 } else if method == "PUT" {
     // Update existing item
     let id = request.param("id");
-    
+
     if id == () {
         bad_request().json(#{
             error: "Bad Request",
@@ -2063,10 +2639,10 @@ if method == "GET" {
 } else if method == "DELETE" {
     // Delete item
     let id = request.param("id");
-    
+
     if id == () {
         bad_request().json(#{
-            error: "Bad Request", 
+            error: "Bad Request",
             message: "ID is required"
         })
     } else {

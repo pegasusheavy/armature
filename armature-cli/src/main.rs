@@ -492,6 +492,35 @@ enum GeneratorType {
     Entity {
         /// Entity name
         name: String,
+
+        /// ORM type (generic, diesel, seaorm, prax)
+        #[arg(long, short, default_value = "generic")]
+        orm: String,
+    },
+
+    /// Generate a Prax ORM schema file
+    #[command(alias = "prax-schema")]
+    PraxSchema {
+        /// Model name
+        name: String,
+    },
+
+    /// Generate a Prax ORM repository
+    #[command(alias = "prax-repo")]
+    PraxRepository {
+        /// Repository name
+        name: String,
+
+        /// Skip test file generation
+        #[arg(long)]
+        skip_tests: bool,
+    },
+
+    /// Generate a complete Prax ORM module (schema + entity + repository + service)
+    #[command(alias = "prax")]
+    PraxModule {
+        /// Module name
+        name: String,
     },
 
     /// Generate a scheduled task
@@ -1941,8 +1970,23 @@ async fn main() {
                 generate::config(&name).await
             }
 
-            GeneratorType::Entity { name } => {
-                generate::entity(&name).await
+            GeneratorType::Entity { name, orm } => {
+                match orm.parse::<generate::OrmType>() {
+                    Ok(orm_type) => generate::entity_with_orm(&name, orm_type).await,
+                    Err(e) => Err(crate::error::CliError::InvalidArgument(e)),
+                }
+            }
+
+            GeneratorType::PraxSchema { name } => {
+                generate::prax_schema(&name).await
+            }
+
+            GeneratorType::PraxRepository { name, skip_tests } => {
+                generate::prax_repository(&name, skip_tests).await
+            }
+
+            GeneratorType::PraxModule { name } => {
+                generate::prax_module(&name).await
             }
 
             GeneratorType::Scheduler { name, skip_tests } => {
