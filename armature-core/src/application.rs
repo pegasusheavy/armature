@@ -469,10 +469,10 @@ impl Application {
             trace!(client_address = %client_addr, "Connection accepted");
 
             // Apply TCP_NODELAY if configured
-            if pipeline_builder.config().tcp_nodelay
-                && let Err(e) = stream.set_nodelay(true)
-            {
-                trace!(error = %e, "Failed to set TCP_NODELAY");
+            if pipeline_builder.config().tcp_nodelay {
+                if let Err(e) = stream.set_nodelay(true) {
+                    trace!(error = %e, "Failed to set TCP_NODELAY");
+                }
             }
 
             let io = TokioIo::new(stream);
@@ -551,10 +551,10 @@ impl Application {
             trace!(client_address = %client_addr, "HTTPS connection accepted");
 
             // Apply TCP_NODELAY if configured
-            if pipeline_builder.config().tcp_nodelay
-                && let Err(e) = stream.set_nodelay(true)
-            {
-                trace!(error = %e, "Failed to set TCP_NODELAY");
+            if pipeline_builder.config().tcp_nodelay {
+                if let Err(e) = stream.set_nodelay(true) {
+                    trace!(error = %e, "Failed to set TCP_NODELAY");
+                }
             }
 
             let acceptor = acceptor.clone();
