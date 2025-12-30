@@ -53,7 +53,7 @@ impl ScriptWatcher {
         let watch_dirs = self.watch_dirs.clone();
         tokio::task::spawn_blocking(move || {
             let rt = tokio::runtime::Handle::current();
-            
+
             let mut watcher = RecommendedWatcher::new(
                 move |res: std::result::Result<Event, notify::Error>| {
                     if let Ok(event) = res {
@@ -99,10 +99,10 @@ impl ScriptWatcher {
                         if let Some(path) = pending.take() {
                             if last_event.elapsed() >= Duration::from_millis(debounce_ms) {
                                 debug!("Script changed: {}", path.display());
-                                
+
                                 // Invalidate cache
                                 engine.invalidate(&path);
-                                
+
                                 // Notify listeners
                                 if tx.send(path).await.is_err() {
                                     break;
@@ -142,7 +142,7 @@ mod tests {
         let watcher = ScriptWatcher::new(engine)
             .watch("./scripts")
             .debounce(50);
-        
+
         // Just test creation, not actual watching
         assert_eq!(watcher.debounce_ms, 50);
     }

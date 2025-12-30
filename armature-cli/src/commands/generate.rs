@@ -204,7 +204,231 @@ pub async fn resource(name: &str, crud: bool) -> CliResult<()> {
     Ok(())
 }
 
-/// Generic component generator for middleware, guards, and services.
+/// Generate a repository.
+pub async fn repository(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("repository", name, skip_tests).await
+}
+
+/// Generate DTOs (Data Transfer Objects).
+pub async fn dto(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let dto_dir = src_dir.join("dto");
+    ensure_dir(&dto_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    let content = templates
+        .render("dto", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = dto_dir.join(format!("{}.rs", names.snake));
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&dto_dir, &names.snake)?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        dto_dir.join("mod.rs").display()
+    );
+
+    println!("\n{} Generated {}Dto", "✓".green().bold(), names.pascal);
+    Ok(())
+}
+
+/// Generate a WebSocket handler.
+pub async fn websocket(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("websocket", name, skip_tests).await
+}
+
+/// Generate a GraphQL resolver.
+pub async fn graphql_resolver(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("graphql_resolver", name, skip_tests).await
+}
+
+/// Generate a background job.
+pub async fn job(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("job", name, skip_tests).await
+}
+
+/// Generate an event handler.
+pub async fn event_handler(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("event_handler", name, skip_tests).await
+}
+
+/// Generate an interceptor.
+pub async fn interceptor(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("interceptor", name, skip_tests).await
+}
+
+/// Generate a validation pipe.
+pub async fn pipe(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("pipe", name, skip_tests).await
+}
+
+/// Generate an exception filter.
+pub async fn exception_filter(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("exception_filter", name, skip_tests).await
+}
+
+/// Generate a configuration module.
+pub async fn config(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let config_dir = src_dir.join("config");
+    ensure_dir(&config_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = crate::templates::ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    let content = templates
+        .render("config", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = config_dir.join(format!("{}.rs", names.snake));
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&config_dir, &names.snake)?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        config_dir.join("mod.rs").display()
+    );
+
+    println!("\n{} Generated {}Config", "✓".green().bold(), names.pascal);
+    Ok(())
+}
+
+/// Generate a database entity.
+pub async fn entity(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let entities_dir = src_dir.join("entities");
+    ensure_dir(&entities_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    let content = templates
+        .render("entity", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = entities_dir.join(format!("{}.rs", names.snake));
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&entities_dir, &names.snake)?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        entities_dir.join("mod.rs").display()
+    );
+
+    println!("\n{} Generated {} entity", "✓".green().bold(), names.pascal);
+    Ok(())
+}
+
+/// Generate a scheduled task.
+pub async fn scheduler(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("scheduler", name, skip_tests).await
+}
+
+/// Generate a cache service.
+pub async fn cache_service(name: &str, skip_tests: bool) -> CliResult<()> {
+    generate_component("cache_service", name, skip_tests).await
+}
+
+/// Generate an API client.
+pub async fn api_client(name: &str) -> CliResult<()> {
+    let names = NameCases::from(name);
+    let src_dir = get_src_dir()?;
+    let clients_dir = src_dir.join("clients");
+    ensure_dir(&clients_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: names.pascal.clone(),
+        name_snake: names.snake.clone(),
+        name_kebab: names.kebab.clone(),
+    };
+
+    let content = templates
+        .render("api_client", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = clients_dir.join(format!("{}.rs", names.snake));
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&clients_dir, &names.snake)?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        clients_dir.join("mod.rs").display()
+    );
+
+    println!("\n{} Generated {}Client", "✓".green().bold(), names.pascal);
+    Ok(())
+}
+
+/// Generate a health check controller.
+pub async fn health_controller() -> CliResult<()> {
+    let src_dir = get_src_dir()?;
+    let controllers_dir = src_dir.join("controllers");
+    ensure_dir(&controllers_dir)?;
+
+    let templates = TemplateRegistry::new();
+
+    let data = ComponentData {
+        name_pascal: "Health".to_string(),
+        name_snake: "health".to_string(),
+        name_kebab: "health".to_string(),
+    };
+
+    let content = templates
+        .render("health_controller", &data)
+        .map_err(CliError::Template)?;
+
+    let file_path = controllers_dir.join("health.rs");
+    write_file(&file_path, &content, false)?;
+
+    println!("  {} {}", "CREATE".green().bold(), file_path.display());
+
+    update_mod_file(&controllers_dir, "health")?;
+    println!(
+        "  {} {}",
+        "UPDATE".yellow().bold(),
+        controllers_dir.join("mod.rs").display()
+    );
+
+    println!("\n{} Generated HealthController", "✓".green().bold());
+    Ok(())
+}
+
+/// Generic component generator for middleware, guards, services, and more.
 async fn generate_component(component_type: &str, name: &str, skip_tests: bool) -> CliResult<()> {
     let names = NameCases::from(name);
     let src_dir = get_src_dir()?;
@@ -213,6 +437,16 @@ async fn generate_component(component_type: &str, name: &str, skip_tests: bool) 
         "middleware" => "middleware",
         "guard" => "guards",
         "service" => "services",
+        "repository" => "repositories",
+        "websocket" => "websockets",
+        "graphql_resolver" => "graphql",
+        "job" => "jobs",
+        "event_handler" => "events",
+        "interceptor" => "interceptors",
+        "pipe" => "pipes",
+        "exception_filter" => "filters",
+        "scheduler" => "tasks",
+        "cache_service" => "cache",
         _ => {
             return Err(CliError::InvalidArgument(format!(
                 "Unknown component type: {}",
@@ -270,6 +504,16 @@ async fn generate_component(component_type: &str, name: &str, skip_tests: bool) 
         "middleware" => "Middleware",
         "guard" => "Guard",
         "service" => "Service",
+        "repository" => "Repository",
+        "websocket" => "WebSocket",
+        "graphql_resolver" => "Resolver",
+        "job" => "Job",
+        "event_handler" => "EventHandler",
+        "interceptor" => "Interceptor",
+        "pipe" => "Pipe",
+        "exception_filter" => "ExceptionFilter",
+        "scheduler" => "Task",
+        "cache_service" => "CacheService",
         _ => "Component",
     };
 

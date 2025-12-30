@@ -24,14 +24,14 @@ if method == "GET" {
         // List all users with optional filtering
         let filter = request.query("name");
         let result = [];
-        
+
         for id in users.keys() {
             let user = users[id];
             if filter == () || user.name.contains(filter) {
                 result.push(user);
             }
         }
-        
+
         response.json(#{
             users: result,
             count: result.len()
@@ -40,7 +40,7 @@ if method == "GET" {
 } else if method == "POST" {
     // Create user
     let body = request.json();
-    
+
     if body.name == () || body.email == () {
         bad_request().json(#{
             error: "Missing required fields: name, email"
@@ -52,7 +52,7 @@ if method == "GET" {
             name: body.name,
             email: body.email
         };
-        
+
         created()
             .header("location", `/users/${new_id}`)
             .json(new_user)

@@ -203,7 +203,7 @@ impl ScriptLoader {
     /// Load a script file.
     pub fn load(&self, path: &Path) -> Result<String> {
         let full_path = self.resolve_path(path);
-        
+
         if !full_path.exists() {
             return Err(RhaiError::ScriptNotFound { path: full_path });
         }
