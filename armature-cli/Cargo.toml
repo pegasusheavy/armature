@@ -1,6 +1,6 @@
 [package]
 name = "armature-cli"
-version = "0.2.1"
+version = "0.2.2"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -47,7 +47,7 @@ openapiv3 = "2.0"
 reqwest = { version = "0.12", features = ["json"], default-features = false }
 
 # Mock server (uses armature-core)
-armature-core = { path = "../armature-core", version = "0.2.0" }
+armature-core = { path = "../armature-core", version = "0.2.1" }
 
 [dev-dependencies]
 tempfile = "3.20"
