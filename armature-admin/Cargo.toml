@@ -12,7 +12,7 @@ keywords = ["admin", "dashboard", "crud", "ui", "generator"]
 categories = ["web-programming", "gui"]
 
 [dependencies]
-armature-core = { path = "../armature-core", version = "0.2.0" }
+armature-core = { path = "../armature-core", version = "0.2.1" }
 armature-log = { path = "../armature-log", version = "0.1.0" }
 armature-proc-macro = { path = "../armature-proc-macro", version = "0.1.0" }
 tokio = { version = "1.35", features = ["rt-multi-thread", "sync"] }

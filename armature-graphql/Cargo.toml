@@ -12,7 +12,7 @@ keywords = ["graphql", "api", "async-graphql", "server"]
 categories = ["web-programming", "api-bindings"]
 
 [dependencies]
-armature-core = { path = "../armature-core", version = "0.2.0" }
+armature-core = { path = "../armature-core", version = "0.2.1" }
 armature-log = { path = "../armature-log", version = "0.1.0" }
 async-graphql = { version = "7.0.7", features = ["apollo_tracing"] }
 async-graphql-axum = "7.0.7"
