@@ -1,6 +1,7 @@
 //! Integration tests for armature-security
 
 use armature_core::HttpResponse;
+use armature_security::SecurityMiddleware;
 use armature_security::content_security_policy::CspConfig;
 use armature_security::content_type_options::ContentTypeOptions;
 use armature_security::dns_prefetch_control::DnsPrefetchControl;
@@ -11,7 +12,6 @@ use armature_security::hsts::HstsConfig;
 use armature_security::permitted_cross_domain_policies::PermittedCrossDomainPolicies;
 use armature_security::referrer_policy::ReferrerPolicy;
 use armature_security::xss_filter::XssFilter;
-use armature_security::SecurityMiddleware;
 
 #[test]
 fn test_security_middleware_default() {

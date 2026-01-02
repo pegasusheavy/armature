@@ -2,8 +2,8 @@
 
 use async_trait::async_trait;
 use aws_sdk_sesv2::{
-    types::{Body, Content, Destination, EmailContent, Message},
     Client,
+    types::{Body, Content, Destination, EmailContent, Message},
 };
 use tracing::debug;
 

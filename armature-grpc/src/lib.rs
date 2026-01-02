@@ -78,9 +78,9 @@ pub use server::{GrpcServer, GrpcServerBuilder};
 
 // Re-export tonic types
 pub use tonic::{
+    Code, Request, Response, Status,
     metadata::{MetadataMap, MetadataValue},
     transport::{Channel, Endpoint, Server},
-    Code, Request, Response, Status,
 };
 
 #[cfg(feature = "health")]
@@ -104,8 +104,8 @@ pub mod prelude {
     pub use crate::middleware::{GrpcMiddleware, MiddlewareLayer};
     pub use crate::server::{GrpcServer, GrpcServerBuilder};
     pub use tonic::{
+        Code, Request, Response, Status,
         metadata::{MetadataMap, MetadataValue},
         transport::{Channel, Endpoint, Server},
-        Code, Request, Response, Status,
     };
 }

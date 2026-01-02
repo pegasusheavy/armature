@@ -33,8 +33,8 @@
 
 use crate::Router;
 use std::cell::RefCell;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 // ============================================================================
 // Worker ID Generation
@@ -1221,9 +1221,7 @@ where
 /// ```
 #[macro_export]
 macro_rules! with_worker_router {
-    ($router:ident, $body:block) => {{
-        $crate::worker::WorkerRouter::with(|$router| $body)
-    }};
+    ($router:ident, $body:block) => {{ $crate::worker::WorkerRouter::with(|$router| $body) }};
 }
 
 // ============================================================================

@@ -2,7 +2,7 @@
 #![allow(clippy::needless_question_mark)]
 
 use armature_validation::*;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 
 fn bench_email_validation(c: &mut Criterion) {

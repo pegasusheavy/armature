@@ -2,8 +2,8 @@
 
 use async_trait::async_trait;
 use lettre::{
-    transport::smtp::authentication::Credentials, AsyncSmtpTransport, AsyncTransport,
-    Tokio1Executor,
+    AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
+    transport::smtp::authentication::Credentials,
 };
 use std::time::Duration;
 use tracing::{debug, info};

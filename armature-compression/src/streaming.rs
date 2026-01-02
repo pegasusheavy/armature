@@ -32,9 +32,9 @@ use crate::{CompressionAlgorithm, CompressionError, Result};
 use bytes::{Bytes, BytesMut};
 
 #[cfg(feature = "gzip")]
-use flate2::write::GzEncoder;
-#[cfg(feature = "gzip")]
 use flate2::Compression as GzipCompression;
+#[cfg(feature = "gzip")]
+use flate2::write::GzEncoder;
 
 #[cfg(feature = "brotli")]
 use brotli::CompressorWriter as BrotliEncoder;

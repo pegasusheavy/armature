@@ -7,7 +7,7 @@
 //! Benchmarks for circuit breakers, retry strategies, bulkheads, timeouts, and fallbacks.
 
 use armature_core::resilience::*;
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 use std::sync::Arc;
 use std::time::Duration;

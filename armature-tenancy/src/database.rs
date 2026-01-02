@@ -18,8 +18,8 @@
 //! let conn = db_manager.get_connection(&tenant).await?;
 //! ```
 
-use crate::tenant::Tenant;
 use crate::TenantError;
+use crate::tenant::Tenant;
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;

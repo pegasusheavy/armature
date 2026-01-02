@@ -8,7 +8,7 @@ use crate::{
     webhook::{WebhookData, WebhookEvent, WebhookEventType},
 };
 use async_trait::async_trait;
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use chrono::Utc;
 use reqwest::Client;
 use secrecy::{ExposeSecret, SecretString};

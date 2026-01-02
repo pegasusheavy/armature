@@ -249,11 +249,7 @@ impl ResponseChunks {
     /// Get number of chunks.
     #[inline]
     pub fn chunk_count(&self) -> usize {
-        if self.body.is_empty() {
-            3
-        } else {
-            4
-        }
+        if self.body.is_empty() { 3 } else { 4 }
     }
 
     /// Serialize to a single contiguous buffer.

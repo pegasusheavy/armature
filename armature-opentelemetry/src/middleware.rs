@@ -3,9 +3,8 @@
 use armature_core::{Error, HttpRequest, HttpResponse, Middleware, Next};
 use async_trait::async_trait;
 use opentelemetry::{
-    global,
+    Context as OtelContext, KeyValue, global,
     trace::{SpanKind, TraceContextExt, Tracer},
-    Context as OtelContext, KeyValue,
 };
 use std::sync::Arc;
 use std::time::Instant;
@@ -185,7 +184,7 @@ macro_rules! trace_span {
 #[macro_export]
 macro_rules! span_attribute {
     ($key:expr, $value:expr) => {{
-        use opentelemetry::{trace::TraceContextExt, Context, KeyValue};
+        use opentelemetry::{Context, KeyValue, trace::TraceContextExt};
         let cx = Context::current();
         let span = cx.span();
         span.set_attribute(KeyValue::new($key, $value));

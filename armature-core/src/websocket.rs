@@ -4,9 +4,9 @@ use crate::Error;
 use futures_util::StreamExt;
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{broadcast, RwLock};
-use tokio_tungstenite::tungstenite::Message as WsMessage;
+use tokio::sync::{RwLock, broadcast};
 use tokio_tungstenite::WebSocketStream;
+use tokio_tungstenite::tungstenite::Message as WsMessage;
 
 /// WebSocket message type
 #[derive(Debug, Clone)]

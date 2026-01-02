@@ -74,11 +74,13 @@ fn test_http_response_convenience_methods() {
 
     // Test no_cache
     let response = HttpResponse::ok().no_cache();
-    assert!(response
-        .headers
-        .get("Cache-Control")
-        .unwrap()
-        .contains("no-store"));
+    assert!(
+        response
+            .headers
+            .get("Cache-Control")
+            .unwrap()
+            .contains("no-store")
+    );
 
     // Test cookie
     let response = HttpResponse::ok().cookie("session", "abc123; HttpOnly");

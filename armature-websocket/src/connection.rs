@@ -2,8 +2,8 @@
 
 use crate::error::{WebSocketError, WebSocketResult};
 use crate::message::Message;
-use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
+use futures_util::stream::SplitSink;
 use parking_lot::RwLock;
 use std::net::SocketAddr;
 use std::sync::Arc;

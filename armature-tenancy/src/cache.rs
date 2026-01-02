@@ -16,7 +16,7 @@ pub trait CacheProvider: Send + Sync {
 
     /// Set value in cache
     async fn set(&self, key: &str, value: Vec<u8>, ttl: Option<Duration>)
-        -> Result<(), CacheError>;
+    -> Result<(), CacheError>;
 
     /// Delete value from cache
     async fn delete(&self, key: &str) -> Result<(), CacheError>;

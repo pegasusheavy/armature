@@ -152,7 +152,7 @@ pub use client::*;
 pub use config::*;
 pub use error::*;
 pub use event::*;
-pub use format::{get_formatter, EventFormatter};
+pub use format::{EventFormatter, get_formatter};
 pub use provider::*;
 
 #[cfg(test)]

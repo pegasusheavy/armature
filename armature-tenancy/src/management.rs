@@ -38,8 +38,8 @@
 //! let usage = manager.get_usage(&tenant.id).await?;
 //! ```
 
-use crate::tenant::Tenant;
 use crate::TenantError;
+use crate::tenant::Tenant;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

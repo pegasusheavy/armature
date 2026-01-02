@@ -10,7 +10,7 @@
 
 use crate::{FileError, FileMetadata, FileResult, OutputFormat, Position};
 use bytes::Bytes;
-use image::{imageops::FilterType, DynamicImage, GenericImageView, ImageFormat, ImageReader, Rgba};
+use image::{DynamicImage, GenericImageView, ImageFormat, ImageReader, Rgba, imageops::FilterType};
 use std::io::Cursor;
 
 /// Image resize filter quality

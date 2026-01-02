@@ -4,7 +4,7 @@ use crate::bindings::register_armature_api;
 use crate::error::{Result, RhaiError};
 use crate::script::{CompiledScript, ScriptCache, ScriptLoader};
 use parking_lot::RwLock;
-use rhai::{Dynamic, Engine, Scope, AST};
+use rhai::{AST, Dynamic, Engine, Scope};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;

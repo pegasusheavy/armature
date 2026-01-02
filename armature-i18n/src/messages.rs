@@ -2,7 +2,7 @@
 //!
 //! Provides loading and formatting of localized messages.
 
-use crate::{plural_category, I18nError, Locale, PluralCategory, Result};
+use crate::{I18nError, Locale, PluralCategory, Result, plural_category};
 use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::fs;

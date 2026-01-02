@@ -1,7 +1,7 @@
 //! Mailgun email provider integration.
 
 use async_trait::async_trait;
-use reqwest::{multipart::Form, Client};
+use reqwest::{Client, multipart::Form};
 use tracing::debug;
 
 use crate::{Email, MailError, Result, Transport};

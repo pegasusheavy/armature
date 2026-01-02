@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 // OAuth2 Providers example - demonstrating all supported providers
 
+use armature_auth::OAuth2Provider;
 use armature_auth::providers::{
     Auth0Config, Auth0Provider, AwsCognitoConfig, AwsCognitoProvider, GoogleConfig, GoogleProvider,
     MicrosoftEntraConfig, MicrosoftEntraProvider, OktaConfig, OktaProvider,
 };
-use armature_auth::OAuth2Provider;
 
 #[tokio::main]
 async fn main() {

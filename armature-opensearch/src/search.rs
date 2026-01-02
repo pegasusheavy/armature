@@ -8,7 +8,7 @@ use crate::{
 use armature_log::debug;
 use opensearch::OpenSearch;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::sync::Arc;
 
 /// Search builder for constructing and executing searches.

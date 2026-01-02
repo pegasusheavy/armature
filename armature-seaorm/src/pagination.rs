@@ -1,6 +1,6 @@
 //! Pagination utilities for SeaORM queries.
 
-use sea_orm::{entity::prelude::*, EntityTrait, PaginatorTrait, Select};
+use sea_orm::{EntityTrait, PaginatorTrait, Select, entity::prelude::*};
 use serde::{Deserialize, Serialize};
 
 /// Pagination options.

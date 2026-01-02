@@ -9,8 +9,8 @@ pub mod schema_docs;
 
 pub use async_graphql;
 pub use async_graphql::{
-    Context, EmptyMutation, EmptySubscription, Enum, Error, InputObject, MergedObject,
-    MergedSubscription, Object, Result, Schema, SimpleObject, Subscription, Union, ID,
+    Context, EmptyMutation, EmptySubscription, Enum, Error, ID, InputObject, MergedObject,
+    MergedSubscription, Object, Result, Schema, SimpleObject, Subscription, Union,
 };
 
 pub use config::*;

@@ -7,8 +7,8 @@ use tokio::fs;
 use tracing::{debug, info};
 
 use crate::{
-    calculate_checksum, generate_unique_key, sanitize_filename, Result, Storage, StorageConfig,
-    StorageError, StorageMetadata, UploadedFile,
+    Result, Storage, StorageConfig, StorageError, StorageMetadata, UploadedFile,
+    calculate_checksum, generate_unique_key, sanitize_filename,
 };
 
 /// Local filesystem storage configuration.

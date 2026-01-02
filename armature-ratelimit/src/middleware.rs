@@ -3,9 +3,9 @@
 //! This module provides middleware that can be used with the Armature framework
 //! to add rate limiting to your application.
 
+use crate::RateLimiter;
 use crate::error::RateLimitHeaders;
 use crate::extractor::{KeyExtractor, RequestInfo};
-use crate::RateLimiter;
 use std::net::IpAddr;
 use std::sync::Arc;
 use tracing::{debug, info, trace, warn};

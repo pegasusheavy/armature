@@ -36,8 +36,8 @@
 //! - Header compression benefits repeated similar requests
 //! - Flow control prevents fast senders from overwhelming slow receivers
 
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Duration;
 
 /// HTTP/2 server configuration

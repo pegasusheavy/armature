@@ -55,5 +55,5 @@ pub use room::{Room, RoomId, RoomManager};
 pub use server::{WebSocketServer, WebSocketServerBuilder, WebSocketServerConfig};
 
 // Re-export commonly used types from tungstenite
-pub use tungstenite::protocol::CloseFrame;
 pub use tungstenite::Message as RawMessage;
+pub use tungstenite::protocol::CloseFrame;

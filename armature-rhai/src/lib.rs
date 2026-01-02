@@ -85,7 +85,7 @@ mod script;
 #[cfg(feature = "hot-reload")]
 mod watcher;
 
-pub use bindings::{register_armature_api, RequestBinding, ResponseBinding};
+pub use bindings::{RequestBinding, ResponseBinding, register_armature_api};
 pub use context::ScriptContext;
 pub use engine::{RhaiEngine, RhaiEngineBuilder};
 pub use error::{Result, RhaiError};

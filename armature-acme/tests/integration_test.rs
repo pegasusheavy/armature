@@ -10,9 +10,11 @@ fn test_acme_config_lets_encrypt_production() {
         vec!["example.com".to_string()],
     );
 
-    assert!(config
-        .directory_url
-        .contains("acme-v02.api.letsencrypt.org"));
+    assert!(
+        config
+            .directory_url
+            .contains("acme-v02.api.letsencrypt.org")
+    );
     assert_eq!(config.contact_email.len(), 1);
     assert_eq!(config.domains.len(), 1);
 }
@@ -24,9 +26,11 @@ fn test_acme_config_lets_encrypt_staging() {
         vec!["example.com".to_string()],
     );
 
-    assert!(config
-        .directory_url
-        .contains("acme-staging-v02.api.letsencrypt.org"));
+    assert!(
+        config
+            .directory_url
+            .contains("acme-staging-v02.api.letsencrypt.org")
+    );
 }
 
 #[test]

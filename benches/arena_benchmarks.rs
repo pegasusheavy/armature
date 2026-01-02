@@ -5,11 +5,11 @@
 //!
 //! Run with: cargo bench --bench arena_benchmarks
 
-use armature_core::arena::{
-    reset_arena, with_arena, ArenaMap, ArenaRequest, ArenaStr, ArenaVec, RequestScope,
-};
 use armature_core::HttpRequest;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use armature_core::arena::{
+    ArenaMap, ArenaRequest, ArenaStr, ArenaVec, RequestScope, reset_arena, with_arena,
+};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::collections::HashMap;
 use std::hint::black_box;
 

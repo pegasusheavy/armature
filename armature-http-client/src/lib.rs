@@ -81,7 +81,7 @@ pub use retry::{BackoffStrategy, RetryConfig, RetryStrategy};
 
 // Re-export common types
 pub use bytes::Bytes;
-pub use http::{header, HeaderMap, HeaderValue, Method, StatusCode};
+pub use http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 pub use url::Url;
 
 /// Prelude for common imports.
@@ -99,5 +99,5 @@ pub mod prelude {
     pub use crate::request::RequestBuilder;
     pub use crate::response::Response;
     pub use crate::retry::{BackoffStrategy, RetryConfig, RetryStrategy};
-    pub use http::{header, HeaderMap, HeaderValue, Method, StatusCode};
+    pub use http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 }
