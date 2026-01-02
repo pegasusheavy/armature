@@ -58,6 +58,7 @@ members = [
     "armature-admin",
     "armature-payments",
     "armature-rhai",
+    "armature-siem",
 ]
 exclude = [
     "templates/*",
