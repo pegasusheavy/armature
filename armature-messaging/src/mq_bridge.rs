@@ -37,8 +37,8 @@
 //! ```
 
 use crate::{
-    Message, MessageBroker, MessageHandler, MessagingError, ProcessingResult,
-    PublishOptions, Subscription, SubscribeOptions,
+    Message, MessageBroker, MessageHandler, MessagingError, ProcessingResult, PublishOptions,
+    SubscribeOptions, Subscription,
 };
 use async_trait::async_trait;
 use mq_bridge::CanonicalMessage;
@@ -47,8 +47,8 @@ use mq_bridge::models::{Endpoint, EndpointType, MemoryConfig, Route};
 use mq_bridge::traits::{Handler, MessageConsumer, MessagePublisher};
 use mq_bridge::{Handled, HandlerError};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 /// Configuration for mq-bridge endpoints
 #[derive(Debug, Clone)]
@@ -246,9 +246,7 @@ impl MqBridgeConfig {
             MqEndpointType::Http => {
                 panic!("HTTP support requires 'mq-bridge-http' feature")
             }
-            MqEndpointType::File => {
-                Endpoint::new(EndpointType::File(self.topic.clone()))
-            }
+            MqEndpointType::File => Endpoint::new(EndpointType::File(self.topic.clone())),
         }
     }
 }
@@ -258,8 +256,12 @@ pub fn to_canonical(msg: &Message) -> CanonicalMessage {
     let mut canonical = CanonicalMessage::new(msg.payload.clone(), None);
 
     // Store message ID in metadata
-    canonical.metadata.insert("armature_id".to_string(), msg.id.clone());
-    canonical.metadata.insert("armature_topic".to_string(), msg.topic.clone());
+    canonical
+        .metadata
+        .insert("armature_id".to_string(), msg.id.clone());
+    canonical
+        .metadata
+        .insert("armature_topic".to_string(), msg.topic.clone());
 
     // Copy headers to metadata
     for (key, value) in &msg.headers {
@@ -267,19 +269,29 @@ pub fn to_canonical(msg: &Message) -> CanonicalMessage {
     }
 
     if let Some(ref ct) = msg.content_type {
-        canonical.metadata.insert("content_type".to_string(), ct.clone());
+        canonical
+            .metadata
+            .insert("content_type".to_string(), ct.clone());
     }
     if let Some(ref cid) = msg.correlation_id {
-        canonical.metadata.insert("correlation_id".to_string(), cid.clone());
+        canonical
+            .metadata
+            .insert("correlation_id".to_string(), cid.clone());
     }
     if let Some(ref rt) = msg.reply_to {
-        canonical.metadata.insert("reply_to".to_string(), rt.clone());
+        canonical
+            .metadata
+            .insert("reply_to".to_string(), rt.clone());
     }
     if let Some(pri) = msg.priority {
-        canonical.metadata.insert("priority".to_string(), pri.to_string());
+        canonical
+            .metadata
+            .insert("priority".to_string(), pri.to_string());
     }
     if let Some(ttl) = msg.ttl {
-        canonical.metadata.insert("ttl".to_string(), ttl.to_string());
+        canonical
+            .metadata
+            .insert("ttl".to_string(), ttl.to_string());
     }
 
     canonical
@@ -287,7 +299,8 @@ pub fn to_canonical(msg: &Message) -> CanonicalMessage {
 
 /// Convert mq-bridge CanonicalMessage to armature Message
 pub fn from_canonical(canonical: CanonicalMessage, default_topic: &str) -> Message {
-    let topic = canonical.metadata
+    let topic = canonical
+        .metadata
         .get("armature_topic")
         .cloned()
         .unwrap_or_else(|| default_topic.to_string());
@@ -318,8 +331,13 @@ pub fn from_canonical(canonical: CanonicalMessage, default_topic: &str) -> Messa
 
     // Copy remaining metadata to headers (excluding reserved keys)
     let reserved_keys = [
-        "armature_id", "armature_topic", "content_type",
-        "correlation_id", "reply_to", "priority", "ttl"
+        "armature_id",
+        "armature_topic",
+        "content_type",
+        "correlation_id",
+        "reply_to",
+        "priority",
+        "ttl",
     ];
     for (key, value) in &canonical.metadata {
         if !reserved_keys.contains(&key.as_str()) {
@@ -462,15 +480,15 @@ impl Handler for HandlerAdapter {
 
         match self.handler.handle(armature_msg).await {
             Ok(ProcessingResult::Success) => Ok(Handled::Ack),
-            Ok(ProcessingResult::Retry) => Err(HandlerError::Retryable(
-                anyhow::anyhow!("Handler requested retry"),
-            )),
-            Ok(ProcessingResult::DeadLetter) => Err(HandlerError::NonRetryable(
-                anyhow::anyhow!("Handler requested dead-letter"),
-            )),
-            Ok(ProcessingResult::Reject) => Err(HandlerError::NonRetryable(
-                anyhow::anyhow!("Handler rejected message"),
-            )),
+            Ok(ProcessingResult::Retry) => Err(HandlerError::Retryable(anyhow::anyhow!(
+                "Handler requested retry"
+            ))),
+            Ok(ProcessingResult::DeadLetter) => Err(HandlerError::NonRetryable(anyhow::anyhow!(
+                "Handler requested dead-letter"
+            ))),
+            Ok(ProcessingResult::Reject) => Err(HandlerError::NonRetryable(anyhow::anyhow!(
+                "Handler rejected message"
+            ))),
             Err(e) => Err(HandlerError::NonRetryable(anyhow::anyhow!(
                 "Handler error: {}",
                 e
@@ -715,10 +733,7 @@ mod tests {
             canonical.metadata.get("armature_topic"),
             Some(&"test-topic".to_string())
         );
-        assert_eq!(
-            canonical.metadata.get("key"),
-            Some(&"value".to_string())
-        );
+        assert_eq!(canonical.metadata.get("key"), Some(&"value".to_string()));
         assert_eq!(
             canonical.metadata.get("correlation_id"),
             Some(&"corr-123".to_string())
