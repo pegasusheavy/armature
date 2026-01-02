@@ -1,7 +1,7 @@
 //! Query DSL builder for OpenSearch.
 
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 /// Query builder for constructing OpenSearch queries.
 #[derive(Debug, Clone, Default)]

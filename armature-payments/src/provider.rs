@@ -16,7 +16,7 @@ pub trait PaymentProvider: Send + Sync {
 
     /// Capture an authorized charge
     async fn capture(&self, charge_id: &str, amount: Option<crate::Money>)
-        -> PaymentResult<Charge>;
+    -> PaymentResult<Charge>;
 
     /// Refund a charge
     async fn refund(&self, request: RefundRequest) -> PaymentResult<Refund>;

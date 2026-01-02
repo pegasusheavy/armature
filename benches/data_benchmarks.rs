@@ -1,9 +1,9 @@
 #![allow(deprecated)]
 #![allow(clippy::needless_question_mark)]
 
-use armature_cron::{expression::CronPresets, CronExpression};
+use armature_cron::{CronExpression, expression::CronPresets};
 use armature_queue::{Job as QueueJob, JobPriority, QueueConfig};
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use serde_json::json;
 use std::hint::black_box;
 

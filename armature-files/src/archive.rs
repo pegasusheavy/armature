@@ -6,7 +6,7 @@ use crate::{FileError, FileMetadata, FileResult, ProcessingResult};
 use bytes::Bytes;
 use std::io::{Cursor, Read, Write};
 use std::path::Path;
-use zip::{write::SimpleFileOptions, CompressionMethod, ZipArchive, ZipWriter};
+use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 /// Compression level for archives
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

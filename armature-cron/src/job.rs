@@ -204,8 +204,8 @@ impl Job {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::CronError;
     use crate::CronExpression;
+    use crate::error::CronError;
 
     #[tokio::test]
     async fn test_job_creation() {

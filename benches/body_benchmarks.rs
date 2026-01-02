@@ -7,7 +7,7 @@
 use armature_core::body::{RequestBody, ResponseBody};
 use armature_core::{HttpRequest, HttpResponse};
 use bytes::Bytes;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 
 // ============================================================================

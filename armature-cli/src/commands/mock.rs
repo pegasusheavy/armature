@@ -24,7 +24,7 @@ use armature_core::Router;
 use chrono::{DateTime, Utc};
 use colored::Colorize;
 use openapiv3::{OpenAPI, Operation, PathItem, ReferenceOr, Schema, SchemaKind, Type as OapiType};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;

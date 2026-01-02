@@ -2,7 +2,7 @@
 
 use crate::service::{DiscoveryError, ServiceDiscovery, ServiceInstance};
 use async_trait::async_trait;
-use base64::{engine::general_purpose, Engine as _};
+use base64::{Engine as _, engine::general_purpose};
 use serde_json;
 use tracing::{debug, info};
 

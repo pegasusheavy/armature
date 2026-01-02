@@ -20,8 +20,8 @@
 //! ```
 
 use std::future::Future;
-use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 use tokio::sync::Semaphore;
 use tracing::{debug, warn};

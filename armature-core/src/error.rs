@@ -31,9 +31,7 @@ pub enum Error {
     #[error("Serialization error: {0}. Ensure your type implements Serialize correctly.")]
     Serialization(String),
 
-    #[error(
-        "Deserialization error: {0}. Check that the request body matches the expected format."
-    )]
+    #[error("Deserialization error: {0}. Check that the request body matches the expected format.")]
     Deserialization(String),
 
     #[error("Validation error: {0}")]

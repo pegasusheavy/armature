@@ -3,7 +3,7 @@
 //! Run with: cargo bench --bench simd_parser_benchmarks
 
 use armature_core::simd_parser::*;
-use criterion::{criterion_group, criterion_main, Criterion, Throughput};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 
 fn bench_query_string_parsing(c: &mut Criterion) {

@@ -1,8 +1,8 @@
 // JWT service implementation
 
 use crate::{JwtConfig, JwtError, Result, StandardClaims, TokenPair};
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
-use serde::{de::DeserializeOwned, Serialize};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
+use serde::{Serialize, de::DeserializeOwned};
 
 /// JWT service for token operations
 #[derive(Clone)]

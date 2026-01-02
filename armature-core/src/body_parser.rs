@@ -38,8 +38,8 @@
 //! Hyper Body → Pooled Buffer (reused) → Parse directly
 //! ```
 
-use crate::buffer_pool::acquire_buffer_for_bytes;
 use crate::Error;
+use crate::buffer_pool::acquire_buffer_for_bytes;
 use bytes::{BufMut, Bytes, BytesMut};
 use http_body_util::BodyExt;
 use hyper::body::Incoming as IncomingBody;

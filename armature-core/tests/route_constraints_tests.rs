@@ -102,12 +102,16 @@ fn test_alphanum_constraint_invalid() {
 #[test]
 fn test_uuid_constraint_valid() {
     let constraint = UuidConstraint;
-    assert!(constraint
-        .validate("550e8400-e29b-41d4-a716-446655440000")
-        .is_ok());
-    assert!(constraint
-        .validate("123e4567-e89b-12d3-a456-426614174000")
-        .is_ok());
+    assert!(
+        constraint
+            .validate("550e8400-e29b-41d4-a716-446655440000")
+            .is_ok()
+    );
+    assert!(
+        constraint
+            .validate("123e4567-e89b-12d3-a456-426614174000")
+            .is_ok()
+    );
 }
 
 #[test]
@@ -116,9 +120,11 @@ fn test_uuid_constraint_invalid() {
     assert!(constraint.validate("not-a-uuid").is_err());
     assert!(constraint.validate("12345").is_err());
     assert!(constraint.validate("550e8400-e29b-41d4-a716").is_err()); // Too short
-    assert!(constraint
-        .validate("550e8400e29b41d4a716446655440000")
-        .is_err()); // No hyphens
+    assert!(
+        constraint
+            .validate("550e8400e29b41d4a716446655440000")
+            .is_err()
+    ); // No hyphens
 }
 
 // EmailConstraint tests

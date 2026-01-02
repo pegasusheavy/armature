@@ -12,8 +12,8 @@
 
 use armature::prelude::*;
 use armature_security::{
-    content_security_policy::CspConfig, frame_guard::FrameGuard, hsts::HstsConfig,
-    referrer_policy::ReferrerPolicy, SecurityMiddleware,
+    SecurityMiddleware, content_security_policy::CspConfig, frame_guard::FrameGuard,
+    hsts::HstsConfig, referrer_policy::ReferrerPolicy,
 };
 
 // ========== Services ==========

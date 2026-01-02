@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
-    parse_macro_input, punctuated::Punctuated, token::Comma, FnArg, Ident, ItemFn, LitStr, Pat,
-    PatType, Type,
+    FnArg, Ident, ItemFn, LitStr, Pat, PatType, Type, parse_macro_input, punctuated::Punctuated,
+    token::Comma,
 };
 
 use crate::route_validation::validate_route_path;

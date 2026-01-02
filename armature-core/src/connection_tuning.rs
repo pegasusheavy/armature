@@ -392,8 +392,8 @@ impl TcpConfig {
     #[cfg(unix)]
     pub fn apply(&self, stream: &TcpStream) -> io::Result<()> {
         use libc::{
-            setsockopt, IPPROTO_TCP, SOL_SOCKET, SO_KEEPALIVE, SO_RCVBUF, SO_REUSEADDR, SO_SNDBUF,
-            TCP_NODELAY,
+            IPPROTO_TCP, SO_KEEPALIVE, SO_RCVBUF, SO_REUSEADDR, SO_SNDBUF, SOL_SOCKET, TCP_NODELAY,
+            setsockopt,
         };
 
         let fd = stream.as_raw_fd();
@@ -580,7 +580,7 @@ impl TcpKeepalive {
     /// Apply keepalive settings to file descriptor.
     #[cfg(target_os = "linux")]
     fn apply_to_fd(&self, fd: std::os::unix::io::RawFd) {
-        use libc::{setsockopt, IPPROTO_TCP};
+        use libc::{IPPROTO_TCP, setsockopt};
 
         const TCP_KEEPIDLE: libc::c_int = 4;
         const TCP_KEEPINTVL: libc::c_int = 5;

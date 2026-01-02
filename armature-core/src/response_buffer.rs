@@ -451,11 +451,13 @@ mod tests {
             .build();
 
         assert_eq!(response.status, 200);
-        assert!(response
-            .headers
-            .get("Content-Type")
-            .unwrap()
-            .contains("json"));
+        assert!(
+            response
+                .headers
+                .get("Content-Type")
+                .unwrap()
+                .contains("json")
+        );
     }
 
     #[test]

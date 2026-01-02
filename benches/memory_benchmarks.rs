@@ -2,7 +2,7 @@
 //!
 //! These benchmarks measure allocation patterns and help identify memory issues.
 
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use crossbeam::queue::ArrayQueue;
 use std::collections::HashMap;
 use std::hint::black_box;

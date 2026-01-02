@@ -313,12 +313,12 @@ impl Default for ConfigManager {
 /// use armature_config::prelude::*;
 /// ```
 pub mod prelude {
+    pub use crate::ConfigManager;
     pub use crate::config_service::ConfigService;
     pub use crate::env::EnvLoader;
     pub use crate::error::{ConfigError, Result};
     pub use crate::loader::{ConfigLoader, FileFormat};
     pub use crate::validation::{ConfigValidator, Validate};
-    pub use crate::ConfigManager;
 }
 
 #[cfg(test)]

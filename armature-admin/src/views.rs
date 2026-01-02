@@ -1,10 +1,10 @@
 //! View structures for admin pages
 
 use crate::{
+    ListParams,
     field::FieldDefinition,
     model::ModelDefinition,
     ui::{Breadcrumb, FilterDef, Pagination, TableColumn, TableRow},
-    ListParams,
 };
 use serde::{Deserialize, Serialize};
 

@@ -293,11 +293,13 @@ mod tests {
             compressed.headers.get("Content-Encoding"),
             Some(&"gzip".to_string())
         );
-        assert!(compressed
-            .headers
-            .get("Vary")
-            .unwrap()
-            .contains("Accept-Encoding"));
+        assert!(
+            compressed
+                .headers
+                .get("Vary")
+                .unwrap()
+                .contains("Accept-Encoding")
+        );
 
         // Compressed body should be smaller
         assert!(compressed.body.len() < body.len());

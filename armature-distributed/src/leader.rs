@@ -1,8 +1,8 @@
 //! Distributed leader election using Redis
 
 use redis::AsyncCommands;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use thiserror::Error;
 use tokio::sync::RwLock;

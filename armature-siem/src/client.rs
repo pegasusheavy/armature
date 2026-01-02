@@ -3,7 +3,7 @@
 use crate::config::{SiemConfig, Transport};
 use crate::error::{SiemError, SiemResult};
 use crate::event::SiemEvent;
-use crate::format::{get_formatter, EventFormatter};
+use crate::format::{EventFormatter, get_formatter};
 use async_trait::async_trait;
 use std::sync::Arc;
 use tokio::sync::Mutex;

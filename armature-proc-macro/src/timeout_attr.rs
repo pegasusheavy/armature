@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse::Parse, parse::ParseStream, parse_macro_input, Expr, ItemFn, Lit, Token};
+use syn::{Expr, ItemFn, Lit, Token, parse::Parse, parse::ParseStream, parse_macro_input};
 
 /// Arguments for the timeout attribute
 /// Parses: #[timeout(5)] or #[timeout(seconds = 5)] or #[timeout(ms = 5000)]

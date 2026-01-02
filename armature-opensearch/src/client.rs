@@ -9,11 +9,11 @@ use crate::{
 };
 use armature_log::{debug, info};
 use opensearch::{
-    http::transport::{SingleNodeConnectionPool, TransportBuilder},
     OpenSearch,
+    http::transport::{SingleNodeConnectionPool, TransportBuilder},
 };
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::sync::Arc;
 
 /// OpenSearch client for document operations.

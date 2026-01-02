@@ -9,8 +9,8 @@ use chrono::Utc;
 use std::any::Any;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use uuid::Uuid;
 
 /// Hash a value to create an opaque identifier for logging (avoids logging sensitive data)

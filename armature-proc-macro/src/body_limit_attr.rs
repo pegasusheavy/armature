@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse::Parse, parse::ParseStream, parse_macro_input, Expr, ItemFn, Lit, Token};
+use syn::{Expr, ItemFn, Lit, Token, parse::Parse, parse::ParseStream, parse_macro_input};
 
 /// Arguments for the body_limit attribute
 /// Parses: #[body_limit(1mb)] or #[body_limit(1024)] or #[body_limit(kb = 512)]

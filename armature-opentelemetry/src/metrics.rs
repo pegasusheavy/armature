@@ -4,7 +4,7 @@ use crate::{
     config::{MetricsExporter, TelemetryConfig},
     error::{TelemetryError, TelemetryResult},
 };
-use opentelemetry::{global, KeyValue};
+use opentelemetry::{KeyValue, global};
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 
 /// Initialize metrics based on configuration

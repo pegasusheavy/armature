@@ -17,8 +17,8 @@
 //! - Least Connections: O(n) workers, atomic reads
 //! - Power of Two: O(1), near-optimal load distribution
 
-use std::sync::atomic::{AtomicU32, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, AtomicU64, AtomicUsize, Ordering};
 
 // ============================================================================
 // Load Balancing Strategy

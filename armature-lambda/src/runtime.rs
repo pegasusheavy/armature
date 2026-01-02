@@ -1,6 +1,6 @@
 //! Lambda runtime for Armature applications.
 
-use lambda_http::{run, service_fn, Body, Error, Request, Response};
+use lambda_http::{Body, Error, Request, Response, run, service_fn};
 use std::sync::Arc;
 use tracing::{debug, info};
 

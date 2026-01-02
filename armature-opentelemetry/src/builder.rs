@@ -3,7 +3,7 @@
 use crate::{
     config::TelemetryConfig,
     error::{TelemetryError, TelemetryResult},
-    metrics::{init_metrics, shutdown_metrics, HttpMetrics},
+    metrics::{HttpMetrics, init_metrics, shutdown_metrics},
     middleware::TelemetryMiddleware,
     tracing_setup::{init_tracing, shutdown_tracing},
 };

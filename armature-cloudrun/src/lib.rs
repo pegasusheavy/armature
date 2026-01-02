@@ -179,7 +179,7 @@ pub fn configuration_name() -> Option<String> {
 /// Cloud Run sends SIGTERM when scaling down or deploying new revisions.
 /// This function waits for that signal to enable graceful shutdown.
 pub async fn wait_for_shutdown() {
-    use tokio::signal::unix::{signal, SignalKind};
+    use tokio::signal::unix::{SignalKind, signal};
 
     let mut sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
     let mut sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");

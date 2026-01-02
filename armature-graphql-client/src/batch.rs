@@ -3,8 +3,8 @@
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::request::GraphQLRequest;
 use crate::GraphQLResponse;
+use crate::request::GraphQLRequest;
 
 /// A batch of GraphQL requests.
 #[derive(Debug, Clone, Serialize)]

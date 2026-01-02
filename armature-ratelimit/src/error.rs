@@ -184,12 +184,16 @@ mod tests {
         let pairs = headers.to_header_pairs();
 
         assert_eq!(pairs.len(), 4);
-        assert!(pairs
-            .iter()
-            .any(|(k, v)| *k == "X-RateLimit-Limit" && v == "100"));
-        assert!(pairs
-            .iter()
-            .any(|(k, v)| *k == "X-RateLimit-Remaining" && v == "0"));
+        assert!(
+            pairs
+                .iter()
+                .any(|(k, v)| *k == "X-RateLimit-Limit" && v == "100")
+        );
+        assert!(
+            pairs
+                .iter()
+                .any(|(k, v)| *k == "X-RateLimit-Remaining" && v == "0")
+        );
         assert!(pairs.iter().any(|(k, v)| *k == "Retry-After" && v == "30"));
     }
 }

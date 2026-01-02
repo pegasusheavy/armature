@@ -56,8 +56,8 @@
 //!
 //! Expected throughput improvement: 5-15% on multi-socket systems.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 // ============================================================================
 // NUMA Availability Detection
@@ -269,11 +269,7 @@ impl NumaNode {
                 }
             }
         }
-        if self.id == other.id {
-            10
-        } else {
-            20
-        }
+        if self.id == other.id { 10 } else { 20 }
     }
 }
 
@@ -503,7 +499,7 @@ impl NumaAllocator {
 
     #[cfg(target_os = "linux")]
     fn allocate_linux(&self, size: usize) -> Option<*mut u8> {
-        use std::alloc::{alloc, Layout};
+        use std::alloc::{Layout, alloc};
 
         // Use standard allocation with mbind hint
         // For actual NUMA binding, use mmap + mbind
@@ -521,7 +517,7 @@ impl NumaAllocator {
 
     #[cfg(not(target_os = "linux"))]
     fn allocate_fallback(&self, size: usize) -> Option<*mut u8> {
-        use std::alloc::{alloc, Layout};
+        use std::alloc::{Layout, alloc};
 
         let layout = Layout::from_size_align(size, 64).ok()?;
         let ptr = unsafe { alloc(layout) };
@@ -542,7 +538,7 @@ impl NumaAllocator {
     /// `ptr` must have been allocated by this allocator with the given `size`.
     #[inline]
     pub unsafe fn deallocate(&self, ptr: *mut u8, size: usize) {
-        use std::alloc::{dealloc, Layout};
+        use std::alloc::{Layout, dealloc};
 
         if let Ok(layout) = Layout::from_size_align(size, 64) {
             // SAFETY: caller guarantees ptr was allocated with this size/alignment

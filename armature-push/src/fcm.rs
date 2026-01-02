@@ -132,7 +132,7 @@ impl FcmProvider {
 
     /// Refresh the access token.
     async fn refresh_token(&self) -> Result<String> {
-        use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+        use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
