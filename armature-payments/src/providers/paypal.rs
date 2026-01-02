@@ -93,13 +93,16 @@ impl PayPalProvider {
             .await?;
 
         if !response.status().is_success() {
-            return Err(PaymentError::Authentication("Failed to get PayPal token".into()));
+            return Err(PaymentError::Authentication(
+                "Failed to get PayPal token".into(),
+            ));
         }
 
         let token_response: PayPalTokenResponse = response.json().await?;
         let new_token = PayPalToken {
             token: token_response.access_token.clone(),
-            expires_at: Utc::now() + chrono::Duration::seconds(token_response.expires_in as i64 - 60),
+            expires_at: Utc::now()
+                + chrono::Duration::seconds(token_response.expires_in as i64 - 60),
         };
 
         let mut token = self.access_token.write().await;
@@ -109,7 +112,11 @@ impl PayPalProvider {
     }
 
     /// Make an authenticated API request
-    async fn request(&self, method: reqwest::Method, path: &str) -> PaymentResult<reqwest::RequestBuilder> {
+    async fn request(
+        &self,
+        method: reqwest::Method,
+        path: &str,
+    ) -> PaymentResult<reqwest::RequestBuilder> {
         let token = self.get_token().await?;
         Ok(self
             .client
@@ -187,7 +194,10 @@ impl PaymentProvider for PayPalProvider {
 
     async fn capture(&self, charge_id: &str, _amount: Option<Money>) -> PaymentResult<Charge> {
         let response = self
-            .request(reqwest::Method::POST, &format!("/v2/checkout/orders/{}/capture", charge_id))
+            .request(
+                reqwest::Method::POST,
+                &format!("/v2/checkout/orders/{}/capture", charge_id),
+            )
             .await?
             .send()
             .await?;
@@ -258,12 +268,15 @@ impl PaymentProvider for PayPalProvider {
         Ok(Refund {
             id: paypal_refund.id,
             charge_id: request.charge_id,
-            amount: paypal_refund.amount.map(|a| {
-                Money::from_float(
-                    a.value.parse().unwrap_or(0.0),
-                    Currency::from_code(&a.currency_code).unwrap_or(Currency::USD),
-                )
-            }).unwrap_or(Money::usd(0)),
+            amount: paypal_refund
+                .amount
+                .map(|a| {
+                    Money::from_float(
+                        a.value.parse().unwrap_or(0.0),
+                        Currency::from_code(&a.currency_code).unwrap_or(Currency::USD),
+                    )
+                })
+                .unwrap_or(Money::usd(0)),
             status: match paypal_refund.status.as_str() {
                 "COMPLETED" => RefundStatus::Succeeded,
                 "CANCELLED" => RefundStatus::Canceled,
@@ -295,7 +308,11 @@ impl PaymentProvider for PayPalProvider {
         Err(PaymentError::CustomerNotFound(id.to_string()))
     }
 
-    async fn update_customer(&self, id: &str, _request: UpdateCustomerRequest) -> PaymentResult<Customer> {
+    async fn update_customer(
+        &self,
+        id: &str,
+        _request: UpdateCustomerRequest,
+    ) -> PaymentResult<Customer> {
         Err(PaymentError::CustomerNotFound(id.to_string()))
     }
 
@@ -303,23 +320,39 @@ impl PaymentProvider for PayPalProvider {
         Ok(()) // No-op for PayPal
     }
 
-    async fn create_payment_method(&self, _request: CreatePaymentMethodRequest) -> PaymentResult<PaymentMethod> {
-        Err(PaymentError::Provider("PayPal handles payment methods through checkout flow".into()))
+    async fn create_payment_method(
+        &self,
+        _request: CreatePaymentMethodRequest,
+    ) -> PaymentResult<PaymentMethod> {
+        Err(PaymentError::Provider(
+            "PayPal handles payment methods through checkout flow".into(),
+        ))
     }
 
-    async fn attach_payment_method(&self, _method_id: &str, _customer_id: &str) -> PaymentResult<PaymentMethod> {
-        Err(PaymentError::Provider("PayPal handles payment methods through checkout flow".into()))
+    async fn attach_payment_method(
+        &self,
+        _method_id: &str,
+        _customer_id: &str,
+    ) -> PaymentResult<PaymentMethod> {
+        Err(PaymentError::Provider(
+            "PayPal handles payment methods through checkout flow".into(),
+        ))
     }
 
     async fn detach_payment_method(&self, _method_id: &str) -> PaymentResult<PaymentMethod> {
-        Err(PaymentError::Provider("PayPal handles payment methods through checkout flow".into()))
+        Err(PaymentError::Provider(
+            "PayPal handles payment methods through checkout flow".into(),
+        ))
     }
 
     async fn list_payment_methods(&self, _customer_id: &str) -> PaymentResult<Vec<PaymentMethod>> {
         Ok(Vec::new())
     }
 
-    async fn create_subscription(&self, request: CreateSubscriptionRequest) -> PaymentResult<Subscription> {
+    async fn create_subscription(
+        &self,
+        request: CreateSubscriptionRequest,
+    ) -> PaymentResult<Subscription> {
         let sub_request = PayPalSubscriptionRequest {
             plan_id: request.price_id.clone(),
             quantity: request.quantity.map(|q| q.to_string()),
@@ -362,7 +395,10 @@ impl PaymentProvider for PayPalProvider {
 
     async fn get_subscription(&self, id: &str) -> PaymentResult<Subscription> {
         let response = self
-            .request(reqwest::Method::GET, &format!("/v1/billing/subscriptions/{}", id))
+            .request(
+                reqwest::Method::GET,
+                &format!("/v1/billing/subscriptions/{}", id),
+            )
             .await?
             .send()
             .await?;
@@ -400,7 +436,10 @@ impl PaymentProvider for PayPalProvider {
 
     async fn cancel_subscription(&self, id: &str, _immediate: bool) -> PaymentResult<Subscription> {
         let response = self
-            .request(reqwest::Method::POST, &format!("/v1/billing/subscriptions/{}/cancel", id))
+            .request(
+                reqwest::Method::POST,
+                &format!("/v1/billing/subscriptions/{}/cancel", id),
+            )
             .await?
             .json(&serde_json::json!({ "reason": "Customer requested cancellation" }))
             .send()
@@ -416,7 +455,10 @@ impl PaymentProvider for PayPalProvider {
 
     async fn resume_subscription(&self, id: &str) -> PaymentResult<Subscription> {
         let response = self
-            .request(reqwest::Method::POST, &format!("/v1/billing/subscriptions/{}/activate", id))
+            .request(
+                reqwest::Method::POST,
+                &format!("/v1/billing/subscriptions/{}/activate", id),
+            )
             .await?
             .send()
             .await?;
@@ -524,4 +566,3 @@ struct PayPalWebhookEvent {
     event_type: String,
     resource: serde_json::Value,
 }
-

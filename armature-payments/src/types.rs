@@ -87,7 +87,9 @@ pub enum PaymentSource {
 impl PaymentSource {
     /// Card token
     pub fn card(token: impl Into<String>) -> Self {
-        Self::Card { token: token.into() }
+        Self::Card {
+            token: token.into(),
+        }
     }
 
     /// Payment method
@@ -97,7 +99,9 @@ impl PaymentSource {
 
     /// Customer default
     pub fn customer(customer_id: impl Into<String>) -> Self {
-        Self::Customer { customer_id: customer_id.into() }
+        Self::Customer {
+            customer_id: customer_id.into(),
+        }
     }
 }
 
@@ -559,4 +563,3 @@ mod tests {
         assert!(SubscriptionStatus::PastDue.needs_attention());
     }
 }
-

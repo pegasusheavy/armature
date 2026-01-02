@@ -111,19 +111,32 @@ impl Pipeline {
     /// Resize image (convenience method)
     #[cfg(feature = "images")]
     pub fn resize(self, width: u32, height: u32) -> Self {
-        self.image(crate::image::ImageOp::Resize { width, height, filter: crate::image::ResizeFilter::Lanczos3 })
+        self.image(crate::image::ImageOp::Resize {
+            width,
+            height,
+            filter: crate::image::ResizeFilter::Lanczos3,
+        })
     }
 
     /// Resize image to fit within bounds (convenience method)
     #[cfg(feature = "images")]
     pub fn resize_fit(self, max_width: u32, max_height: u32) -> Self {
-        self.image(crate::image::ImageOp::ResizeFit { max_width, max_height, filter: crate::image::ResizeFilter::Lanczos3 })
+        self.image(crate::image::ImageOp::ResizeFit {
+            max_width,
+            max_height,
+            filter: crate::image::ResizeFilter::Lanczos3,
+        })
     }
 
     /// Crop image (convenience method)
     #[cfg(feature = "images")]
     pub fn crop(self, x: u32, y: u32, width: u32, height: u32) -> Self {
-        self.image(crate::image::ImageOp::Crop { x, y, width, height })
+        self.image(crate::image::ImageOp::Crop {
+            x,
+            y,
+            width,
+            height,
+        })
     }
 
     /// Rotate image (convenience method)
@@ -195,13 +208,15 @@ impl Pipeline {
                 #[cfg(feature = "images")]
                 PipelineOp::Image(image_op) => {
                     operation_names.push(format!("image:{:?}", image_op));
-                    current_data = crate::image::process_image(&current_data, image_op, &mut metadata)?;
+                    current_data =
+                        crate::image::process_image(&current_data, image_op, &mut metadata)?;
                 }
                 PipelineOp::Convert(format) => {
                     operation_names.push(format!("convert:{}", format.extension()));
                     #[cfg(feature = "images")]
                     if metadata.is_image() {
-                        current_data = crate::image::convert_format(&current_data, *format, &mut metadata)?;
+                        current_data =
+                            crate::image::convert_format(&current_data, *format, &mut metadata)?;
                     }
                 }
                 PipelineOp::Custom(name) => {
@@ -305,8 +320,7 @@ mod tests {
 
     #[test]
     fn test_pipeline_creation() {
-        let pipeline = Pipeline::new()
-            .max_size(1024 * 1024);
+        let pipeline = Pipeline::new().max_size(1024 * 1024);
 
         assert!(pipeline.data.is_none());
         assert_eq!(pipeline.max_size, Some(1024 * 1024));
@@ -315,12 +329,10 @@ mod tests {
     #[test]
     fn test_pipeline_load_bytes() {
         let data = vec![0u8; 100];
-        let pipeline = Pipeline::new()
-            .load_bytes(data, "test.jpg");
+        let pipeline = Pipeline::new().load_bytes(data, "test.jpg");
 
         assert!(pipeline.data.is_some());
         assert!(pipeline.metadata.is_some());
         assert_eq!(pipeline.metadata.unwrap().filename, "test.jpg");
     }
 }
-

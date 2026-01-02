@@ -1,9 +1,9 @@
 //! SIEM client for sending events
 
+use crate::config::{SiemConfig, Transport};
 use crate::error::{SiemError, SiemResult};
 use crate::event::SiemEvent;
 use crate::format::{get_formatter, EventFormatter};
-use crate::config::{SiemConfig, Transport};
 use async_trait::async_trait;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -68,12 +68,8 @@ impl SiemClient {
                     ));
                 }
             }
-            Transport::Tcp | Transport::Tls => {
-                Arc::new(TcpTransport::new(&config)?)
-            }
-            Transport::Udp => {
-                Arc::new(UdpTransport::new(&config)?)
-            }
+            Transport::Tcp | Transport::Tls => Arc::new(TcpTransport::new(&config)?),
+            Transport::Udp => Arc::new(UdpTransport::new(&config)?),
         };
 
         Ok(Self {
@@ -191,9 +187,7 @@ impl HttpTransport {
 
         // Build auth header based on provider
         let auth_header = match config.provider {
-            crate::SiemProvider::Splunk => {
-                config.token.as_ref().map(|t| format!("Splunk {}", t))
-            }
+            crate::SiemProvider::Splunk => config.token.as_ref().map(|t| format!("Splunk {}", t)),
             crate::SiemProvider::Elastic | crate::SiemProvider::Datadog => {
                 config.token.as_ref().map(|t| format!("Bearer {}", t))
             }
@@ -256,13 +250,13 @@ impl SiemTransport for HttpTransport {
                 .unwrap_or(1000);
             Err(SiemError::RateLimited(retry_after))
         } else if status.as_u16() == 401 || status.as_u16() == 403 {
-            Err(SiemError::Auth(format!("Authentication failed: {}", status)))
+            Err(SiemError::Auth(format!(
+                "Authentication failed: {}",
+                status
+            )))
         } else {
             let body = response.text().await.unwrap_or_default();
-            Err(SiemError::Transport(format!(
-                "HTTP {} - {}",
-                status, body
-            )))
+            Err(SiemError::Transport(format!("HTTP {} - {}", status, body)))
         }
     }
 
@@ -395,7 +389,10 @@ mod tests {
         let transport = MemoryTransport::new();
 
         transport.send("test message", "text/plain").await.unwrap();
-        transport.send("second message", "text/plain").await.unwrap();
+        transport
+            .send("second message", "text/plain")
+            .await
+            .unwrap();
 
         let messages = transport.get_messages().await;
         assert_eq!(messages.len(), 2);

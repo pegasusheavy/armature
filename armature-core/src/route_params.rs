@@ -594,7 +594,11 @@ impl ParamsStats {
         let inline = self.params_inline.load(Ordering::Relaxed) as f64;
         let heap = self.params_heap.load(Ordering::Relaxed) as f64;
         let total = inline + heap;
-        if total > 0.0 { inline / total } else { 1.0 }
+        if total > 0.0 {
+            inline / total
+        } else {
+            1.0
+        }
     }
 }
 

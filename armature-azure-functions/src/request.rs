@@ -30,7 +30,7 @@ pub struct FunctionRequest {
 
 /// Custom serde module for Bytes <-> base64 string conversion.
 mod body_serde {
-    use base64::{Engine as _, engine::general_purpose::STANDARD};
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
     use bytes::Bytes;
     use serde::{self, Deserialize, Deserializer, Serializer};
 

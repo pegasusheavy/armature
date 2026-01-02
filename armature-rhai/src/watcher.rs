@@ -65,7 +65,8 @@ impl ScriptWatcher {
                     }
                 },
                 Config::default(),
-            ).expect("Failed to create watcher");
+            )
+            .expect("Failed to create watcher");
 
             for dir in &watch_dirs {
                 if let Err(e) = watcher.watch(dir, RecursiveMode::Recursive) {
@@ -139,12 +140,9 @@ mod tests {
     #[tokio::test]
     async fn test_watcher_creation() {
         let engine = Arc::new(RhaiEngine::default());
-        let watcher = ScriptWatcher::new(engine)
-            .watch("./scripts")
-            .debounce(50);
+        let watcher = ScriptWatcher::new(engine).watch("./scripts").debounce(50);
 
         // Just test creation, not actual watching
         assert_eq!(watcher.debounce_ms, 50);
     }
 }
-

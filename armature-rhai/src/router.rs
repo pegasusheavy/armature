@@ -345,8 +345,7 @@ impl ScriptRouterBuilder {
 
     /// Discover routes from directory structure.
     fn discover_routes(&self, mut router: ScriptRouter) -> Result<ScriptRouter> {
-        let loader =
-            crate::script::ScriptLoader::new(self.engine.config().scripts_dir.clone());
+        let loader = crate::script::ScriptLoader::new(self.engine.config().scripts_dir.clone());
 
         let scripts = loader.list_scripts(&self.routes_dir, "rhai")?;
 

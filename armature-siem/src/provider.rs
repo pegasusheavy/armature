@@ -24,7 +24,9 @@ impl SplunkConfig {
     /// ```
     pub fn hec(endpoint: impl Into<String>) -> SiemConfigBuilder {
         let mut endpoint_str = endpoint.into();
-        if !endpoint_str.ends_with("/services/collector") && !endpoint_str.ends_with("/services/collector/event") {
+        if !endpoint_str.ends_with("/services/collector")
+            && !endpoint_str.ends_with("/services/collector/event")
+        {
             if endpoint_str.ends_with('/') {
                 endpoint_str.push_str("services/collector");
             } else {
@@ -136,7 +138,10 @@ impl SentinelConfig {
     ///     "shared-key"
     /// ).build().unwrap();
     /// ```
-    pub fn new(workspace_id: impl Into<String>, shared_key: impl Into<String>) -> SiemConfigBuilder {
+    pub fn new(
+        workspace_id: impl Into<String>,
+        shared_key: impl Into<String>,
+    ) -> SiemConfigBuilder {
         let workspace = workspace_id.into();
         let endpoint = format!(
             "https://{}.ods.opinsights.azure.com/api/logs?api-version=2016-04-01",
@@ -341,9 +346,7 @@ mod tests {
 
     #[test]
     fn test_datadog_config() {
-        let config = DatadogConfig::new("api-key")
-            .build()
-            .unwrap();
+        let config = DatadogConfig::new("api-key").build().unwrap();
 
         assert_eq!(config.provider, SiemProvider::Datadog);
         assert!(config.endpoint.contains("datadoghq.com"));

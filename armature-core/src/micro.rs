@@ -228,10 +228,9 @@ impl App {
     ///
     /// This starts the HTTP server and blocks until shutdown.
     pub async fn run(self, addr: impl ToSocketAddrs) -> std::io::Result<()> {
-        let addr = addr
-            .to_socket_addrs()?
-            .next()
-            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid address"))?;
+        let addr = addr.to_socket_addrs()?.next().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid address")
+        })?;
 
         let app = Arc::new(BuiltApp {
             router: self.router,
@@ -297,9 +296,7 @@ impl BuiltApp {
         let mut next = handler;
         for mw in self.middleware.iter().rev() {
             let mw = mw.clone();
-            next = Box::new(move |req| {
-                mw.call(req, next)
-            });
+            next = Box::new(move |req| mw.call(req, next));
         }
 
         next(request).await
@@ -313,14 +310,17 @@ pub struct RouteBuilder {
 
 impl RouteBuilder {
     fn new() -> Self {
-        Self { handlers: Vec::new() }
+        Self {
+            handlers: Vec::new(),
+        }
     }
 
     fn with_method<H, Args>(mut self, method: HttpMethod, handler: H) -> Self
     where
         H: IntoHandler<Args>,
     {
-        self.handlers.push((method, BoxedHandler::new(handler.into_handler())));
+        self.handlers
+            .push((method, BoxedHandler::new(handler.into_handler())));
         self
     }
 
@@ -515,7 +515,10 @@ pub fn scope(prefix: impl Into<String>) -> Scope {
 }
 
 /// Type alias for the next handler in middleware chain
-pub type Next = Box<dyn FnOnce(HttpRequest) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>> + Send>;
+pub type Next = Box<
+    dyn FnOnce(HttpRequest) -> Pin<Box<dyn Future<Output = Result<HttpResponse, Error>> + Send>>
+        + Send,
+>;
 
 /// Middleware trait for the micro-framework
 ///
@@ -706,18 +709,15 @@ impl Middleware for Cors {
                     "Access-Control-Allow-Origin".to_string(),
                     allowed_origins.first().cloned().unwrap_or_default(),
                 );
-                response.headers.insert(
-                    "Access-Control-Allow-Methods".to_string(),
-                    allowed_methods,
-                );
-                response.headers.insert(
-                    "Access-Control-Allow-Headers".to_string(),
-                    allowed_headers,
-                );
-                response.headers.insert(
-                    "Access-Control-Max-Age".to_string(),
-                    max_age.to_string(),
-                );
+                response
+                    .headers
+                    .insert("Access-Control-Allow-Methods".to_string(), allowed_methods);
+                response
+                    .headers
+                    .insert("Access-Control-Allow-Headers".to_string(), allowed_headers);
+                response
+                    .headers
+                    .insert("Access-Control-Max-Age".to_string(), max_age.to_string());
                 if allow_credentials {
                     response.headers.insert(
                         "Access-Control-Allow-Credentials".to_string(),
@@ -783,10 +783,9 @@ impl Middleware for Compress {
         Box::pin(async move {
             let mut response = next(req).await?;
             // Add Vary header for proper caching
-            response.headers.insert(
-                "Vary".to_string(),
-                "Accept-Encoding".to_string(),
-            );
+            response
+                .headers
+                .insert("Vary".to_string(), "Accept-Encoding".to_string());
             // Note: Actual compression would be done at the transport layer
             Ok(response)
         })
@@ -814,7 +813,9 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                 async move {
                     // Convert hyper request to our HttpRequest
                     let method = req.method().to_string();
-                    let path = req.uri().path_and_query()
+                    let path = req
+                        .uri()
+                        .path_and_query()
                         .map(|pq| pq.to_string())
                         .unwrap_or_else(|| "/".to_string());
 
@@ -829,7 +830,9 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
 
                     // Read body
                     use http_body_util::BodyExt;
-                    let body_bytes = req.collect().await
+                    let body_bytes = req
+                        .collect()
+                        .await
                         .map(|b| b.to_bytes().to_vec())
                         .unwrap_or_default();
                     http_req.body = body_bytes;
@@ -840,8 +843,7 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                     // Convert to hyper response
                     match response {
                         Ok(resp) => {
-                            let mut builder = hyper::Response::builder()
-                                .status(resp.status);
+                            let mut builder = hyper::Response::builder().status(resp.status);
 
                             for (name, value) in &resp.headers {
                                 builder = builder.header(name.as_str(), value.as_str());
@@ -850,7 +852,7 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                             Ok::<_, std::convert::Infallible>(
                                 builder
                                     .body(http_body_util::Full::new(bytes::Bytes::from(resp.body)))
-                                    .unwrap()
+                                    .unwrap(),
                             )
                         }
                         Err(e) => {
@@ -865,25 +867,22 @@ async fn run_server(app: Arc<BuiltApp>, addr: std::net::SocketAddr) -> std::io::
                             Ok(hyper::Response::builder()
                                 .status(status)
                                 .header("Content-Type", "application/json")
-                                .body(http_body_util::Full::new(bytes::Bytes::from(
-                                    format!(r#"{{"error":"{}"}}"#, e)
-                                )))
+                                .body(http_body_util::Full::new(bytes::Bytes::from(format!(
+                                    r#"{{"error":"{}"}}"#,
+                                    e
+                                ))))
                                 .unwrap())
                         }
                     }
                 }
             });
 
-            if let Err(err) = http1::Builder::new()
-                .serve_connection(io, service)
-                .await
-            {
+            if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
                 tracing::error!("Connection error: {}", err);
             }
         });
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -920,13 +919,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_built_app_handle() {
-        let app = App::new()
-            .route("/test", get(test_handler))
-            .build();
+        let app = App::new().route("/test", get(test_handler)).build();
 
         let req = HttpRequest::new("GET".to_string(), "/test".to_string());
         let response = app.handle(req).await.unwrap();
         assert_eq!(response.status, 200);
     }
 }
-

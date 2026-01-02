@@ -136,7 +136,9 @@ impl RoomManager {
     /// Join a connection to a room.
     pub fn join_room(&self, connection_id: &str, room_id: &str) -> WebSocketResult<()> {
         if !self.connections.contains_key(connection_id) {
-            return Err(WebSocketError::ConnectionNotFound(connection_id.to_string()));
+            return Err(WebSocketError::ConnectionNotFound(
+                connection_id.to_string(),
+            ));
         }
 
         let room = self.create_room(room_id.to_string());

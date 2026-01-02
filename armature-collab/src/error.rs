@@ -55,4 +55,3 @@ impl From<serde_json::Error> for CollabError {
 
 /// Result type for collaboration operations
 pub type CollabResult<T> = Result<T, CollabError>;
-

@@ -153,7 +153,8 @@ impl OperationBuffer {
     pub fn add(&mut self, op: PendingOp) -> bool {
         if self.pending.len() >= self.max_size {
             // Remove oldest operations
-            self.pending.sort_by(|a, b| a.received_at.cmp(&b.received_at));
+            self.pending
+                .sort_by(|a, b| a.received_at.cmp(&b.received_at));
             self.pending.truncate(self.max_size / 2);
         }
 
@@ -264,7 +265,8 @@ impl SyncProtocol {
 
     /// Request sync for a document
     pub fn request_sync(&mut self, doc_id: String) -> SyncMessage {
-        self.pending_syncs.insert(doc_id.clone(), self.vclock.clone());
+        self.pending_syncs
+            .insert(doc_id.clone(), self.vclock.clone());
 
         SyncMessage::SyncRequest {
             replica_id: self.replica_id,
@@ -278,7 +280,11 @@ impl SyncProtocol {
         let mut responses = Vec::new();
 
         match msg {
-            SyncMessage::SyncRequest { replica_id: _, vclock, doc_id: _ } => {
+            SyncMessage::SyncRequest {
+                replica_id: _,
+                vclock,
+                doc_id: _,
+            } => {
                 // Would fetch document and return state
                 // This is handled by the session layer
                 self.vclock.merge(&vclock);
@@ -287,7 +293,12 @@ impl SyncProtocol {
                 self.vclock.merge(&vclock);
                 self.state = SyncState::Synchronized;
             }
-            SyncMessage::Operation { replica_id: _, op_id, data, vclock } => {
+            SyncMessage::Operation {
+                replica_id: _,
+                op_id,
+                data,
+                vclock,
+            } => {
                 self.vclock.merge(&vclock);
 
                 let pending = PendingOp {
@@ -423,4 +434,3 @@ mod tests {
         assert!(matches!(parsed, SyncMessage::Heartbeat { .. }));
     }
 }
-

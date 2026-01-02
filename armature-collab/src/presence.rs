@@ -308,8 +308,8 @@ impl PresenceManager {
     /// Clean up stale users
     pub async fn cleanup_stale(&self, max_age: Duration) {
         let mut users = self.users.write().await;
-        let cutoff = Utc::now()
-            - chrono::Duration::from_std(max_age).unwrap_or(chrono::Duration::hours(1));
+        let cutoff =
+            Utc::now() - chrono::Duration::from_std(max_age).unwrap_or(chrono::Duration::hours(1));
 
         users.retain(|_, u| u.last_seen > cutoff);
     }
@@ -432,4 +432,3 @@ mod tests {
         assert!(!selection.is_collapsed());
     }
 }
-

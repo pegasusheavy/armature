@@ -88,7 +88,7 @@ mod watcher;
 pub use bindings::{register_armature_api, RequestBinding, ResponseBinding};
 pub use context::ScriptContext;
 pub use engine::{RhaiEngine, RhaiEngineBuilder};
-pub use error::{RhaiError, Result};
+pub use error::{Result, RhaiError};
 pub use handler::{ScriptHandler, ScriptMiddleware};
 pub use router::ScriptRouter;
 pub use script::{CompiledScript, ScriptCache, ScriptLoader};
@@ -98,4 +98,3 @@ pub use watcher::ScriptWatcher;
 
 // Re-export rhai for advanced usage
 pub use rhai;
-

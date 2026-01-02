@@ -41,7 +41,10 @@ impl StripeProvider {
     }
 
     /// Create a payment intent
-    pub async fn create_payment_intent(&self, request: ChargeRequest) -> PaymentResult<StripePaymentIntent> {
+    pub async fn create_payment_intent(
+        &self,
+        request: ChargeRequest,
+    ) -> PaymentResult<StripePaymentIntent> {
         let mut params = HashMap::new();
         params.insert("amount", request.amount.amount.to_string());
         params.insert("currency", request.amount.currency.code().to_lowercase());
@@ -182,7 +185,11 @@ impl PaymentProvider for StripeProvider {
         Ok(stripe_customer.into())
     }
 
-    async fn update_customer(&self, id: &str, request: UpdateCustomerRequest) -> PaymentResult<Customer> {
+    async fn update_customer(
+        &self,
+        id: &str,
+        request: UpdateCustomerRequest,
+    ) -> PaymentResult<Customer> {
         let mut params = HashMap::new();
 
         if let Some(email) = &request.email {
@@ -208,7 +215,10 @@ impl PaymentProvider for StripeProvider {
         Ok(())
     }
 
-    async fn create_payment_method(&self, request: CreatePaymentMethodRequest) -> PaymentResult<PaymentMethod> {
+    async fn create_payment_method(
+        &self,
+        request: CreatePaymentMethodRequest,
+    ) -> PaymentResult<PaymentMethod> {
         let mut params = HashMap::new();
         params.insert("type", "card".to_string());
 
@@ -224,7 +234,11 @@ impl PaymentProvider for StripeProvider {
         Ok(stripe_pm.into())
     }
 
-    async fn attach_payment_method(&self, method_id: &str, customer_id: &str) -> PaymentResult<PaymentMethod> {
+    async fn attach_payment_method(
+        &self,
+        method_id: &str,
+        customer_id: &str,
+    ) -> PaymentResult<PaymentMethod> {
         let mut params = HashMap::new();
         params.insert("customer", customer_id.to_string());
 
@@ -239,7 +253,10 @@ impl PaymentProvider for StripeProvider {
     async fn detach_payment_method(&self, method_id: &str) -> PaymentResult<PaymentMethod> {
         let response = self
             .client
-            .post_form(&format!("/payment_methods/{}/detach", method_id), &HashMap::<String, String>::new())
+            .post_form(
+                &format!("/payment_methods/{}/detach", method_id),
+                &HashMap::<String, String>::new(),
+            )
             .await?;
         let stripe_pm: StripePaymentMethod = response.json().await?;
         Ok(stripe_pm.into())
@@ -248,13 +265,19 @@ impl PaymentProvider for StripeProvider {
     async fn list_payment_methods(&self, customer_id: &str) -> PaymentResult<Vec<PaymentMethod>> {
         let response = self
             .client
-            .get(&format!("/payment_methods?customer={}&type=card", customer_id))
+            .get(&format!(
+                "/payment_methods?customer={}&type=card",
+                customer_id
+            ))
             .await?;
         let list: StripeList<StripePaymentMethod> = response.json().await?;
         Ok(list.data.into_iter().map(Into::into).collect())
     }
 
-    async fn create_subscription(&self, request: CreateSubscriptionRequest) -> PaymentResult<Subscription> {
+    async fn create_subscription(
+        &self,
+        request: CreateSubscriptionRequest,
+    ) -> PaymentResult<Subscription> {
         let mut params = HashMap::new();
         params.insert("customer", request.customer_id.clone());
         params.insert("items[0][price]", request.price_id.clone());
@@ -296,7 +319,10 @@ impl PaymentProvider for StripeProvider {
 
     async fn cancel_subscription(&self, id: &str, immediate: bool) -> PaymentResult<Subscription> {
         if immediate {
-            let response = self.client.delete(&format!("/subscriptions/{}", id)).await?;
+            let response = self
+                .client
+                .delete(&format!("/subscriptions/{}", id))
+                .await?;
             let stripe_sub: StripeSubscription = response.json().await?;
             Ok(stripe_sub.into())
         } else {
@@ -619,4 +645,3 @@ struct StripeWebhookEvent {
 struct StripeWebhookData {
     object: serde_json::Value,
 }
-

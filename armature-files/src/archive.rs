@@ -24,7 +24,9 @@ pub enum CompressionLevel {
 impl CompressionLevel {
     fn to_options(&self) -> SimpleFileOptions {
         match self {
-            Self::None => SimpleFileOptions::default().compression_method(CompressionMethod::Stored),
+            Self::None => {
+                SimpleFileOptions::default().compression_method(CompressionMethod::Stored)
+            }
             Self::Fast => SimpleFileOptions::default()
                 .compression_method(CompressionMethod::Deflated)
                 .compression_level(Some(1)),
@@ -105,7 +107,11 @@ impl ZipBuilder {
     }
 
     /// Add a directory of files from disk
-    pub async fn add_directory(mut self, dir_path: impl AsRef<Path>, archive_prefix: &str) -> FileResult<Self> {
+    pub async fn add_directory(
+        mut self,
+        dir_path: impl AsRef<Path>,
+        archive_prefix: &str,
+    ) -> FileResult<Self> {
         let dir_path = dir_path.as_ref();
 
         let mut entries = Vec::new();
@@ -121,7 +127,8 @@ impl ZipBuilder {
                 if file_type.is_dir() {
                     stack.push(path);
                 } else if file_type.is_file() {
-                    let relative_path = path.strip_prefix(dir_path)
+                    let relative_path = path
+                        .strip_prefix(dir_path)
                         .map_err(|e| FileError::Archive(e.to_string()))?;
 
                     let archive_path = if archive_prefix.is_empty() {
@@ -207,9 +214,7 @@ pub struct ZipExtractor {
 impl ZipExtractor {
     /// Create a new ZIP extractor
     pub fn new(data: impl Into<Bytes>) -> Self {
-        Self {
-            data: data.into(),
-        }
+        Self { data: data.into() }
     }
 
     /// List files in the archive
@@ -227,7 +232,8 @@ impl ZipExtractor {
         let mut archive = ZipArchive::new(cursor)
             .map_err(|e| FileError::Archive(format!("Failed to open archive: {}", e)))?;
 
-        let mut file = archive.by_name(name)
+        let mut file = archive
+            .by_name(name)
             .map_err(|e| FileError::Archive(format!("File not found: {}: {}", name, e)))?;
 
         let mut data = Vec::new();
@@ -246,7 +252,8 @@ impl ZipExtractor {
         let mut entries = Vec::new();
 
         for i in 0..archive.len() {
-            let mut file = archive.by_index(i)
+            let mut file = archive
+                .by_index(i)
                 .map_err(|e| FileError::Archive(format!("Failed to access file {}: {}", i, e)))?;
 
             if file.is_dir() {
@@ -267,7 +274,9 @@ impl ZipExtractor {
     /// Extract all files to a directory
     pub async fn extract_to(&self, dir: impl AsRef<Path>) -> FileResult<Vec<String>> {
         let dir = dir.as_ref();
-        tokio::fs::create_dir_all(dir).await.map_err(FileError::Io)?;
+        tokio::fs::create_dir_all(dir)
+            .await
+            .map_err(FileError::Io)?;
 
         let entries = self.extract_all()?;
         let mut extracted = Vec::new();
@@ -277,10 +286,14 @@ impl ZipExtractor {
 
             // Create parent directories
             if let Some(parent) = file_path.parent() {
-                tokio::fs::create_dir_all(parent).await.map_err(FileError::Io)?;
+                tokio::fs::create_dir_all(parent)
+                    .await
+                    .map_err(FileError::Io)?;
             }
 
-            tokio::fs::write(&file_path, &entry.data).await.map_err(FileError::Io)?;
+            tokio::fs::write(&file_path, &entry.data)
+                .await
+                .map_err(FileError::Io)?;
             extracted.push(entry.path);
         }
 
@@ -320,4 +333,3 @@ mod tests {
         assert_eq!(&*content, b"Hello, World!");
     }
 }
-

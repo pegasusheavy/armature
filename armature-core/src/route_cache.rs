@@ -30,8 +30,8 @@ use crate::handler::BoxedHandler;
 use crate::{Error, HttpMethod, HttpRequest, HttpResponse};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::sync::RwLock;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::RwLock;
 
 // ============================================================================
 // Cache Key
@@ -635,7 +635,11 @@ impl RouteCacheStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 { hits / total } else { 0.0 }
+        if total > 0.0 {
+            hits / total
+        } else {
+            0.0
+        }
     }
 }
 
@@ -661,7 +665,11 @@ impl StaticRouteStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 { hits / total } else { 0.0 }
+        if total > 0.0 {
+            hits / total
+        } else {
+            0.0
+        }
     }
 }
 

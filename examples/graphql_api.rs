@@ -9,7 +9,7 @@
 
 use armature::prelude::*;
 use armature_graphql::{
-    EmptySubscription, ID, Object, Result as GqlResult, Schema, SimpleObject, async_graphql,
+    async_graphql, EmptySubscription, Object, Result as GqlResult, Schema, SimpleObject, ID,
 };
 use serde::{Deserialize, Serialize};
 

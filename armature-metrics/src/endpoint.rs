@@ -2,7 +2,7 @@
 //!
 //! Provides the `/metrics` endpoint for Prometheus scraping.
 
-use armature_core::handler::{BoxedHandler, from_legacy_handler};
+use armature_core::handler::{from_legacy_handler, BoxedHandler};
 use armature_core::{Error, HttpRequest, HttpResponse};
 
 /// Handle metrics endpoint request

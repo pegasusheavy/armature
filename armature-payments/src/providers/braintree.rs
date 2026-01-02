@@ -49,9 +49,15 @@ impl BraintreeProvider {
     /// Get API base URL
     fn base_url(&self) -> String {
         if self.sandbox {
-            format!("https://api.sandbox.braintreegateway.com/merchants/{}", self.merchant_id)
+            format!(
+                "https://api.sandbox.braintreegateway.com/merchants/{}",
+                self.merchant_id
+            )
         } else {
-            format!("https://api.braintreegateway.com/merchants/{}", self.merchant_id)
+            format!(
+                "https://api.braintreegateway.com/merchants/{}",
+                self.merchant_id
+            )
         }
     }
 
@@ -141,7 +147,10 @@ impl PaymentProvider for BraintreeProvider {
 
     async fn capture(&self, charge_id: &str, _amount: Option<Money>) -> PaymentResult<Charge> {
         let response = self
-            .request(reqwest::Method::PUT, &format!("/transactions/{}/submit_for_settlement", charge_id))
+            .request(
+                reqwest::Method::PUT,
+                &format!("/transactions/{}/submit_for_settlement", charge_id),
+            )
             .send()
             .await?;
 
@@ -155,10 +164,7 @@ impl PaymentProvider for BraintreeProvider {
 
         Ok(Charge {
             id: txn.id,
-            amount: Money::from_float(
-                txn.amount.parse().unwrap_or(0.0),
-                Currency::USD,
-            ),
+            amount: Money::from_float(txn.amount.parse().unwrap_or(0.0), Currency::USD),
             amount_refunded: Money::new(0, Currency::USD),
             status: ChargeStatus::Succeeded,
             customer_id: txn.customer_id,
@@ -180,7 +186,10 @@ impl PaymentProvider for BraintreeProvider {
         });
 
         let response = self
-            .request(reqwest::Method::POST, &format!("/transactions/{}/refund", request.charge_id))
+            .request(
+                reqwest::Method::POST,
+                &format!("/transactions/{}/refund", request.charge_id),
+            )
             .json(&refund_req.unwrap_or(BraintreeRefundRequest { amount: None }))
             .send()
             .await?;
@@ -196,10 +205,7 @@ impl PaymentProvider for BraintreeProvider {
         Ok(Refund {
             id: txn.id.clone(),
             charge_id: request.charge_id,
-            amount: Money::from_float(
-                txn.amount.parse().unwrap_or(0.0),
-                Currency::USD,
-            ),
+            amount: Money::from_float(txn.amount.parse().unwrap_or(0.0), Currency::USD),
             status: RefundStatus::Succeeded,
             reason: request.reason,
             created_at: Utc::now(),
@@ -209,12 +215,19 @@ impl PaymentProvider for BraintreeProvider {
     async fn create_customer(&self, request: CreateCustomerRequest) -> PaymentResult<Customer> {
         let customer_req = BraintreeCustomerRequest {
             email: request.email.clone(),
-            first_name: request.name.clone().map(|n| n.split_whitespace().next().unwrap_or("").to_string()),
-            last_name: request.name.map(|n| n.split_whitespace().skip(1).collect::<Vec<_>>().join(" ")),
+            first_name: request
+                .name
+                .clone()
+                .map(|n| n.split_whitespace().next().unwrap_or("").to_string()),
+            last_name: request
+                .name
+                .map(|n| n.split_whitespace().skip(1).collect::<Vec<_>>().join(" ")),
             phone: request.phone,
         };
 
-        let wrapper = BraintreeCustomerWrapper { customer: customer_req };
+        let wrapper = BraintreeCustomerWrapper {
+            customer: customer_req,
+        };
 
         let response = self
             .request(reqwest::Method::POST, "/customers")
@@ -279,15 +292,26 @@ impl PaymentProvider for BraintreeProvider {
         })
     }
 
-    async fn update_customer(&self, id: &str, request: UpdateCustomerRequest) -> PaymentResult<Customer> {
+    async fn update_customer(
+        &self,
+        id: &str,
+        request: UpdateCustomerRequest,
+    ) -> PaymentResult<Customer> {
         let customer_req = BraintreeCustomerRequest {
             email: request.email.clone(),
-            first_name: request.name.clone().map(|n| n.split_whitespace().next().unwrap_or("").to_string()),
-            last_name: request.name.map(|n| n.split_whitespace().skip(1).collect::<Vec<_>>().join(" ")),
+            first_name: request
+                .name
+                .clone()
+                .map(|n| n.split_whitespace().next().unwrap_or("").to_string()),
+            last_name: request
+                .name
+                .map(|n| n.split_whitespace().skip(1).collect::<Vec<_>>().join(" ")),
             phone: request.phone,
         };
 
-        let wrapper = BraintreeCustomerWrapper { customer: customer_req };
+        let wrapper = BraintreeCustomerWrapper {
+            customer: customer_req,
+        };
 
         let response = self
             .request(reqwest::Method::PUT, &format!("/customers/{}", id))
@@ -317,13 +341,18 @@ impl PaymentProvider for BraintreeProvider {
         Ok(())
     }
 
-    async fn create_payment_method(&self, request: CreatePaymentMethodRequest) -> PaymentResult<PaymentMethod> {
+    async fn create_payment_method(
+        &self,
+        request: CreatePaymentMethodRequest,
+    ) -> PaymentResult<PaymentMethod> {
         let pm_req = BraintreePaymentMethodRequest {
             customer_id: None,
             payment_method_nonce: request.card.map(|_| "fake-valid-nonce".to_string()), // In real use, this comes from client
         };
 
-        let wrapper = BraintreePaymentMethodWrapper { payment_method: pm_req };
+        let wrapper = BraintreePaymentMethodWrapper {
+            payment_method: pm_req,
+        };
 
         let response = self
             .request(reqwest::Method::POST, "/payment_methods")
@@ -354,16 +383,25 @@ impl PaymentProvider for BraintreeProvider {
         })
     }
 
-    async fn attach_payment_method(&self, method_id: &str, customer_id: &str) -> PaymentResult<PaymentMethod> {
+    async fn attach_payment_method(
+        &self,
+        method_id: &str,
+        customer_id: &str,
+    ) -> PaymentResult<PaymentMethod> {
         let pm_req = BraintreePaymentMethodRequest {
             customer_id: Some(customer_id.to_string()),
             payment_method_nonce: None,
         };
 
-        let wrapper = BraintreePaymentMethodWrapper { payment_method: pm_req };
+        let wrapper = BraintreePaymentMethodWrapper {
+            payment_method: pm_req,
+        };
 
         let response = self
-            .request(reqwest::Method::PUT, &format!("/payment_methods/any/{}", method_id))
+            .request(
+                reqwest::Method::PUT,
+                &format!("/payment_methods/any/{}", method_id),
+            )
             .json(&wrapper)
             .send()
             .await?;
@@ -387,7 +425,10 @@ impl PaymentProvider for BraintreeProvider {
 
     async fn detach_payment_method(&self, method_id: &str) -> PaymentResult<PaymentMethod> {
         let response = self
-            .request(reqwest::Method::DELETE, &format!("/payment_methods/any/{}", method_id))
+            .request(
+                reqwest::Method::DELETE,
+                &format!("/payment_methods/any/{}", method_id),
+            )
             .send()
             .await?;
 
@@ -413,13 +454,18 @@ impl PaymentProvider for BraintreeProvider {
         Ok(Vec::new())
     }
 
-    async fn create_subscription(&self, request: CreateSubscriptionRequest) -> PaymentResult<Subscription> {
+    async fn create_subscription(
+        &self,
+        request: CreateSubscriptionRequest,
+    ) -> PaymentResult<Subscription> {
         let sub_req = BraintreeSubscriptionRequest {
             plan_id: request.price_id.clone(),
             payment_method_token: request.payment_method.clone(),
         };
 
-        let wrapper = BraintreeSubscriptionWrapper { subscription: sub_req };
+        let wrapper = BraintreeSubscriptionWrapper {
+            subscription: sub_req,
+        };
 
         let response = self
             .request(reqwest::Method::POST, "/subscriptions")
@@ -496,7 +542,9 @@ impl PaymentProvider for BraintreeProvider {
             payment_method_token: None,
         };
 
-        let wrapper = BraintreeSubscriptionWrapper { subscription: sub_req };
+        let wrapper = BraintreeSubscriptionWrapper {
+            subscription: sub_req,
+        };
 
         let response = self
             .request(reqwest::Method::PUT, &format!("/subscriptions/{}", id))
@@ -514,7 +562,10 @@ impl PaymentProvider for BraintreeProvider {
 
     async fn cancel_subscription(&self, id: &str, _immediate: bool) -> PaymentResult<Subscription> {
         let response = self
-            .request(reqwest::Method::PUT, &format!("/subscriptions/{}/cancel", id))
+            .request(
+                reqwest::Method::PUT,
+                &format!("/subscriptions/{}/cancel", id),
+            )
             .send()
             .await?;
 
@@ -527,7 +578,9 @@ impl PaymentProvider for BraintreeProvider {
     }
 
     async fn resume_subscription(&self, _id: &str) -> PaymentResult<Subscription> {
-        Err(PaymentError::Provider("Braintree doesn't support resuming subscriptions".into()))
+        Err(PaymentError::Provider(
+            "Braintree doesn't support resuming subscriptions".into(),
+        ))
     }
 
     fn verify_webhook(&self, _payload: &[u8], _signature: &str) -> PaymentResult<()> {
@@ -681,4 +734,3 @@ struct BraintreeWebhookNotification {
     kind: String,
     subject: serde_json::Value,
 }
-

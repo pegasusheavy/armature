@@ -330,11 +330,7 @@ async fn handle_request(
             )
         }
 
-        _ => (
-            404,
-            "text/plain".to_string(),
-            b"Not Found".to_vec(),
-        ),
+        _ => (404, "text/plain".to_string(), b"Not Found".to_vec()),
     }
 }
 

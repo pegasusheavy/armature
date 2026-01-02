@@ -26,17 +26,17 @@ impl HistogramValue {
             count: 0,
             sum: 0.0,
             buckets: vec![
-                (0.005, 0),  // 5ms
-                (0.01, 0),   // 10ms
-                (0.025, 0),  // 25ms
-                (0.05, 0),   // 50ms
-                (0.1, 0),    // 100ms
-                (0.25, 0),   // 250ms
-                (0.5, 0),    // 500ms
-                (1.0, 0),    // 1s
-                (2.5, 0),    // 2.5s
-                (5.0, 0),    // 5s
-                (10.0, 0),   // 10s
+                (0.005, 0), // 5ms
+                (0.01, 0),  // 10ms
+                (0.025, 0), // 25ms
+                (0.05, 0),  // 50ms
+                (0.1, 0),   // 100ms
+                (0.25, 0),  // 250ms
+                (0.5, 0),   // 500ms
+                (1.0, 0),   // 1s
+                (2.5, 0),   // 2.5s
+                (5.0, 0),   // 5s
+                (10.0, 0),  // 10s
                 (f64::INFINITY, 0),
             ],
         }
@@ -92,7 +92,11 @@ impl Metric {
         }
     }
 
-    pub fn histogram(name: impl Into<String>, help: impl Into<String>, histogram: HistogramValue) -> Self {
+    pub fn histogram(
+        name: impl Into<String>,
+        help: impl Into<String>,
+        histogram: HistogramValue,
+    ) -> Self {
         Self {
             name: name.into(),
             help: help.into(),
@@ -196,4 +200,3 @@ mod tests {
         assert_eq!(duration.as_millis_f64(), 150.0);
     }
 }
-

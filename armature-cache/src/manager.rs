@@ -2,7 +2,7 @@
 
 use crate::error::CacheResult;
 use crate::traits::CacheStore;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
 

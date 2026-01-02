@@ -28,11 +28,7 @@ async fn param_handler(req: HttpRequest) -> Result<HttpResponse, Error> {
 fn bench_app_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("micro_app_creation");
 
-    group.bench_function("empty_app", |b| {
-        b.iter(|| {
-            bb(App::new().build())
-        })
-    });
+    group.bench_function("empty_app", |b| b.iter(|| bb(App::new().build())));
 
     group.bench_function("app_with_5_routes", |b| {
         b.iter(|| {
@@ -61,9 +57,14 @@ fn bench_app_creation(c: &mut Criterion) {
                 .service(
                     scope("/api/v1")
                         .route("/users", get(simple_handler).post(simple_handler))
-                        .route("/users/:id", get(param_handler).put(simple_handler).delete(simple_handler))
+                        .route(
+                            "/users/:id",
+                            get(param_handler)
+                                .put(simple_handler)
+                                .delete(simple_handler),
+                        )
                         .route("/posts", get(simple_handler))
-                        .route("/posts/:id", get(simple_handler))
+                        .route("/posts/:id", get(simple_handler)),
                 )
                 .build())
         })
@@ -140,9 +141,7 @@ fn bench_middleware_overhead(c: &mut Criterion) {
     let mut group = c.benchmark_group("micro_middleware");
 
     // No middleware
-    let app_no_mw = App::new()
-        .route("/", get(simple_handler))
-        .build();
+    let app_no_mw = App::new().route("/", get(simple_handler)).build();
 
     // 1 middleware
     let app_1_mw = App::new()
@@ -216,11 +215,7 @@ fn bench_state_access(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("data_clone", |b| {
-        b.iter(|| {
-            bb(data.clone())
-        })
-    });
+    group.bench_function("data_clone", |b| b.iter(|| bb(data.clone())));
 
     group.finish();
 }
@@ -228,11 +223,7 @@ fn bench_state_access(c: &mut Criterion) {
 fn bench_route_builder(c: &mut Criterion) {
     let mut group = c.benchmark_group("micro_route_builder");
 
-    group.bench_function("single_method", |b| {
-        b.iter(|| {
-            bb(get(simple_handler))
-        })
-    });
+    group.bench_function("single_method", |b| b.iter(|| bb(get(simple_handler))));
 
     group.bench_function("multiple_methods", |b| {
         b.iter(|| {
@@ -243,11 +234,7 @@ fn bench_route_builder(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("any_method", |b| {
-        b.iter(|| {
-            bb(any(simple_handler))
-        })
-    });
+    group.bench_function("any_method", |b| b.iter(|| bb(any(simple_handler))));
 
     group.finish();
 }
@@ -255,11 +242,7 @@ fn bench_route_builder(c: &mut Criterion) {
 fn bench_scope_building(c: &mut Criterion) {
     let mut group = c.benchmark_group("micro_scope");
 
-    group.bench_function("empty_scope", |b| {
-        b.iter(|| {
-            bb(scope("/api"))
-        })
-    });
+    group.bench_function("empty_scope", |b| b.iter(|| bb(scope("/api"))));
 
     group.bench_function("scope_with_routes", |b| {
         b.iter(|| {
@@ -273,14 +256,8 @@ fn bench_scope_building(c: &mut Criterion) {
     group.bench_function("nested_scopes", |b| {
         b.iter(|| {
             bb(scope("/api")
-                .service(
-                    scope("/v1")
-                        .route("/users", get(simple_handler))
-                )
-                .service(
-                    scope("/v2")
-                        .route("/users", get(simple_handler))
-                ))
+                .service(scope("/v1").route("/users", get(simple_handler)))
+                .service(scope("/v2").route("/users", get(simple_handler))))
         })
     });
 
@@ -292,9 +269,7 @@ fn bench_json_response(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("micro_json");
 
-    let app = App::new()
-        .route("/json", get(json_handler))
-        .build();
+    let app = App::new().route("/json", get(json_handler)).build();
 
     group.bench_function("json_handler", |b| {
         b.to_async(&rt).iter(|| async {
@@ -318,4 +293,3 @@ criterion_group!(
 );
 
 criterion_main!(benches);
-

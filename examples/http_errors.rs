@@ -7,8 +7,8 @@
 )]
 // HTTP Status and Error Handling Example
 
-use armature::Error;
 use armature::prelude::*;
+use armature::Error;
 use serde::{Deserialize, Serialize};
 
 // ========== DTOs ==========

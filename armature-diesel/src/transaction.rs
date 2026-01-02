@@ -102,8 +102,8 @@ impl TransactionExt for crate::PgPool {
         Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::AsyncConnection;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::AsyncConnection;
 
         let mut conn = self.get().await?;
         let conn: &mut AsyncPgConnection = &mut conn;
@@ -159,8 +159,8 @@ impl TransactionExt for crate::MysqlPool {
         Fut: Future<Output = Result<T, diesel::result::Error>> + Send,
         T: Send,
     {
-        use diesel_async::AsyncConnection;
         use diesel_async::scoped_futures::ScopedFutureExt;
+        use diesel_async::AsyncConnection;
 
         let mut conn = self.get().await?;
         let conn: &mut AsyncMysqlConnection = &mut *conn;

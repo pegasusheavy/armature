@@ -3667,7 +3667,12 @@ pub struct ProjectData {
 
 impl ProjectData {
     /// Create new project data with default curly braces.
-    pub fn new(name_pascal: String, name_snake: String, name_kebab: String, description: String) -> Self {
+    pub fn new(
+        name_pascal: String,
+        name_snake: String,
+        name_kebab: String,
+        description: String,
+    ) -> Self {
         Self {
             name_upper: name_snake.to_uppercase(),
             name_pascal,

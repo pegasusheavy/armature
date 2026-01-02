@@ -70,7 +70,7 @@ pub use serde_toon::{from_str, to_string};
 #[cfg(feature = "http")]
 pub use http::*;
 
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 
 /// TOON content type for HTTP responses.
 pub const TOON_CONTENT_TYPE: &str = "application/toon";

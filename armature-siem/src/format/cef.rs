@@ -35,10 +35,7 @@ impl CefFormatter {
         let mut ext = Vec::new();
 
         // Standard CEF extension fields
-        ext.push(format!(
-            "rt={}",
-            event.timestamp.timestamp_millis()
-        ));
+        ext.push(format!("rt={}", event.timestamp.timestamp_millis()));
 
         if let Some(ref ip) = event.src_ip {
             ext.push(format!("src={}", Self::escape_extension(ip)));

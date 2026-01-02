@@ -86,4 +86,3 @@ impl WebSocketHandler for LoggingHandler {
         tracing::info!(connection_id = %connection_id, "Client disconnected");
     }
 }
-

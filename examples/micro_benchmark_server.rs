@@ -62,7 +62,9 @@ async fn create_user(req: HttpRequest) -> Result<HttpResponse, Error> {
     let response = CreateUserResponse {
         id: 12345,
         name: body.name,
-        email: body.email.unwrap_or_else(|| "default@example.com".to_string()),
+        email: body
+            .email
+            .unwrap_or_else(|| "default@example.com".to_string()),
         created: true,
     };
 
@@ -94,4 +96,3 @@ async fn main() -> std::io::Result<()> {
         .run("127.0.0.1:3000")
         .await
 }
-

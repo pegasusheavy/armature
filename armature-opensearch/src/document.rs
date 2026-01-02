@@ -1,6 +1,6 @@
 //! Document trait and helpers.
 
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 
 /// Trait for documents that can be indexed in OpenSearch.
 ///

@@ -45,7 +45,7 @@
 //! armature-core = { version = "0.1", features = ["simd-json"] }
 //! ```
 
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 
 /// Error type for JSON operations.
 ///

@@ -145,7 +145,11 @@ impl FieldDefinition {
     }
 
     /// Set foreign key
-    pub fn foreign_key(mut self, model: impl Into<String>, display_field: impl Into<String>) -> Self {
+    pub fn foreign_key(
+        mut self,
+        model: impl Into<String>,
+        display_field: impl Into<String>,
+    ) -> Self {
         self.foreign_key = Some(ForeignKeyRef {
             model: model.into(),
             display_field: display_field.into(),
@@ -434,7 +438,9 @@ mod tests {
     fn test_field_type_widget() {
         assert_eq!(FieldType::String.default_widget(), WidgetType::TextInput);
         assert_eq!(FieldType::Boolean.default_widget(), WidgetType::Checkbox);
-        assert_eq!(FieldType::DateTime.default_widget(), WidgetType::DateTimePicker);
+        assert_eq!(
+            FieldType::DateTime.default_widget(),
+            WidgetType::DateTimePicker
+        );
     }
 }
-

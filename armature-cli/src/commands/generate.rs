@@ -3,7 +3,7 @@
 use colored::Colorize;
 
 use crate::error::{CliError, CliResult};
-use crate::generators::{NameCases, ensure_dir, get_src_dir, update_mod_file, write_file};
+use crate::generators::{ensure_dir, get_src_dir, update_mod_file, write_file, NameCases};
 use crate::templates::{ComponentData, ControllerData, ModuleData, TemplateRegistry};
 
 /// Generate a controller.
@@ -224,9 +224,7 @@ pub async fn dto(name: &str) -> CliResult<()> {
         name_kebab: names.kebab.clone(),
     };
 
-    let content = templates
-        .render("dto", &data)
-        .map_err(CliError::Template)?;
+    let content = templates.render("dto", &data).map_err(CliError::Template)?;
 
     let file_path = dto_dir.join(format!("{}.rs", names.snake));
     write_file(&file_path, &content, false)?;
@@ -333,7 +331,10 @@ impl std::str::FromStr for OrmType {
             "diesel" => Ok(OrmType::Diesel),
             "seaorm" | "sea-orm" | "sea_orm" => Ok(OrmType::SeaOrm),
             "prax" | "prax-orm" | "prax_orm" => Ok(OrmType::Prax),
-            _ => Err(format!("Unknown ORM type: {}. Valid options: generic, diesel, seaorm, prax", s)),
+            _ => Err(format!(
+                "Unknown ORM type: {}. Valid options: generic, diesel, seaorm, prax",
+                s
+            )),
         }
     }
 }
@@ -554,10 +555,7 @@ pub async fn prax_module(name: &str) -> CliResult<()> {
     println!();
     println!("  {} Next steps:", "💡".yellow());
     println!("    {} Add prax-armature to Cargo.toml:", "1.".dimmed());
-    println!(
-        "       {}",
-        r#"prax-armature = "0.4""#.cyan()
-    );
+    println!("       {}", r#"prax-armature = "0.4""#.cyan());
     println!("    {} Run Prax code generation:", "2.".dimmed());
     println!("       {}", "prax generate".cyan());
     println!("    {} Import the module in main.rs:", "3.".dimmed());

@@ -91,8 +91,8 @@ pub use file::{FileInfo, UploadedFile};
 pub use local::{LocalStorage, LocalStorageConfig};
 pub use multipart::{Multipart, MultipartField, MultipartStream};
 pub use storage::{
-    Storage, StorageConfig, StorageMetadata, calculate_checksum, generate_unique_key,
-    sanitize_filename,
+    calculate_checksum, generate_unique_key, sanitize_filename, Storage, StorageConfig,
+    StorageMetadata,
 };
 pub use validation::{FileValidator, ValidationError, ValidationRule};
 

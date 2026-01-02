@@ -159,4 +159,3 @@ impl DeclineCode {
         }
     }
 }
-

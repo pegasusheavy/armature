@@ -14,10 +14,10 @@
 //!     .build()?;
 //! ```
 
-use crate::{FileResult, ProcessingResult, FileMetadata};
+use crate::{FileMetadata, FileResult, ProcessingResult};
 use bytes::Bytes;
-use lopdf::{Document, Object, Stream, StringFormat};
 use lopdf::dictionary;
+use lopdf::{Document, Object, Stream, StringFormat};
 
 /// Font sizes for PDF text
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -398,11 +398,14 @@ impl PdfBuilder {
         let (page_width, page_height) = self.get_page_dimensions();
 
         // Add font (Helvetica is a built-in font)
-        doc.objects.insert(font_id, Object::Dictionary(dictionary! {
-            "Type" => "Font",
-            "Subtype" => "Type1",
-            "BaseFont" => "Helvetica",
-        }));
+        doc.objects.insert(
+            font_id,
+            Object::Dictionary(dictionary! {
+                "Type" => "Font",
+                "Subtype" => "Type1",
+                "BaseFont" => "Helvetica",
+            }),
+        );
 
         // Create pages
         for page_content in &self.pages {
@@ -420,7 +423,8 @@ impl PdfBuilder {
                 // Move to position
                 content.push_str(&format!("{} {} Td\n", text_op.x, text_op.y));
                 // Show text (escape parentheses)
-                let escaped = text_op.text
+                let escaped = text_op
+                    .text
                     .replace('\\', "\\\\")
                     .replace('(', "\\(")
                     .replace(')', "\\)");
@@ -432,51 +436,69 @@ impl PdfBuilder {
             content.push_str("ET\n"); // End text
 
             // Add content stream
-            doc.objects.insert(content_id, Object::Stream(Stream::new(
-                dictionary! {},
-                content.into_bytes(),
-            )));
+            doc.objects.insert(
+                content_id,
+                Object::Stream(Stream::new(dictionary! {}, content.into_bytes())),
+            );
 
             // Add page
-            doc.objects.insert(page_id, Object::Dictionary(dictionary! {
-                "Type" => "Page",
-                "Parent" => pages_id,
-                "MediaBox" => vec![0.into(), 0.into(), page_width.into(), page_height.into()],
-                "Contents" => content_id,
-                "Resources" => dictionary! {
-                    "Font" => dictionary! {
-                        "F1" => font_id,
+            doc.objects.insert(
+                page_id,
+                Object::Dictionary(dictionary! {
+                    "Type" => "Page",
+                    "Parent" => pages_id,
+                    "MediaBox" => vec![0.into(), 0.into(), page_width.into(), page_height.into()],
+                    "Contents" => content_id,
+                    "Resources" => dictionary! {
+                        "Font" => dictionary! {
+                            "F1" => font_id,
+                        },
                     },
-                },
-            }));
+                }),
+            );
             page_ids.push(page_id);
         }
 
         // Add pages object
         let kids: Vec<Object> = page_ids.iter().map(|id| (*id).into()).collect();
-        doc.objects.insert(pages_id, Object::Dictionary(dictionary! {
-            "Type" => "Pages",
-            "Kids" => kids,
-            "Count" => page_ids.len() as i64,
-        }));
+        doc.objects.insert(
+            pages_id,
+            Object::Dictionary(dictionary! {
+                "Type" => "Pages",
+                "Kids" => kids,
+                "Count" => page_ids.len() as i64,
+            }),
+        );
 
         // Add catalog
         let catalog_id = doc.new_object_id();
-        doc.objects.insert(catalog_id, Object::Dictionary(dictionary! {
-            "Type" => "Catalog",
-            "Pages" => pages_id,
-        }));
+        doc.objects.insert(
+            catalog_id,
+            Object::Dictionary(dictionary! {
+                "Type" => "Catalog",
+                "Pages" => pages_id,
+            }),
+        );
 
         // Add info
         let info_id = doc.new_object_id();
         let mut info_dict = lopdf::Dictionary::new();
         if let Some(title) = &self.title {
-            info_dict.set("Title", Object::String(title.as_bytes().to_vec(), StringFormat::Literal));
+            info_dict.set(
+                "Title",
+                Object::String(title.as_bytes().to_vec(), StringFormat::Literal),
+            );
         }
         if let Some(author) = &self.author {
-            info_dict.set("Author", Object::String(author.as_bytes().to_vec(), StringFormat::Literal));
+            info_dict.set(
+                "Author",
+                Object::String(author.as_bytes().to_vec(), StringFormat::Literal),
+            );
         }
-        info_dict.set("Producer", Object::String(b"Armature Files".to_vec(), StringFormat::Literal));
+        info_dict.set(
+            "Producer",
+            Object::String(b"Armature Files".to_vec(), StringFormat::Literal),
+        );
         doc.objects.insert(info_id, Object::Dictionary(info_dict));
 
         // Set trailer
@@ -486,7 +508,8 @@ impl PdfBuilder {
         // Compress and save
         doc.compress();
         let mut buffer = Vec::new();
-        doc.save_to(&mut buffer).map_err(|e| crate::FileError::Pdf(e.to_string()))?;
+        doc.save_to(&mut buffer)
+            .map_err(|e| crate::FileError::Pdf(e.to_string()))?;
 
         let bytes = Bytes::from(buffer);
 

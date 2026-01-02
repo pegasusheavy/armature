@@ -28,12 +28,12 @@
 //! let response = serialize_json_with_size(&data, SerializationSize::Medium)?;
 //! ```
 
-use crate::buffer_pool::{BufferSize, PooledBuffer, acquire_buffer};
+use crate::buffer_pool::{acquire_buffer, BufferSize, PooledBuffer};
 #[cfg(feature = "simd-json")]
 use crate::json::Json;
 use bytes::Bytes;
-use serde::Serialize;
 use lru::LruCache;
+use serde::Serialize;
 use std::num::NonZeroUsize;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -432,7 +432,11 @@ impl TypeSizeInfo {
 
     /// Get minimum size.
     pub fn min(&self) -> usize {
-        if self.min == usize::MAX { 0 } else { self.min }
+        if self.min == usize::MAX {
+            0
+        } else {
+            self.min
+        }
     }
 
     /// Get maximum size.

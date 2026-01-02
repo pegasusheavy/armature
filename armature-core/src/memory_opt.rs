@@ -19,8 +19,8 @@ use bytes::{Bytes, BytesMut};
 use compact_str::CompactString;
 use smallvec::SmallVec;
 use std::collections::VecDeque;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 
 // ============================================================================
 // SmallVec Headers
@@ -644,7 +644,11 @@ impl PoolStats {
     pub fn hit_ratio(&self) -> f64 {
         let hits = self.hits() as f64;
         let total = hits + self.misses() as f64;
-        if total > 0.0 { hits / total } else { 0.0 }
+        if total > 0.0 {
+            hits / total
+        } else {
+            0.0
+        }
     }
 }
 
@@ -871,7 +875,11 @@ impl MemoryStats {
     pub fn headers_inline_ratio(&self) -> f64 {
         let inline = self.headers_inline() as f64;
         let total = inline + self.headers_heap() as f64;
-        if total > 0.0 { inline / total } else { 0.0 }
+        if total > 0.0 {
+            inline / total
+        } else {
+            0.0
+        }
     }
 
     /// Get inline path count.
@@ -888,7 +896,11 @@ impl MemoryStats {
     pub fn paths_inline_ratio(&self) -> f64 {
         let inline = self.paths_inline() as f64;
         let total = inline + self.paths_heap() as f64;
-        if total > 0.0 { inline / total } else { 0.0 }
+        if total > 0.0 {
+            inline / total
+        } else {
+            0.0
+        }
     }
 
     /// Get buffer allocation count.
@@ -905,7 +917,11 @@ impl MemoryStats {
     pub fn pool_hit_ratio(&self) -> f64 {
         let hits = self.pool_hits.load(Ordering::Relaxed) as f64;
         let total = hits + self.pool_misses.load(Ordering::Relaxed) as f64;
-        if total > 0.0 { hits / total } else { 0.0 }
+        if total > 0.0 {
+            hits / total
+        } else {
+            0.0
+        }
     }
 }
 

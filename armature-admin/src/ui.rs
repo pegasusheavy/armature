@@ -594,4 +594,3 @@ mod tests {
         assert_eq!(msg.dismiss_after, Some(5));
     }
 }
-

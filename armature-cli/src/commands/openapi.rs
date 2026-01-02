@@ -5,7 +5,10 @@
 use crate::error::{CliError, CliResult};
 use colored::Colorize;
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnakeCase};
-use openapiv3::{OpenAPI, Operation, Parameter, ParameterSchemaOrContent, PathItem, ReferenceOr, Schema, SchemaKind, Type as OapiType};
+use openapiv3::{
+    OpenAPI, Operation, Parameter, ParameterSchemaOrContent, PathItem, ReferenceOr, Schema,
+    SchemaKind, Type as OapiType,
+};
 use std::fs;
 use std::path::Path;
 
@@ -98,13 +101,11 @@ fn load_spec(path: &str) -> CliResult<OpenAPI> {
 
     // Try JSON first, then YAML
     if path.ends_with(".json") {
-        serde_json::from_str(&content).map_err(|e| {
-            CliError::Command(format!("Failed to parse OpenAPI JSON: {}", e))
-        })
+        serde_json::from_str(&content)
+            .map_err(|e| CliError::Command(format!("Failed to parse OpenAPI JSON: {}", e)))
     } else {
-        serde_yaml::from_str(&content).map_err(|e| {
-            CliError::Command(format!("Failed to parse OpenAPI YAML: {}", e))
-        })
+        serde_yaml::from_str(&content)
+            .map_err(|e| CliError::Command(format!("Failed to parse OpenAPI YAML: {}", e)))
     }
 }
 
@@ -117,9 +118,8 @@ fn generate_typescript_client(
     output_dir: &str,
     options: &ClientOptions,
 ) -> CliResult<()> {
-    fs::create_dir_all(output_dir).map_err(|e| {
-        CliError::Command(format!("Failed to create output directory: {}", e))
-    })?;
+    fs::create_dir_all(output_dir)
+        .map_err(|e| CliError::Command(format!("Failed to create output directory: {}", e)))?;
 
     let api_name = options
         .client_name
@@ -132,9 +132,13 @@ fn generate_typescript_client(
 
     // Generate types from schemas
     if let Some(components) = &spec.components {
-        types.push_str("// =============================================================================\n");
+        types.push_str(
+            "// =============================================================================\n",
+        );
         types.push_str("// Types\n");
-        types.push_str("// =============================================================================\n\n");
+        types.push_str(
+            "// =============================================================================\n\n",
+        );
 
         for (name, schema) in &components.schemas {
             if let ReferenceOr::Item(schema) = schema {
@@ -167,15 +171,15 @@ fn generate_typescript_client(
  */
 
 "#,
-        api_name,
-        spec.info.version
+        api_name, spec.info.version
     ));
 
     // Types
     client.push_str(&types);
 
     // Client configuration
-    client.push_str(r#"// =============================================================================
+    client.push_str(
+        r#"// =============================================================================
 // Client Configuration
 // =============================================================================
 
@@ -197,7 +201,8 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
-"#);
+"#,
+    );
 
     // Client class
     client.push_str(&format!(
@@ -294,9 +299,8 @@ export function create{}Client(config: ClientConfig): {}Client {{
 
     // Write the client file
     let client_path = Path::new(output_dir).join("client.ts");
-    fs::write(&client_path, client).map_err(|e| {
-        CliError::Command(format!("Failed to write TypeScript client: {}", e))
-    })?;
+    fs::write(&client_path, client)
+        .map_err(|e| CliError::Command(format!("Failed to write TypeScript client: {}", e)))?;
 
     println!(
         "  {} Created {}",
@@ -328,9 +332,8 @@ export * from './client';
     );
 
     let index_path = Path::new(output_dir).join("index.ts");
-    fs::write(&index_path, index).map_err(|e| {
-        CliError::Command(format!("Failed to write index.ts: {}", e))
-    })?;
+    fs::write(&index_path, index)
+        .map_err(|e| CliError::Command(format!("Failed to write index.ts: {}", e)))?;
 
     println!(
         "  {} Created {}",
@@ -358,7 +361,12 @@ fn generate_ts_type(name: &str, schema: &Schema) -> String {
                 let ts_type = boxed_schema_to_ts_type(prop_schema);
                 let optional = if required { "" } else { "?" };
 
-                output.push_str(&format!("  {}{}: {};\n", prop_name.to_lower_camel_case(), optional, ts_type));
+                output.push_str(&format!(
+                    "  {}{}: {};\n",
+                    prop_name.to_lower_camel_case(),
+                    optional,
+                    ts_type
+                ));
             }
 
             output.push_str("}\n");
@@ -379,7 +387,11 @@ fn generate_ts_type(name: &str, schema: &Schema) -> String {
         _ => {
             // Simple type alias
             let ts_type = schema_kind_to_ts_type(&schema.schema_kind);
-            output.push_str(&format!("export type {} = {};\n", name.to_pascal_case(), ts_type));
+            output.push_str(&format!(
+                "export type {} = {};\n",
+                name.to_pascal_case(),
+                ts_type
+            ));
         }
     }
 
@@ -402,13 +414,11 @@ fn schema_to_ts_type(schema: &ReferenceOr<Schema>) -> String {
 
 fn boxed_schema_to_ts_type(schema: &ReferenceOr<Box<Schema>>) -> String {
     match schema {
-        ReferenceOr::Reference { reference } => {
-            reference
-                .rsplit('/')
-                .next()
-                .map(|s| s.to_pascal_case())
-                .unwrap_or_else(|| "unknown".to_string())
-        }
+        ReferenceOr::Reference { reference } => reference
+            .rsplit('/')
+            .next()
+            .map(|s| s.to_pascal_case())
+            .unwrap_or_else(|| "unknown".to_string()),
         ReferenceOr::Item(schema) => schema_kind_to_ts_type(&schema.schema_kind),
     }
 }
@@ -499,9 +509,9 @@ fn parse_operation(method: &str, path: &str, op: &Operation) -> OperationInfo {
     // Get request body type
     let request_body = op.request_body.as_ref().and_then(|rb| {
         if let ReferenceOr::Item(body) = rb {
-            body.content.get("application/json").and_then(|mt| {
-                mt.schema.as_ref().map(|s| schema_to_ts_type(s))
-            })
+            body.content
+                .get("application/json")
+                .and_then(|mt| mt.schema.as_ref().map(|s| schema_to_ts_type(s)))
         } else {
             None
         }
@@ -512,12 +522,17 @@ fn parse_operation(method: &str, path: &str, op: &Operation) -> OperationInfo {
         .responses
         .responses
         .get(&openapiv3::StatusCode::Code(200))
-        .or_else(|| op.responses.responses.get(&openapiv3::StatusCode::Code(201)))
+        .or_else(|| {
+            op.responses
+                .responses
+                .get(&openapiv3::StatusCode::Code(201))
+        })
         .and_then(|r| {
             if let ReferenceOr::Item(response) = r {
-                response.content.get("application/json").and_then(|mt| {
-                    mt.schema.as_ref().map(|s| schema_to_ts_type(s))
-                })
+                response
+                    .content
+                    .get("application/json")
+                    .and_then(|mt| mt.schema.as_ref().map(|s| schema_to_ts_type(s)))
             } else {
                 None
             }
@@ -548,7 +563,12 @@ fn generate_ts_method(op: &OperationInfo) -> String {
 
     for param in &op.parameters {
         let optional = if param.required { "" } else { "?" };
-        params.push(format!("{}{}: {}", param.name.to_lower_camel_case(), optional, param.param_type));
+        params.push(format!(
+            "{}{}: {}",
+            param.name.to_lower_camel_case(),
+            optional,
+            param.param_type
+        ));
 
         if param.location == "path" {
             path_params.push(param.name.clone());
@@ -570,7 +590,10 @@ fn generate_ts_method(op: &OperationInfo) -> String {
     // Build the path with interpolation
     let mut path = op.path.clone();
     for param in &path_params {
-        path = path.replace(&format!("{{{}}}", param), &format!("${{{}}}", param.to_lower_camel_case()));
+        path = path.replace(
+            &format!("{{{}}}", param),
+            &format!("${{{}}}", param.to_lower_camel_case()),
+        );
     }
 
     // Build query object
@@ -579,7 +602,13 @@ fn generate_ts_method(op: &OperationInfo) -> String {
     } else {
         let entries: Vec<String> = query_params
             .iter()
-            .map(|p| format!("{}: String({})", p.to_lower_camel_case(), p.to_lower_camel_case()))
+            .map(|p| {
+                format!(
+                    "{}: String({})",
+                    p.to_lower_camel_case(),
+                    p.to_lower_camel_case()
+                )
+            })
             .collect();
         format!(", query: {{ {} }}", entries.join(", "))
     };
@@ -626,9 +655,8 @@ fn generate_rust_client(
     output_dir: &str,
     options: &ClientOptions,
 ) -> CliResult<()> {
-    fs::create_dir_all(output_dir).map_err(|e| {
-        CliError::Command(format!("Failed to create output directory: {}", e))
-    })?;
+    fs::create_dir_all(output_dir)
+        .map_err(|e| CliError::Command(format!("Failed to create output directory: {}", e)))?;
 
     let api_name = options
         .client_name
@@ -660,9 +688,8 @@ fn generate_rust_client(
     }
 
     let types_path = Path::new(output_dir).join("types.rs");
-    fs::write(&types_path, types).map_err(|e| {
-        CliError::Command(format!("Failed to write types.rs: {}", e))
-    })?;
+    fs::write(&types_path, types)
+        .map_err(|e| CliError::Command(format!("Failed to write types.rs: {}", e)))?;
 
     println!(
         "  {} Created {}",
@@ -771,14 +798,7 @@ impl {}Client {{
     }}
 
 "#,
-        api_name,
-        spec.info.version,
-        module_name,
-        api_name,
-        api_name,
-        api_name,
-        api_name,
-        api_name
+        api_name, spec.info.version, module_name, api_name, api_name, api_name, api_name, api_name
     ));
 
     // Generate methods
@@ -789,9 +809,8 @@ impl {}Client {{
     client.push_str("}\n");
 
     let client_path = Path::new(output_dir).join("client.rs");
-    fs::write(&client_path, &client).map_err(|e| {
-        CliError::Command(format!("Failed to write client.rs: {}", e))
-    })?;
+    fs::write(&client_path, &client)
+        .map_err(|e| CliError::Command(format!("Failed to write client.rs: {}", e)))?;
 
     println!(
         "  {} Created {}",
@@ -815,9 +834,8 @@ pub use types::*;
     );
 
     let lib_path = Path::new(output_dir).join("lib.rs");
-    fs::write(&lib_path, lib_rs).map_err(|e| {
-        CliError::Command(format!("Failed to write lib.rs: {}", e))
-    })?;
+    fs::write(&lib_path, lib_rs)
+        .map_err(|e| CliError::Command(format!("Failed to write lib.rs: {}", e)))?;
 
     // Generate Cargo.toml
     let cargo_toml = format!(
@@ -838,9 +856,8 @@ tokio = {{ version = "1", features = ["rt-multi-thread", "macros"] }}
     );
 
     let cargo_path = Path::new(output_dir).join("Cargo.toml");
-    fs::write(&cargo_path, cargo_toml).map_err(|e| {
-        CliError::Command(format!("Failed to write Cargo.toml: {}", e))
-    })?;
+    fs::write(&cargo_path, cargo_toml)
+        .map_err(|e| CliError::Command(format!("Failed to write Cargo.toml: {}", e)))?;
 
     println!(
         "  {} Created {}",
@@ -882,7 +899,11 @@ fn generate_rust_type(name: &str, schema: &Schema) -> String {
                 };
 
                 output.push_str(&serde_attr);
-                output.push_str(&format!("    pub {}: {},\n", prop_name.to_snake_case(), field_type));
+                output.push_str(&format!(
+                    "    pub {}: {},\n",
+                    prop_name.to_snake_case(),
+                    field_type
+                ));
             }
 
             output.push_str("}\n");
@@ -906,7 +927,11 @@ fn generate_rust_type(name: &str, schema: &Schema) -> String {
         _ => {
             // Type alias
             let rust_type = schema_kind_to_rust_type(&schema.schema_kind);
-            output.push_str(&format!("pub type {} = {};\n", name.to_pascal_case(), rust_type));
+            output.push_str(&format!(
+                "pub type {} = {};\n",
+                name.to_pascal_case(),
+                rust_type
+            ));
         }
     }
 
@@ -915,26 +940,22 @@ fn generate_rust_type(name: &str, schema: &Schema) -> String {
 
 fn schema_to_rust_type(schema: &ReferenceOr<Schema>) -> String {
     match schema {
-        ReferenceOr::Reference { reference } => {
-            reference
-                .rsplit('/')
-                .next()
-                .map(|s| s.to_pascal_case())
-                .unwrap_or_else(|| "serde_json::Value".to_string())
-        }
+        ReferenceOr::Reference { reference } => reference
+            .rsplit('/')
+            .next()
+            .map(|s| s.to_pascal_case())
+            .unwrap_or_else(|| "serde_json::Value".to_string()),
         ReferenceOr::Item(schema) => schema_kind_to_rust_type(&schema.schema_kind),
     }
 }
 
 fn boxed_schema_to_rust_type(schema: &ReferenceOr<Box<Schema>>) -> String {
     match schema {
-        ReferenceOr::Reference { reference } => {
-            reference
-                .rsplit('/')
-                .next()
-                .map(|s| s.to_pascal_case())
-                .unwrap_or_else(|| "serde_json::Value".to_string())
-        }
+        ReferenceOr::Reference { reference } => reference
+            .rsplit('/')
+            .next()
+            .map(|s| s.to_pascal_case())
+            .unwrap_or_else(|| "serde_json::Value".to_string()),
         ReferenceOr::Item(schema) => schema_kind_to_rust_type(&schema.schema_kind),
     }
 }
@@ -1019,9 +1040,9 @@ fn parse_rust_operation(method: &str, path: &str, op: &Operation) -> RustOperati
 
     let request_body = op.request_body.as_ref().and_then(|rb| {
         if let ReferenceOr::Item(body) = rb {
-            body.content.get("application/json").and_then(|mt| {
-                mt.schema.as_ref().map(|s| schema_to_rust_type(s))
-            })
+            body.content
+                .get("application/json")
+                .and_then(|mt| mt.schema.as_ref().map(|s| schema_to_rust_type(s)))
         } else {
             None
         }
@@ -1031,12 +1052,17 @@ fn parse_rust_operation(method: &str, path: &str, op: &Operation) -> RustOperati
         .responses
         .responses
         .get(&openapiv3::StatusCode::Code(200))
-        .or_else(|| op.responses.responses.get(&openapiv3::StatusCode::Code(201)))
+        .or_else(|| {
+            op.responses
+                .responses
+                .get(&openapiv3::StatusCode::Code(201))
+        })
         .and_then(|r| {
             if let ReferenceOr::Item(response) = r {
-                response.content.get("application/json").and_then(|mt| {
-                    mt.schema.as_ref().map(|s| schema_to_rust_type(s))
-                })
+                response
+                    .content
+                    .get("application/json")
+                    .and_then(|mt| mt.schema.as_ref().map(|s| schema_to_rust_type(s)))
             } else {
                 None
             }
@@ -1112,7 +1138,10 @@ fn generate_rust_method(op: &RustOperationInfo) -> String {
 
     // Add query params
     for (orig, snake) in &query_params {
-        request_build.push_str(&format!("\n            .query(&[(\"{}\", {})])", orig, snake));
+        request_build.push_str(&format!(
+            "\n            .query(&[(\"{}\", {})])",
+            orig, snake
+        ));
     }
 
     // Add body
@@ -1144,13 +1173,8 @@ fn generate_rust_method(op: &RustOperationInfo) -> String {
     }}
 
 "#,
-        method_name,
-        params_str,
-        op.response_type,
-        path_code,
-        request_build
+        method_name, params_str, op.response_type, path_code, request_build
     ));
 
     output
 }
-

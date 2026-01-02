@@ -4,7 +4,7 @@ use crate::error::{QueueError, QueueResult};
 use crate::job::{Job, JobData, JobId, JobPriority, JobState};
 use armature_log::{debug, info};
 use chrono::Utc;
-use redis::{AsyncCommands, Client, aio::ConnectionManager};
+use redis::{aio::ConnectionManager, AsyncCommands, Client};
 use std::time::Duration;
 
 /// Queue configuration.

@@ -54,10 +54,8 @@ impl EventFormatter for JsonFormatter {
     fn format_batch(&self, events: &[SiemEvent], config: &SiemConfig) -> SiemResult<String> {
         if config.provider == crate::SiemProvider::Splunk {
             // Splunk HEC accepts newline-delimited JSON
-            let formatted: SiemResult<Vec<String>> = events
-                .iter()
-                .map(|e| self.format(e, config))
-                .collect();
+            let formatted: SiemResult<Vec<String>> =
+                events.iter().map(|e| self.format(e, config)).collect();
             Ok(formatted?.join("\n"))
         } else {
             // Generic: JSON array

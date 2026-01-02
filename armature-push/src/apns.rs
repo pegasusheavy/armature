@@ -140,7 +140,7 @@ impl ApnsProvider {
 
     /// Create a new JWT token.
     fn create_token(&self) -> Result<String> {
-        use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
+        use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

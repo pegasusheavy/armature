@@ -76,10 +76,10 @@ use std::io;
 use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
-    EnvFilter,
     fmt::{self, format::FmtSpan},
     layer::SubscriberExt,
     util::SubscriberInitExt,
+    EnvFilter,
 };
 
 // Re-export tracing and tracing_appender for convenience

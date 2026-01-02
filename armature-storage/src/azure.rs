@@ -10,8 +10,8 @@ use std::time::Duration;
 use tracing::{debug, info};
 
 use crate::{
-    Result, Storage, StorageConfig, StorageError, StorageMetadata, UploadedFile,
-    calculate_checksum, generate_unique_key,
+    calculate_checksum, generate_unique_key, Result, Storage, StorageConfig, StorageError,
+    StorageMetadata, UploadedFile,
 };
 
 /// Azure Blob Storage configuration.

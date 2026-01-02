@@ -121,9 +121,10 @@ impl RhaiEngine {
 
         // Load and compile
         let source = self.loader.load(&full_path)?;
-        let ast = self.engine.compile(&source).map_err(|e| {
-            RhaiError::compilation(path, e.to_string())
-        })?;
+        let ast = self
+            .engine
+            .compile(&source)
+            .map_err(|e| RhaiError::compilation(path, e.to_string()))?;
 
         let script = Arc::new(CompiledScript::new(full_path.clone(), ast));
 
@@ -279,4 +280,3 @@ impl RhaiEngineBuilder {
         RhaiEngine::from_config(self.config)
     }
 }
-

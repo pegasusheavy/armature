@@ -450,9 +450,7 @@ mod tests {
 
     #[test]
     fn test_config_validation_empty_endpoint() {
-        let result = SiemConfig::builder()
-            .provider(SiemProvider::Splunk)
-            .build();
+        let result = SiemConfig::builder().provider(SiemProvider::Splunk).build();
 
         assert!(result.is_err());
     }

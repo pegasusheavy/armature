@@ -438,7 +438,10 @@ impl<K: Eq + Hash + Clone, V: Clone> LwwMap<K, V> {
 
     /// Get the number of entries
     pub fn len(&self) -> usize {
-        self.entries.iter().filter(|(_, r)| r.get().is_some()).count()
+        self.entries
+            .iter()
+            .filter(|(_, r)| r.get().is_some())
+            .count()
     }
 
     /// Check if the map is empty
@@ -565,4 +568,3 @@ mod tests {
         assert_eq!(map.get(&"age"), None);
     }
 }
-

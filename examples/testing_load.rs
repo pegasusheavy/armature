@@ -5,8 +5,8 @@
 //! Demonstrates performance testing and load generation.
 
 use armature_testing::load::*;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[tokio::main]

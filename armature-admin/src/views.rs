@@ -117,10 +117,7 @@ impl ListView {
             can_delete: model.can_delete,
             can_export: model.can_export,
             add_url: format!("/admin/{}/add", model.name),
-            search_placeholder: format!(
-                "Search {}...",
-                model.search_fields.join(", ")
-            ),
+            search_placeholder: format!("Search {}...", model.search_fields.join(", ")),
             has_search: !model.search_fields.is_empty(),
             has_filters: !model.list_filter.is_empty(),
         }
@@ -129,11 +126,7 @@ impl ListView {
     /// Set rows (from database query)
     pub fn with_rows(mut self, rows: Vec<TableRow>, total: usize) -> Self {
         self.rows = rows;
-        self.pagination = Pagination::new(
-            self.pagination.page,
-            self.pagination.per_page,
-            total,
-        );
+        self.pagination = Pagination::new(self.pagination.page, self.pagination.per_page, total);
         self
     }
 }
@@ -357,7 +350,9 @@ impl FormField {
             help_text: field.help_text.clone(),
             placeholder: field.placeholder.clone(),
             choices: field.choices.as_ref().map(|c| {
-                c.iter().map(|ch| (ch.value.clone(), ch.label.clone())).collect()
+                c.iter()
+                    .map(|ch| (ch.value.clone(), ch.label.clone()))
+                    .collect()
             }),
             errors: Vec::new(),
             attrs,
@@ -486,4 +481,3 @@ mod tests {
         assert_eq!(html_escape("a & b"), "a &amp; b");
     }
 }
-

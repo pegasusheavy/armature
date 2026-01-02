@@ -21,9 +21,9 @@
 //! - `armature completions` - Generate shell completions
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum};
-use clap_complete::{Shell, generate};
+use clap_complete::{generate, Shell};
 use colored::Colorize;
-use dialoguer::{Confirm, FuzzySelect, Input, MultiSelect, theme::ColorfulTheme};
+use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input, MultiSelect};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::io;
 use std::time::Duration;
@@ -1918,17 +1918,11 @@ async fn main() {
                 Ok(())
             }
 
-            GeneratorType::Job { name, job_type: _ } => {
-                generate::job(&name, false).await
-            }
+            GeneratorType::Job { name, job_type: _ } => generate::job(&name, false).await,
 
-            GeneratorType::Event { name } => {
-                generate::event_handler(&name, false).await
-            }
+            GeneratorType::Event { name } => generate::event_handler(&name, false).await,
 
-            GeneratorType::Dto { name, fields: _ } => {
-                generate::dto(&name).await
-            }
+            GeneratorType::Dto { name, fields: _ } => generate::dto(&name).await,
 
             GeneratorType::Scaffold { name, fields: _ } => {
                 // Generate all layers: entity, repository, dto, service, controller
@@ -1939,7 +1933,8 @@ async fn main() {
                     generate::dto(&name).await?;
                     generate::service(&name, false).await?;
                     generate::controller(&name, true, false).await
-                }.await
+                }
+                .await
             }
 
             GeneratorType::Repository { name, skip_tests } => {
@@ -1958,36 +1953,26 @@ async fn main() {
                 generate::interceptor(&name, skip_tests).await
             }
 
-            GeneratorType::Pipe { name, skip_tests } => {
-                generate::pipe(&name, skip_tests).await
-            }
+            GeneratorType::Pipe { name, skip_tests } => generate::pipe(&name, skip_tests).await,
 
             GeneratorType::ExceptionFilter { name, skip_tests } => {
                 generate::exception_filter(&name, skip_tests).await
             }
 
-            GeneratorType::Config { name } => {
-                generate::config(&name).await
-            }
+            GeneratorType::Config { name } => generate::config(&name).await,
 
-            GeneratorType::Entity { name, orm } => {
-                match orm.parse::<generate::OrmType>() {
-                    Ok(orm_type) => generate::entity_with_orm(&name, orm_type).await,
-                    Err(e) => Err(crate::error::CliError::InvalidArgument(e)),
-                }
-            }
+            GeneratorType::Entity { name, orm } => match orm.parse::<generate::OrmType>() {
+                Ok(orm_type) => generate::entity_with_orm(&name, orm_type).await,
+                Err(e) => Err(crate::error::CliError::InvalidArgument(e)),
+            },
 
-            GeneratorType::PraxSchema { name } => {
-                generate::prax_schema(&name).await
-            }
+            GeneratorType::PraxSchema { name } => generate::prax_schema(&name).await,
 
             GeneratorType::PraxRepository { name, skip_tests } => {
                 generate::prax_repository(&name, skip_tests).await
             }
 
-            GeneratorType::PraxModule { name } => {
-                generate::prax_module(&name).await
-            }
+            GeneratorType::PraxModule { name } => generate::prax_module(&name).await,
 
             GeneratorType::Scheduler { name, skip_tests } => {
                 generate::scheduler(&name, skip_tests).await
@@ -1997,13 +1982,9 @@ async fn main() {
                 generate::cache_service(&name, skip_tests).await
             }
 
-            GeneratorType::ApiClient { name } => {
-                generate::api_client(&name).await
-            }
+            GeneratorType::ApiClient { name } => generate::api_client(&name).await,
 
-            GeneratorType::Health => {
-                generate::health_controller().await
-            }
+            GeneratorType::Health => generate::health_controller().await,
         },
 
         Commands::Dev(args) => dev::run(args.port, &args.host, &args.cargo_args).await,

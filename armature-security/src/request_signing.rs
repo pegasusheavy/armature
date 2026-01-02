@@ -355,11 +355,9 @@ mod tests {
 
         let signature = signer.sign("POST", "/api/test", "test body", timestamp);
 
-        assert!(
-            verifier
-                .verify("POST", "/api/test", "test body", timestamp, &signature)
-                .unwrap()
-        );
+        assert!(verifier
+            .verify("POST", "/api/test", "test body", timestamp, &signature)
+            .unwrap());
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Fields, ItemStruct, LitStr, parse_macro_input};
+use syn::{parse_macro_input, Fields, ItemStruct, LitStr};
 
 use crate::route_validation::validate_controller_path;
 

@@ -46,4 +46,3 @@ impl From<serde_json::Error> for AdminError {
 
 /// Result type for admin operations
 pub type AdminResult<T> = Result<T, AdminError>;
-

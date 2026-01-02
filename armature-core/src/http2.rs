@@ -112,15 +112,15 @@ impl Http2Config {
     /// High-throughput configuration for bandwidth-intensive workloads
     pub fn high_throughput() -> Self {
         Self {
-            initial_connection_window_size: 1024 * 1024,     // 1MB
-            initial_stream_window_size: 512 * 1024,          // 512KB
+            initial_connection_window_size: 1024 * 1024, // 1MB
+            initial_stream_window_size: 512 * 1024,      // 512KB
             max_concurrent_streams: 250,
-            max_frame_size: 65536,                           // 64KB
+            max_frame_size: 65536, // 64KB
             max_header_list_size: 32768,
             enable_connect_protocol: false,
             keep_alive_interval: Some(Duration::from_secs(30)),
             keep_alive_timeout: Duration::from_secs(15),
-            max_send_buffer_size: 4 * 1024 * 1024,           // 4MB
+            max_send_buffer_size: 4 * 1024 * 1024, // 4MB
             adaptive_window: true,
         }
     }
@@ -136,7 +136,7 @@ impl Http2Config {
             enable_connect_protocol: false,
             keep_alive_interval: Some(Duration::from_secs(10)),
             keep_alive_timeout: Duration::from_secs(5),
-            max_send_buffer_size: 256 * 1024,                // 256KB
+            max_send_buffer_size: 256 * 1024, // 256KB
             adaptive_window: false,
         }
     }
@@ -152,7 +152,7 @@ impl Http2Config {
             enable_connect_protocol: false,
             keep_alive_interval: Some(Duration::from_secs(60)),
             keep_alive_timeout: Duration::from_secs(20),
-            max_send_buffer_size: 128 * 1024,                // 128KB
+            max_send_buffer_size: 128 * 1024, // 128KB
             adaptive_window: false,
         }
     }
@@ -385,8 +385,11 @@ impl Http2Builder {
 
     /// Configure a Hyper http2::Builder
     #[inline]
-    pub fn configure_hyper_builder(&self) -> hyper::server::conn::http2::Builder<hyper_util::rt::TokioExecutor> {
-        let mut builder = hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new());
+    pub fn configure_hyper_builder(
+        &self,
+    ) -> hyper::server::conn::http2::Builder<hyper_util::rt::TokioExecutor> {
+        let mut builder =
+            hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new());
 
         builder
             .initial_connection_window_size(self.config.initial_connection_window_size)
@@ -523,8 +526,10 @@ mod tests {
         let config = Http2Config::high_throughput();
         let builder = Http2Builder::with_config(config.clone());
 
-        assert_eq!(builder.config().max_concurrent_streams, config.max_concurrent_streams);
+        assert_eq!(
+            builder.config().max_concurrent_streams,
+            config.max_concurrent_streams
+        );
         assert_eq!(builder.stats().active_connections(), 0);
     }
 }
-

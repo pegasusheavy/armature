@@ -107,12 +107,12 @@ pub struct InsightConfig {
 impl Default for InsightConfig {
     fn default() -> Self {
         Self {
-            error_rate_warning: 1.0,    // 1% error rate
-            error_rate_critical: 5.0,   // 5% error rate
+            error_rate_warning: 1.0,  // 1% error rate
+            error_rate_critical: 5.0, // 5% error rate
             p99_latency_warning_ms: 500.0,
             p99_latency_critical_ms: 2000.0,
-            rate_limit_warning: 10.0,   // 10% of requests limited
-            rate_limit_critical: 25.0,  // 25% of requests limited
+            rate_limit_warning: 10.0,  // 10% of requests limited
+            rate_limit_critical: 25.0, // 25% of requests limited
             traffic_spike_multiplier: 3.0,
             min_requests: 100,
         }
@@ -197,8 +197,10 @@ impl InsightGenerator {
                     InsightType::HighErrorRate,
                     Severity::Warning,
                     "Elevated Error Rate",
-                    format!("Error rate is {:.2}%, above warning threshold of {:.2}%",
-                        error_rate, self.config.error_rate_warning),
+                    format!(
+                        "Error rate is {:.2}%, above warning threshold of {:.2}%",
+                        error_rate, self.config.error_rate_warning
+                    ),
                 )
                 .with_value(error_rate)
                 .with_threshold(self.config.error_rate_warning)
@@ -216,12 +218,16 @@ impl InsightGenerator {
                     InsightType::HighLatency,
                     Severity::Critical,
                     "Critical Latency",
-                    format!("P99 latency is {:.0}ms, above critical threshold of {:.0}ms",
-                        latency.p99_ms, self.config.p99_latency_critical_ms),
+                    format!(
+                        "P99 latency is {:.0}ms, above critical threshold of {:.0}ms",
+                        latency.p99_ms, self.config.p99_latency_critical_ms
+                    ),
                 )
                 .with_value(latency.p99_ms)
                 .with_threshold(self.config.p99_latency_critical_ms)
-                .with_recommendation("Check database queries, external service calls, and resource utilization."),
+                .with_recommendation(
+                    "Check database queries, external service calls, and resource utilization.",
+                ),
             )
         } else if latency.p99_ms >= self.config.p99_latency_warning_ms {
             Some(
@@ -229,8 +235,10 @@ impl InsightGenerator {
                     InsightType::HighLatency,
                     Severity::Warning,
                     "Elevated Latency",
-                    format!("P99 latency is {:.0}ms, above warning threshold of {:.0}ms",
-                        latency.p99_ms, self.config.p99_latency_warning_ms),
+                    format!(
+                        "P99 latency is {:.0}ms, above warning threshold of {:.0}ms",
+                        latency.p99_ms, self.config.p99_latency_warning_ms
+                    ),
                 )
                 .with_value(latency.p99_ms)
                 .with_threshold(self.config.p99_latency_warning_ms)
@@ -288,12 +296,18 @@ impl InsightGenerator {
                     InsightType::TrafficSpike,
                     Severity::Warning,
                     "Traffic Spike Detected",
-                    format!("Current RPS ({:.1}) is {:.1}x higher than baseline ({:.1})",
-                        current_rps, current_rps / baseline, baseline),
+                    format!(
+                        "Current RPS ({:.1}) is {:.1}x higher than baseline ({:.1})",
+                        current_rps,
+                        current_rps / baseline,
+                        baseline
+                    ),
                 )
                 .with_value(current_rps)
                 .with_threshold(baseline * self.config.traffic_spike_multiplier)
-                .with_recommendation("Investigate traffic source. Consider enabling auto-scaling if available."),
+                .with_recommendation(
+                    "Investigate traffic source. Consider enabling auto-scaling if available.",
+                ),
             )
         } else {
             None
@@ -316,13 +330,17 @@ impl InsightGenerator {
                         InsightType::SlowEndpoint,
                         Severity::Warning,
                         "Slow Endpoint",
-                        format!("{} {} has P99 latency of {:.0}ms",
-                            endpoint.method, endpoint.path, endpoint.p99_latency_ms),
+                        format!(
+                            "{} {} has P99 latency of {:.0}ms",
+                            endpoint.method, endpoint.path, endpoint.p99_latency_ms
+                        ),
                     )
                     .with_value(endpoint.p99_latency_ms)
                     .with_threshold(self.config.p99_latency_critical_ms)
                     .with_endpoint(format!("{} {}", endpoint.method, endpoint.path))
-                    .with_recommendation("Profile this specific endpoint for optimization opportunities."),
+                    .with_recommendation(
+                        "Profile this specific endpoint for optimization opportunities.",
+                    ),
                 );
             }
 
@@ -333,8 +351,10 @@ impl InsightGenerator {
                         InsightType::ErrorSpike,
                         Severity::Warning,
                         "High Error Rate Endpoint",
-                        format!("{} {} has error rate of {:.2}%",
-                            endpoint.method, endpoint.path, endpoint.error_rate),
+                        format!(
+                            "{} {} has error rate of {:.2}%",
+                            endpoint.method, endpoint.path, endpoint.error_rate
+                        ),
                     )
                     .with_value(endpoint.error_rate)
                     .with_threshold(self.config.error_rate_critical)
@@ -382,4 +402,3 @@ mod tests {
         assert_eq!(config.error_rate_critical, 5.0);
     }
 }
-
