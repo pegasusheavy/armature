@@ -2,7 +2,7 @@
 
 use crate::error::CacheResult;
 use crate::traits::CacheStore;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use std::time::Duration;
 
 /// Get a typed value from the cache.

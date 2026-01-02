@@ -291,4 +291,3 @@ mod tests {
         assert_eq!(stats.misses, 1);
     }
 }
-

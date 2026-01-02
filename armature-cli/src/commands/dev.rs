@@ -5,8 +5,8 @@ use notify::RecursiveMode;
 use notify_debouncer_mini::new_debouncer;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 use crate::error::{CliError, CliResult};

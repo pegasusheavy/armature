@@ -159,8 +159,8 @@ impl std::fmt::Display for CompressionAlgorithm {
 
 #[cfg(feature = "gzip")]
 fn compress_gzip(data: &[u8], level: u32) -> Result<Vec<u8>> {
-    use flate2::Compression;
     use flate2::write::GzEncoder;
+    use flate2::Compression;
 
     let mut encoder = GzEncoder::new(Vec::new(), Compression::new(level));
     encoder

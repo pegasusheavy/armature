@@ -4,9 +4,9 @@
 
 use crate::Error;
 use rustls::{
-    ServerConfig,
     crypto::ring::default_provider,
     pki_types::{CertificateDer, PrivateKeyDer},
+    ServerConfig,
 };
 use rustls_pemfile::{certs, private_key};
 use std::{fs::File, io::BufReader, path::Path, sync::Arc};
@@ -203,18 +203,14 @@ mod tests {
     #[cfg(feature = "self-signed-certs")]
     fn test_self_signed_cert() {
         let config = TlsConfig::self_signed(&["localhost", "127.0.0.1"]).unwrap();
-        assert!(
-            config
-                .server_config
-                .alpn_protocols
-                .contains(&b"h2".to_vec())
-        );
-        assert!(
-            config
-                .server_config
-                .alpn_protocols
-                .contains(&b"http/1.1".to_vec())
-        );
+        assert!(config
+            .server_config
+            .alpn_protocols
+            .contains(&b"h2".to_vec()));
+        assert!(config
+            .server_config
+            .alpn_protocols
+            .contains(&b"http/1.1".to_vec()));
     }
 
     #[test]

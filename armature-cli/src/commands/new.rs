@@ -7,7 +7,7 @@ use std::process::Command;
 use std::time::Duration;
 
 use crate::error::{CliError, CliResult};
-use crate::generators::{NameCases, ensure_dir, write_file};
+use crate::generators::{ensure_dir, write_file, NameCases};
 use crate::templates::{ProjectData, TemplateRegistry};
 
 /// Create a new Armature project.

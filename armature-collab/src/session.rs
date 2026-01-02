@@ -4,8 +4,7 @@
 //! user presence, and synchronization.
 
 use crate::{
-    CollabError, CollabResult, Document, PresenceManager, ReplicaId, UserPresence,
-    VectorClock,
+    CollabError, CollabResult, Document, PresenceManager, ReplicaId, UserPresence, VectorClock,
 };
 use chrono::{DateTime, Utc};
 use dashmap::DashMap;
@@ -222,9 +221,7 @@ impl CollabSession {
         drop(state);
 
         if self.clients.len() >= self.config.max_clients {
-            return Err(CollabError::PermissionDenied(
-                "Session is full".to_string(),
-            ));
+            return Err(CollabError::PermissionDenied("Session is full".to_string()));
         }
 
         let user_id = user_id.into();
@@ -504,4 +501,3 @@ mod tests {
         assert_eq!(manager.count(), 1);
     }
 }
-

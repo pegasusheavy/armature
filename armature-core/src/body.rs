@@ -26,7 +26,7 @@
 
 use bytes::Bytes;
 use http_body_util::Full;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use std::ops::Deref;
 
 // Re-export Bytes for convenience

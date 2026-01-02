@@ -6,8 +6,8 @@
 use crate::error::{RateLimitError, RateLimitResult};
 use crate::stores::RateLimitStore;
 use async_trait::async_trait;
-use redis::AsyncCommands;
 use redis::aio::ConnectionManager;
+use redis::AsyncCommands;
 use std::time::Duration;
 use tracing::{debug, trace};
 

@@ -54,8 +54,8 @@ impl AnalyticsMiddleware {
 
         let duration = start_time.elapsed();
 
-        let mut record = RequestRecord::new(method, path, status, duration)
-            .with_authenticated(authenticated);
+        let mut record =
+            RequestRecord::new(method, path, status, duration).with_authenticated(authenticated);
 
         if let Some(size) = response_size {
             record = record.with_response_size(size);
@@ -113,8 +113,9 @@ impl AnalyticsContext {
 
     /// Complete the request tracking
     pub fn complete(self, status: u16, response_size: Option<u64>) {
-        let record = RequestRecord::new(&self.method, &self.path, status, self.start_time.elapsed())
-            .with_response_size(response_size.unwrap_or(0));
+        let record =
+            RequestRecord::new(&self.method, &self.path, status, self.start_time.elapsed())
+                .with_response_size(response_size.unwrap_or(0));
 
         self.analytics.record_request(record);
     }
@@ -227,4 +228,3 @@ mod tests {
         assert!(ctx.elapsed().as_millis() >= 10);
     }
 }
-

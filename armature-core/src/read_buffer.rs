@@ -312,7 +312,11 @@ impl PayloadTracker {
     #[inline]
     pub fn min_size(&self) -> usize {
         let min = self.min_size.load(Ordering::Relaxed);
-        if min == usize::MAX { 0 } else { min }
+        if min == usize::MAX {
+            0
+        } else {
+            min
+        }
     }
 
     /// Get the maximum payload size.

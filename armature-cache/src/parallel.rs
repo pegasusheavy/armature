@@ -3,7 +3,7 @@
 use crate::error::{CacheError, CacheResult};
 use crate::traits::CacheStore;
 use futures::future::{join_all, try_join_all};
-use serde::{Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
 use std::time::Duration;
 

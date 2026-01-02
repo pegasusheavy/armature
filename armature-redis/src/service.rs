@@ -1,13 +1,13 @@
 //! Redis service for dependency injection.
 
-use redis::AsyncCommands;
 use redis::aio::MultiplexedConnection;
+use redis::AsyncCommands;
 use std::time::Duration;
 
 use crate::{
-    RedisConfig, RedisError, Result,
     pool::{RedisConnection, RedisPool, RedisPoolBuilder},
     pubsub::PubSub,
+    RedisConfig, RedisError, Result,
 };
 
 /// Redis service providing connection pool and convenience methods.

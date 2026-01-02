@@ -16,9 +16,7 @@ pub struct LeefFormatter;
 impl LeefFormatter {
     /// Escape special characters in LEEF header fields
     fn escape_header(s: &str) -> String {
-        s.replace('|', "\\|")
-            .replace('\n', " ")
-            .replace('\r', " ")
+        s.replace('|', "\\|").replace('\n', " ").replace('\r', " ")
     }
 
     /// Escape special characters in LEEF attribute values

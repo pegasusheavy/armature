@@ -264,4 +264,3 @@ mod tests {
         assert!(config.should_exclude("/internal"));
     }
 }
-

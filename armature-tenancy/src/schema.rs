@@ -15,8 +15,8 @@
 //!     .await?;
 //! ```
 
-use crate::TenantError;
 use crate::tenant::Tenant;
+use crate::TenantError;
 use async_trait::async_trait;
 
 /// PostgreSQL schema provider trait

@@ -72,10 +72,7 @@ impl SyslogFormatter {
             armature_sd.push(format!("durationMs=\"{}\"", dur));
         }
 
-        sd_parts.push(format!(
-            "[armature@32473 {}]",
-            armature_sd.join(" ")
-        ));
+        sd_parts.push(format!("[armature@32473 {}]", armature_sd.join(" ")));
 
         // Add custom metadata as additional structured data
         if !event.metadata.is_empty() {
@@ -92,10 +89,7 @@ impl SyslogFormatter {
                 .collect();
 
             if !meta_params.is_empty() {
-                sd_parts.push(format!(
-                    "[meta@32473 {}]",
-                    meta_params.join(" ")
-                ));
+                sd_parts.push(format!("[meta@32473 {}]", meta_params.join(" ")));
             }
         }
 
@@ -112,10 +106,7 @@ impl EventFormatter for SyslogFormatter {
         // RFC 5424 format:
         // <PRI>VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID STRUCTURED-DATA MSG
 
-        let pri = Self::calculate_pri(
-            config.syslog_facility,
-            event.severity.as_syslog_severity(),
-        );
+        let pri = Self::calculate_pri(config.syslog_facility, event.severity.as_syslog_severity());
         let version = 1;
         let timestamp = event.timestamp.to_rfc3339();
         let hostname = Self::get_hostname();

@@ -10,10 +10,7 @@
 
 use crate::{FileError, FileMetadata, FileResult, OutputFormat, Position};
 use bytes::Bytes;
-use image::{
-    imageops::FilterType, DynamicImage, GenericImageView, ImageFormat, ImageReader,
-    Rgba,
-};
+use image::{imageops::FilterType, DynamicImage, GenericImageView, ImageFormat, ImageReader, Rgba};
 use std::io::Cursor;
 
 /// Image resize filter quality
@@ -112,11 +109,7 @@ pub enum ImageOp {
 }
 
 /// Process an image with the given operation
-pub fn process_image(
-    data: &Bytes,
-    op: &ImageOp,
-    metadata: &mut FileMetadata,
-) -> FileResult<Bytes> {
+pub fn process_image(data: &Bytes, op: &ImageOp, metadata: &mut FileMetadata) -> FileResult<Bytes> {
     let mut img = load_image(data)?;
 
     img = apply_operation(img, op)?;
@@ -159,16 +152,27 @@ fn load_image(data: &Bytes) -> FileResult<DynamicImage> {
 /// Apply an operation to an image
 fn apply_operation(img: DynamicImage, op: &ImageOp) -> FileResult<DynamicImage> {
     match op {
-        ImageOp::Resize { width, height, filter } => {
-            Ok(img.resize_exact(*width, *height, filter.to_filter_type()))
-        }
-        ImageOp::ResizeFit { max_width, max_height, filter } => {
-            Ok(img.resize(*max_width, *max_height, filter.to_filter_type()))
-        }
-        ImageOp::ResizeFill { width, height, filter } => {
-            Ok(img.resize_to_fill(*width, *height, filter.to_filter_type()))
-        }
-        ImageOp::Crop { x, y, width, height } => {
+        ImageOp::Resize {
+            width,
+            height,
+            filter,
+        } => Ok(img.resize_exact(*width, *height, filter.to_filter_type())),
+        ImageOp::ResizeFit {
+            max_width,
+            max_height,
+            filter,
+        } => Ok(img.resize(*max_width, *max_height, filter.to_filter_type())),
+        ImageOp::ResizeFill {
+            width,
+            height,
+            filter,
+        } => Ok(img.resize_to_fill(*width, *height, filter.to_filter_type())),
+        ImageOp::Crop {
+            x,
+            y,
+            width,
+            height,
+        } => {
             let (img_width, img_height) = img.dimensions();
             if *x + *width > img_width || *y + *height > img_height {
                 return Err(FileError::InvalidDimensions {
@@ -209,12 +213,8 @@ fn apply_operation(img: DynamicImage, op: &ImageOp) -> FileResult<DynamicImage> 
         }
         ImageOp::FlipHorizontal => Ok(img.fliph()),
         ImageOp::FlipVertical => Ok(img.flipv()),
-        ImageOp::Brightness(value) => {
-            Ok(img.brighten(*value))
-        }
-        ImageOp::Contrast(value) => {
-            Ok(img.adjust_contrast(*value as f32))
-        }
+        ImageOp::Brightness(value) => Ok(img.brighten(*value)),
+        ImageOp::Contrast(value) => Ok(img.adjust_contrast(*value as f32)),
         ImageOp::Grayscale => Ok(img.grayscale()),
         ImageOp::Invert => {
             let mut img = img;
@@ -223,12 +223,17 @@ fn apply_operation(img: DynamicImage, op: &ImageOp) -> FileResult<DynamicImage> 
         }
         ImageOp::Blur(sigma) => Ok(img.blur(*sigma)),
         ImageOp::Sharpen => Ok(img.unsharpen(1.0, 1)),
-        ImageOp::TextWatermark { text, position, font_size, color } => {
-            apply_text_watermark(img, text, *position, *font_size, *color)
-        }
-        ImageOp::ImageWatermark { overlay, position, opacity } => {
-            apply_image_watermark(img, overlay, *position, *opacity)
-        }
+        ImageOp::TextWatermark {
+            text,
+            position,
+            font_size,
+            color,
+        } => apply_text_watermark(img, text, *position, *font_size, *color),
+        ImageOp::ImageWatermark {
+            overlay,
+            position,
+            opacity,
+        } => apply_image_watermark(img, overlay, *position, *opacity),
         ImageOp::AutoOrient | ImageOp::StripMetadata => {
             // These operations are handled during encoding
             Ok(img)
@@ -296,9 +301,12 @@ fn apply_image_watermark(
             let base_pixel = base.get_pixel_mut(x + dx, y + dy);
 
             let alpha = (overlay_pixel[3] as f32 / 255.0) * opacity;
-            base_pixel[0] = ((1.0 - alpha) * base_pixel[0] as f32 + alpha * overlay_pixel[0] as f32) as u8;
-            base_pixel[1] = ((1.0 - alpha) * base_pixel[1] as f32 + alpha * overlay_pixel[1] as f32) as u8;
-            base_pixel[2] = ((1.0 - alpha) * base_pixel[2] as f32 + alpha * overlay_pixel[2] as f32) as u8;
+            base_pixel[0] =
+                ((1.0 - alpha) * base_pixel[0] as f32 + alpha * overlay_pixel[0] as f32) as u8;
+            base_pixel[1] =
+                ((1.0 - alpha) * base_pixel[1] as f32 + alpha * overlay_pixel[1] as f32) as u8;
+            base_pixel[2] =
+                ((1.0 - alpha) * base_pixel[2] as f32 + alpha * overlay_pixel[2] as f32) as u8;
         }
     }
 
@@ -358,7 +366,9 @@ fn encode_image_format(img: &DynamicImage, format: OutputFormat) -> FileResult<B
         }
         OutputFormat::Avif { .. } => {
             // AVIF support depends on features
-            return Err(FileError::UnsupportedFormat("AVIF encoding not available".into()));
+            return Err(FileError::UnsupportedFormat(
+                "AVIF encoding not available".into(),
+            ));
         }
         _ => {
             return Err(FileError::UnsupportedFormat(format!("{:?}", format)));
@@ -407,4 +417,3 @@ mod tests {
         assert_eq!((x, y), (40, 40));
     }
 }
-

@@ -10,7 +10,7 @@
 //! These benchmarks simulate real-world database access patterns
 //! and help identify performance bottlenecks in database layers.
 
-use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::hint::black_box;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;

@@ -735,11 +735,9 @@ mod tests {
         assert!(result.is_ok());
         let response = result.unwrap();
         assert!(response.headers.contains_key("Access-Control-Allow-Origin"));
-        assert!(
-            response
-                .headers
-                .contains_key("Access-Control-Allow-Methods")
-        );
+        assert!(response
+            .headers
+            .contains_key("Access-Control-Allow-Methods"));
     }
 
     #[tokio::test]

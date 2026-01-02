@@ -198,9 +198,7 @@ fn test_provider_configs() {
     assert!(sentinel_config.endpoint.contains("opinsights.azure.com"));
 
     // Test Datadog config
-    let datadog_config = DatadogConfig::new("api-key")
-        .build()
-        .unwrap();
+    let datadog_config = DatadogConfig::new("api-key").build().unwrap();
     assert_eq!(datadog_config.provider, SiemProvider::Datadog);
     assert!(datadog_config.endpoint.contains("datadoghq.com"));
 }
@@ -208,9 +206,7 @@ fn test_provider_configs() {
 #[test]
 fn test_config_validation() {
     // Empty endpoint should fail
-    let result = SiemConfig::builder()
-        .provider(SiemProvider::Splunk)
-        .build();
+    let result = SiemConfig::builder().provider(SiemProvider::Splunk).build();
     assert!(result.is_err());
 
     // Wrong transport/endpoint combo should fail
@@ -241,9 +237,9 @@ fn test_severity_mappings() {
 
     // Syslog severity (0-7, lower is more severe)
     assert_eq!(SiemSeverity::Unknown.as_syslog_severity(), 6); // Info
-    assert_eq!(SiemSeverity::Low.as_syslog_severity(), 5);     // Notice
-    assert_eq!(SiemSeverity::Medium.as_syslog_severity(), 4);  // Warning
-    assert_eq!(SiemSeverity::High.as_syslog_severity(), 3);    // Error
+    assert_eq!(SiemSeverity::Low.as_syslog_severity(), 5); // Notice
+    assert_eq!(SiemSeverity::Medium.as_syslog_severity(), 4); // Warning
+    assert_eq!(SiemSeverity::High.as_syslog_severity(), 3); // Error
     assert_eq!(SiemSeverity::Critical.as_syslog_severity(), 2); // Critical
 }
 

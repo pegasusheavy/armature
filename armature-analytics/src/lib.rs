@@ -180,7 +180,12 @@ pub struct RequestRecord {
 
 impl RequestRecord {
     /// Create a new request record
-    pub fn new(method: impl Into<String>, path: impl Into<String>, status: u16, duration: Duration) -> Self {
+    pub fn new(
+        method: impl Into<String>,
+        path: impl Into<String>,
+        status: u16,
+        duration: Duration,
+    ) -> Self {
         Self {
             method: method.into(),
             path: path.into(),
@@ -576,4 +581,3 @@ mod tests {
         assert_eq!(snapshot.errors.total, 0);
     }
 }
-

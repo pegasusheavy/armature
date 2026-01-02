@@ -1,9 +1,9 @@
 //! Rate limiter configuration and builder
 
-use crate::RateLimiter;
 use crate::algorithms::Algorithm;
 use crate::error::{RateLimitError, RateLimitResult};
 use crate::stores::{MemoryStore, RateLimitStore, StoreType};
+use crate::RateLimiter;
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::debug;

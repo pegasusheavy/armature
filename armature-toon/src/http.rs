@@ -1,6 +1,6 @@
 //! HTTP integration for TOON responses.
 
-use crate::{TOON_CONTENT_TYPE, ToonError, to_string};
+use crate::{to_string, ToonError, TOON_CONTENT_TYPE};
 use armature_core::http::HttpResponse;
 use bytes::Bytes;
 use serde::Serialize;

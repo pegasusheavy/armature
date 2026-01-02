@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{
-    Attribute, FnArg, Ident, ImplItem, ImplItemFn, ItemImpl, LitStr, PatType, Type,
-    parse_macro_input,
+    parse_macro_input, Attribute, FnArg, Ident, ImplItem, ImplItemFn, ItemImpl, LitStr, PatType,
+    Type,
 };
 
 /// Information about a route extracted from method attributes

@@ -136,9 +136,9 @@ impl From<tungstenite::Message> for Message {
 impl From<Message> for tungstenite::Message {
     fn from(msg: Message) -> Self {
         match msg.message_type {
-            MessageType::Text => {
-                tungstenite::Message::Text(String::from_utf8_lossy(&msg.payload).into_owned().into())
-            }
+            MessageType::Text => tungstenite::Message::Text(
+                String::from_utf8_lossy(&msg.payload).into_owned().into(),
+            ),
             MessageType::Binary => tungstenite::Message::Binary(msg.payload.to_vec().into()),
             MessageType::Ping => tungstenite::Message::Ping(msg.payload.to_vec().into()),
             MessageType::Pong => tungstenite::Message::Pong(msg.payload.to_vec().into()),
@@ -146,4 +146,3 @@ impl From<Message> for tungstenite::Message {
         }
     }
 }
-

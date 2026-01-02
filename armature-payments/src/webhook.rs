@@ -243,7 +243,10 @@ pub struct PaymentMethodWebhookData {
 #[async_trait::async_trait]
 pub trait WebhookHandler: Send + Sync {
     /// Handle a webhook event
-    async fn handle(&self, event: &WebhookEvent) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
+    async fn handle(
+        &self,
+        event: &WebhookEvent,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>;
 }
 
 /// Webhook router for handling multiple event types
@@ -262,7 +265,11 @@ impl WebhookRouter {
     }
 
     /// Register a handler for an event type
-    pub fn on<H: WebhookHandler + 'static>(mut self, event_type: WebhookEventType, handler: H) -> Self {
+    pub fn on<H: WebhookHandler + 'static>(
+        mut self,
+        event_type: WebhookEventType,
+        handler: H,
+    ) -> Self {
         let key = format!("{:?}", event_type);
         self.handlers.insert(key, Box::new(handler));
         self
@@ -275,7 +282,10 @@ impl WebhookRouter {
     }
 
     /// Route an event to the appropriate handler
-    pub async fn route(&self, event: &WebhookEvent) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn route(
+        &self,
+        event: &WebhookEvent,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let key = format!("{:?}", event.event_type);
 
         if let Some(handler) = self.handlers.get(&key) {
@@ -323,4 +333,3 @@ mod tests {
         assert!(WebhookEventType::InvoicePaid.is_invoice_event());
     }
 }
-

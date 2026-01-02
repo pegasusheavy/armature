@@ -476,4 +476,3 @@ mod tests {
         assert_eq!(doc.get_text("content"), Some("Hello, World!".to_string()));
     }
 }
-

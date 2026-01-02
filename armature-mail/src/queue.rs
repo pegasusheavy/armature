@@ -804,7 +804,7 @@ impl MailerQueueExt for Mailer {
 #[allow(dead_code)]
 mod async_channel {
     use std::sync::Arc;
-    use tokio::sync::{Mutex, mpsc};
+    use tokio::sync::{mpsc, Mutex};
 
     pub struct Sender<T> {
         tx: mpsc::Sender<T>,

@@ -879,7 +879,7 @@ pub mod tracing_compat {
     /// Create a tracing subscriber that respects Armature config.
     pub fn subscriber() -> impl tracing::Subscriber {
         use tracing_subscriber::prelude::*;
-        use tracing_subscriber::{EnvFilter, fmt};
+        use tracing_subscriber::{fmt, EnvFilter};
 
         let config = config();
         let level = match config.level {

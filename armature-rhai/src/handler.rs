@@ -65,7 +65,8 @@ impl ScriptHandler {
         if result.is_string() {
             let text: String = result.cast();
             let mut resp = HttpResponse::new(200);
-            resp.headers.insert("content-type".to_string(), "text/plain".to_string());
+            resp.headers
+                .insert("content-type".to_string(), "text/plain".to_string());
             return Ok(resp.with_body(text.into_bytes()));
         }
 
@@ -205,10 +206,7 @@ impl ScriptMiddleware {
 pub type ScriptHandlerFn = Box<dyn Fn(HttpRequest) -> Result<HttpResponse> + Send + Sync>;
 
 /// Create a handler function from a script.
-pub fn script_handler(
-    engine: Arc<RhaiEngine>,
-    script_path: impl Into<PathBuf>,
-) -> ScriptHandlerFn {
+pub fn script_handler(engine: Arc<RhaiEngine>, script_path: impl Into<PathBuf>) -> ScriptHandlerFn {
     let handler = Arc::new(ScriptHandler::new(engine, script_path));
 
     Box::new(move |request| {

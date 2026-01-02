@@ -331,10 +331,13 @@ pub fn register_armature_api(engine: &mut Engine) {
 /// Register utility functions.
 fn register_utility_functions(engine: &mut Engine) {
     // JSON helpers
-    engine.register_fn("to_json", |data: Dynamic| -> Result<String, Box<EvalAltResult>> {
-        let value = dynamic_to_json(data)?;
-        serde_json::to_string(&value).map_err(|e| Box::new(EvalAltResult::from(e.to_string())))
-    });
+    engine.register_fn(
+        "to_json",
+        |data: Dynamic| -> Result<String, Box<EvalAltResult>> {
+            let value = dynamic_to_json(data)?;
+            serde_json::to_string(&value).map_err(|e| Box::new(EvalAltResult::from(e.to_string())))
+        },
+    );
 
     engine.register_fn(
         "to_json_pretty",

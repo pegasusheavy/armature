@@ -528,11 +528,9 @@ mod tests {
     #[test]
     fn test_uuid_constraint() {
         let constraint = UuidConstraint;
-        assert!(
-            constraint
-                .validate("550e8400-e29b-41d4-a716-446655440000")
-                .is_ok()
-        );
+        assert!(constraint
+            .validate("550e8400-e29b-41d4-a716-446655440000")
+            .is_ok());
         assert!(constraint.validate("not-a-uuid").is_err());
         assert!(constraint.validate("12345").is_err());
     }

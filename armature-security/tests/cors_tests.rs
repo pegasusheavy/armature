@@ -129,16 +129,12 @@ fn test_cors_preflight() {
     let response = cors.handle_preflight(&request).unwrap();
 
     assert_eq!(response.status, 204);
-    assert!(
-        response
-            .headers
-            .contains_key("Access-Control-Allow-Methods")
-    );
-    assert!(
-        response
-            .headers
-            .contains_key("Access-Control-Allow-Headers")
-    );
+    assert!(response
+        .headers
+        .contains_key("Access-Control-Allow-Methods"));
+    assert!(response
+        .headers
+        .contains_key("Access-Control-Allow-Headers"));
     assert_eq!(
         response.headers.get("Access-Control-Max-Age"),
         Some(&"3600".to_string())

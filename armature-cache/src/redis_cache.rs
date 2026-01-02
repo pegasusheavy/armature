@@ -5,7 +5,7 @@ use crate::error::{CacheError, CacheResult};
 use crate::traits::CacheStore;
 use armature_log::{debug, trace};
 use async_trait::async_trait;
-use redis::{AsyncCommands, Client, aio::ConnectionManager};
+use redis::{aio::ConnectionManager, AsyncCommands, Client};
 use std::time::Duration;
 
 /// Redis cache store.

@@ -17,4 +17,3 @@ pub use paypal::PayPalProvider;
 
 #[cfg(feature = "braintree")]
 pub use braintree::BraintreeProvider;
-

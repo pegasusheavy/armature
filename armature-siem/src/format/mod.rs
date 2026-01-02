@@ -29,10 +29,8 @@ pub trait EventFormatter: Send + Sync {
 
     /// Format multiple events (for batch sending)
     fn format_batch(&self, events: &[SiemEvent], config: &SiemConfig) -> SiemResult<String> {
-        let formatted: SiemResult<Vec<String>> = events
-            .iter()
-            .map(|e| self.format(e, config))
-            .collect();
+        let formatted: SiemResult<Vec<String>> =
+            events.iter().map(|e| self.format(e, config)).collect();
         Ok(formatted?.join("\n"))
     }
 

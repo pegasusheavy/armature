@@ -56,4 +56,3 @@ pub enum WebSocketError {
 
 /// Result type for WebSocket operations.
 pub type WebSocketResult<T> = Result<T, WebSocketError>;
-

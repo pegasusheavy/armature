@@ -17,8 +17,8 @@
 //! - Work-stealing tuning: +5-10% for mixed workloads
 
 use std::future::Future;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::runtime::{Builder, Runtime};
 use tokio::task::LocalSet;
@@ -376,7 +376,11 @@ impl HandlerMetrics {
         let spawned = self.spawned.load(Ordering::Relaxed) as f64;
         let inlined = self.inlined.load(Ordering::Relaxed) as f64;
         let total = spawned + inlined;
-        if total > 0.0 { spawned / total } else { 0.0 }
+        if total > 0.0 {
+            spawned / total
+        } else {
+            0.0
+        }
     }
 }
 
@@ -735,7 +739,11 @@ impl RuntimeStats {
     pub fn spawn_ratio(&self) -> f64 {
         let spawned = self.tasks_spawned() as f64;
         let total = spawned + self.tasks_inlined() as f64;
-        if total > 0.0 { spawned / total } else { 0.0 }
+        if total > 0.0 {
+            spawned / total
+        } else {
+            0.0
+        }
     }
 }
 

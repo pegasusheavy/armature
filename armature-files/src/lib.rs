@@ -226,17 +226,36 @@ pub enum Position {
 
 impl Position {
     /// Calculate pixel coordinates given container and element dimensions
-    pub fn calculate(&self, container_width: u32, container_height: u32, element_width: u32, element_height: u32, padding: u32) -> (u32, u32) {
+    pub fn calculate(
+        &self,
+        container_width: u32,
+        container_height: u32,
+        element_width: u32,
+        element_height: u32,
+        padding: u32,
+    ) -> (u32, u32) {
         match self {
             Self::TopLeft => (padding, padding),
             Self::TopCenter => ((container_width - element_width) / 2, padding),
             Self::TopRight => (container_width - element_width - padding, padding),
             Self::CenterLeft => (padding, (container_height - element_height) / 2),
-            Self::Center => ((container_width - element_width) / 2, (container_height - element_height) / 2),
-            Self::CenterRight => (container_width - element_width - padding, (container_height - element_height) / 2),
+            Self::Center => (
+                (container_width - element_width) / 2,
+                (container_height - element_height) / 2,
+            ),
+            Self::CenterRight => (
+                container_width - element_width - padding,
+                (container_height - element_height) / 2,
+            ),
             Self::BottomLeft => (padding, container_height - element_height - padding),
-            Self::BottomCenter => ((container_width - element_width) / 2, container_height - element_height - padding),
-            Self::BottomRight => (container_width - element_width - padding, container_height - element_height - padding),
+            Self::BottomCenter => (
+                (container_width - element_width) / 2,
+                container_height - element_height - padding,
+            ),
+            Self::BottomRight => (
+                container_width - element_width - padding,
+                container_height - element_height - padding,
+            ),
             Self::Custom(x, y) => (*x, *y),
         }
     }
@@ -305,4 +324,3 @@ mod tests {
         assert_eq!((x, y), (75, 75));
     }
 }
-

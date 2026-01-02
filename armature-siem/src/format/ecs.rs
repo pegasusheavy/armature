@@ -217,26 +217,28 @@ impl EcsFormatter {
 impl EventFormatter for EcsFormatter {
     fn format(&self, event: &SiemEvent, _config: &SiemConfig) -> SiemResult<String> {
         // Build source if any source fields are present
-        let source = if event.src_ip.is_some() || event.src_port.is_some() || event.src_host.is_some() {
-            Some(EcsSource {
-                ip: event.src_ip.as_deref(),
-                port: event.src_port,
-                domain: event.src_host.as_deref(),
-            })
-        } else {
-            None
-        };
+        let source =
+            if event.src_ip.is_some() || event.src_port.is_some() || event.src_host.is_some() {
+                Some(EcsSource {
+                    ip: event.src_ip.as_deref(),
+                    port: event.src_port,
+                    domain: event.src_host.as_deref(),
+                })
+            } else {
+                None
+            };
 
         // Build destination if any dest fields are present
-        let destination = if event.dst_ip.is_some() || event.dst_port.is_some() || event.dst_host.is_some() {
-            Some(EcsDestination {
-                ip: event.dst_ip.as_deref(),
-                port: event.dst_port,
-                domain: event.dst_host.as_deref(),
-            })
-        } else {
-            None
-        };
+        let destination =
+            if event.dst_ip.is_some() || event.dst_port.is_some() || event.dst_host.is_some() {
+                Some(EcsDestination {
+                    ip: event.dst_ip.as_deref(),
+                    port: event.dst_port,
+                    domain: event.dst_host.as_deref(),
+                })
+            } else {
+                None
+            };
 
         // Build user
         let user = if event.src_user.is_some() {
@@ -283,7 +285,10 @@ impl EventFormatter for EcsFormatter {
         });
 
         // Build file
-        let file = if event.file_path.is_some() || event.file_hash.is_some() || event.file_size.is_some() {
+        let file = if event.file_path.is_some()
+            || event.file_hash.is_some()
+            || event.file_size.is_some()
+        {
             Some(EcsFile {
                 path: event.file_path.as_deref(),
                 hash: event.file_hash.as_ref().map(|h| EcsFileHash {

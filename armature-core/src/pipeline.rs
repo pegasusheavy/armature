@@ -30,8 +30,8 @@
 //! - **With pipelining**: Multiple requests share RTT overhead
 //! - **Expected gain**: 2-5x throughput improvement on high-latency connections
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 /// Pipeline processing mode

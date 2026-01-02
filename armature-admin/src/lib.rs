@@ -321,4 +321,3 @@ mod tests {
         assert_eq!(SortOrder::Desc.toggle(), SortOrder::Asc);
     }
 }
-

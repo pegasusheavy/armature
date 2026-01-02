@@ -234,9 +234,9 @@ where
         let query = self
             .query
             .ok_or_else(|| FederationError::CompositionError("Query root is required".into()))?;
-        let mutation = self.mutation.ok_or_else(|| {
-            FederationError::CompositionError("Mutation root is required".into())
-        })?;
+        let mutation = self
+            .mutation
+            .ok_or_else(|| FederationError::CompositionError("Mutation root is required".into()))?;
         let subscription = self.subscription.ok_or_else(|| {
             FederationError::CompositionError("Subscription root is required".into())
         })?;
@@ -288,7 +288,8 @@ where
     pub fn sdl(&self) -> String {
         if self.federation_enabled {
             // Export SDL with federation directives
-            self.schema.sdl_with_options(SDLExportOptions::new().federation())
+            self.schema
+                .sdl_with_options(SDLExportOptions::new().federation())
         } else {
             self.schema.sdl()
         }
@@ -401,7 +402,9 @@ mod gateway {
         }
 
         /// Fetch SDL from all subgraphs
-        pub async fn fetch_subgraph_sdls(&self) -> Result<HashMap<String, String>, FederationError> {
+        pub async fn fetch_subgraph_sdls(
+            &self,
+        ) -> Result<HashMap<String, String>, FederationError> {
             let futures: Vec<_> = self
                 .subgraphs
                 .iter()
@@ -819,4 +822,3 @@ mod tests {
         assert!(result.has_hints());
     }
 }
-

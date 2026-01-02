@@ -547,7 +547,9 @@ mod tests {
     #[test]
     fn test_percentile_calculation() {
         let data = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
-        assert_eq!(percentile(&data, 50.0), 5.0);
+        // Using nearest-rank method: idx = round((pct/100) * (n-1))
+        // 50th percentile: round(0.5 * 9) = round(4.5) = 5 -> data[5] = 6.0
+        assert_eq!(percentile(&data, 50.0), 6.0);
         assert_eq!(percentile(&data, 90.0), 9.0);
         assert_eq!(percentile(&data, 100.0), 10.0);
     }
@@ -583,4 +585,3 @@ mod tests {
         assert_eq!(metrics.client_errors, 1);
     }
 }
-

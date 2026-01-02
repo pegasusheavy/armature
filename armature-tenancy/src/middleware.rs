@@ -112,8 +112,8 @@ pub fn get_tenant_name(request: &HttpRequest) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::TenantError;
     use crate::tenant::Tenant;
+    use crate::TenantError;
 
     struct MockResolver {
         tenant: Option<Tenant>,

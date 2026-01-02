@@ -1,6 +1,6 @@
 //! Dashboard views for admin
 
-use crate::{AdminInstance, StatCard, QuickAction};
+use crate::{AdminInstance, QuickAction, StatCard};
 use serde::{Deserialize, Serialize};
 
 /// Dashboard view data
@@ -36,16 +36,14 @@ impl DashboardView {
 
         Self {
             title: admin.config.title.clone(),
-            stats: vec![
-                StatCard {
-                    title: "Total Records".to_string(),
-                    value: "0".to_string(),
-                    change: None,
-                    icon: Some("database".to_string()),
-                    color: None,
-                    link: None,
-                },
-            ],
+            stats: vec![StatCard {
+                title: "Total Records".to_string(),
+                value: "0".to_string(),
+                change: None,
+                icon: Some("database".to_string()),
+                color: None,
+                link: None,
+            }],
             quick_actions: admin
                 .models()
                 .iter()
@@ -97,7 +95,11 @@ pub struct ActivityItem {
 
 impl ActivityItem {
     /// Create a new activity item
-    pub fn new(action: ActivityAction, model: impl Into<String>, record: impl Into<String>) -> Self {
+    pub fn new(
+        action: ActivityAction,
+        model: impl Into<String>,
+        record: impl Into<String>,
+    ) -> Self {
         Self {
             action,
             model: model.into(),
@@ -202,4 +204,3 @@ mod tests {
         assert_eq!(ActivityAction::Delete.icon(), "trash");
     }
 }
-

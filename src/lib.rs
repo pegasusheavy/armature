@@ -8,7 +8,7 @@ pub use armature_core::*;
 
 // Re-export procedural macros
 pub use armature_proc_macro::{
-    Body, Param, Query, controller, delete, get, injectable, module, patch, post, put, routes,
+    controller, delete, get, injectable, module, patch, post, put, routes, Body, Param, Query,
 };
 
 // Re-export optional crates
@@ -63,6 +63,25 @@ pub use armature_webhooks;
 // Prelude for common imports
 pub mod prelude {
     pub use crate::{
+        // Extractor helper macros
+        body,
+        controller,
+        delete,
+        // Extractors
+        extractors::{
+            Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
+            PathParams, Query, RawBody,
+        },
+        get,
+        header,
+        injectable,
+        module,
+        patch,
+        path,
+        post,
+        put,
+        query,
+        routes,
         Application,
         // Derive macros for extractors
         Body as BodyDerive,
@@ -90,24 +109,5 @@ pub mod prelude {
         // WebSocket types
         WebSocketMessage,
         WebSocketRoom,
-        // Extractor helper macros
-        body,
-        controller,
-        delete,
-        // Extractors
-        extractors::{
-            Body, ContentType, Form, FromRequest, FromRequestNamed, Header, Headers, Method, Path,
-            PathParams, Query, RawBody,
-        },
-        get,
-        header,
-        injectable,
-        module,
-        patch,
-        path,
-        post,
-        put,
-        query,
-        routes,
     };
 }

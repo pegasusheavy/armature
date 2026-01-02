@@ -118,8 +118,8 @@ impl Default for Http3Config {
         Self {
             max_concurrent_bidi_streams: 100,
             max_concurrent_uni_streams: 3,
-            initial_stream_receive_window: 1024 * 1024,           // 1MB
-            initial_connection_receive_window: 10 * 1024 * 1024,  // 10MB
+            initial_stream_receive_window: 1024 * 1024, // 1MB
+            initial_connection_receive_window: 10 * 1024 * 1024, // 10MB
             max_idle_timeout: Duration::from_secs(30),
             keep_alive_interval: Some(Duration::from_secs(15)),
             enable_0rtt: false,
@@ -142,12 +142,12 @@ impl Http3Config {
         Self {
             max_concurrent_bidi_streams: 250,
             max_concurrent_uni_streams: 10,
-            initial_stream_receive_window: 4 * 1024 * 1024,       // 4MB
-            initial_connection_receive_window: 50 * 1024 * 1024,  // 50MB
+            initial_stream_receive_window: 4 * 1024 * 1024, // 4MB
+            initial_connection_receive_window: 50 * 1024 * 1024, // 50MB
             max_idle_timeout: Duration::from_secs(60),
             keep_alive_interval: Some(Duration::from_secs(20)),
             enable_0rtt: true,
-            max_udp_payload_size: 1452,  // Larger for better throughput
+            max_udp_payload_size: 1452, // Larger for better throughput
             enable_datagram: false,
             qpack_max_table_capacity: 16384,
             qpack_blocked_streams: 32,
@@ -159,13 +159,13 @@ impl Http3Config {
         Self {
             max_concurrent_bidi_streams: 50,
             max_concurrent_uni_streams: 3,
-            initial_stream_receive_window: 256 * 1024,            // 256KB
-            initial_connection_receive_window: 2 * 1024 * 1024,   // 2MB
+            initial_stream_receive_window: 256 * 1024, // 256KB
+            initial_connection_receive_window: 2 * 1024 * 1024, // 2MB
             max_idle_timeout: Duration::from_secs(15),
             keep_alive_interval: Some(Duration::from_secs(5)),
-            enable_0rtt: true,  // Faster connection establishment
-            max_udp_payload_size: 1200,  // Smaller for faster delivery
-            enable_datagram: true,  // For real-time data
+            enable_0rtt: true,          // Faster connection establishment
+            max_udp_payload_size: 1200, // Smaller for faster delivery
+            enable_datagram: true,      // For real-time data
             qpack_max_table_capacity: 2048,
             qpack_blocked_streams: 8,
         }
@@ -177,12 +177,12 @@ impl Http3Config {
         Self {
             max_concurrent_bidi_streams: 64,
             max_concurrent_uni_streams: 3,
-            initial_stream_receive_window: 512 * 1024,            // 512KB
-            initial_connection_receive_window: 4 * 1024 * 1024,   // 4MB
-            max_idle_timeout: Duration::from_secs(120),  // Longer for mobile networks
+            initial_stream_receive_window: 512 * 1024, // 512KB
+            initial_connection_receive_window: 4 * 1024 * 1024, // 4MB
+            max_idle_timeout: Duration::from_secs(120), // Longer for mobile networks
             keep_alive_interval: Some(Duration::from_secs(30)),
             enable_0rtt: true,
-            max_udp_payload_size: 1200,  // Conservative for mobile networks
+            max_udp_payload_size: 1200, // Conservative for mobile networks
             enable_datagram: false,
             qpack_max_table_capacity: 4096,
             qpack_blocked_streams: 16,
@@ -454,9 +454,10 @@ mod server {
                 .max_concurrent_uni_streams(self.config.max_concurrent_uni_streams.into())
                 .initial_mtu(self.config.max_udp_payload_size)
                 .max_idle_timeout(Some(
-                    self.config.max_idle_timeout.try_into().unwrap_or(quinn::IdleTimeout::from(
-                        quinn::VarInt::from_u32(30_000),
-                    )),
+                    self.config
+                        .max_idle_timeout
+                        .try_into()
+                        .unwrap_or(quinn::IdleTimeout::from(quinn::VarInt::from_u32(30_000))),
                 ));
 
             if let Some(interval) = self.config.keep_alive_interval {
@@ -589,7 +590,10 @@ mod server {
         armature_req.body = body;
 
         // Route the request using the async router
-        let response = router.route(armature_req).await.unwrap_or_else(|_| HttpResponse::internal_server_error());
+        let response = router
+            .route(armature_req)
+            .await
+            .unwrap_or_else(|_| HttpResponse::internal_server_error());
 
         // Build HTTP/3 response
         let http_response: http::Response<()> = Response::builder()
@@ -772,4 +776,3 @@ mod tests {
         assert!(!header.contains("h3-29"));
     }
 }
-

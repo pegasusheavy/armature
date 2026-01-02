@@ -289,13 +289,13 @@ impl ModelDefinitionBuilder {
             }
         });
 
-        let verbose_name_singular = self.verbose_name_singular.unwrap_or_else(|| {
-            self.name.replace('_', " ")
-        });
+        let verbose_name_singular = self
+            .verbose_name_singular
+            .unwrap_or_else(|| self.name.replace('_', " "));
 
-        let table_name = self.table_name.unwrap_or_else(|| {
-            self.name.to_lowercase().replace(' ', "_")
-        });
+        let table_name = self
+            .table_name
+            .unwrap_or_else(|| self.name.to_lowercase().replace(' ', "_"));
 
         // If no list_display set, use all fields
         let list_display = if self.list_display.is_empty() {
@@ -399,7 +399,10 @@ impl Fieldset {
     }
 
     /// Named fieldset
-    pub fn named(name: impl Into<String>, fields: impl IntoIterator<Item = impl Into<String>>) -> Self {
+    pub fn named(
+        name: impl Into<String>,
+        fields: impl IntoIterator<Item = impl Into<String>>,
+    ) -> Self {
         Self {
             name: Some(name.into()),
             fields: fields.into_iter().map(Into::into).collect(),
@@ -599,4 +602,3 @@ mod tests {
         assert_eq!(asc.as_sql(), "name ASC");
     }
 }
-

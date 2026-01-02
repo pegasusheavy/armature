@@ -118,7 +118,8 @@ impl Theme {
             error_color: "#ef4444".to_string(),      // Red
             sidebar_width: "260px".to_string(),
             border_radius: "0.5rem".to_string(),
-            font_family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif".to_string(),
+            font_family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                .to_string(),
         }
     }
 
@@ -139,7 +140,8 @@ impl Theme {
             error_color: "#dc2626".to_string(),      // Red
             sidebar_width: "260px".to_string(),
             border_radius: "0.5rem".to_string(),
-            font_family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif".to_string(),
+            font_family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                .to_string(),
         }
     }
 
@@ -160,7 +162,9 @@ impl Theme {
             error_color: "#dc2626".to_string(),      // Red
             sidebar_width: "240px".to_string(),
             border_radius: "0.375rem".to_string(),
-            font_family: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif".to_string(),
+            font_family:
+                "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                    .to_string(),
         }
     }
 
@@ -240,4 +244,3 @@ mod tests {
         assert!(css.contains("--admin-bg:"));
     }
 }
-

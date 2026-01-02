@@ -7,7 +7,7 @@
 //!   cargo bench --bench json_benchmarks --features simd-json
 
 use armature_core::json;
-use criterion::{Criterion, Throughput, criterion_group, criterion_main};
+use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 use serde::{Deserialize, Serialize};
 use std::hint::black_box;
 

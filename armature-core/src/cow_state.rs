@@ -829,7 +829,11 @@ impl CowStats {
     pub fn cache_hit_ratio(&self) -> f64 {
         let hits = self.cache_hits() as f64;
         let total = hits + self.cache_misses() as f64;
-        if total > 0.0 { hits / total } else { 0.0 }
+        if total > 0.0 {
+            hits / total
+        } else {
+            0.0
+        }
     }
 
     /// Get read/write ratio.

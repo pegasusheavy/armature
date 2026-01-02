@@ -171,7 +171,12 @@ impl RgaText {
     pub fn len(&self) -> usize {
         self.sequence
             .iter()
-            .filter(|id| self.nodes.get(id).map(|n| n.value.is_some()).unwrap_or(false))
+            .filter(|id| {
+                self.nodes
+                    .get(id)
+                    .map(|n| n.value.is_some())
+                    .unwrap_or(false)
+            })
             .count()
     }
 
@@ -313,7 +318,11 @@ impl RgaText {
 
     /// Find the correct insert position for a new character
     fn find_insert_position(&self, after: CharId, new_id: CharId) -> usize {
-        let after_pos = self.sequence.iter().position(|&id| id == after).unwrap_or(0);
+        let after_pos = self
+            .sequence
+            .iter()
+            .position(|&id| id == after)
+            .unwrap_or(0);
 
         // Find the first position where we should insert (after all concurrent inserts at same position)
         let mut insert_pos = after_pos + 1;
@@ -403,7 +412,8 @@ impl TextCursor {
         let after = if offset == 0 {
             CharId::root()
         } else {
-            text.visible_id_at_position(offset - 1).unwrap_or(CharId::root())
+            text.visible_id_at_position(offset - 1)
+                .unwrap_or(CharId::root())
         };
 
         Self { after, offset }
@@ -416,7 +426,8 @@ impl TextCursor {
             self.after = if self.offset == 0 {
                 CharId::root()
             } else {
-                text.visible_id_at_position(self.offset - 1).unwrap_or(CharId::root())
+                text.visible_id_at_position(self.offset - 1)
+                    .unwrap_or(CharId::root())
             };
         }
     }
@@ -425,7 +436,9 @@ impl TextCursor {
     pub fn move_right(&mut self, text: &RgaText) {
         if self.offset < text.len() {
             self.offset += 1;
-            self.after = text.visible_id_at_position(self.offset - 1).unwrap_or(CharId::root());
+            self.after = text
+                .visible_id_at_position(self.offset - 1)
+                .unwrap_or(CharId::root());
         }
     }
 }
@@ -577,4 +590,3 @@ mod tests {
         assert!(!sel.is_collapsed());
     }
 }
-

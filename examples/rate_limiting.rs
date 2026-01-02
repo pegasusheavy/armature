@@ -7,8 +7,8 @@
 //! Run with: cargo run --example rate_limiting --features ratelimit
 
 use armature_ratelimit::{
-    Algorithm, KeyExtractor, RateLimitMiddleware, RateLimiter, extractor::RequestInfo,
-    middleware::RateLimitCheckResponse,
+    extractor::RequestInfo, middleware::RateLimitCheckResponse, Algorithm, KeyExtractor,
+    RateLimitMiddleware, RateLimiter,
 };
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;

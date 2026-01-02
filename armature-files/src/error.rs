@@ -59,4 +59,3 @@ impl From<::image::ImageError> for FileError {
 
 /// Result type for file operations
 pub type FileResult<T> = Result<T, FileError>;
-

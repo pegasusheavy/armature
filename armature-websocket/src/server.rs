@@ -186,7 +186,8 @@ impl<H: WebSocketHandler> WebSocketServer<H> {
 
                     // Handle ping/pong
                     if message.is_ping() {
-                        let pong_payload = handler.on_ping(&connection_id, message.as_bytes()).await;
+                        let pong_payload =
+                            handler.on_ping(&connection_id, message.as_bytes()).await;
                         let _ = connection.send(Message::pong(pong_payload));
                         continue;
                     }
@@ -224,4 +225,3 @@ impl<H: WebSocketHandler> WebSocketServer<H> {
         Ok(())
     }
 }
-

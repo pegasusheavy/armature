@@ -11,7 +11,7 @@ use crate::{
 use http_body_util::{BodyExt, Full};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
-use hyper::{Request, Response, body::Incoming as IncomingBody};
+use hyper::{body::Incoming as IncomingBody, Request, Response};
 use hyper_util::rt::TokioIo;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -708,10 +708,8 @@ impl Application {
         warn!("HTTP/2 cleartext (h2c) is not recommended for production. Use HTTPS.");
 
         let router = self.router.clone();
-        let h2_builder = Http2Builder::with_stats(
-            self.http2_config.clone(),
-            Arc::clone(&self.http2_stats),
-        );
+        let h2_builder =
+            Http2Builder::with_stats(self.http2_config.clone(), Arc::clone(&self.http2_stats));
         let h2_stats = Arc::clone(&self.http2_stats);
 
         loop {
@@ -784,10 +782,8 @@ impl Application {
             self.pipeline_config.clone(),
             Arc::clone(&self.pipeline_stats),
         );
-        let h2_builder = Http2Builder::with_stats(
-            self.http2_config.clone(),
-            Arc::clone(&self.http2_stats),
-        );
+        let h2_builder =
+            Http2Builder::with_stats(self.http2_config.clone(), Arc::clone(&self.http2_stats));
         let h1_stats = Arc::clone(&self.pipeline_stats);
         let h2_stats = Arc::clone(&self.http2_stats);
 

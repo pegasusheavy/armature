@@ -61,7 +61,9 @@ impl Currency {
     /// Get currency symbol
     pub fn symbol(&self) -> &'static str {
         match self {
-            Self::USD | Self::CAD | Self::AUD | Self::NZD | Self::SGD | Self::HKD | Self::MXN => "$",
+            Self::USD | Self::CAD | Self::AUD | Self::NZD | Self::SGD | Self::HKD | Self::MXN => {
+                "$"
+            }
             Self::EUR => "€",
             Self::GBP => "£",
             Self::JPY | Self::CNY => "¥",
@@ -146,7 +148,11 @@ impl Money {
     /// Create from decimal amount (e.g., 29.99)
     pub fn from_decimal(amount: Decimal, currency: Currency) -> Self {
         let multiplier = 10i64.pow(currency.decimals());
-        let amount = (amount * Decimal::from(multiplier)).round().to_string().parse().unwrap_or(0);
+        let amount = (amount * Decimal::from(multiplier))
+            .round()
+            .to_string()
+            .parse()
+            .unwrap_or(0);
         Self { amount, currency }
     }
 
@@ -187,7 +193,12 @@ impl Money {
     /// Format for display
     pub fn format(&self) -> String {
         let decimal = self.to_decimal();
-        format!("{}{:.prec$}", self.currency.symbol(), decimal, prec = self.currency.decimals() as usize)
+        format!(
+            "{}{:.prec$}",
+            self.currency.symbol(),
+            decimal,
+            prec = self.currency.decimals() as usize
+        )
     }
 
     /// Check if zero
@@ -284,7 +295,9 @@ impl Price {
 
     /// Is on sale
     pub fn is_on_sale(&self) -> bool {
-        self.compare_at.map(|c| c.amount > self.amount.amount).unwrap_or(false)
+        self.compare_at
+            .map(|c| c.amount > self.amount.amount)
+            .unwrap_or(false)
     }
 
     /// Get discount percentage
@@ -345,11 +358,9 @@ mod tests {
 
     #[test]
     fn test_price_discount() {
-        let price = Price::new(Money::usd(2000))
-            .with_compare_at(Money::usd(2500));
+        let price = Price::new(Money::usd(2000)).with_compare_at(Money::usd(2500));
 
         assert!(price.is_on_sale());
         assert!((price.discount_percent().unwrap() - 20.0).abs() < 0.01);
     }
 }
-

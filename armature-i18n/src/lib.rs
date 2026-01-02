@@ -59,12 +59,12 @@ mod plural;
 pub use bundle::FluentBundle;
 pub use error::I18nError;
 pub use format::{
-    CurrencyFormatter, DateFormatter, DateStyle, NumberFormatter, TimeStyle, format_currency,
-    format_date, format_number, format_percent,
+    format_currency, format_date, format_number, format_percent, CurrencyFormatter, DateFormatter,
+    DateStyle, NumberFormatter, TimeStyle,
 };
-pub use locale::{Locale, LocaleBuilder, negotiate_locale, parse_accept_language};
+pub use locale::{negotiate_locale, parse_accept_language, Locale, LocaleBuilder};
 pub use messages::{I18n, MessageBundle, Messages, TranslationSource};
-pub use plural::{PluralCategory, PluralRules, plural_category};
+pub use plural::{plural_category, PluralCategory, PluralRules};
 
 /// Result type for i18n operations
 pub type Result<T> = std::result::Result<T, I18nError>;
@@ -72,7 +72,7 @@ pub type Result<T> = std::result::Result<T, I18nError>;
 /// Prelude for common imports
 pub mod prelude {
     pub use crate::{
-        I18n, I18nError, Locale, LocaleBuilder, PluralCategory, Result, format_currency,
-        format_date, format_number, negotiate_locale, parse_accept_language, plural_category,
+        format_currency, format_date, format_number, negotiate_locale, parse_accept_language,
+        plural_category, I18n, I18nError, Locale, LocaleBuilder, PluralCategory, Result,
     };
 }

@@ -42,10 +42,7 @@ impl ModelRegistry {
             self.order.push(name.clone());
         }
 
-        self.groups
-            .entry(group)
-            .or_default()
-            .push(name);
+        self.groups.entry(group).or_default().push(name);
     }
 
     /// Get a model by name
@@ -70,12 +67,7 @@ impl ModelRegistry {
     pub fn group(&self, name: &str) -> Vec<&ModelDefinition> {
         self.groups
             .get(name)
-            .map(|names| {
-                names
-                    .iter()
-                    .filter_map(|n| self.models.get(n))
-                    .collect()
-            })
+            .map(|names| names.iter().filter_map(|n| self.models.get(n)).collect())
             .unwrap_or_default()
     }
 
@@ -217,13 +209,9 @@ mod tests {
     fn test_registry_groups() {
         let mut registry = ModelRegistry::new();
 
-        let user = ModelDefinition::builder("user")
-            .id_field()
-            .build();
+        let user = ModelDefinition::builder("user").id_field().build();
 
-        let role = ModelDefinition::builder("role")
-            .id_field()
-            .build();
+        let role = ModelDefinition::builder("role").id_field().build();
 
         registry.register_in_group("Auth", user);
         registry.register_in_group("Auth", role);
@@ -232,4 +220,3 @@ mod tests {
         assert_eq!(auth_models.len(), 2);
     }
 }
-

@@ -71,8 +71,8 @@ resolver = "2"
 
 [workspace.package]
 version = "0.1.1"
-edition = "2021"
-rust-version = "1.76"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"
 repository = "https://github.com/pegasusheavy/armature"
@@ -81,8 +81,8 @@ homepage = "https://pegasusheavy.github.io/armature"
 [package]
 name = "armature-framework"
 version = "0.2.1"
-edition = "2021"
-rust-version = "1.76"
+edition = "2024"
+rust-version = "1.85"
 autobenches = false  # Disable auto-discovery, use explicit [[bench]] only
 authors = ["Pegasus Heavy Industries LLC"]
 license = "Apache-2.0"

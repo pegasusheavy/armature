@@ -110,7 +110,11 @@ impl<P: PaymentProvider> PaymentProcessor<P> {
     }
 
     /// Update a customer
-    pub async fn update_customer(&self, id: &str, request: UpdateCustomerRequest) -> PaymentResult<Customer> {
+    pub async fn update_customer(
+        &self,
+        id: &str,
+        request: UpdateCustomerRequest,
+    ) -> PaymentResult<Customer> {
         self.provider.update_customer(id, request).await
     }
 
@@ -120,27 +124,47 @@ impl<P: PaymentProvider> PaymentProcessor<P> {
     }
 
     /// Create a payment method
-    pub async fn create_payment_method(&self, request: CreatePaymentMethodRequest) -> PaymentResult<PaymentMethod> {
+    pub async fn create_payment_method(
+        &self,
+        request: CreatePaymentMethodRequest,
+    ) -> PaymentResult<PaymentMethod> {
         self.provider.create_payment_method(request).await
     }
 
     /// Attach a payment method to a customer
-    pub async fn attach_payment_method(&self, method_id: &str, customer_id: &str) -> PaymentResult<PaymentMethod> {
-        self.provider.attach_payment_method(method_id, customer_id).await
+    pub async fn attach_payment_method(
+        &self,
+        method_id: &str,
+        customer_id: &str,
+    ) -> PaymentResult<PaymentMethod> {
+        self.provider
+            .attach_payment_method(method_id, customer_id)
+            .await
     }
 
     /// Create a subscription
-    pub async fn create_subscription(&self, request: CreateSubscriptionRequest) -> PaymentResult<Subscription> {
+    pub async fn create_subscription(
+        &self,
+        request: CreateSubscriptionRequest,
+    ) -> PaymentResult<Subscription> {
         self.provider.create_subscription(request).await
     }
 
     /// Cancel a subscription
-    pub async fn cancel_subscription(&self, id: &str, immediate: bool) -> PaymentResult<Subscription> {
+    pub async fn cancel_subscription(
+        &self,
+        id: &str,
+        immediate: bool,
+    ) -> PaymentResult<Subscription> {
         self.provider.cancel_subscription(id, immediate).await
     }
 
     /// Handle a webhook event
-    pub async fn handle_webhook(&self, payload: &[u8], signature: &str) -> PaymentResult<WebhookEvent> {
+    pub async fn handle_webhook(
+        &self,
+        payload: &[u8],
+        signature: &str,
+    ) -> PaymentResult<WebhookEvent> {
         self.provider.verify_webhook(payload, signature)?;
         self.provider.parse_webhook(payload)
     }
@@ -193,4 +217,3 @@ mod tests {
         assert_eq!(config.max_retries, 3);
     }
 }
-

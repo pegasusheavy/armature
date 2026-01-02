@@ -143,7 +143,7 @@ pub use management::{
     NoOpProvisioner, TenantFilter, TenantLimits, TenantManager, TenantPlan, TenantProvisioner,
     TenantStatus, TenantUsage, UpdateTenantRequest,
 };
-pub use middleware::{TenantMiddleware, get_tenant_id, get_tenant_name};
+pub use middleware::{get_tenant_id, get_tenant_name, TenantMiddleware};
 pub use resolver::{
     HeaderTenantResolver, JwtTenantResolver, PathTenantResolver, SubdomainTenantResolver,
     TenantError, TenantResolver, TenantStore,

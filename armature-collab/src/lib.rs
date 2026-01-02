@@ -300,4 +300,3 @@ mod tests {
         assert!(!vc2.happens_before(&vc1));
     }
 }
-
