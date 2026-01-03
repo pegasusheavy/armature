@@ -55,7 +55,7 @@ parking_lot = "0.12"
 tonic-reflection = { version = "0.13", optional = true }
 
 # Optional: Health checking
-tonic-health = { version = "0.13", optional = true }
+tonic-health = { version = "0.14", optional = true }
 
 [build-dependencies]
 tonic-build = "0.13"
