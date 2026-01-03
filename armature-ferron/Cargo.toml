@@ -21,7 +21,7 @@ tracing = "0.1"
 async-trait = "0.1"
 
 # Configuration generation
-kdl = "4.0"
+kdl = "6.5"
 
 # Process management
 nix = { version = "0.27", features = ["signal", "process"] }
