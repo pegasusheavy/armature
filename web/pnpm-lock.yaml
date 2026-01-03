@@ -39,8 +39,8 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0
       '@pegasusheavy/tailswatch':
-        specifier: ^1.1.0
-        version: 1.1.0(tailwindcss@4.1.18)
+        specifier: ^1.1.1
+        version: 1.1.1(tailwindcss@4.1.18)
       marked:
         specifier: ^17.0.1
         version: 17.0.1
@@ -1441,8 +1441,8 @@ packages:
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
 
-  '@pegasusheavy/tailswatch@1.1.0':
-    resolution: {integrity: sha512-9isqXI8xRfP+T5tvjOge4rrar6Ntcab1o26hr0g18pEF6y+U+M+m1dGkVhgsURFP74JRiXQTQYweBL5EayZNlQ==}
+  '@pegasusheavy/tailswatch@1.1.1':
+    resolution: {integrity: sha512-yUeyu+ylqglT/Mmu5Vmqq2jgIBb/HJXxMUt2GIV1Hko7euKIrrMxLznRzNjt0tmDobJq2gfgrKF31Cs2do56yQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       tailwindcss: ^4.0.0
@@ -5124,7 +5124,7 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.5.1
     optional: true
 
-  '@pegasusheavy/tailswatch@1.1.0(tailwindcss@4.1.18)':
+  '@pegasusheavy/tailswatch@1.1.1(tailwindcss@4.1.18)':
     dependencies:
       tailwindcss: 4.1.18
 
