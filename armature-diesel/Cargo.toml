@@ -37,7 +37,7 @@ async-trait = "0.1"
 futures-util = { version = "0.3", features = ["async-await-macro"] }
 
 # Error handling
-thiserror = "1.0"
+thiserror = "2.0"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
