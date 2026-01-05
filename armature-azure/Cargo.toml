@@ -19,7 +19,7 @@ futures = "0.3"
 
 # Azure SDK core
 azure_core = { version = "0.21", optional = true }
-azure_identity = { version = "0.21", optional = true }
+azure_identity = { version = "0.30", optional = true }
 
 # Azure services (all optional)
 azure_storage = { version = "0.21", optional = true }
