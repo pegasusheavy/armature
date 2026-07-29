@@ -12,7 +12,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder - Build with cargo-lambda
 # -----------------------------------------------------------------------------
-FROM rust:1.85-alpine AS builder
+FROM rust:1.94-alpine AS builder
 
 WORKDIR /app
 
@@ -25,12 +25,29 @@ RUN apk add --no-cache \
     curl \
     gcc
 
-# Install cargo-lambda
-RUN curl -sSL https://github.com/cargo-lambda/cargo-lambda/releases/latest/download/cargo-lambda-x86_64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin
+# Install cargo-lambda, pinned to a specific release (not "latest") to avoid
+# pulling an unvetted moving target on every future `docker build`.
+# TODO: update this pin periodically. Integrity is verified via the
+# CARGO_LAMBDA_SHA256 build-arg below when a checksum is supplied; look up
+# the current release's SHA256 on cargo-lambda's GitHub releases page and
+# pass it with `--build-arg CARGO_LAMBDA_SHA256=<hash>`.
+ARG CARGO_LAMBDA_VERSION=v1.8.3
+ARG CARGO_LAMBDA_SHA256=""
+RUN curl -sSL -o cargo-lambda.tar.gz "https://github.com/cargo-lambda/cargo-lambda/releases/download/${CARGO_LAMBDA_VERSION}/cargo-lambda-x86_64-unknown-linux-musl.tar.gz" \
+    && if [ -n "$CARGO_LAMBDA_SHA256" ]; then \
+         echo "${CARGO_LAMBDA_SHA256}  cargo-lambda.tar.gz" | sha256sum -c -; \
+       else \
+         echo "WARNING: CARGO_LAMBDA_SHA256 not set — skipping integrity check" >&2; \
+       fi \
+    && tar xz -C /usr/local/bin -f cargo-lambda.tar.gz \
+    && rm cargo-lambda.tar.gz
 
 # Copy dependency files first (for caching)
 COPY Cargo.toml Cargo.lock* ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
+# Intentionally allowed to fail: this dummy build only exists to cache
+# dependency compilation in a Docker layer; a failure here just means no
+# cache was warmed, not a real problem.
 RUN cargo lambda build --release --target x86_64-unknown-linux-musl || true
 
 # Copy source and build
@@ -41,6 +58,15 @@ RUN cargo lambda build --release --target x86_64-unknown-linux-musl
 # Stage 2: Runtime - AWS Lambda base image
 # -----------------------------------------------------------------------------
 FROM public.ecr.aws/lambda/provided:al2023 AS runtime
+
+# Note: no non-root USER is set here, unlike the Cloud Run Dockerfile.
+# The AWS Lambda "provided" base image's bootstrap/init process and Lambda
+# Runtime Interface Client are designed to run as root inside the managed
+# Lambda execution environment; switching to a non-root user is not a
+# supported/documented configuration for this base image and risks breaking
+# the runtime's ability to start. Isolation here is instead provided by
+# AWS Lambda's own Firecracker microVM sandboxing, not by an in-container
+# non-root user.
 
 # Copy the bootstrap binary
 COPY --from=builder /app/target/lambda/*/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
