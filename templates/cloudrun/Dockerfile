@@ -12,7 +12,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Chef - Prepare dependency recipe
 # -----------------------------------------------------------------------------
-FROM lukemathwalker/cargo-chef:latest-rust-1.85-alpine AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.94.1-alpine AS chef
 WORKDIR /app
 
 # -----------------------------------------------------------------------------
@@ -28,6 +28,10 @@ RUN cargo chef prepare --recipe-path recipe.json
 # -----------------------------------------------------------------------------
 FROM chef AS builder
 
+# Name of the compiled binary (your crate's [[bin]] name, usually the
+# package name). Override with: docker build --build-arg BIN_NAME=my-app
+ARG BIN_NAME=app
+
 # Install build dependencies
 RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconfig
 
@@ -38,17 +42,20 @@ RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path r
 # Build application
 COPY Cargo.toml Cargo.lock* ./
 COPY src ./src
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN cargo build --release --target x86_64-unknown-linux-musl --bin ${BIN_NAME}
 
 # -----------------------------------------------------------------------------
 # Stage 4: Runtime - Minimal Distroless image
 # -----------------------------------------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
+# Redeclare: ARGs do not cross FROM boundaries
+ARG BIN_NAME=app
+
 WORKDIR /app
 
 # Copy binary from builder
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/app /app/server
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /app/server
 
 # Cloud Run uses PORT env variable (default 8080)
 ENV PORT=8080
@@ -72,7 +79,9 @@ ENTRYPOINT ["/app/server"]
 # RUN apk add --no-cache ca-certificates curl \
 #     && adduser -D -u 65532 nonroot
 #
-# COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/app /app/server
+# ARG BIN_NAME=app
+#
+# COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /app/server
 #
 # RUN chown -R nonroot:nonroot /app
 #
@@ -90,8 +99,9 @@ ENTRYPOINT ["/app/server"]
 # =============================================================================
 # Deployment Instructions
 # =============================================================================
-# 1. Build the image:
-#    docker build -t gcr.io/PROJECT_ID/armature-app -f Dockerfile .
+# 1. Build the image (BIN_NAME defaults to "app"; set it to your crate's
+#    binary name if different):
+#    docker build --build-arg BIN_NAME=my-app -t gcr.io/PROJECT_ID/armature-app -f Dockerfile .
 #
 # 2. Push to Container Registry:
 #    docker push gcr.io/PROJECT_ID/armature-app
