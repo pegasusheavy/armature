@@ -29,6 +29,8 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-development}
       # The playground is opt-in (off unless GRAPHQL_PLAYGROUND=true).
       - GRAPHQL_PLAYGROUND=${GRAPHQL_PLAYGROUND:-false}
+      # Introspection and GET /graphql/schema are opt-in as well.
+      - GRAPHQL_INTROSPECTION=${GRAPHQL_INTROSPECTION:-false}
       - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@db:5432/graphql
       - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
     depends_on:

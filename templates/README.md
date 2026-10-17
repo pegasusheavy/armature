@@ -99,6 +99,7 @@ GraphQL API server. Perfect for:
 
 Features:
 - GraphQL Playground/GraphiQL (opt-in via `GRAPHQL_PLAYGROUND=true`)
+- Schema introspection and `GET /graphql/schema` (opt-in via `GRAPHQL_INTROSPECTION=true`)
 - Query, Mutation, Subscription support
 - Type-safe schema with async-graphql
 - Pagination patterns

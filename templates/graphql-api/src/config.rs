@@ -17,6 +17,11 @@ pub struct AppConfig {
     /// Gates the `/playground` controller: when `false` it returns 404
     /// instead of serving GraphiQL. Off unless `GRAPHQL_PLAYGROUND=true`.
     pub graphql_playground: bool,
+    /// Gates schema introspection: when `false` the schema is built with
+    /// `disable_introspection()` and `GET /graphql/schema` returns 404, so the
+    /// full SDL is not published to anonymous clients. Off unless
+    /// `GRAPHQL_INTROSPECTION=true`.
+    pub graphql_introspection: bool,
     /// Enforced via `SchemaBuilder::limit_depth` when the schema is built.
     pub graphql_depth_limit: usize,
     /// Enforced via `SchemaBuilder::limit_complexity` when the schema is built.
@@ -41,6 +46,9 @@ impl AppConfig {
                 .unwrap_or(3000),
             graphql_path: env::var("GRAPHQL_PATH").unwrap_or_else(|_| "/graphql".to_string()),
             graphql_playground: env::var("GRAPHQL_PLAYGROUND")
+                .map(|v| v.to_lowercase() == "true")
+                .unwrap_or(false),
+            graphql_introspection: env::var("GRAPHQL_INTROSPECTION")
                 .map(|v| v.to_lowercase() == "true")
                 .unwrap_or(false),
             graphql_depth_limit: env::var("GRAPHQL_DEPTH_LIMIT")
