@@ -35,14 +35,14 @@ Request extractors are included in `armature-core`, so they need no feature flag
 
 ```toml
 [dependencies]
-armature = { package = "armature-framework", version = "0.7" }
+armature = { package = "armature-framework", version = "0.8" }
 ```
 
 Or use directly:
 
 ```toml
 [dependencies]
-armature-core = "0.10"
+armature-core = "0.11"
 ```
 
 ## Extractor Types

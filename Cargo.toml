@@ -95,7 +95,7 @@ homepage = "https://quinnjr.github.io/armature"
 
 [package]
 name = "armature-framework"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
 rust-version = "1.94.1"
 autobenches = false  # Disable auto-discovery, use explicit [[bench]] only
@@ -108,15 +108,18 @@ documentation = "https://docs.rs/armature-framework"
 description = "A modern, type-safe HTTP framework for Rust inspired by Angular and NestJS. Features dependency injection, decorators, middleware, authentication (JWT/OAuth2/SAML), validation, OpenAPI/Swagger, caching, job queues, and observability."
 keywords = ["web", "framework", "http", "async", "nestjs"]
 categories = ["web-programming::http-server", "asynchronous", "network-programming"]
-exclude = [
-    ".git/",
-    ".github/",
-    ".gitignore",
-    ".cursor/",
-    "target/",
-    "web/",
-    "CONTRIBUTING.md",
-    "COVERAGE_STATUS.md",
+# Allowlist rather than exclude: the repository root also holds templates,
+# docker stacks, scripts, agent tooling and planning notes that have no business
+# in the published crate (an exclude list silently ships anything new).
+include = [
+    "src/**",
+    "examples/**",
+    "benches/*.rs",
+    "tests/**",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
 ]
 
 [package.metadata.docs.rs]
@@ -128,25 +131,25 @@ name = "armature"
 path = "src/lib.rs"
 
 [dependencies]
-armature-core = { path = "armature-core", version = "0.10" }
-armature-proc-macro = { path = "armature-proc-macro", version = "0.4" }
-armature-graphql = { path = "armature-graphql", version = "0.6", optional = true }
-armature-config = { path = "armature-config", version = "0.5", optional = true }
-armature-jwt = { path = "armature-jwt", version = "0.4", optional = true }
-armature-auth = { path = "armature-auth", version = "0.4", optional = true }
-armature-testing = { path = "armature-testing", version = "0.5", optional = true }
-armature-validation = { path = "armature-validation", version = "0.5", optional = true }
-armature-openapi = { path = "armature-openapi", version = "0.4", optional = true }
-armature-cache = { path = "armature-cache", version = "0.4", optional = true }
-armature-cron = { path = "armature-cron", version = "0.5", optional = true }
-armature-queue = { path = "armature-queue", version = "0.6", optional = true }
-armature-opentelemetry = { path = "armature-opentelemetry", version = "0.5", optional = true }
-armature-security = { path = "armature-security", version = "0.4", optional = true }
-armature-acme = { path = "armature-acme", version = "0.4", optional = true }
-armature-ratelimit = { path = "armature-ratelimit", version = "0.5", optional = true }
-armature-compression = { path = "armature-compression", version = "0.4", optional = true }
-armature-webhooks = { path = "armature-webhooks", version = "0.5", optional = true }
-armature-messaging = { path = "armature-messaging", version = "0.5", optional = true }
+armature-core = { path = "armature-core", version = "0.11" }
+armature-proc-macro = { path = "armature-proc-macro", version = "0.5" }
+armature-graphql = { path = "armature-graphql", version = "0.7", optional = true }
+armature-config = { path = "armature-config", version = "0.6", optional = true }
+armature-jwt = { path = "armature-jwt", version = "0.5", optional = true }
+armature-auth = { path = "armature-auth", version = "0.5", optional = true }
+armature-testing = { path = "armature-testing", version = "0.6", optional = true }
+armature-validation = { path = "armature-validation", version = "0.6", optional = true }
+armature-openapi = { path = "armature-openapi", version = "0.5", optional = true }
+armature-cache = { path = "armature-cache", version = "0.5", optional = true }
+armature-cron = { path = "armature-cron", version = "0.6", optional = true }
+armature-queue = { path = "armature-queue", version = "0.7", optional = true }
+armature-opentelemetry = { path = "armature-opentelemetry", version = "0.6", optional = true }
+armature-security = { path = "armature-security", version = "0.5", optional = true }
+armature-acme = { path = "armature-acme", version = "0.5", optional = true }
+armature-ratelimit = { path = "armature-ratelimit", version = "0.6", optional = true }
+armature-compression = { path = "armature-compression", version = "0.5", optional = true }
+armature-webhooks = { path = "armature-webhooks", version = "0.6", optional = true }
+armature-messaging = { path = "armature-messaging", version = "0.6", optional = true }
 
 # Re-export core functionality
 tokio = { version = "1.53", features = ["rt", "rt-multi-thread", "macros", "sync", "time", "net", "io-util", "fs", "signal"] }
@@ -245,7 +248,7 @@ criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
 regex = "1.13"
 # Needed by macro_utils_example: it exercises the declarative macros from
 # armature-macros and the proc macros from armature-macros-utils directly.
-armature-macros = { path = "armature-macros", version = "0.4" }
+armature-macros = { path = "armature-macros", version = "0.5" }
 armature-macros-utils = { path = "armature-macros-utils", version = "0.4" }
 cargo-husky = { version = "1.5", default-features = false, features = ["user-hooks"] }
 rand = "0.10"
@@ -300,7 +303,9 @@ inherits = "release"
 lto = "fat"
 codegen-units = 1
 opt-level = 3
-panic = "abort"  # Smaller binary, no unwinding
+# Unwinding is kept on purpose: a server must survive a panic in one request
+# task. With `panic = "abort"` any panic reachable from network input becomes
+# a whole-process crash (a one-request DoS).
 
 # Native CPU: enables target-cpu=native via build.rs
 # Best for benchmarks on the build machine
@@ -335,7 +340,7 @@ inherits = "release"
 lto = "fat"
 codegen-units = 1
 opt-level = 3
-panic = "abort"
+# Unwinding kept for the same reason as `release-fat` above.
 
 # Development with optimizations (faster iteration than release)
 [profile.dev-opt]
@@ -428,7 +433,9 @@ version = "2.5"
 
 [dev-dependencies.jsonwebtoken]
 version = "11.0"
-features = ["rust_crypto"]
+# aws-lc backend, matching armature-jwt: the `rust_crypto` backend pulls `rsa`
+# (RUSTSEC-2023-0071, Marvin timing side channel; no fixed release).
+features = ["aws_lc_rs"]
 
 [dev-dependencies.handlebars]
 version = "6.4"
