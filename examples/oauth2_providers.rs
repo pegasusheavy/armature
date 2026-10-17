@@ -7,6 +7,16 @@ use armature_auth::providers::{
     MicrosoftEntraConfig, MicrosoftEntraProvider, OktaConfig, OktaProvider,
 };
 
+/// Read a credential from the environment. Client secrets are never
+/// hardcoded; without the variable a visibly fake placeholder is used, which
+/// is enough to build authorization URLs but can never complete a login.
+fn env_or_placeholder(name: &str, placeholder: &str) -> String {
+    std::env::var(name).unwrap_or_else(|_| {
+        println!("   (set {name} to use real credentials)");
+        placeholder.to_string()
+    })
+}
+
 #[tokio::main]
 async fn main() {
     println!("🔐 Armature OAuth2 Providers Example");
@@ -16,8 +26,11 @@ async fn main() {
     println!("1. Google OAuth2 Provider");
     println!("   Configuration:");
     let google_config = GoogleConfig::new(
-        "your-client-id.apps.googleusercontent.com".to_string(),
-        "your-client-secret".to_string(),
+        env_or_placeholder(
+            "GOOGLE_CLIENT_ID",
+            "your-client-id.apps.googleusercontent.com",
+        ),
+        env_or_placeholder("GOOGLE_CLIENT_SECRET", "your-client-secret"),
         "http://localhost:3000/auth/google/callback".to_string(),
     );
 
@@ -30,7 +43,10 @@ async fn main() {
                     "   ✓ Auth URL: {}...",
                     &auth_url.as_str()[..80.min(auth_url.as_str().len())]
                 );
-                println!("   ✓ CSRF Token: {}", csrf_token.secret());
+                println!(
+                    "   ✓ State (store the PendingAuth server-side, keyed by this): {}",
+                    csrf_token.state()
+                );
             }
         }
         Err(e) => println!("   ✗ Error: {}", e),
@@ -41,8 +57,8 @@ async fn main() {
     println!("2. Microsoft Entra Provider");
     println!("   Configuration:");
     let microsoft_config = MicrosoftEntraConfig::common(
-        "your-application-id".to_string(),
-        "your-client-secret".to_string(),
+        env_or_placeholder("MICROSOFT_CLIENT_ID", "your-application-id"),
+        env_or_placeholder("MICROSOFT_CLIENT_SECRET", "your-client-secret"),
         "http://localhost:3000/auth/microsoft/callback".to_string(),
     );
 
@@ -70,10 +86,13 @@ async fn main() {
     println!("3. AWS Cognito Provider");
     println!("   Configuration:");
     let cognito_config = AwsCognitoConfig::new(
-        "your-client-id".to_string(),
-        "your-client-secret".to_string(),
+        env_or_placeholder("COGNITO_CLIENT_ID", "your-client-id"),
+        env_or_placeholder("COGNITO_CLIENT_SECRET", "your-client-secret"),
         "http://localhost:3000/auth/cognito/callback".to_string(),
-        "your-app.auth.us-east-1.amazoncognito.com".to_string(),
+        env_or_placeholder(
+            "COGNITO_DOMAIN",
+            "your-app.auth.us-east-1.amazoncognito.com",
+        ),
         "us-east-1".to_string(),
     );
 
@@ -96,8 +115,8 @@ async fn main() {
     println!("4. Okta Provider");
     println!("   Configuration:");
     let okta_config = OktaConfig::new(
-        "your-client-id".to_string(),
-        "your-client-secret".to_string(),
+        env_or_placeholder("OKTA_CLIENT_ID", "your-client-id"),
+        env_or_placeholder("OKTA_CLIENT_SECRET", "your-client-secret"),
         "http://localhost:3000/auth/okta/callback".to_string(),
         "dev-12345.okta.com".to_string(),
     );
@@ -121,10 +140,10 @@ async fn main() {
     println!("5. Auth0 Provider");
     println!("   Configuration:");
     let auth0_config = Auth0Config::new(
-        "your-client-id".to_string(),
-        "your-client-secret".to_string(),
+        env_or_placeholder("AUTH0_CLIENT_ID", "your-client-id"),
+        env_or_placeholder("AUTH0_CLIENT_SECRET", "your-client-secret"),
         "http://localhost:3000/auth/auth0/callback".to_string(),
-        "your-tenant.us.auth0.com".to_string(),
+        env_or_placeholder("AUTH0_DOMAIN", "your-tenant.us.auth0.com"),
     )
     .with_audience("https://api.example.com".to_string());
 

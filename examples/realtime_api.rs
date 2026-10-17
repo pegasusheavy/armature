@@ -35,7 +35,8 @@
 
 use armature::prelude::*;
 use armature_websocket::{
-    Message as WsMessage, RoomManager, WebSocketHandler, WebSocketServerBuilder,
+    HandshakeRejection, HandshakeRequest, Message as WsMessage, Principal, RoomManager,
+    WebSocketHandler, WebSocketServerBuilder,
 };
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
@@ -163,7 +164,7 @@ struct ChatWsHandler {
 
 #[async_trait]
 impl WebSocketHandler for ChatWsHandler {
-    async fn on_connect(&self, connection_id: &str) {
+    async fn on_connect(&self, connection_id: &str, _principal: &Principal) {
         let rooms = get_ws_room_manager();
         let _ = rooms.join_room(connection_id, LOBBY_ROOM);
         self.current_room
@@ -180,7 +181,7 @@ impl WebSocketHandler for ChatWsHandler {
         }
     }
 
-    async fn on_message(&self, connection_id: &str, message: WsMessage) {
+    async fn on_message(&self, connection_id: &str, _principal: &Principal, message: WsMessage) {
         let Some(text) = message.as_text() else {
             return;
         };
@@ -255,7 +256,7 @@ impl WebSocketHandler for ChatWsHandler {
         }
     }
 
-    async fn on_disconnect(&self, connection_id: &str) {
+    async fn on_disconnect(&self, connection_id: &str, _principal: &Principal) {
         self.current_room.write().await.remove(connection_id);
     }
 }
@@ -377,6 +378,56 @@ impl EventsController {
             .with_header("Content-Type".to_string(), "text/event-stream".to_string())
             .with_header("Cache-Control".to_string(), "no-cache".to_string())
             .with_body(event.to_string().into_bytes()))
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Upgrade authorization
+// ----------------------------------------------------------------------------
+
+/// Shared access token for the WebSocket server, from `CHAT_TOKEN` or — for
+/// this demo only — generated at random on first use and printed. A real
+/// application verifies a per-user session or JWT here instead.
+static CHAT_TOKEN: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
+fn chat_token() -> &'static str {
+    CHAT_TOKEN.get_or_init(|| {
+        std::env::var("CHAT_TOKEN").unwrap_or_else(|_| {
+            let bytes: [u8; 32] = rand::random();
+            let token: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+            println!("CHAT_TOKEN is not set; generated a random demo token: {token}");
+            token
+        })
+    })
+}
+
+/// Authorizes the WebSocket upgrade before the handshake completes. Browsers
+/// cannot set headers on a WebSocket, so the token is accepted from the
+/// `token` query parameter as well as from `Authorization: Bearer`.
+fn authorize_upgrade(req: &HandshakeRequest) -> Result<Principal, HandshakeRejection> {
+    let from_header = req
+        .headers()
+        .get("authorization")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.strip_prefix("Bearer "));
+    let from_query = req
+        .uri()
+        .query()
+        .and_then(|q| q.split('&').find_map(|pair| pair.strip_prefix("token=")));
+    let presented = from_header.or(from_query).unwrap_or("");
+
+    // Constant-time comparison: don't leak how much of the token matched.
+    let expected = chat_token().as_bytes();
+    let matches = presented.len() == expected.len()
+        && presented
+            .bytes()
+            .zip(expected)
+            .fold(0u8, |acc, (a, b)| acc | (a ^ b))
+            == 0;
+    if matches {
+        Ok(Principal::new("chat-client"))
+    } else {
+        Err(HandshakeRejection::unauthorized())
     }
 }
 
@@ -511,7 +562,12 @@ async fn main() {
     let ws_server = WebSocketServerBuilder::new()
         .bind("127.0.0.1:3001")
         .expect("invalid WebSocket bind address")
-        .build(ChatWsHandler::default());
+        // Only pages served by this app may connect from a browser
+        // (Cross-Site WebSocket Hijacking defence).
+        .allowed_origins(["http://localhost:3000", "http://127.0.0.1:3000"])
+        .authorizer(authorize_upgrade)
+        .build(ChatWsHandler::default())
+        .expect("valid WebSocket server configuration");
     if WS_ROOM_MANAGER
         .set(Arc::clone(ws_server.room_manager()))
         .is_err()
@@ -525,6 +581,7 @@ async fn main() {
         }
     });
 
+    let _ = chat_token();
     println!("HTTP server running at http://127.0.0.1:3000");
     println!("WebSocket server running at ws://127.0.0.1:3001");
     println!();
@@ -541,7 +598,7 @@ async fn main() {
     println!("  WebSocket (real, standalone server on its own port):");
     println!("    GET  /api/ws/info  - WebSocket connection details");
     println!("    GET  /api/ws/stats - Live lobby connection count");
-    println!("    WS   ws://127.0.0.1:3001 - connect and send:");
+    println!("    WS   ws://127.0.0.1:3001/?token=$CHAT_TOKEN - connect and send:");
     println!(r#"      {{"action":"join","room":"general","username":"Alice"}}"#);
     println!(r#"      {{"action":"message","content":"Hello!","username":"Alice"}}"#);
     println!();
