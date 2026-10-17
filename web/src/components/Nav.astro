@@ -27,19 +27,17 @@ function isActive(link: NavLink): boolean {
 
       <!-- Desktop Navigation - pushed to right -->
       <nav class="hidden md:flex items-center gap-1 ml-auto">
-        {
-          links.map((link) => (
-            <a
-              href={url(link.href)}
-              class:list={[
-                'text-stone-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors',
-                { 'text-rust-400': isActive(link) },
-              ]}
-            >
-              {link.label}
-            </a>
-          ))
-        }
+        {links.map((link) => (
+          <a
+            href={url(link.href)}
+            class:list={[
+              'text-stone-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors',
+              { 'text-rust-400': isActive(link) },
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
         <a
           href="https://github.com/quinnjr/armature"
           target="_blank"
@@ -75,19 +73,17 @@ function isActive(link: NavLink): boolean {
   <!-- Mobile menu -->
   <div id="mobile-menu" class="hidden md:hidden border-t border-stone-800 bg-stone-900">
     <div class="px-4 py-4 space-y-2">
-      {
-        links.map((link) => (
-          <a
-            href={url(link.href)}
-            class:list={[
-              'block px-4 py-3 rounded-lg text-base font-medium text-stone-300 hover:text-white hover:bg-stone-800 transition-colors',
-              { 'bg-rust-900/50 text-rust-400': isActive(link) },
-            ]}
-          >
-            {link.mobileLabel}
-          </a>
-        ))
-      }
+      {links.map((link) => (
+        <a
+          href={url(link.href)}
+          class:list={[
+            'block px-4 py-3 rounded-lg text-base font-medium text-stone-300 hover:text-white hover:bg-stone-800 transition-colors',
+            { 'bg-rust-900/50 text-rust-400': isActive(link) },
+          ]}
+        >
+          {link.mobileLabel}
+        </a>
+      ))}
       <div class="pt-2">
         <a
           href="https://github.com/quinnjr/armature"

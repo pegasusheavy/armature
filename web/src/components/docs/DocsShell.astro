@@ -18,22 +18,20 @@ const grouped = docsByCategory();
       <h2>📚 Documentation</h2>
 
       <nav>
-        {
-          [...grouped.entries()].map(([category, categoryDocs]) => (
-            <div class="doc-category">
-              <h3>{category}</h3>
-              <ul>
-                {categoryDocs.map((doc) => (
-                  <li>
-                    <a href={url(`/docs/${doc.id}`)} class:list={[{ active: doc.id === activeId }]}>
-                      {doc.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
-        }
+        {[...grouped.entries()].map(([category, categoryDocs]) => (
+          <div class="doc-category">
+            <h3>{category}</h3>
+            <ul>
+              {categoryDocs.map((doc) => (
+                <li>
+                  <a href={url(`/docs/${doc.id}`)} class:list={[{ active: doc.id === activeId }]}>
+                    {doc.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
     </div>
   </aside>

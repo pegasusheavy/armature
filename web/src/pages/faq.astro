@@ -30,19 +30,17 @@ const schema = faqSchema(faqs);
       </p>
 
       <div class="space-y-6">
-        {
-          faqs.map((faq) => (
-            <details class="bg-stone-900 border border-stone-800 p-6 rounded-lg cursor-pointer group">
-              <summary class="font-bold text-lg text-white list-none flex justify-between items-center">
-                <h2 class="text-lg font-bold inline">{faq.question}</h2>
-                <span class="text-rust-500 group-open:rotate-180 transition-transform">
-                  <Icon icon={faChevronDown} />
-                </span>
-              </summary>
-              <p class="mt-4 text-stone-400">{faq.answer}</p>
-            </details>
-          ))
-        }
+        {faqs.map((faq) => (
+          <details class="bg-stone-900 border border-stone-800 p-6 rounded-lg cursor-pointer group">
+            <summary class="font-bold text-lg text-white list-none flex justify-between items-center">
+              <h2 class="text-lg font-bold inline">{faq.question}</h2>
+              <span class="text-rust-500 group-open:rotate-180 transition-transform">
+                <Icon icon={faChevronDown} />
+              </span>
+            </summary>
+            <p class="mt-4 text-stone-400">{faq.answer}</p>
+          </details>
+        ))}
       </div>
     </div>
   </section>

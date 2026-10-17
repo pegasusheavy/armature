@@ -5,7 +5,9 @@ import { url } from '../../lib/url';
 <article class="doc-page">
   <header class="doc-header">
     <div class="doc-badge">Performance</div>
-    <h1><span class="doc-icon">🔬</span> CPU Profiling</h1>
+    <h1>
+      <span class="doc-icon">🔬</span> CPU Profiling
+    </h1>
     <p class="doc-subtitle">
       Profile your Armature application to identify performance bottlenecks and generate interactive flamegraphs.
     </p>
@@ -39,11 +41,21 @@ import { url } from '../../lib/url';
   <nav class="doc-toc">
     <h2>Contents</h2>
     <ul>
-      <li><a href="#overview">Overview</a></li>
-      <li><a href="#quick-start">Quick Start</a></li>
-      <li><a href="#setup">Adding Profiling</a></li>
-      <li><a href="#reading">Reading Flamegraphs</a></li>
-      <li><a href="#tips">Optimization Tips</a></li>
+      <li>
+        <a href="#overview">Overview</a>
+      </li>
+      <li>
+        <a href="#quick-start">Quick Start</a>
+      </li>
+      <li>
+        <a href="#setup">Adding Profiling</a>
+      </li>
+      <li>
+        <a href="#reading">Reading Flamegraphs</a>
+      </li>
+      <li>
+        <a href="#tips">Optimization Tips</a>
+      </li>
     </ul>
   </nav>
 
@@ -53,7 +65,9 @@ import { url } from '../../lib/url';
       CPU profiling helps you understand where your application spends time. Armature includes built-in profiling
       support using <code>pprof</code> that generates interactive flamegraphs.
     </p>
-    <p>A <strong>flamegraph</strong> is a visualization where:</p>
+    <p>
+      A <strong>flamegraph</strong> is a visualization where:
+    </p>
     <ul>
       <li>Each box represents a function in the call stack</li>
       <li>The width of a box shows how much CPU time was spent in that function</li>
@@ -79,7 +93,9 @@ done
 
   <section id="setup" class="doc-section">
     <h2>Adding Profiling to Your App</h2>
-    <p>Add the profiling dependencies to your <code>Cargo.toml</code>:</p>
+    <p>
+      Add the profiling dependencies to your <code>Cargo.toml</code>:
+    </p>
     <pre><code class="language-toml">[dev-dependencies]
 pprof = &#123; version = "0.14", features = ["flamegraph", "criterion", "prost-codec"] &#125;
 ctrlc = "3.4"
@@ -94,16 +110,30 @@ debug = true</code></pre>
     <h2>Reading Flamegraphs</h2>
     <p>Understanding the flamegraph output:</p>
     <ul>
-      <li><strong>X-axis:</strong> Stack frames sorted alphabetically (not time order)</li>
-      <li><strong>Y-axis:</strong> Stack depth (callers below, callees above)</li>
-      <li><strong>Width:</strong> Percentage of total CPU time</li>
-      <li><strong>Color:</strong> Random (for visual distinction)</li>
+      <li>
+        <strong>X-axis:</strong> Stack frames sorted alphabetically (not time order)
+      </li>
+      <li>
+        <strong>Y-axis:</strong> Stack depth (callers below, callees above)
+      </li>
+      <li>
+        <strong>Width:</strong> Percentage of total CPU time
+      </li>
+      <li>
+        <strong>Color:</strong> Random (for visual distinction)
+      </li>
     </ul>
     <p>Look for:</p>
     <ul>
-      <li><strong>Wide plateaus</strong> — Functions using lots of CPU</li>
-      <li><strong>Deep stacks</strong> — Complex call chains</li>
-      <li><strong>Your code</strong> — Search for your module names</li>
+      <li>
+        <strong>Wide plateaus</strong> — Functions using lots of CPU
+      </li>
+      <li>
+        <strong>Deep stacks</strong> — Complex call chains
+      </li>
+      <li>
+        <strong>Your code</strong> — Search for your module names
+      </li>
     </ul>
   </section>
 
@@ -118,20 +148,36 @@ debug = true</code></pre>
       </thead>
       <tbody>
         <tr>
-          <td><code>serde_json</code></td>
-          <td>Use <code>simd-json</code> or <code>sonic-rs</code> for faster JSON</td>
+          <td>
+            <code>serde_json</code>
+          </td>
+          <td>
+            Use <code>simd-json</code> or <code>sonic-rs</code> for faster JSON
+          </td>
         </tr>
         <tr>
-          <td><code>String::clone</code></td>
-          <td>Use <code>&str</code> or <code>Arc&lt;str&gt;</code> to avoid cloning</td>
+          <td>
+            <code>String::clone</code>
+          </td>
+          <td>
+            Use <code>&str</code> or <code>Arc&lt;str&gt;</code> to avoid cloning
+          </td>
         </tr>
         <tr>
-          <td><code>Vec::push</code></td>
-          <td>Pre-allocate with <code>Vec::with_capacity</code></td>
+          <td>
+            <code>Vec::push</code>
+          </td>
+          <td>
+            Pre-allocate with <code>Vec::with_capacity</code>
+          </td>
         </tr>
         <tr>
-          <td><code>HashMap</code></td>
-          <td>Use <code>hashbrown</code> or <code>indexmap</code></td>
+          <td>
+            <code>HashMap</code>
+          </td>
+          <td>
+            Use <code>hashbrown</code> or <code>indexmap</code>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -140,11 +186,21 @@ debug = true</code></pre>
   <section class="doc-best-practices">
     <h2>Best Practices</h2>
     <ul>
-      <li><strong>Profile in release mode</strong> — Debug builds are not representative</li>
-      <li><strong>Enable debug symbols</strong> — Use <code>[profile.profiling]</code> for readable stack traces</li>
-      <li><strong>Generate realistic load</strong> — Use production-like request patterns</li>
-      <li><strong>Profile for adequate duration</strong> — At least 30 seconds for stable results</li>
-      <li><strong>Compare before/after</strong> — Save flamegraphs to track improvements</li>
+      <li>
+        <strong>Profile in release mode</strong> — Debug builds are not representative
+      </li>
+      <li>
+        <strong>Enable debug symbols</strong> — Use <code>[profile.profiling]</code> for readable stack traces
+      </li>
+      <li>
+        <strong>Generate realistic load</strong> — Use production-like request patterns
+      </li>
+      <li>
+        <strong>Profile for adequate duration</strong> — At least 30 seconds for stable results
+      </li>
+      <li>
+        <strong>Compare before/after</strong> — Save flamegraphs to track improvements
+      </li>
     </ul>
   </section>
 

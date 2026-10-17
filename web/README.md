@@ -1,6 +1,6 @@
 # Armature Framework - Web Documentation
 
-This is the official documentation website for the Armature Framework, built with Astro 5 and Tailwind CSS 4+.
+This is the official documentation website for the Armature Framework, built with Astro 7 and Tailwind CSS 4+.
 
 ## About Armature
 
