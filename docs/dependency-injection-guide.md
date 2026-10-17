@@ -263,6 +263,32 @@ impl HttpModule {
 }
 ```
 
+Security defaults of `armature-http-client`:
+
+- Redirects are **not** followed unless you call `.follow_redirects(true)`; even then an
+  https→http downgrade is always refused, and a cross-origin hop is refused unless you
+  also call `.allow_cross_origin_redirects(true)`.
+- With `base_url`, request paths are appended to the base path, and paths carrying a
+  scheme or authority (`https://other/`, `//169.254.169.254/`) or `..` segments that
+  climb out of it are rejected.
+- Response bodies are capped on their decoded size (`max_response_size`, 10 MiB by
+  default), so a decompression bomb fails with `HttpClientError::ResponseTooLarge`.
+
+When the client calls URLs that users can influence (callbacks, webhooks, link previews),
+add the SSRF guard. It allows only https and public addresses, and vets every DNS answer
+at connect time:
+
+```rust
+use armature_http_client::{EgressPolicy, HttpClient, HttpClientConfig};
+
+let client = HttpClient::new(
+    HttpClientConfig::builder()
+        .egress_policy(EgressPolicy::strict())
+        .https_only(true)
+        .build(),
+);
+```
+
 ## Cloud Provider SDKs
 
 ### AWS SDK
