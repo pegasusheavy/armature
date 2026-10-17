@@ -443,14 +443,20 @@ spec:
 ### 4. Configure Graceful Shutdown
 
 ```rust
-use armature::shutdown::GracefulShutdown;
+use armature::ShutdownManager;
+use std::{sync::Arc, time::Duration};
 use tokio::signal;
 
-async fn shutdown_signal() {
+async fn shutdown_on_sigterm(shutdown: Arc<ShutdownManager>) {
     signal::unix::signal(signal::unix::SignalKind::terminate())
         .expect("failed to create SIGTERM handler")
         .recv()
         .await;
+
+    // Keep this below `terminationGracePeriodSeconds`.
+    shutdown.set_timeout(Duration::from_secs(45)).await;
+    // Stop accepting, drain in-flight requests, then run the shutdown hooks.
+    shutdown.initiate_shutdown().await;
 }
 ```
 

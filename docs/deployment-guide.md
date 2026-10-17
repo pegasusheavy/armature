@@ -91,10 +91,16 @@ Never commit real values. Load secrets from your platform's secret store.
 ### Configuration Files
 
 ```rust
-use armature::config::{Config, Environment};
+// Requires the `config` feature of `armature`.
+use armature::armature_config::{ConfigService, FileFormat};
 
-let config = Config::builder()
-    .add_source(Environment::with_prefix("APP"))
+// `with_prefix` must come first: it resets the builder's config store.
+// Sources load in this order, later ones overriding earlier ones:
+// `.env`, then APP_* environment variables, then the files.
+let config = ConfigService::builder()
+    .with_prefix("APP".to_string())
+    .load_env()
+    .add_file("config/production.toml".to_string(), FileFormat::Toml)
     .build()?;
 ```
 
@@ -199,21 +205,26 @@ impl HealthController {
 ### Prometheus Metrics
 
 ```rust
-use armature::metrics::{MetricsConfig, PrometheusExporter};
+// `armature-metrics` is a separate crate (not re-exported by `armature`).
+use armature_metrics::{RequestMetricsMiddleware, create_metrics_handler};
 
-let metrics = MetricsConfig::default()
-    .enable_prometheus("/metrics")
-    .build()?;
+// Record per-request metrics, and serve them in Prometheus text format.
+let metrics_middleware = RequestMetricsMiddleware::new();
+let metrics_handler = create_metrics_handler(); // mount at GET /metrics
 ```
 
 ### OpenTelemetry
 
 ```rust
-use armature::telemetry::{TelemetryConfig, OtlpExporter};
+// Requires the `opentelemetry` feature of `armature`.
+use armature::armature_opentelemetry::TelemetryBuilder;
 
-let telemetry = TelemetryConfig::default()
-    .with_traces(OtlpExporter::new("http://jaeger:4317"))
-    .build()?;
+let telemetry = TelemetryBuilder::new("my-service")
+    .with_tracing()
+    .with_otlp_endpoint("http://otel-collector:4317")
+    .build()
+    .await?;
+let telemetry_middleware = telemetry.middleware();
 ```
 
 ## Security Checklist

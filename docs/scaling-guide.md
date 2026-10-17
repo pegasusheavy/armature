@@ -295,12 +295,14 @@ spec:
 ### Response Compression
 
 ```rust
-use armature::compression::CompressionConfig;
+// Requires the `compression` feature of `armature`.
+use armature::armature_compression::{CompressionConfig, CompressionMiddleware};
 
-let config = CompressionConfig::default()
-    .gzip(true)
-    .brotli(true)
-    .min_size(1024); // Only compress > 1KB
+let config = CompressionConfig::builder()
+    .brotli()
+    .min_size(1024) // Only compress > 1KB
+    .build();
+let compression = CompressionMiddleware::with_config(config);
 ```
 
 ### Connection Keep-Alive
@@ -339,16 +341,25 @@ impl UserController {
 ### Key Metrics
 
 ```rust
-use armature::metrics::{counter, histogram};
+// `armature-metrics` is a separate crate (not re-exported by `armature`).
+use armature_metrics::{register_counter_vec, register_histogram_vec};
+
+let requests = register_counter_vec("http_requests_total", "Requests", &["endpoint"])?;
+let latency = register_histogram_vec(
+    "http_request_duration_seconds",
+    "Request latency",
+    &["endpoint"],
+)?;
+let errors = register_counter_vec("http_errors_total", "Errors", &["status"])?;
 
 // Track request rate
-counter!("http_requests_total", "endpoint" => path);
+requests.with_label_values(&[route_template]).inc();
 
 // Track latency
-histogram!("http_request_duration_seconds", duration);
+latency.with_label_values(&[route_template]).observe(duration_secs);
 
 // Track errors
-counter!("http_errors_total", "status" => status.to_string());
+errors.with_label_values(&[&status.to_string()]).inc();
 ```
 
 ### Alerting Thresholds
