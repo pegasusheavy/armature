@@ -1,9 +1,14 @@
 # =============================================================================
 # Armature API Minimal - Docker Compose Configuration
 # =============================================================================
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
 # Usage:
-#   Development: docker compose up
-#   Production:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+#   docker compose up
 # =============================================================================
 
 services:
@@ -15,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${PORT:-3000}:3000"
+      - "127.0.0.1:${PORT:-3000}:3000"
     environment:
       - HOST=0.0.0.0
       - PORT=3000
@@ -23,7 +28,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT:-development}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -32,11 +37,15 @@ services:
   # ---------------------------------------------------------------------------
   # Development Services (optional)
   # ---------------------------------------------------------------------------
-  # Uncomment if your API needs Redis
+  # Uncomment if your API needs Redis (and add REDIS_PASSWORD to .env)
   # redis:
-  #   image: redis:7-alpine
+  #   image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+  #   command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+  #   environment:
+  #     REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+  #     REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
   #   ports:
-  #     - "6379:6379"
+  #     - "127.0.0.1:6379:6379"
   #   volumes:
   #     - redis_data:/data
   #   restart: unless-stopped

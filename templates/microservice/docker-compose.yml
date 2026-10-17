@@ -1,9 +1,16 @@
 # =============================================================================
 # Armature Microservice - Docker Compose Configuration
 # =============================================================================
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
 # Usage:
+#   cp .env.example .env   # then set REDIS_PASSWORD
 #   Development:  docker compose up
-#   Scale:        docker compose up --scale service=3
+#   Scale:        docker compose up --scale service=3 (drop the host port first)
 # =============================================================================
 
 services:
@@ -15,14 +22,14 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${PORT:-8080}:8080"
+      - "127.0.0.1:${PORT:-8080}:8080"
     environment:
       - HOST=0.0.0.0
       - PORT=8080
       - RUST_LOG=${RUST_LOG:-info}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - SERVICE_NAME=${SERVICE_NAME:-microservice}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
       # Service discovery
       - CONSUL_URL=${CONSUL_URL:-http://consul:8500}
       # Distributed tracing
@@ -32,7 +39,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health/live"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -50,10 +57,15 @@ services:
   # Redis (messaging/caching)
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -72,11 +84,13 @@ services:
   # Consul (Service Discovery) - Optional
   # ---------------------------------------------------------------------------
   consul:
-    image: hashicorp/consul:1.17
+    # Dev-mode agent: no ACLs, in-memory state. The listener is open inside
+    # the container network, but published to the host on loopback only.
+    image: hashicorp/consul:1.22.7@sha256:a230dcea0bb107bd7958a912d1429fb7f9d399637de7ffb814b34412b9e8c543
     command: agent -dev -client=0.0.0.0
     ports:
-      - "8500:8500"
-      - "8600:8600/udp"
+      - "127.0.0.1:8500:8500"
+      - "127.0.0.1:8600:8600/udp"
     profiles:
       - discovery
     restart: unless-stopped
@@ -85,13 +99,13 @@ services:
   # Jaeger (Distributed Tracing) - Optional
   # ---------------------------------------------------------------------------
   jaeger:
-    image: jaegertracing/all-in-one:1.53
+    image: jaegertracing/all-in-one:1.76.0@sha256:ab6f1a1f0fb49ea08bcd19f6b84f6081d0d44b364b6de148e1798eb5816bacac
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     ports:
-      - "16686:16686"  # UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
+      - "127.0.0.1:16686:16686"  # UI
+      - "127.0.0.1:4317:4317"    # OTLP gRPC
+      - "127.0.0.1:4318:4318"    # OTLP HTTP
     profiles:
       - tracing
     restart: unless-stopped

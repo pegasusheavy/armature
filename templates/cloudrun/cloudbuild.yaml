@@ -57,7 +57,9 @@ steps:
       - '${_CONCURRENCY}'
       - '--timeout'
       - '${_TIMEOUT}'
-      - '--allow-unauthenticated'  # Remove for private services
+      # Private by default: callers need roles/run.invoker. For a public
+      # endpoint, switch this to '--allow-unauthenticated' deliberately.
+      - '--no-allow-unauthenticated'
 
 # ---------------------------------------------------------------------------
 # Substitutions (defaults, can be overridden)

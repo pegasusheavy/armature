@@ -1,9 +1,15 @@
 # =============================================================================
 # Armature GraphQL API - Docker Compose Configuration
 # =============================================================================
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
 # Usage:
-#   Development: docker compose up
-#   With DB:     docker compose --profile database up
+#   cp .env.example .env   # then set POSTGRES_PASSWORD and REDIS_PASSWORD
+#   docker compose up
 # =============================================================================
 
 services:
@@ -15,16 +21,16 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${PORT:-3000}:3000"
+      - "127.0.0.1:${PORT:-3000}:3000"
     environment:
       - HOST=0.0.0.0
       - PORT=3000
       - RUST_LOG=${RUST_LOG:-info,async_graphql=debug}
       - ENVIRONMENT=${ENVIRONMENT:-development}
-      - GRAPHQL_PLAYGROUND=${GRAPHQL_PLAYGROUND:-true}
-      - GRAPHQL_INTROSPECTION=${GRAPHQL_INTROSPECTION:-true}
-      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@db:5432/graphql}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      # The playground is opt-in (off unless GRAPHQL_PLAYGROUND=true).
+      - GRAPHQL_PLAYGROUND=${GRAPHQL_PLAYGROUND:-false}
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@db:5432/graphql
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +38,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -42,15 +48,15 @@ services:
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   db:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-graphql}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
+      POSTGRES_DB: graphql
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -62,10 +68,15 @@ services:
   # Redis (for caching/subscriptions)
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped

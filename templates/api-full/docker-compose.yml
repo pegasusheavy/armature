@@ -1,4 +1,16 @@
-version: "3.8"
+# =============================================================================
+# Armature API Full - Docker Compose Configuration
+# =============================================================================
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
+# Usage:
+#   cp .env.example .env   # then set JWT_SECRET, POSTGRES_PASSWORD, REDIS_PASSWORD
+#   docker compose up
+# =============================================================================
 
 services:
   api:
@@ -6,41 +18,52 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - HOST=0.0.0.0
       - PORT=3000
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      # Required, no fallback: the app refuses to start without it.
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET in .env (openssl rand -hex 32)}
       - ENVIRONMENT=production
       - RUST_LOG=info
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/api
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@db:5432/api
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
     depends_on:
       - db
       - redis
     restart: unless-stopped
 
   db:
-    image: postgres:15-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       POSTGRES_DB: api
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 volumes:
   postgres_data:
   redis_data:
-
