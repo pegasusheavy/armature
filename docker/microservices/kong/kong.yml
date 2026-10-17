@@ -25,8 +25,12 @@ services:
               policy: local
           - name: cors
             config:
+              # Explicit origins: a wildcard combined with credentials would
+              # let any website make authenticated calls with a visitor's
+              # cookies. List your real frontend origins here.
               origins:
-                - "*"
+                - "http://localhost:3000"
+                - "http://localhost:5173"
               methods:
                 - GET
                 - POST
@@ -115,39 +119,8 @@ plugins:
       generator: uuid
       echo_downstream: true
 
-  # Response transformer for consistent API format
-  - name: response-transformer
-    config:
-      add:
-        headers:
-          - X-Powered-By:Armature
-
-# Consumers (API clients)
-consumers:
-  - username: web-app
-    keyauth_credentials:
-      - key: web-app-api-key
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 1000
-          policy: local
-
-  - username: mobile-app
-    keyauth_credentials:
-      - key: mobile-app-api-key
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 500
-          policy: local
-
-  - username: partner-api
-    keyauth_credentials:
-      - key: partner-api-key
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 100
-          policy: local
-
+# Consumers (API clients) and their key-auth credentials are intentionally
+# not declared here: keys in a committed file are public. This stack runs
+# Kong DB-less, so add them by rendering this file from your secret store at
+# deploy time (for example decK with `${{ env "DECK_..." }}` substitution)
+# rather than by committing real keys.

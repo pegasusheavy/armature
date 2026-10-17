@@ -4,20 +4,20 @@
 # The chef/planner boilerplate below (Stages 1-2) is intentionally duplicated
 # across all 4 Armature Dockerfiles rather than extracted into a shared base
 # image, since this repo builds each with plain `docker build` (no buildx
-# bake infra). Keep RUST_VERSION / CARGO_CHEF_VERSION in sync across:
+# bake infra). Keep the base image references in sync across:
 #   docker/full-stack/Dockerfile
 #   docker/microservices/Dockerfile.service
 #   docker/microservices/Dockerfile.worker
 #   docker/observability/Dockerfile.api
-ARG RUST_VERSION=1.94.1
-# Pinned to a specific cargo-chef release (not "latest") for reproducible
-# builds. Update periodically: https://github.com/LukeMathWalker/cargo-chef/releases
-ARG CARGO_CHEF_VERSION=0.1.68
+#
+# Base images are pinned by exact tag AND digest (cargo-chef 0.1.78, Rust
+# 1.99.1 >= the 1.94.1 MSRV, Alpine 3.24), so a re-pushed tag cannot change
+# what gets built. Dependabot (docker ecosystem) proposes digest bumps.
 
 # ==================================================
 # Stage 1: Chef - base image with cargo-chef installed
 # ==================================================
-FROM lukemathwalker/cargo-chef:${CARGO_CHEF_VERSION}-rust-${RUST_VERSION}-alpine AS chef
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.99.1-alpine3.24@sha256:c48fa69aff194617af79ddc9473a58b946068012721979a9aef9c3e1466ccbd8 AS chef
 WORKDIR /app
 
 # ==================================================
@@ -65,14 +65,13 @@ RUN cargo build --release --example full_example && \
 # ==================================================
 # Stage 4: Runtime
 # ==================================================
-FROM alpine:3.19 AS runtime
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS runtime
 
 WORKDIR /app
 
 # Install runtime dependencies
 RUN apk add --no-cache \
     ca-certificates \
-    curl \
     tini
 
 # Create non-root user
@@ -96,7 +95,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD wget -q --spider http://127.0.0.1:3000/health || exit 1
 
 # Use tini as init system
 ENTRYPOINT ["/sbin/tini", "--"]
