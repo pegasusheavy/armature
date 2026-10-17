@@ -2,17 +2,43 @@
 
 ### Supported Versions
 
-We release patches for security vulnerabilities. Currently supported versions:
+Armature is a set of independently versioned crates. All of them are pre-1.0,
+so every minor release (`0.x` → `0.(x+1)`) may contain breaking changes, and
+security fixes land only on the **latest minor release line** of each crate.
+Upgrade to the newest minor version to receive a fix; older lines are not
+patched.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
+| Crate | Supported | Not supported |
+| ----- | --------- | ------------- |
+| `armature-framework` (umbrella) | `0.7.x` and newer | `< 0.7` |
+| `armature-core` | `0.10.x` and newer | `< 0.10` |
+| `armature-jwt` | `0.4.x` and newer | `< 0.4` |
+| `armature-auth` | `0.4.x` and newer | `< 0.4` |
+| `armature-security` | `0.4.x` and newer | `< 0.4` |
+| `armature-h1` | `0.3.x` and newer | `< 0.3` |
+| `armature-cli` | `0.7.x` and newer | `< 0.7` |
+| every other `armature-*` crate | the latest published minor version on crates.io | any earlier minor version |
+
+The project templates under `templates/` and the Compose stacks under
+`docker/` are examples, not released artifacts: fixes are made on `main` and
+are not backported. The Compose stacks are for local development only and must
+not be exposed to a network.
 
 ### Reporting a Vulnerability
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+**Please do not report security vulnerabilities through public GitHub issues,
+discussions, or pull requests.**
 
-Instead, please use [GitHub Security Advisories](https://github.com/quinnjr/armature/security/advisories/new) to privately report a vulnerability.
+Report privately through either channel:
+
+1. **GitHub private vulnerability reporting** (preferred):
+   [open a draft security advisory](https://github.com/quinnjr/armature/security/advisories/new).
+   For a vulnerability in a single crate you may also use that crate's own
+   repository (`https://github.com/quinnjr/armature-<name>/security/advisories/new`).
+2. **Email**: [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me) with
+   `[armature security]` in the subject. You may encrypt with the maintainer's
+   OpenPGP key from <https://github.com/quinnjr.gpg> (also referenced by
+   [`security.txt`](https://quinnjr.github.io/armature/.well-known/security.txt)).
 
 #### What to Include
 
@@ -52,7 +78,7 @@ When using Armature in production:
    - Use Dependabot or similar tools for automated updates
 
 2. **Authentication & Authorization**
-   - Use strong JWT secrets (minimum 256 bits for HS256)
+   - Use strong JWT secrets: at least 32 random bytes for HS256 (e.g. `openssl rand -base64 32`); `armature-jwt` rejects shorter keys
    - Enable HTTPS/TLS for all production deployments
    - Implement proper RBAC using guards
    - Never store sensitive data in JWT payload
@@ -137,7 +163,7 @@ Armature provides several built-in security features:
 
 ### Known Security Limitations
 
-- **No built-in CSRF protection**: Implement CSRF tokens in your application if needed
+- **No built-in CSRF middleware**: if you authenticate with cookies, implement CSRF tokens (or `SameSite=Strict` cookies plus an Origin check) in your application
 - **No built-in XSS protection**: Sanitize user input and output in your application
 - **No automatic SQL injection protection**: Use proper ORM/query builders
 - **Session management**: Armature is stateless by design; implement client-side session management with JWTs
@@ -154,15 +180,15 @@ Armature has not yet undergone a professional security audit. We welcome:
 
 We actively monitor our dependencies for security vulnerabilities using:
 
-- `cargo-audit` in CI/CD pipeline
+- `cargo-audit` in CI/CD pipeline (blocking) and in the pre-push hook
 - GitHub Dependabot
-- Dependency scanning in CI/CD
+- Secret scanning with gitleaks (configuration in `.gitleaks.toml`)
 
 ### Contact
 
 For security-related questions or concerns, contact:
 
-- **Security Reports**: Via [GitHub Security Advisories](https://github.com/quinnjr/armature/security/advisories/new)
+- **Security Reports**: Via [GitHub Security Advisories](https://github.com/quinnjr/armature/security/advisories/new) or [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me)
 - **General Questions**: Open a [GitHub Issue](https://github.com/quinnjr/armature/issues)
 - **Maintainer**: Joseph Quinn
 
