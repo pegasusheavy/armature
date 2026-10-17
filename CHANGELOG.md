@@ -32,6 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `armature` is an unrelated project. Release notes and the website now give
   `armature = { package = "armature-framework", version = "0.8" }`.
 
+### Added
+
+- `armature-framework` re-exports the guard, middleware and handler attribute
+  macros (`guard`, `use_guard`, `middleware`, `use_middleware`, `cache`,
+  `catch`, `timeout`, `body_limit`, `head`, `options`, `mcp`, `mcp_resource`,
+  the `Validate` derive, and the HTTP `QUERY` attribute as `query_method`), so
+  they import as `use armature::{guard, ...}` instead of from
+  `armature_proc_macro`.
+
 ### Changed
 
 - Every sibling requirement moves to its new minor: 58 of the 66 crates are

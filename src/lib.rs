@@ -11,6 +11,18 @@ pub use armature_proc_macro::{
     Body, Param, Query, controller, delete, get, injectable, module, patch, post, put, routes,
 };
 
+// Re-export the handler and controller attribute macros, so they can be
+// imported as `use armature::{guard, use_guard, middleware, ...}` instead of
+// through `armature_proc_macro`.
+//
+// The HTTP `QUERY` method attribute is not re-exported under its own name:
+// `query` is already the `query!` extractor helper from `armature_core`. Use
+// `armature_proc_macro::query` (or the `query_method` alias below) for it.
+pub use armature_proc_macro::{
+    Validate, body_limit, cache, catch, guard, head, mcp, mcp_resource, middleware, options,
+    query as query_method, timeout, use_guard, use_middleware,
+};
+
 // Re-export optional crates
 #[cfg(feature = "graphql")]
 pub use armature_graphql;
