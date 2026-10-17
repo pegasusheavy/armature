@@ -236,7 +236,6 @@ cargo run --release --bin http-benchmark -- --all
 | **Validation** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ |
 | **OpenAPI** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ |
 | **Cold Start** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| **Production Ready** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 
 **Armature wins in every performance category while matching or exceeding the developer experience of enterprise frameworks like NestJS.**
 
@@ -380,7 +379,7 @@ lsof -ti :3006 | xargs kill -9
 | Koa | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | Limited |
 | NestJS | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | Slower |
 
-**Conclusion:** Armature delivers **8-15x better throughput**, **3-10x lower memory usage**, and **sub-millisecond latency** compared to all Node.js frameworks. With enterprise-grade features like dependency injection, validation, OpenAPI generation, and guards built-in, Armature provides everything you need for production applications without the performance limitations of JavaScript runtimes.
+**Conclusion:** Armature delivers **8-15x better throughput**, **3-10x lower memory usage**, and **sub-millisecond latency** compared to all Node.js frameworks. With dependency injection, validation, OpenAPI generation, and guards built in, Armature covers the same ground without the performance limitations of JavaScript runtimes.
 
 **Choose Armature for:**
 - ✅ All new API projects

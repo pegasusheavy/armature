@@ -369,5 +369,5 @@ done
 | **Scalability** | ⭐⭐⭐⭐⭐ Handles 1000+ connections | ⭐⭐ Event loop limits |
 | **Built-in Features** | ⭐⭐⭐⭐⭐ DI, validation, OpenAPI, guards | ⭐⭐⭐ Basic routing |
 
-**Recommendation:** Use Armature for all your backend API needs. With 10-15x better performance, 10x lower memory usage, and enterprise-grade features built-in, Armature is the clear choice for production applications. Pair it with Next.js for an excellent frontend experience.
+**Recommendation:** Use Armature for all your backend API needs. With 10-15x better performance and 10x lower memory usage in these benchmarks, Armature is a strong fit for backend APIs. Pair it with Next.js for an excellent frontend experience.
 
