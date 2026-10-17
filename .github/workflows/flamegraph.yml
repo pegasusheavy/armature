@@ -43,10 +43,10 @@ on:
     # Weekly on Sunday at 2am UTC
     - cron: '0 2 * * 0'
 
-# No job here writes to the repo; both compile and run PR-authored code.
+# No build job here writes anywhere; only `comment` (which never runs PR code)
+# gets `pull-requests: write`.
 permissions:
   contents: read
-  pull-requests: write
 
 env:
   CARGO_TERM_COLOR: always
@@ -68,9 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Install system dependencies
         run: |
@@ -80,17 +81,19 @@ jobs:
           sudo apt-get install -y linux-perf || true
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
 
       - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           shared-key: "flamegraph"
 
       - name: Install flamegraph tools
         run: |
-          cargo install flamegraph --locked
-          cargo install inferno --locked
+          cargo install flamegraph --version 0.6.14 --locked
+          cargo install inferno --version 0.12.8 --locked
 
       - name: Build release binaries
         run: |
@@ -215,19 +218,33 @@ jobs:
           echo "4. Look for wide bars - those are the hot spots" >> flamegraphs/README.md
 
       - name: Upload flamegraph artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: flamegraphs-${{ github.sha }}
           path: flamegraphs/
           retention-days: 30
 
-      # ========================================
-      # Comment on PR
-      # ========================================
 
+  # ============================================================================
+  # COMMENT ON PR
+  # ============================================================================
+  # Split from `flamegraph` so the only job holding `pull-requests: write` never
+  # checks out or builds PR-authored code; it just reads the uploaded summary.
+
+  comment:
+    name: Comment flame graphs
+    needs: flamegraph
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: flamegraphs-${{ github.sha }}
+          path: flamegraphs
       - name: Comment flamegraph on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const fs = require('fs');
@@ -278,24 +295,28 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           submodules: recursive
           path: pr
+          persist-credentials: false
 
       - name: Checkout base branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           submodules: recursive
           ref: ${{ github.base_ref }}
           path: base
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
 
       - name: Install tools
         run: |
-          cargo install inferno --locked
+          cargo install inferno --version 0.12.8 --locked
 
       - name: Profile PR branch
         working-directory: pr
@@ -335,7 +356,7 @@ jobs:
           fi
 
       - name: Upload diff report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: flamegraph-diff-${{ github.sha }}
           path: diff-report/
