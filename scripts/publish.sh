@@ -613,7 +613,7 @@ compute_publish_order() {
 
     while [[ ${#queue[@]} -gt 0 ]]; do
         # Sort queue for deterministic order
-        IFS=$'\n' sorted_queue=($(sort <<<"${queue[*]}")); unset IFS
+        mapfile -t sorted_queue < <(printf '%s\n' "${queue[@]}" | sort)
         local current="${sorted_queue[0]}"
         queue=("${sorted_queue[@]:1}")
 
@@ -1001,7 +1001,8 @@ publish_all() {
 
     local publish_order
     publish_order=$(compute_publish_order)
-    local publish_order_array=($publish_order)
+    local -a publish_order_array
+    read -r -a publish_order_array <<< "$publish_order"
     local total_crates=${#publish_order_array[@]}
 
     echo ""
@@ -1180,7 +1181,8 @@ publish_all() {
     done
 
     # Final summary
-    local end_time=$(date +%s)
+    local end_time
+    end_time=$(date +%s)
     local elapsed=$((end_time - START_TIME))
 
     echo ""

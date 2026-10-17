@@ -12,7 +12,6 @@ set -e
 # Configuration
 REQUESTS=100000
 CONCURRENCY=100
-DURATION=10  # seconds for rate-based tests
 
 # Colors
 RED='\033[0;31m'
@@ -80,9 +79,6 @@ run_benchmark() {
         oha -n $REQUESTS -c $CONCURRENCY --no-tui "$url" 2>/dev/null
     fi
 }
-
-# Results storage
-declare -A RESULTS
 
 echo ""
 echo -e "${YELLOW}═══════════════════════════════════════════════════════════════${NC}"
