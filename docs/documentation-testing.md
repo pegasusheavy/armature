@@ -207,9 +207,11 @@ Every module should have an example:
 //! # Example
 //!
 //! ```
-//! use armature_auth::{JwtManager, JwtConfig};
+//! use armature_jwt::{JwtConfig, JwtManager};
 //!
-//! let config = JwtConfig::new("secret_key");
+//! // JwtConfig::new returns a Result: the HMAC secret must be at least
+//! // 32 bytes and not a known placeholder. Load real secrets from a secret store.
+//! let config = JwtConfig::new("kV9pQ2xR7tW4yZ1bN6mC3fH8jL5sD0gA".to_string())?;
 //! let manager = JwtManager::new(config)?;
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```

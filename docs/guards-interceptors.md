@@ -6,6 +6,8 @@ Armature provides a powerful middleware system through **Guards** and **Intercep
 
 - [Overview](#overview)
 - [Guards](#guards)
+  - [Request Pipeline Order](#request-pipeline-order)
+  - [Guards Fail Closed](#guards-fail-closed)
   - [Built-in Guards](#built-in-guards)
   - [Custom Guards](#custom-guards)
   - [Usage Examples](#guard-usage-examples)
@@ -19,7 +21,7 @@ Armature provides a powerful middleware system through **Guards** and **Intercep
 
 ### Guards
 
-Guards are used to **protect routes** by determining whether a request should be allowed to proceed. They run **before** the route handler and can:
+Guards are used to **protect routes** by determining whether a request should be allowed to proceed. They run **after** middleware and **before** the route handler, and can:
 
 - Authenticate users
 - Check permissions/roles
@@ -46,41 +48,99 @@ Interceptors wrap the handler execution and can modify both input and output.
 
 ## Guards
 
+### Request Pipeline Order
+
+Armature follows the NestJS order. For every request:
+
+1. The request path is canonicalized once (`//` collapses, percent-encoded unreserved
+   characters decode). Paths containing `.`/`..` segments, `%2F`, `%5C`, `%00`, `\` or a
+   malformed escape are refused with `400` before any middleware runs.
+2. Global middleware (`Application::use_middleware`), in the order added.
+3. Global guards (`Application::with_guard`).
+4. Route-scoped middleware, then route-scoped guards: module guards, controller
+   `#[middleware]` then controller `#[guard]`, and `RouteGroup` layers.
+5. The handler.
+
+Because middleware runs before guards, an authentication middleware can attach a verified
+identity that the guards then inspect. Middleware also sees (and can post-process) a guard's
+`401`/`403`.
+
+### Guards Fail Closed
+
+The built-in authentication and role guards never trust the shape of an `Authorization`
+header. They admit a request only when an authentication layer has **verified** a credential
+and attached one of these request extensions:
+
+| Extension | Inserted by | Read by |
+|-----------|-------------|---------|
+| `armature_core::VerifiedIdentity` | `armature_auth::JwtAuthMiddleware` (or your own verified auth layer) | `AuthenticationGuard`, empty-role `RolesGuard` |
+| `armature_core::RequestRoles` | `JwtAuthMiddleware` | `RolesGuard` |
+| `armature_auth::UserContext` | `JwtAuthMiddleware` | `armature_auth::{AuthGuard, RoleGuard, PermissionGuard}` |
+
+Without such a layer, every guarded route answers `401`. Never insert these extensions from
+anything the client controls (a header such as `x-user-id`/`x-user-role`, a cookie, or an
+unverified token claim).
+
 ### Built-in Guards
+
+#### JwtAuthMiddleware (armature-auth)
+
+Verifies a JWT bearer token and attaches the caller's identity so the guards can authorize.
+Register it globally with `Application::use_middleware` so it runs before every guard:
+
+```rust
+use armature_framework::prelude::*;
+use armature_auth::JwtAuthMiddleware;
+use armature_jwt::{JwtConfig, JwtManager};
+
+// `JwtConfig::new` returns a Result: the secret must be at least 32 bytes and not a
+// known placeholder. Load it from a secret store, e.g. `openssl rand -base64 48`.
+let secret = std::env::var("JWT_SECRET")?;
+let jwt_manager = JwtManager::new(JwtConfig::new(secret)?)?;
+
+let app = Application::new(container, router)
+    // Required mode: a missing/invalid/expired token is rejected with 401.
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager));
+
+// Optional mode: attaches identity when a valid token is present, otherwise passes
+// through (with any rejected `Authorization` header stripped) so a downstream guard
+// makes the decision.
+// .use_middleware(JwtAuthMiddleware::optional(jwt_manager));
+```
+
+On a valid **access** token it inserts a `UserContext` (from the `sub`/`roles`/`permissions`
+claims, configurable with `with_subject_claim`/`with_roles_claim`/`with_permissions_claim`),
+an `armature_core::RequestRoles` and an `armature_core::VerifiedIdentity` carrying the
+subject. Refresh tokens, tokens without a subject, and requests with more than one
+`Authorization` header are rejected.
 
 #### AuthenticationGuard
 
-Checks for a valid Bearer token in the `Authorization` header.
+Admits only requests carrying a verified identity (`VerifiedIdentity` or `RequestRoles`).
+A bare `Authorization: Bearer …` header is **not** consulted; without a verified identity
+the guard returns `Error::Unauthorized` (`401`).
 
 ```rust
-use armature_framework::{Guard, AuthenticationGuard, GuardContext};
+use armature_framework::{AuthenticationGuard, Guard, GuardContext, HttpRequest, VerifiedIdentity};
 
-let guard = AuthenticationGuard;
-let context = GuardContext::new(request);
+// A forged header alone is rejected.
+let mut forged = HttpRequest::new("GET", "/me");
+forged.headers.insert("authorization", "Bearer anything");
+assert!(AuthenticationGuard.can_activate(&GuardContext::new(forged)).await.is_err());
 
-match guard.can_activate(&context).await {
-    Ok(true) => println!("Authenticated!"),
-    Ok(false) => println!("Not authenticated"),
-    Err(e) => println!("Auth error: {}", e),
-}
-```
-
-**Usage:**
-```bash
-# Valid request
-curl http://localhost:3000/api/protected \
-  -H "Authorization: Bearer your-token-here"
-
-# Invalid request (will fail)
-curl http://localhost:3000/api/protected
+// The extension an authentication middleware inserts after verifying a credential.
+let mut verified = HttpRequest::new("GET", "/me");
+verified.extensions.insert(VerifiedIdentity::new("user-1"));
+assert!(AuthenticationGuard.can_activate(&GuardContext::new(verified)).await?);
 ```
 
 #### RolesGuard
 
-Checks if the authenticated user has specific roles.
+Requires a verified `RequestRoles` extension containing at least one of the listed roles.
+Missing roles or no matching role is `Error::Forbidden` (`403`).
 
 ```rust
-use armature_framework::{Guard, RolesGuard, GuardContext};
+use armature_framework::{Guard, GuardContext, RolesGuard};
 
 let guard = RolesGuard::new(vec!["admin".to_string(), "moderator".to_string()]);
 let context = GuardContext::new(request);
@@ -91,45 +151,23 @@ match guard.can_activate(&context).await {
 }
 ```
 
-> **Guards fail closed.** `RolesGuard` (and `armature-auth`'s `RoleGuard`/`PermissionGuard`)
-> require **verified** role/permission information on the request — a bearer token alone is
-> not sufficient. That information is supplied by an authentication layer that has already
-> validated the token. Ship `armature_auth::JwtAuthMiddleware` (below) ahead of the guarded
-> route: it verifies the JWT signature and populates the `RequestRoles`/`UserContext`
-> extension the guard reads. Without such a layer, role-protected routes reject every request.
->
-> Guards declared by a module apply only to that module's controllers' routes, not globally.
-
-#### JwtAuthMiddleware (armature-auth)
-
-Verifies a JWT and attaches the caller's identity so the role/permission guards can enforce.
-
-```rust
-use armature_auth::JwtAuthMiddleware;
-
-// Required mode: a missing/invalid/expired token is rejected with 401 before the handler.
-let auth = JwtAuthMiddleware::new(jwt_manager);
-
-// Optional mode: attaches identity when a valid token is present, otherwise passes through
-// so a downstream guard makes the authorization decision.
-let auth = JwtAuthMiddleware::optional(jwt_manager);
-```
-
-On a valid token it inserts a `UserContext` (from the `sub`/`roles`/`permissions` claims,
-configurable) and an `armature_core::RequestRoles` extension, which `RolesGuard`,
-`RoleGuard`, and `PermissionGuard` consume.
+An **empty** role list (`RolesGuard::new(vec![])`) means "any authenticated caller": the
+request must still carry a verified identity. It never means "allow everyone". The same
+holds for `armature_auth`'s `RoleGuard::any(vec![])` and `PermissionGuard::any(vec![])`.
 
 #### ApiKeyGuard
 
-Validates API keys from the `x-api-key` header.
+Validates the `x-api-key` header against a list of keys. Every configured key is compared in
+constant time, so response timing does not reveal which key a guess shares a prefix with.
+Load keys from configuration, and use long random values.
 
 ```rust
-use armature_framework::{Guard, ApiKeyGuard, GuardContext};
+use armature_framework::{ApiKeyGuard, Guard, GuardContext};
 
-let valid_keys = vec![
-    "key-123".to_string(),
-    "key-456".to_string(),
-];
+let valid_keys: Vec<String> = std::env::var("API_KEYS")?
+    .split(',')
+    .map(str::to_string)
+    .collect();
 
 let guard = ApiKeyGuard::new(valid_keys);
 let context = GuardContext::new(request);
@@ -143,7 +181,7 @@ match guard.can_activate(&context).await {
 **Usage:**
 ```bash
 curl http://localhost:3000/api/data \
-  -H "x-api-key: key-123"
+  -H "x-api-key: $API_KEY"
 ```
 
 ### Custom Guards
@@ -153,30 +191,35 @@ Create custom guards by implementing the `Guard` trait:
 ```rust
 use armature_framework::{Guard, GuardContext, Error};
 use async_trait::async_trait;
+use std::net::IpAddr;
 
-pub struct IpWhitelistGuard {
-    allowed_ips: Vec<String>,
+pub struct IpAllowlistGuard {
+    allowed_ips: Vec<IpAddr>,
+    /// Number of reverse proxies in front of the app whose `X-Forwarded-For`
+    /// entries you trust. `0` uses the socket peer and ignores the header.
+    trusted_proxy_depth: usize,
 }
 
-impl IpWhitelistGuard {
-    pub fn new(ips: Vec<String>) -> Self {
-        Self { allowed_ips: ips }
+impl IpAllowlistGuard {
+    pub fn new(ips: Vec<IpAddr>, trusted_proxy_depth: usize) -> Self {
+        Self { allowed_ips: ips, trusted_proxy_depth }
     }
 }
 
 #[async_trait]
-impl Guard for IpWhitelistGuard {
+impl Guard for IpAllowlistGuard {
     async fn can_activate(&self, context: &GuardContext) -> Result<bool, Error> {
-        // Get client IP from headers or connection
+        // Never read the leftmost `X-Forwarded-For` hop or `X-Real-IP` directly:
+        // clients can set both. `client_address` walks the chain from the right.
         let client_ip = context
-            .get_header("x-forwarded-for")
-            .or_else(|| context.get_header("x-real-ip"))
+            .request
+            .client_address(self.trusted_proxy_depth)
             .ok_or_else(|| Error::Forbidden("Cannot determine client IP".to_string()))?;
 
-        if self.allowed_ips.contains(client_ip) {
+        if self.allowed_ips.contains(&client_ip) {
             Ok(true)
         } else {
-            Err(Error::Forbidden(format!("IP {} not whitelisted", client_ip)))
+            Err(Error::Forbidden("Client address not allowed".to_string()))
         }
     }
 }
@@ -188,8 +231,9 @@ For simpler cases, use `CustomGuard`:
 
 ```rust
 use armature_framework::{CustomGuard, GuardContext, Error};
+use chrono::Datelike;
 
-let guard = CustomGuard::new(|context: &GuardContext| {
+let guard = CustomGuard::new(|_context: &GuardContext| {
     // Only allow requests on weekdays
     let weekday = chrono::Local::now().weekday();
     if weekday == chrono::Weekday::Sat || weekday == chrono::Weekday::Sun {
@@ -202,65 +246,64 @@ let guard = CustomGuard::new(|context: &GuardContext| {
 
 ### Guard Usage Examples
 
-#### Protecting a Single Route
+#### Protecting Routes with a RouteGroup
+
+Register routes **through** a `RouteGroup` with `RouteGroup::route` (or `add_route`). The
+group's prefix, middleware and guards are bound to each route, so they run however the
+client spells the path (`/api/protected`, `//api/protected`, ...):
 
 ```rust
 use armature_framework::prelude::*;
-use armature_framework::{Guard, AuthenticationGuard, GuardContext};
+use armature_framework::{AuthenticationGuard, RouteGroup, Router};
 
-router.add_route(Route {
-    method: HttpMethod::GET,
-    path: "/api/protected".to_string(),
-    handler: Arc::new(move |req| {
-        Box::pin(async move {
-            // Apply guard
-            let guard = AuthenticationGuard;
-            let context = GuardContext::new(req.clone());
+async fn protected(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    HttpResponse::ok().with_json(&serde_json::json!({ "data": "protected data" }))
+}
 
-            match guard.can_activate(&context).await {
-                Ok(true) => {},
-                Ok(false) | Err(e) => return Err(e),
-            }
+let mut router = Router::new();
 
-            // Handler logic
-            Ok(HttpResponse::ok().json(json!({ "data": "protected data" }))?)
-        })
-    }),
-});
+RouteGroup::new()
+    .prefix("/api")
+    .guard(Box::new(AuthenticationGuard))
+    .route(&mut router, HttpMethod::GET, "/protected", protected);
 ```
 
 #### Chaining Multiple Guards
 
+All guards in a group must pass; they run in the order added:
+
 ```rust
-use armature_framework::{Guard, AuthenticationGuard, RolesGuard, GuardContext};
+use armature_framework::{AuthenticationGuard, RolesGuard, RouteGroup};
 
-router.add_route(Route {
-    method: HttpMethod::DELETE,
-    path: "/api/admin/users/:id".to_string(),
-    handler: Arc::new(move |req| {
-        Box::pin(async move {
-            let context = GuardContext::new(req.clone());
+RouteGroup::new()
+    .prefix("/api/admin")
+    .guard(Box::new(AuthenticationGuard))
+    .guard(Box::new(RolesGuard::new(vec!["admin".to_string()])))
+    .route(&mut router, HttpMethod::DELETE, "/users/:id", delete_user);
+```
 
-            // Check authentication
-            let auth_guard = AuthenticationGuard;
-            match auth_guard.can_activate(&context).await {
-                Ok(true) => {},
-                Ok(false) | Err(e) => return Err(e),
-            }
+#### Global Guards
 
-            // Check role
-            let role_guard = RolesGuard::new(vec!["admin".to_string()]);
-            match role_guard.can_activate(&context).await {
-                Ok(true) => {},
-                Ok(false) | Err(e) => return Err(e),
-            }
+`Application::with_guard` adds a guard that runs for every request, after global
+middleware:
 
-            // Handler logic - only reached if both guards pass
-            let user_id = req.path_params.get("id").unwrap();
-            Ok(HttpResponse::ok().json(json!({ "deleted": user_id }))?)
-        })
-    }),
-});
+```rust
+use std::sync::Arc;
+
+let app = Application::new(container, router)
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))
+    .with_guard(Arc::new(AuthenticationGuard));
+```
+
+#### Module Guards
+
+Guards declared by a `#[module]` are bound to the routes that module's controllers
+register; they do not apply to other routes that happen to share a URL prefix. If a module
+guard cannot be constructed, `Application::create` panics rather than serve the module's
+routes unguarded; use `Application::try_create` to handle the error:
+
+```rust
+let app = Application::try_create::<AppModule>().await?;
 ```
 
 ## Interceptors
@@ -410,117 +453,86 @@ Currently, interceptors need to be manually applied within route handlers. A mor
 ```rust
 use armature_framework::prelude::*;
 
-router.add_route(Route {
-    method: HttpMethod::GET,
-    path: "/api/data".to_string(),
-    handler: Arc::new(move |req| {
-        Box::pin(async move {
-            // Simulate interceptor logging
-            let start = std::time::Instant::now();
-            println!("→ {} {}", req.method, req.path);
+async fn get_data(req: HttpRequest) -> Result<HttpResponse, Error> {
+    // Simulate interceptor logging
+    let start = std::time::Instant::now();
+    println!("→ {} {}", req.method, req.path);
 
-            // Handler logic
-            let response = HttpResponse::ok().json(json!({ "data": "value" }))?;
+    // Handler logic
+    let response = HttpResponse::ok().with_json(&serde_json::json!({ "data": "value" }))?;
 
-            // Log completion
-            let duration = start.elapsed();
-            println!("← {} {} - {} ({:?})", req.method, req.path, response.status, duration);
+    // Log completion
+    let duration = start.elapsed();
+    println!("← {} {} - {} ({:?})", req.method, req.path, response.status, duration);
 
-            Ok(response)
-        })
-    }),
-});
+    Ok(response)
+}
+
+router.get("/api/data", get_data);
 ```
 
 ## Complete Example
 
-Here's a complete example demonstrating guards and interceptors:
+Here's a complete example: a JWT authentication middleware registered globally, a public
+route, an authenticated route, and an admin-only route.
 
 ```rust
 use armature_framework::prelude::*;
-use armature_framework::{AuthenticationGuard, Guard, GuardContext, RolesGuard};
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+use armature_framework::{AuthenticationGuard, RolesGuard, RouteGroup, Router};
+use armature_auth::JwtAuthMiddleware;
+use armature_jwt::{JwtConfig, JwtManager};
+use serde::Serialize;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize)]
 struct ApiResponse {
     message: String,
 }
 
+fn message(text: &str) -> Result<HttpResponse, Error> {
+    HttpResponse::ok().with_json(&ApiResponse { message: text.to_string() })
+}
+
+async fn public_data(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    message("Public data")
+}
+
+async fn protected_data(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    message("Protected data")
+}
+
+async fn admin_delete(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    message("Admin action completed")
+}
+
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // A >= 32-byte random secret from the environment / a secret store.
+    let jwt_manager = JwtManager::new(JwtConfig::new(std::env::var("JWT_SECRET")?)?)?;
+
     let mut router = Router::new();
 
     // Public endpoint - no guards
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/public".to_string(),
-        handler: Arc::new(move |req| {
-            Box::pin(async move {
-                println!("→ {} {}", req.method, req.path);
-                let response = HttpResponse::ok().json(ApiResponse {
-                    message: "Public data".to_string(),
-                })?;
-                println!("← {} {} - 200", req.method, req.path);
-                Ok(response)
-            })
-        }),
-    });
+    router.get("/public", public_data);
 
-    // Protected endpoint - authentication required
-    router.add_route(Route {
-        method: HttpMethod::GET,
-        path: "/protected".to_string(),
-        handler: Arc::new(move |req| {
-            Box::pin(async move {
-                let guard = AuthenticationGuard;
-                let context = GuardContext::new(req.clone());
+    // Protected endpoint - verified identity required
+    RouteGroup::new()
+        .guard(Box::new(AuthenticationGuard))
+        .route(&mut router, HttpMethod::GET, "/protected", protected_data);
 
-                match guard.can_activate(&context).await {
-                    Ok(true) => {},
-                    Ok(false) | Err(e) => return Err(e),
-                }
+    // Admin endpoint - verified identity with the `admin` role
+    RouteGroup::new()
+        .prefix("/admin")
+        .guard(Box::new(RolesGuard::new(vec!["admin".to_string()])))
+        .route(&mut router, HttpMethod::DELETE, "/delete", admin_delete);
 
-                Ok(HttpResponse::ok().json(ApiResponse {
-                    message: "Protected data".to_string(),
-                })?)
-            })
-        }),
-    });
-
-    // Admin endpoint - authentication + role required
-    router.add_route(Route {
-        method: HttpMethod::DELETE,
-        path: "/admin/delete".to_string(),
-        handler: Arc::new(move |req| {
-            Box::pin(async move {
-                let context = GuardContext::new(req.clone());
-
-                // Check authentication
-                let auth_guard = AuthenticationGuard;
-                match auth_guard.can_activate(&context).await {
-                    Ok(true) => {},
-                    Ok(false) | Err(e) => return Err(e),
-                }
-
-                // Check role
-                let role_guard = RolesGuard::new(vec!["admin".to_string()]);
-                match role_guard.can_activate(&context).await {
-                    Ok(true) => {},
-                    Ok(false) | Err(e) => return Err(e),
-                }
-
-                Ok(HttpResponse::ok().json(ApiResponse {
-                    message: "Admin action completed".to_string(),
-                })?)
-            })
-        }),
-    });
-
-    let app = Application::new(Container::new(), router);
+    // Optional mode, so `/public` stays reachable without a token while the
+    // guards still require the identity the middleware attaches.
+    let app = Application::new(Container::new(), router)
+        .use_middleware(JwtAuthMiddleware::optional(jwt_manager));
 
     println!("Server running on http://localhost:3000");
-    app.listen(3000).await.unwrap();
+    app.listen(3000).await?;
+    Ok(())
 }
 ```
 
@@ -531,31 +543,35 @@ async fn main() {
 curl http://localhost:3000/public
 # → 200 OK
 
-# 2. Protected endpoint (no token - will fail)
+# 2. Protected endpoint without a token
 curl http://localhost:3000/protected
-# → 403 Forbidden
+# → 401 Unauthorized
 
-# 3. Protected endpoint (with token)
+# 3. Protected endpoint with a token that does not verify
 curl http://localhost:3000/protected \
-  -H "Authorization: Bearer my-token"
-# → 200 OK
+  -H "Authorization: Bearer not-a-real-jwt"
+# → 401 Unauthorized
 
-# 4. Admin endpoint (token but no role - will fail in real implementation)
+# 4. Admin endpoint with a valid token lacking the `admin` role
 curl -X DELETE http://localhost:3000/admin/delete \
-  -H "Authorization: Bearer user-token"
+  -H "Authorization: Bearer $USER_JWT"
 # → 403 Forbidden
 
-# 5. Admin endpoint (admin token)
+# 5. Admin endpoint with a valid access token carrying `"roles": ["admin"]`
 curl -X DELETE http://localhost:3000/admin/delete \
-  -H "Authorization: Bearer admin-token"
+  -H "Authorization: Bearer $ADMIN_JWT"
 # → 200 OK
 ```
 
 ## Best Practices
 
-1. **Guard Order**: Apply guards in order of cost - fast checks first (API key) before expensive ones (database lookups)
+1. **Authenticate in middleware, authorize in guards**: register an authentication
+   middleware such as `JwtAuthMiddleware` with `Application::use_middleware` (or as
+   controller `#[middleware]`); guards then only check the verified identity it attaches.
 
-2. **Error Messages**: Be specific but don't leak security information:
+2. **Guard Order**: Apply guards in order of cost - fast checks first (API key) before expensive ones (database lookups)
+
+3. **Error Messages**: Be specific but don't leak security information:
    ```rust
    // Good
    Err(Error::Forbidden("Invalid credentials".to_string()))
@@ -564,26 +580,23 @@ curl -X DELETE http://localhost:3000/admin/delete \
    Err(Error::Forbidden("User john@example.com not found".to_string()))
    ```
 
-3. **Guard Composition**: Create reusable guard combinations:
+4. **Guard Composition**: Create reusable guard combinations:
    ```rust
    async fn apply_admin_guards(context: &GuardContext) -> Result<(), Error> {
-       let auth = AuthenticationGuard;
-       match auth.can_activate(context).await {
-           Ok(true) => {},
-           _ => return Err(Error::Forbidden("Not authenticated".to_string())),
-       }
+       // Missing identity -> 401 Unauthorized
+       AuthenticationGuard.can_activate(context).await?;
 
-       let roles = RolesGuard::new(vec!["admin".to_string()]);
-       match roles.can_activate(context).await {
-           Ok(true) => Ok(()),
-           _ => Err(Error::Forbidden("Admin role required".to_string())),
-       }
+       // Missing or wrong role -> 403 Forbidden
+       RolesGuard::new(vec!["admin".to_string()])
+           .can_activate(context)
+           .await?;
+       Ok(())
    }
    ```
 
-4. **Interceptor Performance**: Keep interceptors lightweight - avoid heavy computation or I/O
+5. **Interceptor Performance**: Keep interceptors lightweight - avoid heavy computation or I/O
 
-5. **Logging**: Use structured logging in interceptors:
+6. **Logging**: Use structured logging in interceptors:
    ```rust
    println!(
        "request_id={} method={} path={} duration_ms={} status={}",
@@ -591,36 +604,28 @@ curl -X DELETE http://localhost:3000/admin/delete \
    );
    ```
 
+## Decorator Syntax
+
+Guards and middleware can also be applied with decorators. See the
+[Use Guard Guide](use-guard-guide.md) and [Use Middleware Guide](use-middleware-guide.md):
+
+```rust
+#[controller("/api")]
+#[middleware(LoggerMiddleware::new())] // controller middleware runs first...
+#[guard(AuthGuard)]                    // ...then controller guards
+struct ApiController;
+```
+
 ## Future Enhancements
 
 The following features are planned for future releases:
 
-1. **Decorator Syntax**: Apply guards via macros
-   ```rust
-   #[controller("/api")]
-   #[use_guards(AuthenticationGuard)]
-   struct ApiController {
-       #[get("/admin")]
-       #[use_guards(RolesGuard::new(vec!["admin"]))]
-       async fn admin_only(&self) -> Result<Json<Data>, Error> {
-           // ...
-       }
-   }
-   ```
-
-2. **Global Guards**: Apply guards to all routes
-   ```rust
-   let app = Application::new(container, router)
-       .use_global_guard(LoggingInterceptor)
-       .use_global_guard(AuthenticationGuard);
-   ```
-
-3. **Interceptor Chaining**: Multiple interceptors with defined order
+1. **Interceptor Chaining**: Multiple interceptors with defined order
    ```rust
    #[use_interceptors(LoggingInterceptor, CacheInterceptor)]
    ```
 
-4. **Exception Filters**: Dedicated error handling interceptors
+2. **Exception Filters**: Dedicated error handling interceptors
    ```rust
    #[use_filters(HttpExceptionFilter)]
    ```

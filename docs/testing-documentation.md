@@ -63,12 +63,14 @@ Examples cover:
 - Custom claims with user data
 - Token signing and verification
 - Standard claims usage
-- JwtManager API methods
+- JwtManager API methods (`verify`, `verify_access`, `decode_unverified_insecure`)
 
 ```rust
 use armature_jwt::{JwtConfig, JwtManager, StandardClaims};
 
-let config = JwtConfig::new("secret".to_string());
+// `JwtConfig::new` returns a Result and rejects HMAC secrets shorter than
+// 32 bytes, known placeholders and low-entropy values (there is no `Default`).
+let config = JwtConfig::new("kV9pQ2xR7tW4yZ1bN6mC3fH8jL5sD0gA".to_string())?;
 let manager = JwtManager::new(config)?;
 
 let claims = StandardClaims::new()
@@ -77,6 +79,9 @@ let claims = StandardClaims::new()
 
 let token = manager.sign(&claims)?;
 let decoded: StandardClaims = manager.verify(&token)?;
+
+// To authenticate a request, use `verify_access`, which also rejects refresh tokens.
+let access: StandardClaims = manager.verify_access(&token)?;
 ```
 
 ### Configuration Management (`armature-config`)

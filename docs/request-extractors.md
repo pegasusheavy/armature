@@ -349,11 +349,18 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract custom header
     let request_id: String = header!(request, "X-Request-ID")?;
 
-    println!("Auth: {}", auth);
+    // Never log credentials such as `auth`.
+    println!("Request ID: {}", request_id);
 
     Ok(())
 }
 ```
+
+> Header values are client-controlled. Don't make authorization decisions from a raw
+> `Authorization` header or from headers like `X-User-Id`/`X-User-Role`: verify the
+> credential in an authentication middleware (for JWTs, `armature_auth::JwtAuthMiddleware`
+> registered with `Application::use_middleware`) and read the verified identity from
+> `request.extensions` (`armature_core::VerifiedIdentity`, `armature_auth::UserContext`).
 
 ## Traits
 
