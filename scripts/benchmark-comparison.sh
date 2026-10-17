@@ -2,7 +2,7 @@
 # Benchmark Armature Micro-Framework vs Actix-web vs Axum
 #
 # Prerequisites:
-# - oha (cargo install oha)
+# - oha (cargo install oha --version 1.16.0 --locked)
 # - Build all servers first
 #
 # Usage: ./scripts/benchmark-comparison.sh
@@ -28,7 +28,7 @@ echo ""
 
 # Check for oha
 if ! command -v oha &> /dev/null; then
-    echo -e "${RED}Error: 'oha' is not installed. Install with: cargo install oha${NC}"
+    echo -e "${RED}Error: 'oha' is not installed. Install with: cargo install oha --version 1.16.0 --locked${NC}"
     exit 1
 fi
 
@@ -38,14 +38,15 @@ cargo build --release --example micro_benchmark_server 2>/dev/null
 (cd benches/comparison_servers/actix_server && cargo build --release 2>/dev/null)
 (cd benches/comparison_servers/axum_server && cargo build --release 2>/dev/null)
 
-# Function to start a server and wait for it
+# Function to start a server and wait for it. The binary path is executed
+# directly (no `eval`), so it is never re-parsed as shell syntax.
 start_server() {
     local name=$1
-    local cmd=$2
+    local binary=$2
     local port=$3
 
     echo -e "${BLUE}Starting $name on port $port...${NC}"
-    eval "$cmd" &
+    "$binary" &
     sleep 2
 
     # Check if server is running

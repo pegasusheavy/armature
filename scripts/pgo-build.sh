@@ -23,7 +23,11 @@
 set -e
 
 # Configuration
-PGO_DIR="${PGO_DIR:-/tmp/armature-pgo}"
+# Default under target/ rather than a fixed /tmp path: a predictable world-
+# writable location could be pre-created (or symlinked) by another local user,
+# and --clean runs `rm -rf` on it.
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PGO_DIR="${PGO_DIR:-${PROJECT_ROOT}/target/pgo-data}"
 PROFILE_DATA="${PGO_DIR}/merged.profdata"
 # Benchmarks live in the crates they measure, so the profiling workload has to
 # name them explicitly to exercise more than the root package. These three cover
@@ -32,6 +36,11 @@ PROFILE_DATA="${PGO_DIR}/merged.profdata"
 # package's two benches touch no `armature_*` symbol at all (they time stdlib
 # and crossbeam allocation shapes), so including any of them dilutes the profile
 # rather than improving it. Override WORKLOAD_CMD to widen it.
+#
+# WORKLOAD_CMD is split on whitespace into an argv and executed directly, never
+# through `eval`, so it cannot smuggle shell syntax (`;`, `$(...)`, redirects).
+# A workload that needs a pipeline or background job belongs in a script; point
+# WORKLOAD_CMD at that script.
 WORKLOAD_CMD="${WORKLOAD_CMD:-cargo bench --profile pgo-generate -p armature-core -p armature-h1 -p armature-jwt}"
 
 RED='\033[0;31m'
@@ -71,8 +80,10 @@ OPTIONS:
     --help       Show this help message
 
 ENVIRONMENT VARIABLES:
-    PGO_DIR          Directory for PGO data (default: /tmp/armature-pgo)
-    WORKLOAD_CMD     Command to run for profiling
+    PGO_DIR          Directory for PGO data (default: target/pgo-data)
+    WORKLOAD_CMD     Command to run for profiling, split on whitespace and
+                     executed directly (no shell evaluation); use a script
+                     for anything needing pipes or background jobs
                      (default: cargo bench --profile pgo-generate over
                       armature-core, armature-h1, armature-jwt)
 
@@ -86,8 +97,8 @@ EXAMPLES:
     # Build using existing profile data
     ./scripts/pgo-build.sh --build
 
-    # Custom workload
-    WORKLOAD_CMD="./target/pgo-generate/my-server &" ./scripts/pgo-build.sh --generate
+    # Custom workload (a script that starts the server and drives load)
+    WORKLOAD_CMD="./scripts/my-pgo-workload.sh" ./scripts/pgo-build.sh --generate
 
 EXPECTED IMPROVEMENT:
     PGO typically provides 10-20% performance improvement for CPU-bound workloads.
@@ -133,8 +144,15 @@ pgo_generate() {
     # mismatch or silently produces a contaminated profile.
     rm -f "${PGO_DIR}"/*.profraw
 
+    local -a workload_argv
+    read -r -a workload_argv <<< "${WORKLOAD_CMD}"
+    if [ "${#workload_argv[@]}" -eq 0 ]; then
+        log_error "WORKLOAD_CMD is empty."
+        exit 1
+    fi
+
     WORKLOAD_STATUS=0
-    RUSTFLAGS="-Cprofile-generate=${PGO_DIR}" eval "${WORKLOAD_CMD}" || WORKLOAD_STATUS=$?
+    RUSTFLAGS="-Cprofile-generate=${PGO_DIR}" "${workload_argv[@]}" || WORKLOAD_STATUS=$?
 
     # A nonzero profraw count only proves *something* ran. With a multi-package
     # workload, an abort partway through still leaves files behind, and a PGO

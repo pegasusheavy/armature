@@ -28,7 +28,7 @@ See [results/benchmark_20251216.md](results/benchmark_20251216.md) for detailed 
 
 ```bash
 # Install oha (HTTP load generator)
-cargo install oha
+cargo install oha --version 1.16.0 --locked
 
 # For Express.js benchmarks (installs the exact versions pinned in package-lock.json)
 npm ci
