@@ -16,7 +16,17 @@ Integration strategies for using Armature with external web servers like NGINX a
 
 ## Current Architecture
 
-Armature currently uses **Hyper** as its embedded HTTP server:
+Armature embeds its own HTTP server. HTTP/1.1 is served by `armature-h1` (the
+default `h1-backend` feature); HTTP/2 and h2c by **Hyper**; HTTP/3 by `quinn` +
+`h3` (the `http3` feature). Building with `default-features = false` serves
+HTTP/1.1 through Hyper as well. Every transport runs the same pipeline: path
+canonicalization, global middleware, guards, route-scoped middleware and
+guards, CORS, body limits and the body read policy. Slow-client defences (10 s
+head and TLS handshake deadlines, 30 s body inactivity / 1 KiB/s minimum body
+rate) and a connection cap (`PipelineConfig::max_connections`, default 10 000)
+are on by default; see the [Request Timeouts guide](request-timeouts-guide.md).
+
+The hyper serve path looks like this:
 
 ```rust
 // armature-core/src/application.rs
@@ -112,11 +122,21 @@ There are **three main approaches** to integrate external servers:
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Application::create::<AppModule>().await;
 
-    // Listen on localhost only (NGINX will forward)
-    app.listen(3000).await?;
+    // Listen on loopback only (NGINX will forward). `listen(port)` binds
+    // 0.0.0.0, which would let clients bypass the proxy.
+    app.listen_on(([127, 0, 0, 1], 3000)).await?;
     Ok(())
 }
 ```
+
+Behind a proxy, the socket peer is the proxy. Read the real client address with
+`HttpRequest::client_address(1)` (one trusted proxy): it takes the right-most
+`X-Forwarded-For` entry the proxy appended, across every `X-Forwarded-For` line.
+`client_address(0)` (the default in `armature-ratelimit`, `armature-audit` and
+`armature-analytics`) ignores the header and uses the socket peer. Armature
+never reads `X-Real-IP`, and you should never trust the left-most
+`X-Forwarded-For` entry, which the client controls. Set the depth to the exact
+number of proxies in front of the app.
 
 **2. NGINX Configuration:**
 
@@ -160,7 +180,7 @@ server {
     # Security Headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     # Static files (serve directly from NGINX)
     location /static/ {
@@ -180,7 +200,8 @@ server {
 
         # Headers
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
+        # Armature reads the right-most X-Forwarded-For hop via
+        # client_address(1); X-Real-IP is not consulted.
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
@@ -263,7 +284,7 @@ sudo systemctl reload nginx
 
 #### Benefits
 
-✅ **Production-Ready**: NGINX handles SSL, compression, caching
+✅ **Offloading**: NGINX handles SSL, compression, caching
 ✅ **Load Balancing**: Distribute load across multiple instances
 ✅ **Zero-Downtime Deploys**: Reload NGINX config without dropping connections
 ✅ **Static Assets**: NGINX serves static files efficiently
@@ -745,5 +766,5 @@ If we want to add pluggable server support:
 2. Create deployment guides for various scenarios
 3. Consider creating `armature-server-*` crates for alternative backends if needed
 
-The **reverse proxy pattern with NGINX** is the industry-standard approach and provides the most production-ready features without requiring changes to Armature's core architecture.
+The **reverse proxy pattern with NGINX** is the industry-standard approach and provides the most operational features (TLS, load balancing, caching, WAF) without requiring changes to Armature's core architecture.
 

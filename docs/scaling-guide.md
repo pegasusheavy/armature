@@ -165,6 +165,24 @@ let lb = LoadBalancer::new()
     .backend(Backend::new("http://small-server:3000").weight(5));
 ```
 
+Ferron backend URLs must be `http://` or `https://` with a host;
+`FerronConfig::validate` rejects anything else.
+
+### Per-Instance Limits Behind a Load Balancer
+
+Each instance caps open connections per accept loop at
+`PipelineConfig::max_connections` (default 10 000) and reads request bodies
+under a `BodyReadPolicy` (30 s inactivity, 1 KiB/s minimum rate). When adding
+instances, keep the load balancer's own connection and idle limits consistent
+with these (see the [Request Timeouts guide](request-timeouts-guide.md)).
+
+Behind the load balancer every request's socket peer is the balancer. Set the
+`trusted_proxy_depth` of rate limiting, audit and analytics middleware to the
+number of proxies in front of the app so `HttpRequest::client_address(depth)`
+returns the real client; otherwise all clients share one rate-limit bucket.
+Use a shared store (Redis) for rate-limit state so limits hold across
+instances.
+
 ## Database Scaling
 
 ### Connection Pooling

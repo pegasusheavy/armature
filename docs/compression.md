@@ -34,14 +34,14 @@ Add the compression feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["compression"] }
+armature-framework = { version = "0.7", features = ["compression"] }
 ```
 
 Or use specific compression algorithms:
 
 ```toml
 [dependencies]
-armature-compression = { version = "0.1", features = ["gzip", "brotli"] }
+armature-compression = { version = "0.4", features = ["gzip", "brotli"] }
 ```
 
 ### Available Features

@@ -6,24 +6,28 @@ Armature is designed as a **completely stateless** framework, following RESTful 
 
 ### 1. No Server-Side Sessions
 
-Armature does **not** implement or provide:
-- Session storage mechanisms
-- In-memory session management
-- Session cookies
-- Server-side user state persistence
-- Session stores (Redis, memcached, etc.)
+Armature's core keeps no per-user state in process memory:
+- No in-memory session management
+- No server-side user state between requests
+- No sticky-session requirement
+
+When an application does need server-side sessions (for example to hold an
+OAuth2 `PendingAuth` between redirect and callback, or for cookie-based browser
+logins), the optional `armature-session` crate stores them in an **external**
+store (Redis, memcached, CouchDB), so every instance stays interchangeable. See
+the [Session guide](session-guide.md).
 
 ### 2. Stateless Authentication
 
 All authentication is token-based and stateless:
 
-```rust
+```rust,ignore
 // JWT tokens carry all user information
-let token = jwt_manager.create_token(user_claims)?;
+let token = jwt_manager.sign(&user_claims)?;
 
-// Each request is independent
-// Extract user from token on every request
-let claims = jwt_manager.verify_token(&token)?;
+// Each request is independent: verify the token on every request.
+// `verify_access` rejects refresh tokens presented as access tokens.
+let claims: UserClaims = jwt_manager.verify_access(&token)?;
 ```
 
 **Key Points:**
@@ -36,19 +40,19 @@ let claims = jwt_manager.verify_token(&token)?;
 
 User information exists only for the duration of a single request:
 
-```rust
-#[controller("/api")]
-struct UserController;
+```rust,ignore
+use armature_auth::UserContext;
 
 impl UserController {
     async fn get_profile(&self, req: HttpRequest) -> Result<Json<User>, Error> {
-        // Extract user from JWT token in request
-        let token = extract_bearer_token(&req)?;
-        let claims = verify_token(token)?;
+        // JwtAuthMiddleware verified the bearer token and attached the
+        // identity to this request only.
+        let user = req
+            .extension::<UserContext>()
+            .ok_or_else(|| Error::Unauthorized("not authenticated".into()))?;
 
-        // Use claims for this request only
         // No session storage
-        Ok(Json(get_user_from_db(claims.user_id)?))
+        Ok(Json(get_user_from_db(&user.user_id).await?))
     }
 }
 ```
@@ -57,76 +61,82 @@ impl UserController {
 
 ### JWT-Based Authentication
 
-```rust
-use armature_jwt::{JwtManager, JwtConfig};
+```rust,ignore
+use armature_auth::JwtAuthMiddleware;
+use armature_jwt::{JwtConfig, JwtManager};
+
+// At least 32 random bytes; JwtConfig::new rejects short, placeholder or
+// low-entropy secrets and returns a Result.
+let secret = std::env::var("JWT_SECRET")?;
+let jwt_manager = JwtManager::new(JwtConfig::new(secret)?)?;
 
 // Create token at login
-let token = jwt_manager.create_token(UserClaims {
-    user_id: user.id,
-    email: user.email,
-    roles: user.roles,
-})?;
+let token = jwt_manager.sign(&serde_json::json!({
+    "sub": user.id,
+    "roles": user.roles,
+    "exp": chrono::Utc::now().timestamp() + 900,
+}))?;
 
-// Client stores token (localStorage, etc.)
-// Client sends token with each request
+// Client sends the token with each request:
 // Authorization: Bearer <token>
 
-// Server verifies token on each request
-let claims = jwt_manager.verify_token(&token)?;
-// Use claims.user_id, claims.roles, etc.
+// Server verifies it on each request: register the middleware globally so it
+// runs before every guard.
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager));
 ```
 
 ### OAuth2/OIDC Integration
 
-OAuth2 flows are stateless using PKCE:
+The OAuth2 redirect flow is the one place a short-lived server-side record is
+required. `authorization_url` returns the URL together with a `PendingAuth`
+(PKCE verifier, `state`, OIDC `nonce`) that must be kept **server-side** until
+the callback and is valid for 10 minutes. Keep it in an external store keyed by
+`pending.state()`, never in a client-readable cookie or form field.
 
-```rust
-use armature_auth::providers::GoogleProvider;
+```rust,ignore
+use armature_auth::OAuth2Provider;
 
-// 1. Generate auth URL with PKCE
-let (auth_url, pkce_verifier) = provider
-    .authorization_url_with_pkce()
-    .map_err(|e| Error::Internal(e.to_string()))?;
+// 1. Start the flow
+let (auth_url, pending) = provider.authorization_url()?;
+pending_store.put(pending.state(), &pending).await?; // e.g. armature-session / Redis
 
-// 2. Store PKCE verifier client-side (NOT on server)
-// Client handles the PKCE flow
+// 2. Callback: look up the pending flow by the returned state
+let pending = pending_store.take(&returned_state).await?;
+let token = provider.exchange_code(code, &returned_state, pending).await?;
 
-// 3. Exchange code for token (stateless)
-let token = provider.exchange_code_pkce(code, pkce_verifier).await?;
-
-// 4. Create JWT from user info
+// 3. Issue your own JWT from the verified user info
 let user_info = provider.get_user_info(&token).await?;
-let jwt = jwt_manager.create_token(user_info)?;
-
-// Return JWT to client
+let jwt = jwt_manager.sign(&claims_for(&user_info))?;
 ```
 
-**Important:** CSRF/state tokens are handled client-side or embedded in redirect URLs, not stored on server.
+`state` is checked in constant time and the OIDC `id_token` is verified before
+its claims are exposed. See the [OAuth2 providers guide](oauth2-providers-guide.md).
 
 ### SAML 2.0
 
-SAML integration is stateless:
+SP-initiated SAML also needs a short-lived server-side record: the
+AuthnRequest ID, which the IdP echoes as `InResponseTo`. Validation requires it,
+and accepted assertion IDs go into a replay cache. Use a shared
+`AssertionReplayCache` (`SamlServiceProvider::with_replay_cache`) when you run
+several instances; the default `InMemoryReplayCache` is per process.
 
-```rust
-use armature_auth::saml::SamlServiceProvider;
+```rust,ignore
+use armature_auth::saml::SamlProvider;
 
-// 1. Generate authentication request
-let authn_request = saml_provider.create_authn_request()?;
+// 1. Generate the AuthnRequest and remember its ID server-side
+let request = saml_provider.create_auth_request()?;
+pending_store.put(&login_id, &request.request_id).await?;
 
-// 2. Redirect user with request embedded in URL
-// No server-side state stored
+// 2. On the ACS callback, validate against that ID
+let request_id = pending_store.take(&login_id).await?;
+let assertion = saml_provider
+    .validate_response(&saml_response, &request_id, None, None)
+    .await?;
 
-// 3. Validate SAML response (stateless validation)
-let assertion = saml_provider.validate_response(&saml_response)?;
-
-// 4. Create JWT from assertion
-let jwt = jwt_manager.create_token(UserClaims {
-    user_id: assertion.name_id,
-    email: assertion.attributes.get("email"),
-    // ...
-})?;
-
-// Return JWT to client
+// 3. Create a JWT from the assertion
+let jwt = jwt_manager.sign(&serde_json::json!({ "sub": assertion.name_id }))?;
 ```
 
 ## Why Stateless?
@@ -154,9 +164,9 @@ let jwt = jwt_manager.create_token(UserClaims {
    - Token validation is cryptographic (fast)
 
 5. **Security**
-   - No session hijacking
-   - No session fixation attacks
+   - No server-side session to fixate or hijack
    - Token expiration is built-in
+   - Tokens can still be stolen: keep access tokens short-lived
 
 ### Trade-offs
 
@@ -226,15 +236,16 @@ fn set_current_user(user: User) {
 
 ### ✅ Extract User from Token Each Request
 
-```rust
-// GOOD - Stateless
+```rust,ignore
+// GOOD - Stateless: JwtAuthMiddleware verified the token for this request
 async fn get_user(req: HttpRequest) -> Result<User, Error> {
-    let token = extract_bearer_token(&req)?;
-    let claims = jwt_manager.verify_token(token)?;
+    let identity = req
+        .extension::<UserContext>()
+        .ok_or_else(|| Error::Unauthorized("not authenticated".into()))?;
 
     // Optionally fetch from database
     // (database is external state, not server state)
-    let user = database.find_user(&claims.user_id).await?;
+    let user = database.find_user(&identity.user_id).await?;
 
     Ok(user)
 }
@@ -242,72 +253,55 @@ async fn get_user(req: HttpRequest) -> Result<User, Error> {
 
 ### ✅ Use Guards for Auth
 
-```rust
-// GOOD - Validates on each request
-use armature_framework::{Guard, GuardContext};
+Guards authorize; they do not parse credentials. The built-in guards fail
+closed: `armature_core::AuthenticationGuard` admits a request only when an
+authentication layer has attached a verified identity (`VerifiedIdentity` or
+`RequestRoles`), and `armature_auth::{AuthGuard, RoleGuard, PermissionGuard}`
+require the verified `UserContext`. `JwtAuthMiddleware` attaches both.
 
-pub struct AuthenticationGuard;
+```rust,ignore
+use armature_auth::{JwtAuthMiddleware, RoleGuard};
 
-#[async_trait]
-impl Guard for AuthenticationGuard {
-    async fn can_activate(&self, context: &GuardContext) -> Result<bool, Error> {
-        let header = context.get_header("authorization")
-            .ok_or_else(|| Error::Forbidden("Missing auth".to_string()))?;
+// Global middleware runs before every guard (middleware -> guards -> handler).
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager));
 
-        let token = extract_bearer_token(header)?;
-        let _claims = jwt_manager.verify_token(token)?;
-
-        // Token is valid
-        Ok(true)
-    }
-}
+// On a controller or route:
+// #[guard(RoleGuard::any(vec!["admin".to_string()]))]
 ```
+
+A bare `Authorization: Bearer ...` header no longer satisfies any built-in
+guard.
 
 ### ✅ Use Middleware for Request Context
 
-```rust
-// GOOD - Attach user to request (not persistent)
-pub struct AuthMiddleware {
-    jwt_manager: JwtManager,
-}
+Use `JwtAuthMiddleware` (or `JwtAuthMiddleware::optional` for routes that also
+serve anonymous callers). It verifies the token with `verify_access`, then
+attaches `armature_auth::UserContext` and `armature_core::VerifiedIdentity` as
+request **extensions**, which exist only for that request.
 
-#[async_trait]
-impl Middleware for AuthMiddleware {
-    async fn handle(&self, mut req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
-        if let Some(auth_header) = req.headers.get("authorization") {
-            if let Ok(token) = extract_bearer_token(auth_header) {
-                if let Ok(claims) = self.jwt_manager.verify_token(token) {
-                    // Add to request headers (request-scoped only)
-                    req.headers.insert("x-user-id".to_string(), claims.sub);
-                }
-            }
-        }
-
-        next(req).await
-    }
-}
-```
+If you write your own authentication middleware, attach identity with
+`req.insert_extension(VerifiedIdentity::new(subject))`. Never copy it into a
+request header such as `x-user-id`: headers are client-controlled, so a client
+could send that header itself.
 
 ## Token Refresh Pattern
 
 For long-lived sessions without server-side state:
 
-```rust
-#[derive(Serialize)]
-struct TokenPair {
-    access_token: String,  // Short-lived (15-60 min)
-    refresh_token: String, // Long-lived (7-30 days)
-}
+```rust,ignore
+use armature_jwt::TokenPair;
 
-// Login: return both tokens
-let access_token = jwt_manager.create_token(user_claims)?;
-let refresh_token = jwt_manager.create_refresh_token(user_claims)?;
+// Login: return both tokens. The access token carries `typ: at+jwt`, the
+// refresh token `typ: refresh+jwt` and `token_use: refresh`.
+let pair: TokenPair = jwt_manager.generate_token_pair(&user_claims)?;
 
-// When access token expires:
-// Client calls /auth/refresh with refresh_token
-// Server validates refresh_token
-// Server issues new access_token
-// No session lookup needed
+// /auth/refresh: only a refresh token is accepted here...
+let new_pair = jwt_manager.refresh_token::<UserClaims>(&pair.refresh_token)?;
+
+// ...and never as a bearer token: JwtAuthMiddleware and
+// JwtManager::verify_access reject refresh tokens.
 ```
 
 ## Rate Limiting (Stateless)
@@ -350,7 +344,7 @@ async fn handle_websocket(req: HttpRequest) -> Result<(), Error> {
     let token = req.query_params.get("token")
         .ok_or_else(|| Error::Forbidden("Missing token".into()))?;
 
-    let claims = jwt_manager.verify_token(token)?;
+    let claims: UserClaims = jwt_manager.verify_access(token)?;
 
     // Connection is scoped to this handler
     // When connection closes, all state is gone
@@ -413,8 +407,8 @@ spec:
 
 Armature enforces stateless architecture by:
 
-1. **No session framework** - Not provided, not supported
-2. **JWT-based auth** - All user context in tokens
+1. **No in-process sessions** - Optional sessions (`armature-session`) live in an external store
+2. **JWT-based auth** - All user context in verified tokens
 3. **Request-scoped data** - No persistence between requests
 4. **External stores only** - Database, cache (Redis) are external, not in-server memory
 5. **Cloud-native design** - Horizontal scaling without shared state
@@ -424,7 +418,7 @@ This design ensures your Armature application can:
 - Deploy anywhere (containers, serverless, VMs)
 - Handle millions of requests across multiple instances
 - Recover from failures without user impact
-- Maintain security without session vulnerabilities
+- Keep authentication independent of which instance serves a request
 
 **Remember:** If you need to "remember" something about a user, put it in the JWT or look it up from a database on each request. Never store it in server memory.
 

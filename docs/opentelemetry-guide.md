@@ -65,10 +65,10 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["opentelemetry"] }
+armature-framework = { version = "0.7", features = ["opentelemetry"] }
 
 # Choose exporters (available features: "otlp" [default], "zipkin", "full")
-armature-opentelemetry = { version = "0.1", features = ["otlp", "zipkin"] }
+armature-opentelemetry = { version = "0.5", features = ["otlp", "zipkin"] }
 ```
 
 ### Basic Setup
@@ -200,16 +200,19 @@ HTTP requests are automatically traced when using the middleware:
 
 ```rust
 let app = Application::new(container, router)
-    .with_middleware(telemetry.middleware());
+    .use_middleware(telemetry.middleware());
 ```
 
 Each request creates a span with:
-- HTTP method
-- Request path
-- Status code
+- HTTP method (`http.request.method`)
+- Request path without the query string (`url.path`)
+- Status code (`http.response.status_code`)
+- Response body size
 - Duration
-- Request/response headers
-- User agent
+- `Host` (`server.address`) and user agent
+
+Request and response headers are not recorded, and the query string (which
+commonly carries tokens and reset codes) never reaches the span.
 
 ### Manual Spans
 
@@ -439,7 +442,7 @@ Export to Zipkin:
 
 ```toml
 [dependencies]
-armature-opentelemetry = { version = "0.1", features = ["zipkin"] }
+armature-opentelemetry = { version = "0.5", features = ["zipkin"] }
 ```
 
 ```rust
@@ -490,7 +493,7 @@ The telemetry middleware automatically:
 
 ```rust
 let app = Application::new(container, router)
-    .with_middleware(telemetry.middleware());
+    .use_middleware(telemetry.middleware());
 ```
 
 ### Multiple Middleware
@@ -499,10 +502,14 @@ Combine with other middleware:
 
 ```rust
 let app = Application::new(container, router)
-    .with_middleware(CorsMiddleware::permissive())
-    .with_middleware(telemetry.middleware())  // Should be early in chain
-    .with_middleware(AuthMiddleware::new());
+    .use_middleware(telemetry.middleware())  // Early: traces everything below
+    .use_middleware(CorsMiddleware::new().allow_origin("https://app.example.com"))
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager));
 ```
+
+Global middleware runs in the order added, before any guard
+(middleware → guards → handler), so the span also covers requests that guards
+reject.
 
 ## Best Practices
 
@@ -702,7 +709,7 @@ spec:
 - ✅ OTLP and Zipkin exporters (OTLP works with any OTLP-compatible backend, including Jaeger and Prometheus)
 - ✅ Distributed tracing with context propagation
 - ✅ Flexible configuration and builder API
-- ✅ Production-ready with sampling strategies
+- ✅ Configurable sampling strategies
 
 **When to Use:**
 - Microservices architectures

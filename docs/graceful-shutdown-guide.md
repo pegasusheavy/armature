@@ -457,6 +457,13 @@ shutdown_manager.set_timeout(Duration::from_secs(10)).await;
 shutdown_manager.set_timeout(Duration::from_secs(60)).await;
 ```
 
+The drain timeout only has to cover requests the server is still willing to
+wait for. Request bodies are already bounded by the application's
+`BodyReadPolicy` (30 s of inactivity, 1 KiB/s minimum rate by default), so a
+client trickling an upload cannot hold shutdown open past that. Handlers have
+no deadline unless you set `PipelineConfig::request_timeout`. See the
+[Request Timeouts guide](request-timeouts-guide.md).
+
 ### 2. Prioritize Cleanup
 
 Register hooks in order of importance:
