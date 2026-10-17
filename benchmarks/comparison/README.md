@@ -30,8 +30,8 @@ See [results/benchmark_20251216.md](results/benchmark_20251216.md) for detailed 
 # Install oha (HTTP load generator)
 cargo install oha
 
-# For Express.js benchmarks
-npm install express
+# For Express.js benchmarks (installs the exact versions pinned in package-lock.json)
+npm ci
 ```
 
 ### Build

@@ -2,7 +2,11 @@
 # Framework Comparison Benchmarks
 # Usage: ./run_benchmarks.sh [connections] [duration]
 
-set -e
+set -euo pipefail
+
+# Every server is built from the source in this directory; run from here so the
+# relative ./target and node_modules paths resolve no matter where we were invoked.
+cd "$(dirname "$0")"
 
 CONNECTIONS=${1:-100}
 DURATION=${2:-10s}
@@ -144,12 +148,10 @@ if command -v node &> /dev/null; then
     echo -e "${GREEN}  Starting Express.js Benchmark${NC}"
     echo -e "${GREEN}════════════════════════════════════════${NC}"
 
-    # Check if express is installed
-    if [ ! -d "node_modules" ]; then
-        echo "Installing Express..."
-        npm init -y > /dev/null 2>&1
-        npm install express --save > /dev/null 2>&1
-    fi
+    # Install exactly what package-lock.json pins (fails if the lockfile and
+    # package.json disagree) and skip dependency install scripts.
+    echo "Installing Node.js dependencies from package-lock.json..."
+    npm ci --ignore-scripts --no-audit --no-fund > /dev/null
 
     PORT=8081 node express_bench.js &
     EXPRESS_PID=$!
