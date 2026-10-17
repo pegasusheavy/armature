@@ -76,7 +76,7 @@ armature generate guard admin
 ### Manual Setup
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // Define your domain model
@@ -163,14 +163,14 @@ Main library that re-exports everything from core and macros. Add to your `Cargo
 
 ```toml
 [dependencies]
-armature-framework = "0.1"
+armature = { package = "armature-framework", version = "0.7" }
 ```
 
 Or with specific features:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["auth", "cache", "validation"] }
+armature = { package = "armature-framework", version = "0.7", features = ["auth", "cache", "validation"] }
 ```
 
 ## Decorators
@@ -254,8 +254,8 @@ Services are singletons by default and shared across the application.
 Armature provides NestJS-inspired lifecycle hooks for managing service initialization and cleanup:
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::lifecycle::{OnModuleInit, OnModuleDestroy, LifecycleResult};
+use armature::prelude::*;
+use armature::lifecycle::{OnModuleInit, OnModuleDestroy, LifecycleResult};
 use async_trait::async_trait;
 
 #[injectable]
@@ -314,7 +314,7 @@ async fn get_user(req: HttpRequest) -> Result<Json<User>, Error> {
 Comprehensive HTTP status code support with type-safe error handling:
 
 ```rust
-use armature_framework::{Error, HttpStatus};
+use armature::{Error, HttpStatus};
 
 // Type-safe status codes
 let status = HttpStatus::NotFound;
@@ -336,24 +336,61 @@ See the [HTTP Status & Errors Guide](docs/http-status-errors.md) for complete do
 
 ## Guards and Interceptors
 
-Protect and transform your routes with Guards and Interceptors:
+Protect and transform your routes with Guards and Interceptors. Guards **fail closed**:
+`AuthenticationGuard` and `RolesGuard` admit a request only when an authentication
+layer has already verified the caller and attached a `VerifiedIdentity` (or
+`RequestRoles`) extension. A bare `Authorization: Bearer ...` header is not enough.
+
+The request pipeline follows NestJS order: global middleware → guards → handler.
+Register authentication as global middleware so the verified identity exists before
+any guard runs:
 
 ```rust
-use armature_framework::{Guard, AuthenticationGuard, GuardContext};
+use armature::armature_auth::JwtAuthMiddleware;
+use armature::armature_jwt::{JwtConfig, JwtManager};
+use armature::prelude::*;
 
-// Apply authentication guard
-let guard = AuthenticationGuard;
-let context = GuardContext::new(request);
-match guard.can_activate(&context).await {
-    Ok(true) => { /* proceed */ },
-    _ => { /* unauthorized */ }
-}
+// HMAC secrets must be at least 32 bytes; weak or placeholder secrets are rejected.
+let jwt = JwtManager::new(JwtConfig::new(std::env::var("JWT_SECRET")?)?)?;
+
+let app = Application::create::<AppModule>()
+    .await
+    // Verifies the bearer token (access tokens only) and inserts
+    // `VerifiedIdentity` + `UserContext` before guards run.
+    .use_middleware(JwtAuthMiddleware::new(jwt));
 
 // Built-in guards: AuthenticationGuard, RolesGuard, ApiKeyGuard
-// Built-in interceptors: LoggingInterceptor, TransformInterceptor, CacheInterceptor
+// `RolesGuard::new(vec![])` means "any authenticated caller", never "everyone".
 ```
 
 See the [Guards & Interceptors Guide](docs/guards-interceptors.md) for detailed documentation.
+
+## Secure Defaults
+
+Recent releases tightened several defaults. The ones most likely to affect an upgrade:
+
+- **Paths are canonicalized before routing.** `//` collapses and encoded unreserved
+  characters decode; `.`/`..` segments, `%2F`, `%5C`, `%00` and `\` are refused with `400`.
+  Module guards are bound to their module's routes, not to URL prefixes.
+- **Slow clients are cut off.** Request bodies are read under a `BodyReadPolicy` (30 s
+  inactivity, 1 KiB/s minimum rate, `408` otherwise), headers must arrive within 10 s,
+  TLS handshakes within 10 s, and accept loops cap concurrent connections
+  (`PipelineConfig::max_connections`, default 10 000).
+- **JWT:** `JwtConfig::new` returns `Result` and rejects HMAC secrets under 32 bytes or
+  known placeholders; there is no `Default`. Refresh tokens are not accepted as bearer
+  tokens (`JwtManager::verify_access`).
+- **Client IPs:** rate limiting, audit and analytics use
+  `HttpRequest::client_address(trusted_proxy_depth)`, which is the socket peer unless
+  you trust a fixed number of proxies. `X-Forwarded-For` and `X-Real-IP` are not
+  trusted by default.
+- **Error bodies** omit the request path, and deserialization errors return a generic
+  message (`Error::client_message`).
+- **GraphQL** playground, GraphiQL and introspection are off by default; use
+  `GraphQLConfig::development(endpoint)` to opt in.
+- **Cookies** are built with the validating `Cookie` builder (`HttpResponse::set_cookie`);
+  `HttpResponse::cookie(name, value)` no longer accepts attributes inside the value.
+
+Each crate's `CHANGELOG.md` lists the breaking changes and migrations.
 
 ## Request/Response Handling
 

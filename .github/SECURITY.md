@@ -29,16 +29,20 @@ not be exposed to a network.
 **Please do not report security vulnerabilities through public GitHub issues,
 discussions, or pull requests.**
 
-Report privately through either channel:
+Report privately through **GitHub private vulnerability reporting**:
+[open a draft security advisory](https://github.com/quinnjr/armature/security/advisories/new).
+For a vulnerability in a single crate you may also use that crate's own
+repository (`https://github.com/quinnjr/armature-<name>/security/advisories/new`).
+The report stays visible only to you and the maintainers until a fix is published.
 
-1. **GitHub private vulnerability reporting** (preferred):
-   [open a draft security advisory](https://github.com/quinnjr/armature/security/advisories/new).
-   For a vulnerability in a single crate you may also use that crate's own
-   repository (`https://github.com/quinnjr/armature-<name>/security/advisories/new`).
-2. **Email**: [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me) with
-   `[armature security]` in the subject. You may encrypt with the maintainer's
-   OpenPGP key from <https://github.com/quinnjr.gpg> (also referenced by
-   [`security.txt`](https://quinnjr.github.io/armature/.well-known/security.txt)).
+The same contact is published in machine-readable form (RFC 9116) at
+<https://quinnjr.github.io/armature/.well-known/security.txt>. The documentation
+site is a GitHub Pages project site, so the file lives under `/armature/`
+rather than at the host root, where some scanners look for it.
+
+If you cannot use GitHub, email [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me)
+with `[armature security]` in the subject. You may encrypt with the maintainer's
+OpenPGP key from <https://github.com/quinnjr.gpg>.
 
 #### What to Include
 
@@ -78,8 +82,10 @@ When using Armature in production:
    - Use Dependabot or similar tools for automated updates
 
 2. **Authentication & Authorization**
-   - Use strong JWT secrets: at least 32 random bytes for HS256 (e.g. `openssl rand -base64 32`); `armature-jwt` rejects shorter keys
-   - Enable HTTPS/TLS for all production deployments
+   - Use strong JWT secrets: at least 32 random bytes for HS256 (e.g. `openssl rand -base64 48`); `JwtConfig::new` returns an error for shorter, placeholder or low-entropy secrets
+   - Authenticate requests with `JwtManager::verify_access` (or `armature_auth::JwtAuthMiddleware`, which uses it); refresh tokens are not accepted as bearer tokens
+   - Register authentication middleware with `Application::use_middleware` so it runs before guards; guards fail closed without a verified identity
+   - Enable HTTPS/TLS for all deployments, and list your public hosts with `Application::with_https_redirect_hosts` when you use the HTTP→HTTPS redirect
    - Implement proper RBAC using guards
    - Never store sensitive data in JWT payload
    - Use short token expiration times
@@ -89,12 +95,15 @@ When using Armature in production:
    - Sanitize data before database operations
    - Validate file uploads strictly
    - Implement rate limiting on sensitive endpoints
+   - Set `trusted_proxy_depth` to the exact number of reverse proxies in front of the app; `X-Forwarded-For` is ignored at the default depth `0`
+   - Leave SVG uploads disabled unless you sanitize them (`FileValidator::allow_svg_unsanitized()` is an explicit opt-in)
 
 4. **Security Headers**
    - Use `armature-security` middleware for HTTP security headers
    - Configure Content Security Policy (CSP) appropriately
    - Enable HSTS for HTTPS deployments
-   - Set appropriate CORS policies
+   - Set appropriate CORS policies (`allow_origin_regex` patterns match the whole origin)
+   - Use `armature_security::csrf::CsrfMiddleware` when you authenticate with cookies
 
 5. **Secrets Management**
    - Never commit secrets to version control
@@ -128,30 +137,32 @@ Armature provides several built-in security features:
 
 - **JWT Authentication** (`armature-jwt`)
   - Industry-standard token-based auth
-  - Multiple algorithm support (HS256, RS256, ES256)
-  - Configurable expiration and validation
+  - HMAC, RSA (RS/PS), ECDSA and EdDSA algorithms
+  - Rejects weak HMAC secrets; access and refresh tokens are distinguished by claim and `typ` header
 
 - **OAuth2/OIDC** (`armature-auth`)
   - Provider integrations (Google, Microsoft, AWS Cognito, Okta, Auth0)
-  - PKCE support for mobile/SPA apps
-  - Secure token handling
+  - PKCE (S256), library-verified `state` and OIDC `nonce` on every flow
+  - `id_token` verification against the provider's JWKS
 
 - **SAML 2.0** (`armature-auth`)
   - Enterprise SSO support
   - Service Provider implementation
-  - Signature verification
+  - Signature verification and assertion replay protection
 
 - **Security Middleware** (`armature-security`)
   - Helmet-like security headers
-  - CSP, HSTS, X-Frame-Options, etc.
-  - Configurable per application
+  - CSP, HSTS, X-Frame-Options, COOP, CORP and Permissions-Policy
+  - Signed double-submit CSRF protection (`csrf` module)
+  - HMAC request signing
 
 - **HTTPS/TLS** (`armature-core`)
   - Built-in TLS support
   - Certificate management
-  - Automatic HTTP to HTTPS redirect
+  - HTTP to HTTPS redirect to an allowlist of hosts
+  - Header-read, TLS-handshake and request-body deadlines, plus a connection cap
 
-- **Rate Limiting** (`armature-core`)
+- **Rate Limiting** (`armature-ratelimit`)
   - Multiple algorithms (Token Bucket, Sliding Window, etc.)
   - Configurable limits per endpoint
   - Protection against abuse
@@ -163,10 +174,9 @@ Armature provides several built-in security features:
 
 ### Known Security Limitations
 
-- **No built-in CSRF middleware**: if you authenticate with cookies, implement CSRF tokens (or `SameSite=Strict` cookies plus an Origin check) in your application
 - **No built-in XSS protection**: Sanitize user input and output in your application
 - **No automatic SQL injection protection**: Use proper ORM/query builders
-- **Session management**: Armature is stateless by design; implement client-side session management with JWTs
+- **Session management**: Armature is stateless by default. Server-side sessions are available in `armature-session`; call `SessionStore::regenerate` after login or any privilege change to prevent session fixation
 
 ### Security Audit
 
@@ -188,7 +198,7 @@ We actively monitor our dependencies for security vulnerabilities using:
 
 For security-related questions or concerns, contact:
 
-- **Security Reports**: Via [GitHub Security Advisories](https://github.com/quinnjr/armature/security/advisories/new) or [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me)
+- **Security Reports**: Via [GitHub Security Advisories](https://github.com/quinnjr/armature/security/advisories/new) (email [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me) only if you cannot use GitHub)
 - **General Questions**: Open a [GitHub Issue](https://github.com/quinnjr/armature/issues)
 - **Maintainer**: Joseph Quinn
 
