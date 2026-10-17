@@ -41,8 +41,8 @@ site is a GitHub Pages project site, so the file lives under `/armature/`
 rather than at the host root, where some scanners look for it.
 
 If you cannot use GitHub, email [quinn.josephr@proton.me](mailto:quinn.josephr@proton.me)
-with `[armature security]` in the subject. You may encrypt with the maintainer's
-OpenPGP key from <https://github.com/quinnjr.gpg>.
+with `[armature security]` in the subject. Prefer the advisory form for anything
+sensitive: it is private and access-controlled, while email is not encrypted.
 
 #### What to Include
 

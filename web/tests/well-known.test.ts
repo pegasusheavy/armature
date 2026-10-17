@@ -33,6 +33,18 @@ describe('security.txt (RFC 9116)', () => {
   it('declares the URI it is actually served from as Canonical', () => {
     expect(f.get('Canonical')).toEqual(['https://quinnjr.github.io/armature/.well-known/security.txt']);
   });
+
+  // An Encryption URI on another host rots silently (github.com/<user>.gpg
+  // started returning a parse error instead of a key). Any key we advertise
+  // must ship with the site, and must actually be an OpenPGP public key.
+  it('only advertises encryption keys that ship with the site', () => {
+    const base = 'https://quinnjr.github.io/armature/';
+    for (const uri of f.get('Encryption') ?? []) {
+      expect(uri.startsWith(base)).toBe(true);
+      const key = read(uri.slice(base.length));
+      expect(key).toContain('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    }
+  });
 });
 
 describe('ai.txt', () => {

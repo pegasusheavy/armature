@@ -10,10 +10,15 @@
 #
 # Report vulnerabilities privately through GitHub Security Advisories; please
 # do not open public issues for security problems.
+#
+# No Encryption field: the advisory form is access-controlled and sent over
+# TLS, so no separate key is needed. (It used to point at
+# https://github.com/quinnjr.gpg, which serves a parse error instead of a key.)
+# If a key is published again, ship it with the site under /.well-known/ and
+# reference it here so it can't silently go dead.
 
 Contact: https://github.com/quinnjr/armature/security/advisories/new
 Expires: 2027-10-17T00:00:00.000Z
-Encryption: https://github.com/quinnjr.gpg
 Preferred-Languages: en
 Canonical: https://quinnjr.github.io/armature/.well-known/security.txt
 Policy: https://github.com/quinnjr/armature/security/policy
