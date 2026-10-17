@@ -41,7 +41,6 @@ armature-seaorm = { version = "0.3", features = ["with-json", "with-chrono", "wi
 
 Available features:
 - `runtime-tokio-rustls` - Tokio + Rustls (default)
-- `runtime-tokio-native-tls` - Tokio + Native TLS
 - `sqlx-postgres` - PostgreSQL (default)
 - `sqlx-mysql` - MySQL
 - `sqlx-sqlite` - SQLite

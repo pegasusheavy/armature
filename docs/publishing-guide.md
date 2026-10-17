@@ -18,13 +18,18 @@ Guide for publishing Armature crates to crates.io.
 The Armature workspace contains 47+ crates with inter-dependencies. Publishing to crates.io requires:
 
 1. **Correct Order**: Crates must be published in dependency order
-2. **Version Dependencies**: Path dependencies must be converted to version dependencies
-3. **Required Metadata**: All crates need license, description, and other metadata
+2. **Required Metadata**: All crates need license, description, and other metadata
 
-Two scripts automate this process:
+Sibling crates already depend on each other by version (for example
+`armature-core = { version = "0.11" }`); the workspace root's `[patch.crates-io]`
+table points those requirements at the local checkouts during development, so
+nothing has to be rewritten before publishing.
 
-- `scripts/publish.sh` - Publishes crates in correct order
-- `scripts/prepare-publish.sh` - Converts path deps to version deps
+`scripts/publish.sh` publishes every crate in dependency order.
+
+Publishing is **manual only**: it runs from a maintainer's machine, never from
+CI. Keeping the registry token out of CI means no third-party action, cached
+build directory, or dependency build script executed in CI can ever read it.
 
 ---
 
@@ -38,11 +43,8 @@ Create an account at [crates.io](https://crates.io) and log in:
 cargo login
 ```
 
-Or set the token via environment variable:
-
-```bash
-export CARGO_REGISTRY_TOKEN=your-token-here
-```
+Use a token scoped to `publish-update` for the `armature-*` crates only, with
+an expiry. Never store it in a repository secret.
 
 ### 2. Required Metadata
 
@@ -52,7 +54,7 @@ Each crate's `Cargo.toml` must include:
 [package]
 name = "armature-xxx"
 version = "0.1.0"
-license = "MIT"  # or your license
+license = "Apache-2.0"
 description = "Description of this crate"
 repository = "https://github.com/quinnjr/armature"
 ```
@@ -69,7 +71,6 @@ Output shows which crates are ready and which need fixes:
 ✓ armature-log
 ✓ armature-core
 ! armature-auth: Missing 'license' field
-! armature-queue: 3 path deps (run prepare-publish.sh)
 ```
 
 ---
@@ -106,21 +107,6 @@ Main publishing script that handles dependency order.
 
 # Skip verification (faster, less safe)
 ./scripts/publish.sh --no-verify
-```
-
-### prepare-publish.sh
-
-Converts path dependencies to version dependencies for crates.io.
-
-```bash
-# Prepare for publishing
-./scripts/prepare-publish.sh --version 0.1.0
-
-# Preview changes (dry run)
-./scripts/prepare-publish.sh --version 0.1.0 --dry-run
-
-# Restore after publishing
-./scripts/prepare-publish.sh --restore
 ```
 
 ---
@@ -208,26 +194,17 @@ Note: crates.io will still reject duplicate versions. Use `--force` when:
 
 Fix any issues reported (missing metadata, etc.).
 
-### 2. Prepare for Publishing
+### 2. Verify Against the Lockfile
 
 ```bash
-# Backup Cargo.toml files and convert path deps
-./scripts/prepare-publish.sh --version 0.1.0
+cargo metadata --locked --format-version 1 > /dev/null
+cargo deny --workspace --all-features check
 ```
 
-This:
-- Creates backups in `.publish-backup/`
-- Converts `path = "../armature-xxx"` to `version = "0.1.0"`
+Publish from a clean checkout of the release tag with the committed
+`Cargo.lock`, so what gets verified is what was reviewed.
 
-### 3. Review Changes
-
-```bash
-git diff
-```
-
-Verify the conversions look correct.
-
-### 4. Publish
+### 3. Publish
 
 ```bash
 # Dry run first
@@ -239,16 +216,8 @@ Verify the conversions look correct.
 
 The script:
 - Publishes crates in dependency order
-- Waits 30 seconds between publishes for crates.io indexing
+- Waits 60 seconds between publishes (configurable with `--delay`) for crates.io indexing
 - Shows progress
-
-### 5. Restore for Development
-
-```bash
-./scripts/prepare-publish.sh --restore
-```
-
-This restores the original `Cargo.toml` files with path dependencies.
 
 ---
 
@@ -256,11 +225,10 @@ This restores the original `Cargo.toml` files with path dependencies.
 
 ### "Rate limit exceeded"
 
-crates.io has rate limits. The script waits 30 seconds between publishes, but you may need to wait longer:
+crates.io has rate limits. The script waits 60 seconds between publishes, but you may need to wait longer:
 
 ```bash
-# Increase delay (edit PUBLISH_DELAY in publish.sh)
-PUBLISH_DELAY=60
+./scripts/publish.sh --delay 120
 ```
 
 ### "Dependency not found"
@@ -277,7 +245,7 @@ Add the missing field to the crate's `Cargo.toml`:
 
 ```toml
 [package]
-license = "MIT"
+license = "Apache-2.0"
 description = "Your description"
 ```
 
@@ -336,16 +304,6 @@ cargo test --all
 cargo clippy --all
 ```
 
-### 5. Keep Backups
-
-The `prepare-publish.sh` script creates backups, but also consider:
-
-```bash
-git stash
-# or
-git checkout -b publish-prep
-```
-
 ---
 
 ## Summary
@@ -356,20 +314,14 @@ git checkout -b publish-prep
 # Check readiness
 ./scripts/publish.sh --check
 
-# Prepare (convert path → version deps)
-./scripts/prepare-publish.sh --version 0.1.0
-
 # Publish
 ./scripts/publish.sh
-
-# Restore (version → path deps)
-./scripts/prepare-publish.sh --restore
 ```
 
 ### Environment
 
 ```bash
-CARGO_REGISTRY_TOKEN=xxx  # crates.io token
+cargo login   # interactive; keeps the token out of shell history and CI
 ```
 
 ---

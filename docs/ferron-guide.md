@@ -49,15 +49,15 @@ Add `armature-ferron` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-ferron = "0.2"
+armature-ferron = "0.3"
 ```
 
-Or with rustls for HTTPS health checks (Armature is rustls-only; avoid the
-`native-tls` feature, which pulls in OpenSSL):
+Or with rustls for HTTPS health checks (Armature is rustls-only; there is no
+native-tls option):
 
 ```toml
 [dependencies]
-armature-ferron = { version = "0.2", features = ["rustls"] }
+armature-ferron = { version = "0.3", features = ["rustls"] }
 ```
 
 ### System Requirements

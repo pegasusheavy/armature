@@ -43,7 +43,7 @@ Integration guide for OpenSearch with the Armature framework.
 - ✅ Index management (create, delete, mappings)
 - ✅ Bulk operations (index, delete)
 - ✅ AWS OpenSearch Service support
-- ✅ TLS support (rustls/native-tls)
+- ✅ TLS support (rustls)
 
 ---
 
@@ -61,7 +61,6 @@ armature-opensearch = "0.5"
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `rustls` | ✅ | TLS via rustls |
-| `native-tls` | | TLS via native-tls (OpenSSL; not recommended, Armature is rustls-only) |
 | `aws-auth` | | AWS OpenSearch Service authentication |
 
 ```toml
