@@ -43,14 +43,14 @@ TOON is a serialization format designed to reduce token count by 30-60% compared
 
 ```toml
 [dependencies]
-armature-toon = "0.1"
+armature-toon = "0.5"
 ```
 
 With HTTP integration:
 
 ```toml
 [dependencies]
-armature-toon = { version = "0.1", features = ["http"] }
+armature-toon = { version = "0.5", features = ["http"] }
 ```
 
 ### Basic Usage

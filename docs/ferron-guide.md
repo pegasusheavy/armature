@@ -49,20 +49,21 @@ Add `armature-ferron` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-ferron = "0.1"
+armature-ferron = "0.2"
 ```
 
-Or with specific features:
+Or with rustls for HTTPS health checks (Armature is rustls-only; avoid the
+`native-tls` feature, which pulls in OpenSSL):
 
 ```toml
 [dependencies]
-armature-ferron = { version = "0.1", features = ["native-tls"] }
+armature-ferron = { version = "0.2", features = ["rustls"] }
 ```
 
 ### System Requirements
 
 - **Ferron**: Install from [ferron.sh](https://ferron.sh) for process management features
-- **Rust**: 1.70 or later
+- **Rust**: 1.94.1 or later
 
 ## Quick Start
 
@@ -99,7 +100,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### With Armature Application
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_ferron::{FerronConfig, Location, RateLimitConfig};
 
 #[controller("/api")]
@@ -277,6 +278,43 @@ let config = FerronConfig::builder()
     .gzip(true)
     .gzip_level(6) // 1-9, default is 6
     .build()?;
+```
+
+### Configuration Validation
+
+Every value written into the generated KDL is validated and escaped, so a value
+taken from a service registry, environment variable or other external source
+cannot inject extra Ferron directives. `FerronConfigBuilder::build`,
+`FerronConfig::validate`/`to_kdl`, `Backend::validate`, `Location::validate`,
+`ProxyRoute::validate` and `ServiceRegistry::register`/`register_instance`
+reject invalid input with `FerronError::InvalidConfig { field, message }`:
+
+| Value | Rule |
+|-------|------|
+| Backend URLs (`backend_url`, `Backend::new`, `Location::proxy`, `ProxyRoute` backend, registry instances) | Must be `http://` or `https://` with a host; emitted in normalized form |
+| Location/route paths and `add_prefix` | Must start with `/`; printable ASCII only, no whitespace, quotes, backslashes or `$` |
+| Header names | Must be RFC 9110 tokens |
+| Header values and other strings | Escaped as KDL strings (`"` and `\` escaped); control characters rejected |
+| Domains | Hostname characters only (letters, digits, `.`, `-`, `_`, `*`, `:`, `[`, `]`) |
+
+```rust
+use armature_ferron::{FerronConfig, Location, ProxyRoute};
+
+// Rejected: unsupported scheme
+assert!(FerronConfig::builder()
+    .domain("api.example.com")
+    .backend_url("file:///etc/passwd")
+    .build()
+    .is_err());
+
+// Rejected: path does not start with `/`
+assert!(Location::new("api").validate().is_err());
+
+// Rejected: `$` in a prefix would act as a rewrite backreference
+assert!(ProxyRoute::new("/x", "http://localhost:4000")
+    .add_prefix("/$2")
+    .validate()
+    .is_err());
 ```
 
 ## Load Balancing

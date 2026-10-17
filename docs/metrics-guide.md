@@ -48,7 +48,7 @@ Armature provides built-in Prometheus metrics support through the `armature-metr
 
 ```toml
 [dependencies]
-armature-metrics = "0.1"
+armature-metrics = "0.4"
 ```
 
 ### 2. Create Metrics

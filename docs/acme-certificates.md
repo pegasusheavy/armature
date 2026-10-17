@@ -53,7 +53,7 @@ ACME (Automatic Certificate Management Environment) is a protocol for automating
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["acme"] }
+armature = { package = "armature-framework", version = "0.7", features = ["acme"] }
 tokio = { version = "1.35", features = ["full"] }
 ```
 
@@ -175,7 +175,7 @@ let config = AcmeConfig::lets_encrypt_production(...)
 **Example Integration:**
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_acme::*;
 
 #[controller("/.well-known/acme-challenge")]
@@ -185,16 +185,18 @@ struct AcmeController {
 
 impl AcmeController {
     #[get("/:token")]
-    fn serve_challenge(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
-        let token = req.param("token")?;
+    async fn serve_challenge(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
+        let not_found = || Error::NotFound("challenge not found".into());
+        let token = req.param("token").ok_or_else(not_found)?;
+        // Challenge tokens are base64url; refuse anything else
+        validate_challenge_token(token).map_err(|_| not_found())?;
         let challenges = self.challenges.lock().unwrap();
 
-        if let Some(key_auth) = challenges.get(token) {
-            Ok(HttpResponse::ok()
-                .with_header("Content-Type", "text/plain")
-                .with_body(key_auth.as_bytes().to_vec()))
-        } else {
-            Err(Error::NotFound)
+        match challenges.get(token) {
+            Some(key_auth) => Ok(HttpResponse::ok()
+                .with_header("Content-Type".to_string(), "text/plain".to_string())
+                .with_body(key_auth.as_bytes().to_vec())),
+            None => Err(not_found()),
         }
     }
 }
@@ -256,6 +258,7 @@ let config = AcmeConfig::lets_encrypt_production(...)
 ```rust
 use armature_acme::{AcmeConfig, ChallengeType};
 use std::path::PathBuf;
+use std::time::Duration;
 
 let config = AcmeConfig::new(
     "https://acme-v02.api.letsencrypt.org/directory",
@@ -275,7 +278,8 @@ let config = AcmeConfig::lets_encrypt_production(
 .with_cert_dir(PathBuf::from("/etc/letsencrypt/live/example.com"))
 .with_account_dir(PathBuf::from("/etc/letsencrypt/accounts"))
 .with_renew_before_days(30)
-.with_accept_tos(true);
+.with_accept_tos(true)
+.with_timeouts(Duration::from_secs(10), Duration::from_secs(30));
 ```
 
 ### Configuration Options
@@ -290,6 +294,27 @@ let config = AcmeConfig::lets_encrypt_production(
 | `account_dir` | Account credentials | `./accounts` |
 | `renew_before_days` | Renewal threshold | 30 days |
 | `accept_tos` | Accept ToS | `false` |
+| `connect_timeout` | CA connection timeout | 10 s (`DEFAULT_CONNECT_TIMEOUT`) |
+| `request_timeout` | Total per-request timeout | 30 s (`DEFAULT_REQUEST_TIMEOUT`) |
+
+Build `AcmeConfig` from a constructor (`new`, `lets_encrypt_production`,
+`default`, ...) and the `with_*` builders rather than a struct literal; new
+fields are added over time.
+
+### Transport Security
+
+- The directory URL **must** be `https://`. Every endpoint the client contacts
+  (directory endpoints and the account, order, authorization, challenge,
+  finalize and certificate URLs taken from CA responses) must share the
+  directory's origin; anything else fails with `AcmeError::InvalidDirectory`.
+  All public CAs, and Pebble for local testing, already satisfy this.
+- The CA HTTP client refuses plain-HTTP requests, including redirects, and
+  enforces the connect and request timeouts above.
+- Challenge tokens returned by the CA are validated as base64url
+  (`^[A-Za-z0-9_-]+$`) before `get_challenges` returns them, so a hostile CA
+  cannot inject `../` into a webroot path built from a token. Use
+  `validate_challenge_token` when you build paths or routes from tokens yourself.
+- `AcmeConfig`'s `Debug` output redacts `eab_hmac_key`.
 
 ---
 
@@ -298,7 +323,7 @@ let config = AcmeConfig::lets_encrypt_production(
 ### Complete HTTPS Server with ACME
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_acme::{AcmeClient, AcmeConfig};
 
 #[tokio::main]
@@ -414,7 +439,14 @@ Store certificates securely:
         └── fullchain.pem
 ```
 
-Set appropriate permissions:
+The client writes key, certificate and account files atomically: each is
+written to a fresh `0600` temporary file (opened with `O_EXCL | O_NOFOLLOW`),
+`fsync`ed, given its final mode (`0600` for private keys, `0644` for the public
+chain) and renamed into place. A symlink planted at a target path is replaced
+rather than written through, and readers never see a partial file. `cert_dir`
+and `account_dir` are created with mode `0700`.
+
+If you create the directories yourself, keep the same permissions:
 
 ```bash
 chmod 700 /etc/letsencrypt
@@ -525,6 +557,13 @@ Configuration for ACME client.
 - `with_account_dir(path)` - Set account directory
 - `with_renew_before_days(days)` - Set renewal threshold
 - `with_accept_tos(accept)` - Accept terms of service
+- `with_timeouts(connect, request)` - Set CA connect and per-request timeouts
+- `with_eab(kid, hmac_key)` - Set External Account Binding credentials
+- `with_ca_certificate(pem)` - Trust an extra CA root (e.g. Pebble)
+
+### `validate_challenge_token`
+
+Returns an error unless the token is non-empty base64url.
 
 ### `AcmeClient`
 
@@ -562,7 +601,7 @@ Armature's ACME module provides:
 ✅ **Account management** and External Account Binding
 ✅ **Automatic renewal** before expiration
 ✅ **Seamless integration** with Armature HTTPS servers
-✅ **Production-ready** with error handling and retry logic
+✅ **Hardened transport**: https-only, same-origin CA endpoints, timeouts, atomic `0600` key files
 
 For more examples, see:
 - `examples/acme_certificate.rs`

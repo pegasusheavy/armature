@@ -23,15 +23,41 @@ Armature's GraphQL module provides comprehensive configuration options for contr
 ```rust
 use armature_graphql::GraphQLConfig;
 
-// Default configuration (playgrounds enabled)
+// Default configuration: locked down (no playgrounds, no schema docs,
+// no introspection; depth, complexity, directive and recursion limits on)
 let config = GraphQLConfig::new("/graphql");
 
-// Development configuration (all features enabled)
+// Development configuration (developer tooling enabled)
 let config = GraphQLConfig::development("/graphql");
 
-// Production configuration (playgrounds disabled)
+// Production configuration: identical to `new()`, kept as a
+// self-documenting constructor
 let config = GraphQLConfig::production("/graphql");
 ```
+
+`GraphQLConfig::default()` is `GraphQLConfig::new("/graphql")`. Developer
+tooling is **opt-in**: use `development()` or the `with_*` builders to turn it
+on.
+
+### Secure Defaults
+
+| Setting | `new()` / `default()` / `production()` | `development()` |
+|---------|----------------------------------------|-----------------|
+| `enable_playground` | `false` | `true` |
+| `enable_graphiql` | `false` | `true` |
+| `enable_schema_docs` | `false` | `true` |
+| `enable_introspection` | `false` | `true` |
+| `enable_tracing` | `false` | `true` |
+| `max_depth` | `15` (`DEFAULT_MAX_DEPTH`) | `15` |
+| `max_complexity` | `1000` (`DEFAULT_MAX_COMPLEXITY`) | `1000` |
+| `max_directives` | `10` (`DEFAULT_MAX_DIRECTIVES`) | `10` |
+| `max_recursive_depth` | `32` (`DEFAULT_MAX_RECURSIVE_DEPTH`) | `32` |
+
+`SchemaBuilder`, `ProgrammaticSchemaBuilder` and `SubgraphSchemaBuilder` apply
+`GraphQLConfig::default()` when no config is attached, so a schema built
+without `.config(..)` is non-introspectable and depth/complexity limited. Attach
+`.config(GraphQLConfig::development("/graphql"))` (or a config with
+`with_introspection(true)`) to opt back in during development.
 
 ---
 
@@ -65,11 +91,19 @@ pub struct GraphQLConfig {
     /// Enable introspection queries (required for playgrounds and docs)
     pub enable_introspection: bool,
 
-    /// Maximum query depth (0 = unlimited)
+    /// Maximum query depth (0 = unlimited; default 15)
     pub max_depth: usize,
 
-    /// Maximum query complexity (0 = unlimited)
+    /// Maximum query complexity (0 = unlimited; default 1000).
+    /// Every aliased field costs at least 1, so this also bounds
+    /// alias amplification.
     pub max_complexity: usize,
+
+    /// Maximum directives per field (0 = unlimited; default 10)
+    pub max_directives: usize,
+
+    /// Maximum parser recursion depth (default 32; 0 falls back to 32)
+    pub max_recursive_depth: usize,
 
     /// Enable query validation
     pub enable_validation: bool,
@@ -89,6 +123,8 @@ let config = GraphQLConfig::new("/api/graphql")
     .with_introspection(true)
     .with_max_depth(10)
     .with_max_complexity(100)
+    .with_max_directives(10)
+    .with_max_recursive_depth(32)
     .with_validation(true)
     .with_tracing(false);
 ```
@@ -122,17 +158,13 @@ let config = GraphQLConfig::new("/graphql")
 
 ### Production Configuration
 
-Disable playgrounds and introspection for security:
+Playgrounds and introspection are already off by default:
 
 ```rust
 let config = GraphQLConfig::production("/graphql");
 
-// Equivalent to:
-let config = GraphQLConfig::new("/graphql")
-    .with_playground(false)
-    .with_graphiql(false)
-    .with_schema_docs(false)
-    .with_introspection(false);
+// Identical to:
+let config = GraphQLConfig::new("/graphql");
 ```
 
 **Features disabled:**
@@ -193,7 +225,7 @@ Once enabled, access documentation at:
 
 ### GraphQL Playground
 
-Full-featured GraphQL IDE with:
+Full-featured GraphQL IDE (off by default) with:
 - Query editor with syntax highlighting
 - Variable editor
 - Response viewer
@@ -233,17 +265,18 @@ let config = GraphQLConfig::new("/graphql")
 For production environments:
 
 ```rust
-let config = GraphQLConfig::production("/graphql");
-// Playgrounds are disabled by default
+let config = GraphQLConfig::new("/graphql");
+// Playgrounds are disabled by default; nothing to turn off
 ```
 
-Or selectively disable:
+### Pinned Assets
 
-```rust
-let config = GraphQLConfig::new("/graphql")
-    .with_playground(false)
-    .with_graphiql(false);
-```
+The Playground and GraphiQL pages load exact, pinned versions from the CDN with
+Subresource Integrity (`integrity="sha384-..."`) and `crossorigin="anonymous"`,
+so a tampered or substituted CDN file is refused by the browser. The versions are
+exposed as `GRAPHQL_PLAYGROUND_VERSION` (`1.7.28`), `GRAPHIQL_VERSION`
+(`3.9.0`) and `GRAPHIQL_REACT_VERSION` (`18.3.1`). The endpoint interpolated
+into the page is emitted as an escaped JavaScript string literal.
 
 ---
 
@@ -253,7 +286,7 @@ let config = GraphQLConfig::new("/graphql")
 
 Introspection allows clients to query the GraphQL schema structure. While useful for development, it can expose your API structure in production.
 
-**Recommendation**: Disable introspection in production:
+Introspection is disabled by default. Enable it only for development builds:
 
 ```rust
 let config = if cfg!(debug_assertions) {
@@ -265,13 +298,17 @@ let config = if cfg!(debug_assertions) {
 
 ### Query Complexity Limits
 
-Prevent abuse with complexity limits:
+Depth (15), complexity (1000), directives-per-field (10) and parser recursion
+(32) are limited by default. Tighten them for your schema:
 
 ```rust
 let config = GraphQLConfig::new("/graphql")
     .with_max_depth(10)          // Limit query depth
-    .with_max_complexity(100);   // Limit overall complexity
+    .with_max_complexity(100)    // Limit overall complexity (also bounds aliases)
+    .with_max_directives(5);     // Limit directives per field
 ```
+
+Setting a limit to `0` removes it; avoid that for any internet-facing endpoint.
 
 ### Playground Access Control
 
@@ -282,12 +319,12 @@ Implement authentication for playgrounds in production:
 async fn playground(&self, req: HttpRequest) -> Result<HttpResponse, Error> {
     // Check authentication
     if !is_authenticated(&req) {
-        return Err(Error::Unauthorized);
+        return Err(Error::Unauthorized("authentication required".into()));
     }
 
     // Only allow in development or for authorized users
     if !cfg!(debug_assertions) && !is_admin(&req) {
-        return Err(Error::Forbidden);
+        return Err(Error::Forbidden("admin only".into()));
     }
 
     Ok(/* playground HTML */)
@@ -317,10 +354,12 @@ assert!(config.enable_introspection);
 ```rust
 let config = GraphQLConfig::production("/graphql");
 
-// Playgrounds disabled for security
+// Playgrounds disabled for security (same as `GraphQLConfig::new`)
 assert!(!config.enable_playground);
 assert!(!config.enable_graphiql);
 assert!(!config.enable_introspection);
+assert_eq!(config.max_depth, 15);
+assert_eq!(config.max_complexity, 1000);
 ```
 
 ### Example 3: Custom Configuration
@@ -354,7 +393,7 @@ let config = match env::var("ENV").unwrap_or_default().as_str() {
 ### Example 5: Full Controller Implementation
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_graphql::*;
 
 #[controller("/graphql")]
@@ -373,25 +412,20 @@ impl GraphQLController {
     #[get("/playground")]
     async fn playground(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         if !self.config.enable_playground {
-            return Err(Error::NotFound);
+            return Err(Error::NotFound("not found".into()));
         }
 
-        let html = graphql_playground_html(&self.config.endpoint);
-        Ok(HttpResponse::ok()
-            .with_header("Content-Type", "text/html")
-            .with_body(html.into_bytes()))
+        Ok(HttpResponse::html(graphql_playground_html(&self.config.endpoint)))
     }
 
     #[get("/schema")]
     async fn schema_docs(&self, _req: HttpRequest) -> Result<HttpResponse, Error> {
         if !self.config.enable_schema_docs {
-            return Err(Error::NotFound);
+            return Err(Error::NotFound("not found".into()));
         }
 
         let html = generate_schema_docs_html(&self.schema, &self.config.endpoint, "My API");
-        Ok(HttpResponse::ok()
-            .with_header("Content-Type", "text/html")
-            .with_body(html.into_bytes()))
+        Ok(HttpResponse::html(html))
     }
 }
 ```
@@ -403,7 +437,7 @@ impl GraphQLController {
 1. **Use Environment-Based Config**
    - Development: All features enabled
    - Staging: Selective features
-   - Production: Minimal features
+   - Production: the defaults (`GraphQLConfig::new` / `production`)
 
 2. **Protect Sensitive Endpoints**
    - Add authentication to playgrounds
@@ -433,7 +467,7 @@ Armature's GraphQL configuration provides:
 
 ✅ **Flexible playground options** (Playground, GraphiQL)
 ✅ **Interactive schema documentation**
-✅ **Development vs production configurations**
+✅ **Locked-down defaults** with opt-in development tooling
 ✅ **Security controls** (introspection, complexity limits)
 ✅ **Customizable endpoints**
 ✅ **Easy integration** with Armature framework
