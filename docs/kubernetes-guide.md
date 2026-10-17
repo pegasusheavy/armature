@@ -45,9 +45,22 @@ spec:
       labels:
         app: armature-api
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api
-          image: your-registry/armature-api:latest
+          # Deploy an immutable reference (version tag + digest), never :latest
+          image: your-registry/armature-api:1.4.2@sha256:<digest>
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           ports:
             - containerPort: 3000
           env:
@@ -58,6 +71,11 @@ spec:
                 secretKeyRef:
                   name: api-secrets
                   key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: jwt-secret
           resources:
             limits:
               cpu: "1"
@@ -103,6 +121,12 @@ spec:
 
 ## Ingress with Ferron
 
+Behind an ingress, the pod's socket peer is the proxy. Set the
+`trusted_proxy_depth` of rate limiting, audit and analytics middleware to the
+number of proxies that append to `X-Forwarded-For` (usually `1`), so
+`HttpRequest::client_address(depth)` returns the real client. The default `0`
+ignores the header. Armature never reads `X-Real-IP`.
+
 ### Ferron ConfigMap
 
 ```yaml
@@ -146,7 +170,7 @@ spec:
     spec:
       containers:
         - name: ferron
-          image: ferronweb/ferron:latest
+          image: ferronweb/ferron:<version>  # pin a version, never latest
           ports:
             - containerPort: 80
             - containerPort: 443
@@ -204,17 +228,22 @@ data:
 
 ### Secrets for Sensitive Data
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: api-secrets
-type: Opaque
-stringData:
-  database-url: "postgres://user:pass@db:5432/app"
-  jwt-secret: "your-secret-key"
-  redis-url: "redis://redis:6379"
+Create secrets from generated values instead of committing a manifest that
+contains them:
+
+```bash
+kubectl create secret generic api-secrets \
+  --from-literal=jwt-secret="$(openssl rand -base64 48)" \
+  --from-literal=database-url="postgres://app:${POSTGRES_PASSWORD}@db:5432/app" \
+  --from-literal=redis-url="redis://:${REDIS_PASSWORD}@redis:6379"
 ```
+
+`JWT_SECRET` must be at least 32 random bytes: `JwtConfig::new` rejects
+shorter, placeholder (`change-me-in-production`, `secret`, ...) or low-entropy
+values, so a pod started with a placeholder fails at startup instead of
+signing forgeable tokens. In production prefer an external secret manager
+(External Secrets Operator, Sealed Secrets, a cloud KMS) over plain `Secret`
+manifests.
 
 ### Using in Deployment
 
@@ -414,14 +443,20 @@ spec:
 ### 4. Configure Graceful Shutdown
 
 ```rust
-use armature_framework::shutdown::GracefulShutdown;
+use armature::ShutdownManager;
+use std::{sync::Arc, time::Duration};
 use tokio::signal;
 
-async fn shutdown_signal() {
+async fn shutdown_on_sigterm(shutdown: Arc<ShutdownManager>) {
     signal::unix::signal(signal::unix::SignalKind::terminate())
         .expect("failed to create SIGTERM handler")
         .recv()
         .await;
+
+    // Keep this below `terminationGracePeriodSeconds`.
+    shutdown.set_timeout(Duration::from_secs(45)).await;
+    // Stop accepting, drain in-flight requests, then run the shutdown hooks.
+    shutdown.initiate_shutdown().await;
 }
 ```
 
@@ -450,7 +485,8 @@ Key Kubernetes deployment considerations:
 2. **Set resource limits** - prevent resource contention
 3. **Use HPA** - automatic scaling based on metrics
 4. **Configure PDB** - maintain availability during disruptions
-5. **Use secrets** - never hardcode sensitive data
-6. **Enable rolling updates** - zero-downtime deployments
-7. **Use Ferron** - high-performance ingress with TLS
+5. **Use secrets** - never hardcode sensitive data; generate JWT secrets with 32+ random bytes
+6. **Run as non-root** - numeric UID, read-only root filesystem, no capabilities
+7. **Enable rolling updates** - zero-downtime deployments
+8. **Use Ferron** - high-performance ingress with TLS
 

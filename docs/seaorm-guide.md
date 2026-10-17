@@ -19,7 +19,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-seaorm = "0.1"
+armature-seaorm = "0.3"
 ```
 
 ### Feature Flags
@@ -27,21 +27,20 @@ armature-seaorm = "0.1"
 ```toml
 [dependencies]
 # PostgreSQL with Tokio + Rustls (default)
-armature-seaorm = "0.1"
+armature-seaorm = "0.3"
 
 # MySQL
-armature-seaorm = { version = "0.1", default-features = false, features = ["runtime-tokio-rustls", "sqlx-mysql"] }
+armature-seaorm = { version = "0.3", default-features = false, features = ["runtime-tokio-rustls", "sqlx-mysql"] }
 
 # SQLite
-armature-seaorm = { version = "0.1", default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
+armature-seaorm = { version = "0.3", default-features = false, features = ["runtime-tokio-rustls", "sqlx-sqlite"] }
 
 # With extra features
-armature-seaorm = { version = "0.1", features = ["with-json", "with-chrono", "with-uuid"] }
+armature-seaorm = { version = "0.3", features = ["with-json", "with-chrono", "with-uuid"] }
 ```
 
 Available features:
 - `runtime-tokio-rustls` - Tokio + Rustls (default)
-- `runtime-tokio-native-tls` - Tokio + Native TLS
 - `sqlx-postgres` - PostgreSQL (default)
 - `sqlx-mysql` - MySQL
 - `sqlx-sqlite` - SQLite
@@ -349,7 +348,7 @@ if let Some(error) = health.error {
 ## With Armature DI
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_seaorm::{Database, DatabaseConfig};
 
 #[module_impl]

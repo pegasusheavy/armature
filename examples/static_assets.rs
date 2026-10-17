@@ -128,6 +128,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cdn_config = StaticAssetsConfig::new("demo/cdn")
         .max_performance() // Aggressive caching + best compression
+        // `*` is acceptable only because these are public, credential-free
+        // static assets; never use it for an API.
         .with_cors_origin("*");
 
     let cdn_server = StaticAssetServer::new(cdn_config)?;

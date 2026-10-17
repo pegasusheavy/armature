@@ -10,11 +10,11 @@ keywords:
   - api
   - web-framework
 maintainers:
-  - name: Armature Team
-    url: https://github.com/armature-rs/armature
-home: https://armature.rs
+  - name: Joseph R. Quinn
+    url: https://github.com/quinnjr
+home: https://quinnjr.github.io/armature/
 sources:
-  - https://github.com/armature-rs/armature
+  - https://github.com/quinnjr/armature
 annotations:
   artifacthub.io/category: integration-delivery
   artifacthub.io/license: Apache-2.0

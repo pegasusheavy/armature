@@ -178,7 +178,7 @@ fn now_millis() -> u64 {
 /// Run the raw SSE listener. Accepts connections forever; each connection is
 /// handled on its own task so multiple clients can stream concurrently.
 async fn run_sse_server(port: u16) -> std::io::Result<()> {
-    let listener = TcpListener::bind(("0.0.0.0", port)).await?;
+    let listener = TcpListener::bind(("127.0.0.1", port)).await?;
     serve_sse(listener).await
 }
 

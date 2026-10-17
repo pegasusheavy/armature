@@ -4,6 +4,25 @@ import Footer from '../components/Footer.astro';
 import { url } from '../lib/url';
 import { absolute, breadcrumbSchema, type Crumb } from '../lib/seo';
 import { SOFTWARE_APPLICATION_SCHEMA, ORGANIZATION_SCHEMA, WEBSITE_SCHEMA } from '../lib/schema';
+import { escapeJsonLd } from '../lib/jsonld';
+// Self-hosted fonts (SIL OFL 1.1, see public/fonts/): no third-party request
+// leaks visitors to Google, and the CSP can stay at font-src 'self'. Latin and
+// Latin Extended cover every page; the @font-face unicode-range keeps the
+// browser from fetching a subset it does not need.
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-ext-400.css';
+import '@fontsource/inter/latin-500.css';
+import '@fontsource/inter/latin-ext-500.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/inter/latin-ext-600.css';
+import '@fontsource/inter/latin-700.css';
+import '@fontsource/inter/latin-ext-700.css';
+import '@fontsource/inter/latin-800.css';
+import '@fontsource/inter/latin-ext-800.css';
+import '@fontsource/fira-code/latin-400.css';
+import '@fontsource/fira-code/latin-ext-400.css';
+import '@fontsource/fira-code/latin-500.css';
+import '@fontsource/fira-code/latin-ext-500.css';
 import '../styles/global.css';
 
 interface Props {
@@ -108,23 +127,20 @@ const robots = noindex
     <meta name="theme-color" content="#CE422B" />
     <meta name="msapplication-TileColor" content="#CE422B" />
 
-    <!-- Preconnect for Performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://github.com" />
 
-    <!-- Google Fonts - Inter & Fira Code -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-
     <!-- Structured Data / JSON-LD for Search Engines and LLMs -->
-    <script type="application/ld+json" set:html={ORGANIZATION_SCHEMA} />
-    <script type="application/ld+json" set:html={WEBSITE_SCHEMA} />
-    {richSchemas && <script type="application/ld+json" set:html={SOFTWARE_APPLICATION_SCHEMA} />}
-    {breadcrumbJson && <script type="application/ld+json" set:html={breadcrumbJson} />}
-    {schemas.map((schema) => <script type="application/ld+json" set:html={schema} />)}
+    <!--
+      Every document goes through escapeJsonLd: JSON.stringify does not escape
+      `<`, so a string containing `</script>` would otherwise end the element.
+    -->
+    <script type="application/ld+json" set:html={escapeJsonLd(ORGANIZATION_SCHEMA)} />
+    <script type="application/ld+json" set:html={escapeJsonLd(WEBSITE_SCHEMA)} />
+    {richSchemas && <script type="application/ld+json" set:html={escapeJsonLd(SOFTWARE_APPLICATION_SCHEMA)} />}
+    {breadcrumbJson && <script type="application/ld+json" set:html={escapeJsonLd(breadcrumbJson)} />}
+    {schemas.map((schema) => (
+      <script type="application/ld+json" set:html={escapeJsonLd(schema)} />
+    ))}
   </head>
   <body>
     <Nav />

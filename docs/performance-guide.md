@@ -171,7 +171,7 @@ Enable SIMD-accelerated JSON with the `simd-json` feature:
 
 ```toml
 [dependencies]
-armature-core = { version = "0.1", features = ["simd-json"] }
+armature-core = { version = "0.11", features = ["simd-json"] }
 ```
 
 ```rust
@@ -233,6 +233,28 @@ let config = ConnectionManagerConfig::default()
     .idle_timeout(Duration::from_secs(300));
 ```
 
+### Connection Caps and Slow-Client Deadlines
+
+Every accept loop caps open connections at `PipelineConfig::max_connections`
+(default `pipeline::DEFAULT_MAX_CONNECTIONS`, 10 000). On the default
+armature-h1 backend the cap is split across workers. At the cap a loop stops
+accepting and leaves new connections in the kernel backlog, so raise it for
+benchmarks with very high concurrency:
+
+```rust,ignore
+use armature_core::pipeline::PipelineConfig;
+
+let app = app.with_pipeline_config(
+    PipelineConfig::builder().max_connections(50_000).build(),
+);
+```
+
+Request bodies are read under a `BodyReadPolicy` (30 s inactivity, 1 KiB/s
+minimum rate), and request heads and TLS handshakes have 10 s deadlines. These
+cost nothing for well-behaved clients. Load generators that open idle
+connections or trickle bodies will see `408`s and closed sockets; that is the
+intended behaviour. See the [Request Timeouts guide](request-timeouts-guide.md).
+
 ## I/O Optimizations
 
 ### Vectored I/O
@@ -258,7 +280,7 @@ Enable the `io_uring` feature for async I/O on Linux:
 
 ```toml
 [dependencies]
-armature-core = { version = "0.1", features = ["io_uring"] }
+armature-core = { version = "0.11", features = ["io_uring"] }
 ```
 
 ```rust
@@ -294,8 +316,11 @@ cargo build --profile release-fat
 inherits = "release"
 lto = "fat"
 codegen-units = 1
-panic = "abort"
 ```
+
+Don't add `panic = "abort"` to a server profile. With unwinding, a panic in one
+request task fails that request; with abort, any panic reachable from network
+input takes down the whole process.
 
 ### Native CPU Optimization
 
@@ -501,6 +526,15 @@ and an LRU for recently matched dynamic paths, turning per-request routing from 
 linear scan (which re-split the path for every candidate) into an O(1) lookup for static
 routes. Route semantics are unchanged: parameter extraction, catch-all (`/files/*path`),
 route constraints, and unknown-method → 404 all behave identically.
+
+Before routing, every transport canonicalizes the request path once
+(`routing::canonicalize_path`): `//` collapses and percent-encoded unreserved
+characters decode, while dot segments, `%2F`, `%5C`, `%00`, `\` and malformed
+escapes are refused with `400`. Middleware, guards and the router all see the
+same canonical path, so a guard cannot be bypassed by spelling a path
+differently. When no global guard or middleware is configured, a request for an
+unknown route is answered `404` before its body is read. `RegexConstraint`
+patterns are anchored at both ends.
 
 ## Per-Request Allocation Reductions
 

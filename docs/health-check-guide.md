@@ -257,7 +257,10 @@ Response:
 
 #### DiskHealthIndicator
 
-Monitors disk space usage with configurable thresholds.
+Monitors disk space usage with configurable thresholds. On Unix it reads the
+filesystem with the `statvfs(3)` syscall; it never spawns `df` or any other
+process, so a planted binary on `PATH` cannot run with the server's
+privileges and the container image needs no extra tools.
 
 ```rust
 use armature_core::health::DiskHealthIndicator;

@@ -149,6 +149,10 @@ pub struct AuthenticationService {
     repository: UserRepository,
     jwt_manager: JwtManager,
     password_hasher: PasswordHasher,
+    /// Hash verified when the email is unknown, so a login for a missing
+    /// account costs the same as one with a wrong password (no user
+    /// enumeration by timing).
+    dummy_hash: String,
     token_expiry_secs: u64,
 }
 
@@ -158,10 +162,15 @@ impl AuthenticationService {
         jwt_manager: JwtManager,
         token_expiry_secs: u64,
     ) -> Self {
+        let password_hasher = PasswordHasher::default();
+        let dummy_hash = password_hasher
+            .hash(&random_hex(16))
+            .expect("hashing a random string cannot fail");
         Self {
             repository,
             jwt_manager,
-            password_hasher: PasswordHasher::default(),
+            password_hasher,
+            dummy_hash,
             token_expiry_secs,
         }
     }
@@ -193,10 +202,10 @@ impl AuthenticationService {
 
     /// Authenticate a user and generate tokens.
     pub fn login(&self, req: LoginRequest) -> std::result::Result<AuthResponse, String> {
-        let user = self
-            .repository
-            .find_by_email(&req.email)
-            .ok_or_else(|| "Invalid credentials".to_string())?;
+        let Some(user) = self.repository.find_by_email(&req.email) else {
+            let _ = self.password_hasher.verify(&req.password, &self.dummy_hash);
+            return Err("Invalid credentials".to_string());
+        };
 
         let valid = self
             .password_hasher
@@ -367,19 +376,50 @@ struct AppModule;
 // Main
 // =============================================================================
 
+/// `n` random bytes, hex-encoded.
+fn random_hex(n: usize) -> String {
+    (0..n)
+        .map(|_| format!("{:02x}", rand::random::<u8>()))
+        .collect()
+}
+
+/// The value of `name`, or — for this demo only — `n` random bytes,
+/// hex-encoded and printed so the operator can use them.
+fn env_or_random(name: &str, n: usize) -> String {
+    std::env::var(name).unwrap_or_else(|_| {
+        let value = random_hex(n);
+        println!("{name} is not set; generated a random demo value: {value}");
+        value
+    })
+}
+
 #[tokio::main]
 async fn main() {
     println!("Starting Auth API example");
 
-    // Configure JWT
-    let jwt_config = JwtConfig::new("your-super-secret-key-change-in-production".to_string());
+    // Configure JWT. The signing secret comes from the environment; this demo
+    // generates a random one when it is missing (tokens then stop verifying
+    // when the process restarts). Never hardcode it.
+    let jwt_secret = env_or_random("JWT_SECRET", 32);
+    let jwt_config = match JwtConfig::new(jwt_secret) {
+        Ok(config) => config,
+        Err(e) => {
+            eprintln!("JWT_SECRET is unusable: {e}. Use at least 32 random bytes,");
+            eprintln!("e.g. `export JWT_SECRET=$(openssl rand -base64 48)`.");
+            std::process::exit(1);
+        }
+    };
     let jwt_manager = JwtManager::new(jwt_config).expect("Failed to create JWT manager");
 
-    // Create repository and seed admin user
+    // Create repository and seed the admin user. Its password comes from
+    // ADMIN_PASSWORD, or is generated at random and printed once.
+    let admin_password = env_or_random("ADMIN_PASSWORD", 16);
     let repository = UserRepository::new();
     {
         let hasher = PasswordHasher::default();
-        let hash = hasher.hash("admin123").unwrap();
+        let hash = hasher
+            .hash(&admin_password)
+            .expect("Failed to hash admin password");
         repository.create("admin@example.com".to_string(), hash, UserRole::Admin);
     }
 
@@ -396,18 +436,18 @@ async fn main() {
     println!("  1. Register a new user:");
     println!(r#"     curl -X POST http://localhost:3000/api/auth/register \"#);
     println!(r#"       -H "Content-Type: application/json" \"#);
-    println!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
+    println!(r#"       -d '{{"email":"user@example.com","password":"<choose a password>"}}'"#);
     println!();
     println!("  2. Login to get a token:");
     println!(r#"     curl -X POST http://localhost:3000/api/auth/login \"#);
     println!(r#"       -H "Content-Type: application/json" \"#);
-    println!(r#"       -d '{{"email":"user@example.com","password":"password123"}}'"#);
+    println!(r#"       -d '{{"email":"user@example.com","password":"<choose a password>"}}'"#);
     println!();
     println!("  3. Access protected endpoint:");
     println!(r#"     curl http://localhost:3000/api/users/me \"#);
     println!(r#"       -H "Authorization: Bearer YOUR_TOKEN""#);
     println!();
-    println!("  Admin credentials: admin@example.com / admin123");
+    println!("  Admin account: admin@example.com (password from ADMIN_PASSWORD)");
 
     let app = Application::create::<AppModule>().await;
     app.listen(3000).await.unwrap();

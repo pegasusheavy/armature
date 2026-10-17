@@ -13,13 +13,25 @@ struct UserClaims {
     role: String,
 }
 
+/// `JWT_SECRET` from the environment, or — for this demo only — a random
+/// 32-byte secret generated at startup and printed. Never hardcode it.
+fn jwt_secret() -> String {
+    std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        let bytes: [u8; 32] = rand::random();
+        let secret: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+        println!("   JWT_SECRET is not set; generated a random demo secret: {secret}");
+        secret
+    })
+}
+
 fn main() {
     println!("🔐 Armature JWT Example");
     println!("========================\n");
 
     // 1. Create JWT configuration
     println!("1. Creating JWT configuration...");
-    let config = JwtConfig::new("your-secret-key-change-in-production".to_string())
+    let config = JwtConfig::new(jwt_secret())
+        .expect("JWT_SECRET must be at least 32 random bytes")
         .with_expiration(Duration::from_secs(3600)) // 1 hour
         .with_refresh_expiration(Duration::from_secs(604800)) // 7 days
         .with_issuer("armature-app".to_string())
@@ -106,10 +118,11 @@ fn main() {
     );
     println!();
 
-    // 8. Decode without verification (inspect expired tokens)
-    println!("8. Decoding token without verification...");
+    // 8. Decode without verification (inspect expired tokens). The claims are
+    // attacker-controlled: never base an authorization decision on them.
+    println!("8. Decoding token without verification (debugging only)...");
     let decoded: Claims<UserClaims> = jwt_manager
-        .decode_unverified(&token)
+        .decode_unverified_insecure(&token)
         .expect("Failed to decode token");
 
     println!("   ✓ Token decoded (unverified)");

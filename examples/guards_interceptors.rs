@@ -16,9 +16,9 @@
 // checks (and does not check).
 
 use armature::prelude::*;
-use armature_core::guard::{AuthenticationGuard, RequestRoles, RolesGuard};
+use armature::{guard, middleware};
+use armature_core::guard::{AuthenticationGuard, RequestRoles, RolesGuard, VerifiedIdentity};
 use armature_core::middleware::{Middleware, Next};
-use armature_proc_macro::{guard, middleware};
 use serde::{Deserialize, Serialize};
 
 // ========== DTOs ==========
@@ -54,36 +54,67 @@ impl DataService {
     }
 }
 
-// ========== Role attachment (stand-in for real JWT verification) ==========
+// ========== Authentication (stand-in for real JWT verification) ==========
 
-/// `RolesGuard` (`armature_core::guard`) authorizes a request by reading a
-/// [`RequestRoles`] extension that is expected to have been attached by an
-/// upstream authentication layer *after it verified the caller's token* --
-/// in a real deployment that layer is `armature_auth::JwtAuthMiddleware`,
-/// which decodes and verifies a JWT before attaching the caller's verified
-/// roles. `RolesGuard` fails closed (403) when that extension is absent, so
-/// it can never be satisfied by a bare header alone.
+/// Both guards used below fail closed: `AuthenticationGuard` admits a request
+/// only when an authentication layer has attached a [`VerifiedIdentity`],
+/// and `RolesGuard` only when it has attached verified [`RequestRoles`]. A
+/// bare `Authorization: Bearer ...` header satisfies neither.
 ///
-/// This example has no JWT infrastructure, so `AdminRoleMiddleware` stands
-/// in for that verification layer: it is **not** real token verification --
-/// it just recognizes one hardcoded demo credential
-/// (`Bearer admin-token`) and attaches the `admin` role when it sees it.
-/// Swap this middleware for `armature_auth::JwtAuthMiddleware` (or your own
-/// verified-token layer) in a real application.
+/// In a real deployment that layer is `armature_auth::JwtAuthMiddleware`,
+/// which verifies a JWT's signature, expiry, issuer and audience before
+/// attaching the caller's identity and roles. This example has no JWT
+/// infrastructure, so `DemoAuthMiddleware` stands in for it: it accepts two
+/// opaque demo tokens (from `DEMO_USER_TOKEN` / `DEMO_ADMIN_TOKEN`, or
+/// random ones generated at startup and printed), compared in constant time.
+/// Any other token, or no token, leaves the request unauthenticated.
 ///
-/// It is registered on `admin_endpoint` via `#[middleware(...)]` listed
+/// It is registered on each guarded handler via `#[middleware(...)]` listed
 /// *below* `#[guard(...)]`: at the function level, attribute macros are
 /// expanded top-down and each wraps the *next* one's expansion, so the
 /// bottom-most attribute (middleware) ends up as the outermost runtime
-/// layer and genuinely runs before the guard it's stacked under -- letting
-/// it populate `RequestRoles` in time for `RolesGuard` to read it.
-struct AdminRoleMiddleware;
+/// layer and runs before the guard it's stacked under.
+struct DemoAuthMiddleware;
+
+/// `name` from the environment, or a random 32-byte hex token.
+fn token_from_env(name: &str) -> String {
+    std::env::var(name).unwrap_or_else(|_| {
+        let bytes: [u8; 32] = rand::random();
+        bytes.iter().map(|b| format!("{b:02x}")).collect()
+    })
+}
+
+fn user_token() -> &'static str {
+    static TOKEN: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    TOKEN.get_or_init(|| token_from_env("DEMO_USER_TOKEN"))
+}
+
+fn admin_token() -> &'static str {
+    static TOKEN: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    TOKEN.get_or_init(|| token_from_env("DEMO_ADMIN_TOKEN"))
+}
+
+/// Constant-time comparison, so timing does not reveal matching prefixes.
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+}
 
 #[async_trait::async_trait]
-impl Middleware for AdminRoleMiddleware {
+impl Middleware for DemoAuthMiddleware {
     async fn handle(&self, mut req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
-        if req.headers.get("authorization") == Some("Bearer admin-token") {
-            req.extensions.insert(RequestRoles::new(["admin"]));
+        let presented = req
+            .headers
+            .get("authorization")
+            .and_then(|v| v.strip_prefix("Bearer "))
+            .map(str::to_owned);
+        if let Some(token) = presented {
+            if constant_time_eq(token.as_bytes(), admin_token().as_bytes()) {
+                req.extensions.insert(VerifiedIdentity::new("demo-admin"));
+                req.extensions.insert(RequestRoles::new(["admin", "user"]));
+            } else if constant_time_eq(token.as_bytes(), user_token().as_bytes()) {
+                req.extensions.insert(VerifiedIdentity::new("demo-user"));
+                req.extensions.insert(RequestRoles::new(["user"]));
+            }
         }
         next(req).await
     }
@@ -103,13 +134,13 @@ impl DataController {
         HttpResponse::json(&service.get_public_data())
     }
 
-    /// Protected by the real `AuthenticationGuard`: it only checks that an
-    /// `Authorization` header is present and starts with `Bearer ` -- it does
-    /// **not** verify the token itself (see the guard's own doc comment in
-    /// `armature-core/src/guard.rs`). A missing/malformed header never
-    /// reaches this body; the guard rejects it with 403 first.
+    /// Protected by the real `AuthenticationGuard`: it admits only requests
+    /// that `DemoAuthMiddleware` authenticated (a [`VerifiedIdentity`] is
+    /// attached). A missing header, or a Bearer token that does not verify,
+    /// never reaches this body; the guard rejects it with 401 first.
     #[get("/protected")]
     #[guard(AuthenticationGuard)]
+    #[middleware(DemoAuthMiddleware)]
     // `_req` must stay an explicit parameter here (rather than being
     // dropped like the zero-arg `public_endpoint` above): `#[routes]`
     // decides the call-site argument count from this handler's signature
@@ -122,11 +153,11 @@ impl DataController {
     }
 
     /// Protected by the real `RolesGuard`, requiring the `admin` role. See
-    /// `AdminRoleMiddleware` above for how (and why) the `admin` role gets
-    /// attached to the request before this guard evaluates it.
+    /// `DemoAuthMiddleware` above for how the verified roles get attached to
+    /// the request before this guard evaluates them.
     #[get("/admin")]
     #[guard(RolesGuard::new(vec!["admin".to_string()]))]
-    #[middleware(AdminRoleMiddleware)]
+    #[middleware(DemoAuthMiddleware)]
     // See `protected_endpoint` above for why `_req` stays an explicit
     // parameter on guarded handlers.
     async fn admin_endpoint(_req: HttpRequest) -> Result<HttpResponse, Error> {
@@ -149,12 +180,19 @@ async fn main() {
     println!("🛡️  Armature Guards & Interceptors Example");
     println!("==========================================\n");
 
+    if std::env::var("DEMO_USER_TOKEN").is_err() || std::env::var("DEMO_ADMIN_TOKEN").is_err() {
+        println!("Demo tokens (set DEMO_USER_TOKEN / DEMO_ADMIN_TOKEN to choose them):");
+        println!("  export USER_TOKEN={}", user_token());
+        println!("  export ADMIN_TOKEN={}", admin_token());
+        println!();
+    }
+
     println!("Server running on http://localhost:3012");
     println!();
     println!("API Endpoints:");
     println!("  GET /api/public     - Public (no auth required)");
-    println!("  GET /api/protected  - Protected (requires Bearer token)");
-    println!("  GET /api/admin      - Admin only (requires Bearer admin-token)");
+    println!("  GET /api/protected  - Protected (requires a verified token)");
+    println!("  GET /api/admin      - Admin only (requires the admin token)");
     println!();
     println!("Example usage:");
     println!();
@@ -163,21 +201,19 @@ async fn main() {
     println!();
     println!("2. Protected endpoint (requires auth):");
     println!("   curl http://localhost:3012/api/protected \\");
-    println!("     -H \"Authorization: Bearer token123\"");
+    println!("     -H \"Authorization: Bearer $USER_TOKEN\"");
     println!(
-        "   (omit the header, or send a non-Bearer header, for a 403 from AuthenticationGuard)"
+        "   (no header, or a Bearer token that does not verify, gets a 401 from AuthenticationGuard)"
     );
     println!();
     println!("3. Admin endpoint:");
     println!("   curl http://localhost:3012/api/admin \\");
-    println!("     -H \"Authorization: Bearer admin-token\"");
-    println!(
-        "   (any other bearer token gets a 403 from RolesGuard: authenticated, but not admin)"
-    );
+    println!("     -H \"Authorization: Bearer $ADMIN_TOKEN\"");
+    println!("   (the user token gets a 403 from RolesGuard: authenticated, but not admin)");
     println!();
     println!("Guards (armature_core::guard, applied via #[guard(...)]):");
-    println!("  ✓ AuthenticationGuard - Checks for Bearer token (/api/protected)");
-    println!("  ✓ RolesGuard - Checks user roles (/api/admin, requires \"admin\")");
+    println!("  ✓ AuthenticationGuard - Requires a verified identity (/api/protected)");
+    println!("  ✓ RolesGuard - Requires verified roles (/api/admin, requires \"admin\")");
     println!();
 
     let app = Application::create::<AppModule>().await;
@@ -262,21 +298,30 @@ mod tests {
                 "AuthenticationGuard must reject a request with no Authorization header \
                  before protected_endpoint's body runs",
             );
-        assert_eq!(err.status_code(), 403);
+        assert_eq!(err.status_code(), 401);
     }
 
     #[tokio::test]
-    async fn protected_endpoint_accepts_any_bearer_token() {
+    async fn protected_endpoint_rejects_an_unverified_bearer_token() {
         let app = build_app();
-        let response = app
+        let err = app
             .app
             .router
             .route(get_request("/api/protected", bearer("token123")))
             .await
-            .expect(
-                "AuthenticationGuard only checks that a Bearer token is present, \
-                 so any bearer value must be accepted",
-            );
+            .expect_err("a bare Bearer header is not a verified identity");
+        assert_eq!(err.status_code(), 401);
+    }
+
+    #[tokio::test]
+    async fn protected_endpoint_accepts_a_verified_token() {
+        let app = build_app();
+        let response = app
+            .app
+            .router
+            .route(get_request("/api/protected", bearer(user_token())))
+            .await
+            .expect("DemoAuthMiddleware verifies the user token, so the guard admits it");
         assert_eq!(response.status, 200);
     }
 
@@ -289,7 +334,7 @@ mod tests {
             .route(get_request("/api/admin", HashMap::new()))
             .await
             .expect_err(
-                "RolesGuard must reject a request with no admin role attached \
+                "RolesGuard must reject a request with no verified roles attached \
                  before admin_endpoint's body runs",
             );
         assert_eq!(err.status_code(), 403);
@@ -301,12 +346,9 @@ mod tests {
         let err = app
             .app
             .router
-            .route(get_request("/api/admin", bearer("token123")))
+            .route(get_request("/api/admin", bearer(user_token())))
             .await
-            .expect_err(
-                "a bearer token other than the demo admin credential never gets the \
-                 `admin` role attached by AdminRoleMiddleware, so RolesGuard must reject it",
-            );
+            .expect_err("the user token carries no `admin` role, so RolesGuard must reject it");
         assert_eq!(err.status_code(), 403);
     }
 
@@ -316,12 +358,9 @@ mod tests {
         let response = app
             .app
             .router
-            .route(get_request("/api/admin", bearer("admin-token")))
+            .route(get_request("/api/admin", bearer(admin_token())))
             .await
-            .expect(
-                "the demo admin credential makes AdminRoleMiddleware attach the `admin` \
-                 role, which RolesGuard must then accept",
-            );
+            .expect("the admin token gets the verified `admin` role, which RolesGuard accepts");
         assert_eq!(response.status, 200);
     }
 }

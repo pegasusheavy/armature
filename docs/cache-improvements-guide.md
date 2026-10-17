@@ -13,7 +13,7 @@ Advanced caching features for Armature including tag-based invalidation, multi-t
 
 ## Overview
 
-Armature's cache improvements provide enterprise-grade caching capabilities:
+Armature's cache improvements provide these caching capabilities:
 
 - ✅ **Tag-Based Invalidation** - Bulk cache invalidation using tags
 - ✅ **Multi-Tier Caching** - L1 (in-memory) + L2 (distributed) layers
@@ -170,6 +170,13 @@ Multi-tier caching uses two cache layers:
 
 This reduces network traffic and improves response times for hot data.
 
+> **Memcached and TLS:** `armature-cache` no longer has a `memcached-tls`
+> feature. Its only backend was OpenSSL, which conflicts with Armature's
+> rustls-only TLS policy. To encrypt memcached traffic, run a local
+> TLS-terminating proxy (e.g. stunnel) and connect to it over plain
+> `memcache://`. `CacheConfig`'s `Debug` output and the Redis connection log
+> line mask credentials in the URL (`redis://***@host`).
+
 ### Basic Usage
 
 ```rust
@@ -322,7 +329,33 @@ async fn get_posts(user_id: i64) -> Result<Vec<Post>, Error> {
 async fn get_profile(user_id: i64) -> Result<Profile, Error> {
     db.query_profile(user_id).await
 }
+
+// Several arguments: separate every placeholder with a delimiter
+#[cache(key = "posts:{user_id}:{page}", ttl = 60)]
+async fn get_posts_page(user_id: i64, page: u32) -> Result<Vec<Post>, Error> {
+    db.query_posts_page(user_id, page).await
+}
 ```
+
+### How Cache Keys Are Built
+
+Cache keys are built so that two different calls can never share an entry:
+
+- **Default key**: the module path, the `Self` type (for methods), the
+  function name, its source location and return type, followed by **every**
+  argument binding (destructured ones such as `Path(id): Path<u64>` included)
+  encoded as length-prefixed JSON. Every argument must implement
+  `Serialize`. If a value fails to encode at runtime, the call bypasses the
+  cache instead of risking a shared entry.
+- **`key = "..."` templates** accept `{}` (next argument), `{N}` or `{name}`
+  placeholders. Each value's `Display` output is percent-escaped. The
+  template must reference every argument and must separate placeholders with
+  a delimiter such as `:` or `/`, so `("1:2", "3")` and `("1", "2:3")` never
+  render the same key. A template that omits an argument or puts two
+  placeholders side by side is a compile error.
+- Arguments bound to `_`, or patterns that elide fields with `..`, are
+  compile errors: the discarded data could change the result, so it cannot
+  be left out of the key. Give the argument a name instead.
 
 #### With Tags
 
@@ -340,20 +373,28 @@ cache.invalidate_tag("users").await?;
 
 - Function must be `async`
 - Return type must be `Result<T, E>` where `T: Serialize + DeserializeOwned`
-- Requires `__cache` or `__tagged_cache` variable in scope
+- Every argument must implement `Serialize` (default key) or `Display` (custom `key` template)
+- Requires `__cache` (untagged) or `__tagged_cache` (with `tag = ...`) to be in scope **where the function is defined**, for example a module-level `static`. The generated code reads it before running the body, so a `let` inside the function body is not visible to it.
+- Only `Ok` results are cached; the default TTL is 3600 seconds
 
 ### Example with Context
 
 ```rust
+use armature_cache::{InMemoryCache, TaggedCache};
+use std::sync::{Arc, LazyLock};
+
+// Visible to the code `#[cache]` generates around the method
+static __tagged_cache: LazyLock<TaggedCache<InMemoryCache>> =
+    LazyLock::new(|| TaggedCache::new(Arc::new(InMemoryCache::new())));
+
 struct UserService {
-    cache: Arc<TaggedCache<RedisCache>>,
+    db: Database,
 }
 
 impl UserService {
+    // Key includes `UserService`, `get_user` and `id`
     #[cache(tag = "users", ttl = 3600)]
     async fn get_user(&self, id: i64) -> Result<User, Error> {
-        let __tagged_cache = &self.cache;  // Required for decorator
-
         // Expensive operation
         self.db.query_user(id).await
     }
@@ -565,12 +606,11 @@ impl ProductService {
 - Multi-tier caching: **80% reduction** in network traffic
 - Cache decorators: **Zero boilerplate** for method caching
 
-**Production Ready:**
+**Design:**
 
 - ✅ Thread-safe
 - ✅ Type-safe
 - ✅ Fully async
-- ✅ Comprehensive error handling
+- ✅ Collision-free `#[cache]` keys
 - ✅ Flexible configuration
-- ✅ Battle-tested patterns
 

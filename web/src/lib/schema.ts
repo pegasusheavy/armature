@@ -40,7 +40,7 @@ export const SOFTWARE_APPLICATION_SCHEMA = JSON.stringify({
     url: 'https://github.com/quinnjr',
   },
   codeRepository: 'https://github.com/quinnjr/armature',
-  downloadUrl: 'https://crates.io/crates/armature',
+  downloadUrl: 'https://crates.io/crates/armature-framework',
   installUrl: 'https://quinnjr.github.io/armature/getting-started',
   softwareHelp: 'https://quinnjr.github.io/armature/docs',
   programmingModel: 'Async/Await',
@@ -83,7 +83,7 @@ export const SOFTWARE_APPLICATION_SCHEMA = JSON.stringify({
     'Push Notifications (Web Push, FCM, APNS)',
     'Security Headers (CSP, HSTS, CORS)',
   ],
-  sameAs: ['https://github.com/quinnjr/armature', 'https://crates.io/crates/armature'],
+  sameAs: ['https://github.com/quinnjr/armature', 'https://crates.io/crates/armature-framework'],
 });
 
 export const ORGANIZATION_SCHEMA = JSON.stringify({

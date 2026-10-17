@@ -1,6 +1,7 @@
 ---
 import { categories, cloudProviders, examples } from '../../lib/overview';
 import { url } from '../../lib/url';
+import { FRAMEWORK_VERSION } from '../../lib/version';
 ---
 
 <div class="overview-content">
@@ -15,8 +16,8 @@ import { url } from '../../lib/url';
   <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-value text-emerald-400">98%</div>
-      <div class="stat-label">Feature Complete</div>
+      <div class="stat-value text-emerald-400">v{FRAMEWORK_VERSION}</div>
+      <div class="stat-label">Pre-1.0 release</div>
     </div>
     <div class="stat-card">
       <div class="stat-value text-rust-400">150+</div>
@@ -81,23 +82,21 @@ import { url } from '../../lib/url';
     <p class="section-description">Explore the complete documentation organized by topic.</p>
 
     <div class="docs-grid">
-      {
-        categories.map((category) => (
-          <div class="doc-category-card">
-            <h3>{category.name}</h3>
-            <ul class="doc-list">
-              {category.docs.map((doc) => (
-                <li>
-                  <a href={url(`/docs/${doc.id}`)} class="doc-link">
-                    <span class="doc-title">{doc.title}</span>
-                    <span class="doc-description">{doc.description}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
+      {categories.map((category) => (
+        <div class="doc-category-card">
+          <h3>{category.name}</h3>
+          <ul class="doc-list">
+            {category.docs.map((doc) => (
+              <li>
+                <a href={url(`/docs/${doc.id}`)} class="doc-link">
+                  <span class="doc-title">{doc.title}</span>
+                  <span class="doc-description">{doc.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   </section>
 
@@ -119,17 +118,15 @@ import { url } from '../../lib/url';
           </tr>
         </thead>
         <tbody>
-          {
-            cloudProviders.map((provider) => (
-              <tr>
-                <td>
-                  <code>{provider.name}</code>
-                </td>
-                <td>{provider.provider}</td>
-                <td class="services-cell">{provider.services}</td>
-              </tr>
-            ))
-          }
+          {cloudProviders.map((provider) => (
+            <tr>
+              <td>
+                <code>{provider.name}</code>
+              </td>
+              <td>{provider.provider}</td>
+              <td class="services-cell">{provider.services}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -137,23 +134,34 @@ import { url } from '../../lib/url';
     <div class="cloud-features">
       <div class="feature-item">
         <span class="feature-icon">🔌</span>
-        <span><strong>Dynamic Loading</strong> — Only compile services you need</span>
+        <span>
+          <strong>Dynamic Loading</strong> — Only compile services you need
+        </span>
       </div>
       <div class="feature-item">
         <span class="feature-icon">💉</span>
-        <span><strong>DI Integration</strong> — Register once, inject everywhere</span>
+        <span>
+          <strong>DI Integration</strong> — Register once, inject everywhere
+        </span>
       </div>
       <div class="feature-item">
         <span class="feature-icon">⚡</span>
-        <span><strong>Lazy Initialization</strong> — Services created on first access</span>
+        <span>
+          <strong>Lazy Initialization</strong> — Services created on first access
+        </span>
       </div>
       <div class="feature-item">
         <span class="feature-icon">🧪</span>
-        <span><strong>Emulator Support</strong> — LocalStack, GCP emulators, Azurite</span>
+        <span>
+          <strong>Emulator Support</strong> — LocalStack, GCP emulators, Azurite
+        </span>
       </div>
     </div>
 
-    <a href={url('/docs/cloud-providers')} class="btn-primary"> View Cloud Providers Guide → </a>
+    <a href={url('/docs/cloud-providers')} class="btn-primary">
+      {' '}
+      View Cloud Providers Guide →{' '}
+    </a>
   </section>
 
   <!-- Code Example -->
@@ -221,14 +229,12 @@ import { url } from '../../lib/url';
     </p>
 
     <div class="examples-grid">
-      {
-        examples.map((example) => (
-          <div class="example-card">
-            <code class="example-name">{example.name}</code>
-            <p class="example-description">{example.description}</p>
-          </div>
-        ))
-      }
+      {examples.map((example) => (
+        <div class="example-card">
+          <code class="example-name">{example.name}</code>
+          <p class="example-description">{example.description}</p>
+        </div>
+      ))}
     </div>
 
     <a
@@ -249,25 +255,33 @@ import { url } from '../../lib/url';
       <div class="concept-card">
         <h4>Dependency Injection</h4>
         <p>Services are automatically injected based on field types.</p>
-        <a href={url('/docs/di-guide')} class="concept-link">Learn more →</a>
+        <a href={url('/docs/di-guide')} class="concept-link">
+          Learn more →
+        </a>
       </div>
 
       <div class="concept-card">
         <h4>Module System</h4>
         <p>Organize your application into reusable modules.</p>
-        <a href={url('/docs/lifecycle-hooks')} class="concept-link">Learn more →</a>
+        <a href={url('/docs/lifecycle-hooks')} class="concept-link">
+          Learn more →
+        </a>
       </div>
 
       <div class="concept-card">
         <h4>Decorators (Macros)</h4>
         <p>Use Rust macros for clean, declarative code.</p>
-        <a href={url('/docs/macro-overview')} class="concept-link">Learn more →</a>
+        <a href={url('/docs/macro-overview')} class="concept-link">
+          Learn more →
+        </a>
       </div>
 
       <div class="concept-card">
         <h4>Guards & Middleware</h4>
         <p>Apply cross-cutting concerns like auth and logging.</p>
-        <a href={url('/docs/guards-interceptors')} class="concept-link">Learn more →</a>
+        <a href={url('/docs/guards-interceptors')} class="concept-link">
+          Learn more →
+        </a>
       </div>
     </div>
   </section>
@@ -277,7 +291,9 @@ import { url } from '../../lib/url';
     <h2>Ready to build?</h2>
     <p>Get started with Armature in minutes.</p>
     <div class="cta-buttons">
-      <a href={url('/getting-started')} class="btn-primary">Getting Started Guide</a>
+      <a href={url('/getting-started')} class="btn-primary">
+        Getting Started Guide
+      </a>
       <a href="https://github.com/quinnjr/armature" target="_blank" rel="noopener noreferrer" class="btn-secondary">
         GitHub Repository
       </a>

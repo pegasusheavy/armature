@@ -104,14 +104,47 @@ async fn slow_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
 async fn upload(req: HttpRequest) -> Result<HttpResponse, Error> {
     // Handler
 }
+```
 
-// Cache decorator
+An unknown HTTP method in a route attribute is a compile error; it is never silently
+registered as `GET`.
+
+### `#[cache]` and Cache Keys
+
+`#[cache]` memoizes an async function's `Ok` value (it must be `Serialize +
+DeserializeOwned`) in the cache named `__cache` (or `__tagged_cache` when `tag = "..."` is
+used) that is in scope. It is meant for service methods returning data, not for
+handlers returning an `HttpResponse`:
+
+```rust
+use armature::cache;
+
+// Default key: module path, `Self` type, function name, attribute location and
+// return type, then every argument as length-prefixed JSON.
+// Every argument must implement `Serialize`.
 #[cache(ttl = 300)]
-#[get("/expensive")]
-async fn expensive_operation(req: HttpRequest) -> Result<HttpResponse, Error> {
-    // Result is cached for 5 minutes
+async fn expensive_report(tenant_id: u64, month: String) -> Result<Report, Error> {
+    // Result is cached for 5 minutes per (tenant_id, month)
+}
+
+// Custom key template: `{}`, `{N}` or `{name}` placeholders. Each value's
+// `Display` output is percent-escaped. The template must reference EVERY
+// argument and separate placeholders with a delimiter such as `:` or `/`.
+#[cache(key = "report:{tenant_id}:{month}", ttl = 300, tag = "reports")]
+async fn report_by_key(tenant_id: u64, month: String) -> Result<Report, Error> {
+    // ...
 }
 ```
+
+These rules keep distinct calls from sharing an entry: `("1:2", "3")` and `("1", "2:3")`
+render different keys. The macro rejects at compile time:
+
+- a template that omits an argument (`key = "report:{month}"` above),
+- adjacent placeholders without a delimiter (`"{}{}"`, `"{}x{}"`),
+- arguments bound to `_` or destructured with `..` (they cannot be keyed).
+
+Destructured arguments such as `Path(id): Path<u64>` are keyed by their bindings. A value
+that fails to serialize at runtime bypasses the cache instead of risking a shared key.
 
 ## Response Macros
 

@@ -7,6 +7,7 @@ Comprehensive guide to organizing routes with Route Groups in Armature.
 - [Overview](#overview)
 - [Features](#features)
 - [Basic Usage](#basic-usage)
+- [Registering Routes](#registering-routes)
 - [Shared Configuration](#shared-configuration)
 - [Nested Groups](#nested-groups)
 - [Best Practices](#best-practices)
@@ -63,7 +64,7 @@ use std::sync::Arc;
 
 let api_group = RouteGroup::new()
     .prefix("/api/v1")
-    .middleware(Arc::new(LoggerMiddleware))
+    .middleware(Arc::new(LoggerMiddleware::new()))
     .middleware(Arc::new(CorsMiddleware::default()));
 
 // All routes in this group will have logging and CORS enabled
@@ -81,6 +82,54 @@ let protected_group = RouteGroup::new()
 
 // All routes require authentication AND admin role
 ```
+
+The built-in guards fail closed: `AuthenticationGuard` and `RolesGuard` need the verified
+identity an authentication middleware (such as `armature_auth::JwtAuthMiddleware`) attaches.
+Register that middleware globally with `Application::use_middleware`, or on the group with
+`.middleware(...)`; group middleware always runs before group guards.
+
+---
+
+## Registering Routes
+
+A group's prefix, middleware and guards apply to the routes you register **through** it with
+`RouteGroup::route` or `RouteGroup::add_route`. The middleware and guards are bound to each
+route, so they run however the client spells the path (`/api/v1/admin/users`,
+`//api/v1/admin/users`, `/api/v1/admin//users/`):
+
+```rust
+use armature_core::*;
+
+async fn list_users(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok())
+}
+
+async fn delete_user(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::no_content())
+}
+
+let mut router = Router::new();
+
+let admin = RouteGroup::new()
+    .prefix("/api/v1/admin")
+    .guard(Box::new(AuthenticationGuard))
+    .guard(Box::new(RolesGuard::new(vec!["admin".to_string()])));
+
+// Handler form: method, path (prefixed by the group) and handler.
+admin
+    .route(&mut router, HttpMethod::GET, "/users", list_users)
+    .route(&mut router, HttpMethod::DELETE, "/users/:id", delete_user);
+
+// Or hand over a prebuilt `Route` (its path is prefixed too).
+admin.add_route(&mut router, Route::new(HttpMethod::GET, "/stats", list_users));
+```
+
+Registering a route directly on the router (`router.get(admin.apply_prefix("/users"), ...)`)
+applies **only** the prefix: the group's guards and middleware are not attached.
+
+Within a route, the order is: group middleware (in the order added) → group guards (in the
+order added) → handler. A guard returning `Ok(false)` answers `403`; an `Err` is propagated
+(for example `401` from `AuthenticationGuard` without a verified identity).
 
 ---
 
@@ -107,11 +156,11 @@ Middleware are applied in the order they're added:
 
 ```rust
 let group = RouteGroup::new()
-    .middleware(Arc::new(LoggerMiddleware))
+    .middleware(Arc::new(LoggerMiddleware::new()))
     .middleware(Arc::new(CorsMiddleware::default()))
     .middleware(Arc::new(CompressionMiddleware::new()));
 
-// Execution order: Logger → CORS → Compression → Handler
+// Execution order: Logger → CORS → Compression → (group guards) → Handler
 ```
 
 ### Multiple Guards
@@ -122,7 +171,7 @@ All guards must pass for access to be granted (AND logic):
 let group = RouteGroup::new()
     .guard(Box::new(AuthenticationGuard))
     .guard(Box::new(RolesGuard::new(vec!["admin".to_string()])))
-    .guard(Box::new(ApiKeyGuard::new(vec!["key123".to_string()])));
+    .guard(Box::new(ApiKeyGuard::new(api_keys_from_config())));
 
 // Request must pass ALL guards
 ```
@@ -140,7 +189,7 @@ use armature_core::*;
 
 let api = RouteGroup::new()
     .prefix("/api")
-    .middleware(Arc::new(LoggerMiddleware));
+    .middleware(Arc::new(LoggerMiddleware::new()));
 
 let v1 = RouteGroup::new()
     .prefix("/v1")
@@ -155,9 +204,9 @@ let admin = RouteGroup::new()
     .guard(Box::new(AdminGuard))
     .with_parent(&v1);
 
-// admin inherits:
+// admin has:
 // - Prefix: "/api/v1/admin"
-// - Middleware: LoggerMiddleware
+// - Middleware: LoggerMiddleware (from api)
 // - Guard: AdminGuard
 ```
 
@@ -167,7 +216,7 @@ When using `with_parent()`:
 
 1. **Prefixes are concatenated** - parent prefix + child prefix
 2. **Middleware are combined** - parent middleware execute first
-3. **Guards are from child only** - cannot clone Box<dyn Guard>
+3. **Guards are combined** - parent guards are checked first, then the child's
 
 ---
 
@@ -178,12 +227,12 @@ When using `with_parent()`:
 ```rust
 let v1 = RouteGroup::new()
     .prefix("/api/v1")
-    .middleware(Arc::new(LoggerMiddleware));
+    .middleware(Arc::new(LoggerMiddleware::new()));
 
 let v2 = RouteGroup::new()
     .prefix("/api/v2")
-    .middleware(Arc::new(LoggerMiddleware))
-    .middleware(Arc::new(RateLimitMiddleware::new()));
+    .middleware(Arc::new(LoggerMiddleware::new()))
+    .middleware(Arc::new(TimeoutMiddleware::new(30)));
 ```
 
 ### 2. Group by Authentication Level
@@ -208,7 +257,7 @@ let admin = RouteGroup::new()
 // Base API group
 let api = RouteGroup::new()
     .prefix("/api")
-    .middleware(Arc::new(LoggerMiddleware));
+    .middleware(Arc::new(LoggerMiddleware::new()));
 
 // Version groups
 let v1 = RouteGroup::new()
@@ -241,6 +290,8 @@ let v1_admin = RouteGroup::new()
 | `with_middleware(mws)` | Add multiple middleware |
 | `guard(guard)` | Add a single guard |
 | `with_guards(guards)` | Add multiple guards |
+| `route(router, method, path, handler)` | Register a handler through the group (prefix, middleware and guards applied) |
+| `add_route(router, route)` | Register a prebuilt `Route` through the group |
 | `get_prefix()` | Get the current prefix |
 | `apply_prefix(path)` | Apply prefix to a path |
 | `get_middleware()` | Get all middleware |
@@ -255,10 +306,11 @@ let v1_admin = RouteGroup::new()
 
 1. **RouteGroup organizes routes** with shared configuration
 2. **Prefixes are automatically applied** and normalized
-3. **Middleware stack in order** they're added
-4. **All guards must pass** (AND logic)
-5. **Nest groups with `with_parent()`** for inheritance
-6. **Use for API versions, auth levels, resources**
+3. **Register routes with `route()` / `add_route()`** so the group's middleware and guards are enforced
+4. **Middleware stack in order** they're added and run before the guards
+5. **All guards must pass** (AND logic)
+6. **Nest groups with `with_parent()`** for inheritance
+7. **Use for API versions, auth levels, resources**
 
 **Quick Reference:**
 
@@ -266,7 +318,7 @@ let v1_admin = RouteGroup::new()
 // Basic group
 let group = RouteGroup::new()
     .prefix("/api/v1")
-    .middleware(Arc::new(LoggerMiddleware))
+    .middleware(Arc::new(LoggerMiddleware::new()))
     .guard(Box::new(AuthenticationGuard));
 
 // Nested group
@@ -275,9 +327,9 @@ let child = RouteGroup::new()
     .guard(Box::new(AdminGuard))
     .with_parent(&group);
 
-// Apply prefix
-let path = child.apply_prefix("/users");
-// Result: "/api/v1/admin/users"
+// Register a route through the group (prefix + middleware + guards)
+child.route(&mut router, HttpMethod::GET, "/users", list_users);
+// Serves GET /api/v1/admin/users
 ```
 
 **Benefits:**

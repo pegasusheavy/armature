@@ -217,8 +217,10 @@ use armature_core::Application;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create application (hooks are called automatically)
-    let app = Application::create::<AppModule>().await;
+    // Create application (hooks are called automatically).
+    // `try_create` returns module-registration failures (for example a module
+    // guard that cannot be constructed) instead of panicking like `create`.
+    let app = Application::try_create::<AppModule>().await?;
 
     // Application runs...
 
@@ -228,6 +230,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+A failing `on_module_init`/bootstrap hook does not abort startup; a module guard that cannot
+be instantiated does, so that module's routes are never served unguarded.
 
 ### Error Handling
 

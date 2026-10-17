@@ -231,24 +231,36 @@ async fn bypass_example() -> Result<(), Box<dyn std::error::Error>> {
     println!("--- Bypass Keys Example ---");
     println!("Admin users bypass rate limiting\n");
 
+    // Demo keys only. In a real application the validator looks keys up in
+    // your key store, and the bypass key comes from secret configuration.
+    let user_key = "user_key";
+    let admin_key = std::env::var("ADMIN_API_KEY").unwrap_or_else(|_| {
+        let bytes: [u8; 16] = rand::random();
+        bytes.iter().map(|b| format!("{b:02x}")).collect()
+    });
+
     let limiter = Arc::new(
         RateLimiter::builder()
             .token_bucket(2, 0.1)
-            .bypass_key("admin_key")
+            .bypass_key(admin_key.clone())
             .build()
             .await?,
     );
 
+    // Only keys the validator accepts get their own bucket; an unknown key
+    // falls back to the client address, so inventing keys does not reset the
+    // limit.
+    let known_keys = [user_key.to_string(), admin_key.clone()];
     let middleware = RateLimitMiddleware::new(limiter)
-        .with_extractor(KeyExtractor::ApiKey {
-            header_name: "X-API-Key".to_string(),
-        })
-        .with_bypass_keys(["admin_key"]);
+        .with_extractor(KeyExtractor::api_key("X-API-Key", move |key: &str| {
+            known_keys.iter().any(|known| known == key)
+        }))
+        .with_bypass_keys([admin_key.clone()]);
 
     // Regular user gets rate limited
     println!("Regular user (user_key):");
     for i in 1..=4 {
-        let info = RequestInfo::new("/api/data", "GET").with_header("X-API-Key", "user_key");
+        let info = RequestInfo::new("/api/data", "GET").with_header("X-API-Key", user_key);
 
         let response = middleware.check(&info).await;
         println!(
@@ -263,9 +275,9 @@ async fn bypass_example() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Admin user bypasses rate limit
-    println!("\nAdmin user (admin_key):");
+    println!("\nAdmin user (ADMIN_API_KEY):");
     for i in 1..=4 {
-        let info = RequestInfo::new("/api/data", "GET").with_header("X-API-Key", "admin_key");
+        let info = RequestInfo::new("/api/data", "GET").with_header("X-API-Key", &admin_key);
 
         let response = middleware.check(&info).await;
         println!(

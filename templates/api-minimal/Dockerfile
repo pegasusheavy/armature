@@ -12,7 +12,11 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Chef - Prepare dependency recipe
 # -----------------------------------------------------------------------------
-FROM lukemathwalker/cargo-chef:latest-rust-1.85-alpine AS chef
+# Base images are pinned by exact tag AND digest: cargo-chef 0.1.78 on Rust
+# 1.99.1 (>= this template's 1.94.1 MSRV) and Alpine 3.24, so a re-pushed tag
+# cannot silently change what you build. Bump both together (Dependabot's
+# "docker" ecosystem does this for you).
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.99.1-alpine3.24@sha256:c48fa69aff194617af79ddc9473a58b946068012721979a9aef9c3e1466ccbd8 AS chef
 WORKDIR /app
 
 # -----------------------------------------------------------------------------
@@ -43,7 +47,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl --bin api-minimal
 # -----------------------------------------------------------------------------
 # Stage 4: Runtime - Minimal Alpine image
 # -----------------------------------------------------------------------------
-FROM alpine:3.20 AS runtime
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS runtime
 
 WORKDIR /app
 

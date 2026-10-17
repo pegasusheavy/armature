@@ -118,7 +118,13 @@ curl "http://localhost:3000/users?page=1&sort=-age&status=active&fields=id,name"
 |----------|-------------|---------|
 | `base_url` | Base URL for all requests | `http://localhost` |
 | `jwt_token` | JWT token for authenticated requests | (empty) |
-| `api_key` | API key for rate limit bypass | (empty) |
+| `api_key` | API key sent as `x-api-key` | (empty) |
+| `user_email` / `user_password` | Account used by Register/Login | `user@example.com` / (empty) |
+| `admin_email` / `admin_password` | Admin account of the auth example | `admin@example.com` / (empty) |
+
+Credentials ship **empty** on purpose: set them in your Postman environment
+(Postman stores `secret`-typed values locally) and do not commit a filled-in
+environment export. For a throwaway password: `openssl rand -base64 24`.
 
 ### Setting JWT Token
 

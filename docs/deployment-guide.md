@@ -81,17 +81,26 @@ DATABASE_URL=postgres://user:pass@localhost/mydb
 # Redis (optional)
 REDIS_URL=redis://localhost:6379
 
-# Security
-JWT_SECRET=your-secret-key
+# Security: at least 32 random bytes; JwtConfig::new rejects shorter,
+# placeholder or low-entropy secrets. Generate with: openssl rand -base64 48
+JWT_SECRET=
 ```
+
+Never commit real values. Load secrets from your platform's secret store.
 
 ### Configuration Files
 
 ```rust
-use armature_framework::config::{Config, Environment};
+// Requires the `config` feature of `armature`.
+use armature::armature_config::{ConfigService, FileFormat};
 
-let config = Config::builder()
-    .add_source(Environment::with_prefix("APP"))
+// `with_prefix` must come first: it resets the builder's config store.
+// Sources load in this order, later ones overriding earlier ones:
+// `.env`, then APP_* environment variables, then the files.
+let config = ConfigService::builder()
+    .with_prefix("APP".to_string())
+    .load_env()
+    .add_file("config/production.toml".to_string(), FileFormat::Toml)
     .build()?;
 ```
 
@@ -132,12 +141,18 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
+
+Bind the application to loopback (`app.listen_on(([127, 0, 0, 1], 3000))`) so
+clients cannot bypass the proxy. With one proxy in front, read the client
+address with `HttpRequest::client_address(1)`; middleware that identifies
+clients (`armature-ratelimit`, `armature-audit`, `armature-analytics`) takes the
+same `trusted_proxy_depth` setting, which defaults to `0` (socket peer only,
+`X-Forwarded-For` ignored). `X-Real-IP` is never consulted.
 
 ### Using Caddy
 
@@ -148,7 +163,6 @@ api.example.com {
     header {
         X-Frame-Options "DENY"
         X-Content-Type-Options "nosniff"
-        X-XSS-Protection "1; mode=block"
     }
 }
 ```
@@ -191,29 +205,43 @@ impl HealthController {
 ### Prometheus Metrics
 
 ```rust
-use armature_framework::metrics::{MetricsConfig, PrometheusExporter};
+// `armature-metrics` is a separate crate (not re-exported by `armature`).
+use armature_metrics::{RequestMetricsMiddleware, create_metrics_handler};
 
-let metrics = MetricsConfig::default()
-    .enable_prometheus("/metrics")
-    .build()?;
+// Record per-request metrics, and serve them in Prometheus text format.
+let metrics_middleware = RequestMetricsMiddleware::new();
+let metrics_handler = create_metrics_handler(); // mount at GET /metrics
 ```
 
 ### OpenTelemetry
 
 ```rust
-use armature_framework::telemetry::{TelemetryConfig, OtlpExporter};
+// Requires the `opentelemetry` feature of `armature`.
+use armature::armature_opentelemetry::TelemetryBuilder;
 
-let telemetry = TelemetryConfig::default()
-    .with_traces(OtlpExporter::new("http://jaeger:4317"))
-    .build()?;
+let telemetry = TelemetryBuilder::new("my-service")
+    .with_tracing()
+    .with_otlp_endpoint("http://otel-collector:4317")
+    .build()
+    .await?;
+let telemetry_middleware = telemetry.middleware();
 ```
 
 ## Security Checklist
 
 Before deploying to production:
 
-- [ ] **TLS enabled** - All traffic encrypted
-- [ ] **Secrets in environment** - No hardcoded credentials
+- [ ] **TLS enabled** - All traffic encrypted. If Armature serves the HTTP→HTTPS
+  redirect itself, set `Application::with_https_redirect_hosts`
+- [ ] **Secrets in environment** - No hardcoded credentials; JWT/signing/CSRF
+  secrets are at least 32 random bytes
+- [ ] **Authentication middleware registered** - `JwtAuthMiddleware` added with
+  `Application::use_middleware`, so guards see a verified identity (guards fail
+  closed without one)
+- [ ] **Proxy depth configured** - `trusted_proxy_depth` matches the number of
+  proxies in front of the app
+- [ ] **Developer tooling off** - GraphQL playground/introspection, HMR and
+  debug endpoints disabled (they are off by default)
 - [ ] **Rate limiting configured** - Prevent abuse
 - [ ] **CORS properly set** - Allow only trusted origins
 - [ ] **Security headers** - X-Frame-Options, CSP, etc.
@@ -231,27 +259,31 @@ Before deploying to production:
 cargo build --release
 ```
 
-### 2. Enable All Security Headers
+### 2. Enable Security Headers
 
-```rust
-.header("X-Frame-Options", "DENY")
-.header("X-Content-Type-Options", "nosniff")
-.header("X-XSS-Protection", "1; mode=block")
-.header("Strict-Transport-Security", "max-age=31536000")
-.header("Content-Security-Policy", "default-src 'self'")
+Register `armature-security`'s `SecurityMiddleware` globally. `new()` already
+sends `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: no-referrer`, `Cross-Origin-Opener-Policy: same-origin`,
+`Cross-Origin-Resource-Policy: same-origin` and a restrictive
+`Permissions-Policy`; add HSTS and CSP for your deployment. Headers a handler
+sets itself are never overwritten.
+
+```rust,ignore
+use armature_security::{
+    SecurityMiddleware, content_security_policy::CspConfig, hsts::HstsConfig,
+};
+
+let security = SecurityMiddleware::new()
+    .with_hsts(HstsConfig::new(31_536_000).include_subdomains(true))
+    .with_csp(CspConfig::default())?; // validated; returns Result
+
+let app = app.use_middleware(security);
 ```
 
 ### 3. Configure Graceful Shutdown
 
-```rust
-use armature_framework::shutdown::GracefulShutdown;
-
-let shutdown = GracefulShutdown::new()
-    .timeout(Duration::from_secs(30))
-    .on_shutdown(|| async {
-        // Cleanup connections
-    });
-```
+See the [Graceful Shutdown guide](graceful-shutdown-guide.md). Make sure your
+orchestrator's termination grace period is longer than the shutdown timeout.
 
 ### 4. Use Connection Pooling
 

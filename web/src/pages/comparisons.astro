@@ -2,6 +2,7 @@
 import { faRocket, faBuilding, faCube, faUsers } from '@fortawesome/free-solid-svg-icons';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import { styleAttr } from '../lib/csp';
 
 interface BenchmarkData {
   name: string;
@@ -234,10 +235,9 @@ const internalBenchmarks = {
         <div class="space-y-6">
           <h3 class="text-2xl font-bold text-white">Coming from Node.js?</h3>
           <p class="text-stone-400">
-            If you've used <strong class="text-stone-200">NestJS</strong>, <strong class="text-stone-200"
-              >Express</strong
-            >, or <strong class="text-stone-200">Koa</strong>, you'll feel right at home with Armature's decorator-based
-            approach and middleware system.
+            If you've used <strong class="text-stone-200">NestJS</strong>,{' '}
+            <strong class="text-stone-200">Express</strong>, or <strong class="text-stone-200">Koa</strong>, you'll feel
+            right at home with Armature's decorator-based approach and middleware system.
           </p>
           <div class="space-y-3">
             <div class="flex items-start gap-3">
@@ -268,10 +268,9 @@ const internalBenchmarks = {
         <div class="space-y-6">
           <h3 class="text-2xl font-bold text-white">Evaluating Rust Frameworks?</h3>
           <p class="text-stone-400">
-            Armature stands alongside <strong class="text-stone-200">Actix-web</strong>, <strong class="text-stone-200"
-              >Rocket</strong
-            >,
-            <strong class="text-stone-200">Axum</strong>, and <strong class="text-stone-200">Warp</strong>
+            Armature stands alongside <strong class="text-stone-200">Actix-web</strong>,{' '}
+            <strong class="text-stone-200">Rocket</strong>,<strong class="text-stone-200">Axum</strong>, and{' '}
+            <strong class="text-stone-200">Warp</strong>
             but with a unique focus on Angular/NestJS-style architecture.
           </p>
           <div class="space-y-3">
@@ -333,7 +332,9 @@ const internalBenchmarks = {
           <tbody class="divide-y divide-stone-700">
             <!-- Architecture -->
             <tr class="bg-stone-900/50">
-              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">Architecture</td>
+              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">
+                Architecture
+              </td>
             </tr>
             <tr class="bg-stone-800">
               <td class="px-4 py-3 font-medium text-stone-300">Dependency Injection</td>
@@ -378,7 +379,9 @@ const internalBenchmarks = {
 
             <!-- Features -->
             <tr class="bg-stone-900/50">
-              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">Built-in Features</td>
+              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">
+                Built-in Features
+              </td>
             </tr>
             <tr class="bg-stone-800">
               <td class="px-4 py-3 font-medium text-stone-300">Authentication (JWT)</td>
@@ -479,7 +482,9 @@ const internalBenchmarks = {
 
             <!-- Observability -->
             <tr class="bg-stone-900/50">
-              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">Observability</td>
+              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">
+                Observability
+              </td>
             </tr>
             <tr class="bg-stone-800">
               <td class="px-4 py-3 font-medium text-stone-300">OpenTelemetry</td>
@@ -500,7 +505,9 @@ const internalBenchmarks = {
 
             <!-- Developer Experience -->
             <tr class="bg-stone-900/50">
-              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">Developer Experience</td>
+              <td colspan="6" class="px-4 py-2 font-bold text-stone-300">
+                Developer Experience
+              </td>
             </tr>
             <tr class="bg-stone-800">
               <td class="px-4 py-3 font-medium text-stone-300">CLI Tool</td>
@@ -577,30 +584,31 @@ const internalBenchmarks = {
         <h3 class="text-2xl font-bold text-white mb-6">Throughput (Requests/Second)</h3>
 
         <div class="bg-stone-800 rounded-xl p-6 border border-stone-700">
-          {
-            tabs.map((tab) => (
-              <div class:list={['space-y-4', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
-                {tab.frameworks.map((framework) => (
-                  <div class="flex items-center gap-4">
-                    <div class="w-24 text-right font-medium text-stone-300">{framework.name}</div>
-                    <div class="flex-1">
-                      <div class="h-8 bg-stone-700 rounded-lg overflow-hidden relative">
-                        <div
-                          class="h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3"
-                          style={`width: ${getBarWidth(framework.plaintextRps, tab.maxRps)}%; background-color: ${framework.color}`}
-                        >
-                          <span class="text-white text-sm font-bold drop-shadow">
-                            {formatNumber(framework.plaintextRps)}
-                          </span>
-                        </div>
+          {tabs.map((tab) => (
+            <div class:list={['space-y-4', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
+              {tab.frameworks.map((framework) => (
+                <div class="flex items-center gap-4">
+                  <div class="w-24 text-right font-medium text-stone-300">{framework.name}</div>
+                  <div class="flex-1">
+                    <div class="h-8 bg-stone-700 rounded-lg overflow-hidden relative">
+                      <div
+                        class="h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-3"
+                        style={styleAttr(
+                          Astro,
+                          `width: ${getBarWidth(framework.plaintextRps, tab.maxRps)}%; background-color: ${framework.color}`,
+                        )}
+                      >
+                        <span class="text-white text-sm font-bold drop-shadow">
+                          {formatNumber(framework.plaintextRps)}
+                        </span>
                       </div>
                     </div>
-                    <div class="w-20 text-sm text-stone-500">{framework.runtime}</div>
                   </div>
-                ))}
-              </div>
-            ))
-          }
+                  <div class="w-20 text-sm text-stone-500">{framework.runtime}</div>
+                </div>
+              ))}
+            </div>
+          ))}
 
           <p class="text-center text-stone-500 text-sm mt-6">Higher is better • Plaintext response benchmark</p>
         </div>
@@ -625,68 +633,69 @@ const internalBenchmarks = {
                 <th class="px-4 py-4 text-center text-white font-semibold">vs Armature</th>
               </tr>
             </thead>
-            {
-              tabs.map((tab) => (
-                <tbody class:list={['divide-y divide-stone-700', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
-                  {tab.frameworks.map((framework, i) => (
-                    <tr
-                      class:list={[
-                        i % 2 === 0 ? 'bg-stone-800' : 'bg-stone-800/50',
-                        {
-                          'border-l-4': framework.name === 'Armature',
-                          'border-l-rust-500': framework.name === 'Armature',
-                        },
-                      ]}
-                    >
-                      <td class="px-4 py-3">
-                        <div class="flex items-center gap-2">
-                          <div class="w-3 h-3 rounded-full" style={`background-color: ${framework.color}`} />
-                          <span
-                            class:list={[
-                              'font-medium text-stone-200',
-                              { 'text-rust-400': framework.name === 'Armature' },
-                            ]}
-                          >
-                            {framework.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-center">
+            {tabs.map((tab) => (
+              <tbody class:list={['divide-y divide-stone-700', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
+                {tab.frameworks.map((framework, i) => (
+                  <tr
+                    class:list={[
+                      i % 2 === 0 ? 'bg-stone-800' : 'bg-stone-800/50',
+                      {
+                        'border-l-4': framework.name === 'Armature',
+                        'border-l-rust-500': framework.name === 'Armature',
+                      },
+                    ]}
+                  >
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <div
+                          class="w-3 h-3 rounded-full"
+                          style={styleAttr(Astro, `background-color: ${framework.color}`)}
+                        />
                         <span
                           class:list={[
-                            'px-2 py-1 rounded text-xs font-medium',
-                            framework.runtime === 'Rust/Tokio'
-                              ? 'bg-orange-900/50 text-orange-300'
-                              : 'bg-green-900/50 text-green-300',
+                            'font-medium text-stone-200',
+                            { 'text-rust-400': framework.name === 'Armature' },
                           ]}
                         >
-                          {framework.runtime}
+                          {framework.name}
                         </span>
-                      </td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">
-                        {formatNumber(framework.plaintextRps)}/s
-                      </td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">{formatNumber(framework.jsonRps)}/s</td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">
-                        {formatNumber(framework.pathParamRps)}/s
-                      </td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">{formatNumber(framework.postRps)}/s</td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">{framework.latencyP50}ms</td>
-                      <td class="px-4 py-3 text-right font-mono text-stone-300">{framework.latencyP99}ms</td>
-                      <td class="px-4 py-3 text-center">
-                        {framework.name === 'Armature' ? (
-                          <span class="text-rust-400 font-bold">baseline</span>
-                        ) : (
-                          <span class={framework.plaintextRps > 325000 ? 'text-green-400' : 'text-red-400'}>
-                            {getRatioVsArmature(framework)}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              ))
-            }
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      <span
+                        class:list={[
+                          'px-2 py-1 rounded text-xs font-medium',
+                          framework.runtime === 'Rust/Tokio'
+                            ? 'bg-orange-900/50 text-orange-300'
+                            : 'bg-green-900/50 text-green-300',
+                        ]}
+                      >
+                        {framework.runtime}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">
+                      {formatNumber(framework.plaintextRps)}/s
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">{formatNumber(framework.jsonRps)}/s</td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">
+                      {formatNumber(framework.pathParamRps)}/s
+                    </td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">{formatNumber(framework.postRps)}/s</td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">{framework.latencyP50}ms</td>
+                    <td class="px-4 py-3 text-right font-mono text-stone-300">{framework.latencyP99}ms</td>
+                    <td class="px-4 py-3 text-center">
+                      {framework.name === 'Armature' ? (
+                        <span class="text-rust-400 font-bold">baseline</span>
+                      ) : (
+                        <span class={framework.plaintextRps > 325000 ? 'text-green-400' : 'text-red-400'}>
+                          {getRatioVsArmature(framework)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
         </div>
       </div>
@@ -699,50 +708,52 @@ const internalBenchmarks = {
           <!-- Idle Memory -->
           <div class="bg-stone-800 rounded-xl p-6 border border-stone-700">
             <h4 class="font-bold text-stone-300 mb-4 text-center">Idle Memory</h4>
-            {
-              tabs.map((tab) => (
-                <div class:list={['space-y-3', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
-                  {tab.frameworks.map((framework) => (
-                    <div class="flex items-center gap-3">
-                      <div class="w-20 text-right text-sm font-medium text-stone-400">{framework.name}</div>
-                      <div class="flex-1 h-6 bg-stone-700 rounded overflow-hidden">
-                        <div
-                          class="h-full rounded transition-all duration-500 flex items-center justify-end pr-2"
-                          style={`width: ${(framework.memoryIdle / 100) * 100}%; background-color: ${framework.color}`}
-                        >
-                          <span class="text-white text-xs font-bold">{framework.memoryIdle}MB</span>
-                        </div>
+            {tabs.map((tab) => (
+              <div class:list={['space-y-3', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
+                {tab.frameworks.map((framework) => (
+                  <div class="flex items-center gap-3">
+                    <div class="w-20 text-right text-sm font-medium text-stone-400">{framework.name}</div>
+                    <div class="flex-1 h-6 bg-stone-700 rounded overflow-hidden">
+                      <div
+                        class="h-full rounded transition-all duration-500 flex items-center justify-end pr-2"
+                        style={styleAttr(
+                          Astro,
+                          `width: ${(framework.memoryIdle / 100) * 100}%; background-color: ${framework.color}`,
+                        )}
+                      >
+                        <span class="text-white text-xs font-bold">{framework.memoryIdle}MB</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ))
-            }
+                  </div>
+                ))}
+              </div>
+            ))}
             <p class="text-center text-stone-500 text-xs mt-4">Lower is better</p>
           </div>
 
           <!-- Load Memory -->
           <div class="bg-stone-800 rounded-xl p-6 border border-stone-700">
             <h4 class="font-bold text-stone-300 mb-4 text-center">Under Load (50 connections)</h4>
-            {
-              tabs.map((tab) => (
-                <div class:list={['space-y-3', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
-                  {tab.frameworks.map((framework) => (
-                    <div class="flex items-center gap-3">
-                      <div class="w-20 text-right text-sm font-medium text-stone-400">{framework.name}</div>
-                      <div class="flex-1 h-6 bg-stone-700 rounded overflow-hidden">
-                        <div
-                          class="h-full rounded transition-all duration-500 flex items-center justify-end pr-2"
-                          style={`width: ${(framework.memoryLoad / 200) * 100}%; background-color: ${framework.color}`}
-                        >
-                          <span class="text-white text-xs font-bold">{framework.memoryLoad}MB</span>
-                        </div>
+            {tabs.map((tab) => (
+              <div class:list={['space-y-3', { hidden: tab.id !== 'all' }]} data-tab-panel={tab.id}>
+                {tab.frameworks.map((framework) => (
+                  <div class="flex items-center gap-3">
+                    <div class="w-20 text-right text-sm font-medium text-stone-400">{framework.name}</div>
+                    <div class="flex-1 h-6 bg-stone-700 rounded overflow-hidden">
+                      <div
+                        class="h-full rounded transition-all duration-500 flex items-center justify-end pr-2"
+                        style={styleAttr(
+                          Astro,
+                          `width: ${(framework.memoryLoad / 200) * 100}%; background-color: ${framework.color}`,
+                        )}
+                      >
+                        <span class="text-white text-xs font-bold">{framework.memoryLoad}MB</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ))
-            }
+                  </div>
+                ))}
+              </div>
+            ))}
             <p class="text-center text-stone-500 text-xs mt-4">Lower is better</p>
           </div>
         </div>
@@ -750,23 +761,17 @@ const internalBenchmarks = {
 
       <!-- Key Insights -->
       <div class="grid md:grid-cols-3 gap-6 mb-12">
-        <div
-          class="bg-gradient-to-br from-rust-900/50 to-orange-900/30 rounded-xl p-6 text-center border border-rust-800"
-        >
+        <div class="bg-gradient-to-br from-rust-900/50 to-orange-900/30 rounded-xl p-6 text-center border border-rust-800">
           <div class="text-4xl font-bold text-rust-400 mb-2">10-15x</div>
           <div class="text-white font-medium">Faster than Node.js</div>
           <div class="text-stone-500 text-sm mt-1">Armature vs Express/NestJS</div>
         </div>
-        <div
-          class="bg-gradient-to-br from-green-900/50 to-emerald-900/30 rounded-xl p-6 text-center border border-green-800"
-        >
+        <div class="bg-gradient-to-br from-green-900/50 to-emerald-900/30 rounded-xl p-6 text-center border border-green-800">
           <div class="text-4xl font-bold text-green-400 mb-2">~3x</div>
           <div class="text-white font-medium">Less Memory</div>
           <div class="text-stone-500 text-sm mt-1">Compared to Node.js frameworks</div>
         </div>
-        <div
-          class="bg-gradient-to-br from-purple-900/50 to-indigo-900/30 rounded-xl p-6 text-center border border-purple-800"
-        >
+        <div class="bg-gradient-to-br from-purple-900/50 to-indigo-900/30 rounded-xl p-6 text-center border border-purple-800">
           <div class="text-4xl font-bold text-purple-400 mb-2">&lt;1ms</div>
           <div class="text-white font-medium">p99 Latency</div>
           <div class="text-stone-500 text-sm mt-1">Armature optimized</div>
@@ -789,26 +794,24 @@ const internalBenchmarks = {
               {internalBenchmarks.routing.title}
             </h4>
             <div class="space-y-2">
-              {
-                internalBenchmarks.routing.results.map((result) => (
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-stone-400">{result.name}</span>
-                    <div class="flex items-center gap-3">
-                      <span class="font-mono text-stone-300">{result.time}</span>
-                      <span
-                        class:list={[
-                          'text-xs px-2 py-0.5 rounded',
-                          result.improvement.startsWith('-')
-                            ? 'bg-green-900/50 text-green-400'
-                            : 'bg-stone-700 text-stone-400',
-                        ]}
-                      >
-                        {result.improvement}
-                      </span>
-                    </div>
+              {internalBenchmarks.routing.results.map((result) => (
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-stone-400">{result.name}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="font-mono text-stone-300">{result.time}</span>
+                    <span
+                      class:list={[
+                        'text-xs px-2 py-0.5 rounded',
+                        result.improvement.startsWith('-')
+                          ? 'bg-green-900/50 text-green-400'
+                          : 'bg-stone-700 text-stone-400',
+                      ]}
+                    >
+                      {result.improvement}
+                    </span>
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           </div>
 
@@ -819,26 +822,24 @@ const internalBenchmarks = {
               {internalBenchmarks.handlers.title}
             </h4>
             <div class="space-y-2">
-              {
-                internalBenchmarks.handlers.results.map((result) => (
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-stone-400">{result.name}</span>
-                    <div class="flex items-center gap-3">
-                      <span class="font-mono text-stone-300">{result.time}</span>
-                      <span
-                        class:list={[
-                          'text-xs px-2 py-0.5 rounded',
-                          result.improvement.startsWith('-')
-                            ? 'bg-green-900/50 text-green-400'
-                            : 'bg-stone-700 text-stone-400',
-                        ]}
-                      >
-                        {result.improvement}
-                      </span>
-                    </div>
+              {internalBenchmarks.handlers.results.map((result) => (
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-stone-400">{result.name}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="font-mono text-stone-300">{result.time}</span>
+                    <span
+                      class:list={[
+                        'text-xs px-2 py-0.5 rounded',
+                        result.improvement.startsWith('-')
+                          ? 'bg-green-900/50 text-green-400'
+                          : 'bg-stone-700 text-stone-400',
+                      ]}
+                    >
+                      {result.improvement}
+                    </span>
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           </div>
 
@@ -849,26 +850,24 @@ const internalBenchmarks = {
               {internalBenchmarks.fullCycle.title}
             </h4>
             <div class="space-y-2">
-              {
-                internalBenchmarks.fullCycle.results.map((result) => (
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-stone-400">{result.name}</span>
-                    <div class="flex items-center gap-3">
-                      <span class="font-mono text-stone-300">{result.time}</span>
-                      <span
-                        class:list={[
-                          'text-xs px-2 py-0.5 rounded',
-                          result.improvement.startsWith('-')
-                            ? 'bg-green-900/50 text-green-400'
-                            : 'bg-stone-700 text-stone-400',
-                        ]}
-                      >
-                        {result.improvement}
-                      </span>
-                    </div>
+              {internalBenchmarks.fullCycle.results.map((result) => (
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-stone-400">{result.name}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="font-mono text-stone-300">{result.time}</span>
+                    <span
+                      class:list={[
+                        'text-xs px-2 py-0.5 rounded',
+                        result.improvement.startsWith('-')
+                          ? 'bg-green-900/50 text-green-400'
+                          : 'bg-stone-700 text-stone-400',
+                      ]}
+                    >
+                      {result.improvement}
+                    </span>
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           </div>
 
@@ -879,26 +878,24 @@ const internalBenchmarks = {
               {internalBenchmarks.json.title}
             </h4>
             <div class="space-y-2">
-              {
-                internalBenchmarks.json.results.map((result) => (
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-stone-400">{result.name}</span>
-                    <div class="flex items-center gap-3">
-                      <span class="font-mono text-stone-300">{result.time}</span>
-                      <span
-                        class:list={[
-                          'text-xs px-2 py-0.5 rounded',
-                          result.improvement.startsWith('-')
-                            ? 'bg-green-900/50 text-green-400'
-                            : 'bg-stone-700 text-stone-400',
-                        ]}
-                      >
-                        {result.improvement}
-                      </span>
-                    </div>
+              {internalBenchmarks.json.results.map((result) => (
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-stone-400">{result.name}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="font-mono text-stone-300">{result.time}</span>
+                    <span
+                      class:list={[
+                        'text-xs px-2 py-0.5 rounded',
+                        result.improvement.startsWith('-')
+                          ? 'bg-green-900/50 text-green-400'
+                          : 'bg-stone-700 text-stone-400',
+                      ]}
+                    >
+                      {result.improvement}
+                    </span>
                   </div>
-                ))
-              }
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -913,7 +910,9 @@ const internalBenchmarks = {
         <h4 class="font-bold text-white mb-3">Benchmark Methodology</h4>
         <div class="grid md:grid-cols-2 gap-6 text-sm text-stone-400">
           <div>
-            <p class="mb-2"><strong class="text-stone-200">Configuration:</strong></p>
+            <p class="mb-2">
+              <strong class="text-stone-200">Configuration:</strong>
+            </p>
             <ul class="space-y-1">
               <li>• 50 concurrent connections</li>
               <li>• 10-second duration per test</li>
@@ -922,11 +921,19 @@ const internalBenchmarks = {
             </ul>
           </div>
           <div>
-            <p class="mb-2"><strong class="text-stone-200">Endpoints Tested:</strong></p>
+            <p class="mb-2">
+              <strong class="text-stone-200">Endpoints Tested:</strong>
+            </p>
             <ul class="space-y-1">
-              <li>• <code class="bg-stone-700 px-1 rounded text-rust-400">GET /</code> - Plaintext response</li>
-              <li>• <code class="bg-stone-700 px-1 rounded text-rust-400">GET /json</code> - JSON serialization</li>
-              <li>• <code class="bg-stone-700 px-1 rounded text-rust-400">GET /users/:id</code> - Path parameter</li>
+              <li>
+                • <code class="bg-stone-700 px-1 rounded text-rust-400">GET /</code> - Plaintext response
+              </li>
+              <li>
+                • <code class="bg-stone-700 px-1 rounded text-rust-400">GET /json</code> - JSON serialization
+              </li>
+              <li>
+                • <code class="bg-stone-700 px-1 rounded text-rust-400">GET /users/:id</code> - Path parameter
+              </li>
               <li>
                 • <code class="bg-stone-700 px-1 rounded text-rust-400">POST /api/users</code> - JSON body parsing
               </li>
@@ -935,9 +942,9 @@ const internalBenchmarks = {
         </div>
         <p class="text-xs text-stone-500 mt-4">
           Results may vary based on hardware, OS, and configuration. Run your own benchmarks for accurate comparisons.
-          <a href="https://github.com/quinnjr/armature/tree/main/benches" class="text-rust-400 hover:underline"
-            >View benchmark code →</a
-          >
+          <a href="https://github.com/quinnjr/armature/tree/main/benches" class="text-rust-400 hover:underline">
+            View benchmark code →
+          </a>
         </p>
       </div>
     </div>
@@ -1007,16 +1014,14 @@ const internalBenchmarks = {
 
         <div class="mt-6 p-4 bg-rust-900/30 rounded-lg border border-rust-800/50">
           <p class="text-sm text-stone-300">
-            <strong class="text-rust-400">Bottom line:</strong> Armature gives you Actix-level performance with NestJS-level
-            productivity. Get the best of both worlds without sacrificing either.
+            <strong class="text-rust-400">Bottom line:</strong> Armature gives you Actix-level performance with
+            NestJS-level productivity. Get the best of both worlds without sacrificing either.
           </p>
         </div>
       </div>
 
       <!-- Axum -->
-      <div
-        class="mb-16 bg-gradient-to-r from-purple-900/30 to-indigo-900/20 rounded-2xl p-8 border border-purple-800/50"
-      >
+      <div class="mb-16 bg-gradient-to-r from-purple-900/30 to-indigo-900/20 rounded-2xl p-8 border border-purple-800/50">
         <div class="flex items-center gap-4 mb-6">
           <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
             <span class="text-white text-2xl font-bold">X</span>
@@ -1074,8 +1079,8 @@ const internalBenchmarks = {
 
         <div class="mt-6 p-4 bg-rust-900/30 rounded-lg border border-rust-800/50">
           <p class="text-sm text-stone-300">
-            <strong class="text-rust-400">Bottom line:</strong> Armature builds on the same Tokio foundation but adds the
-            structure and enterprise features you need for production applications.
+            <strong class="text-rust-400">Bottom line:</strong> Armature builds on the same Tokio foundation but adds
+            the structure and enterprise features you need for production applications.
           </p>
         </div>
       </div>
@@ -1139,8 +1144,8 @@ const internalBenchmarks = {
 
         <div class="mt-6 p-4 bg-rust-900/30 rounded-lg border border-rust-800/50">
           <p class="text-sm text-stone-300">
-            <strong class="text-rust-400">Bottom line:</strong> Armature matches Rocket's beautiful macro syntax while adding
-            dependency injection, modules, and all the enterprise features you'll eventually need.
+            <strong class="text-rust-400">Bottom line:</strong> Armature matches Rocket's beautiful macro syntax while
+            adding dependency injection, modules, and all the enterprise features you'll eventually need.
           </p>
         </div>
       </div>
@@ -1204,8 +1209,8 @@ const internalBenchmarks = {
 
         <div class="mt-6 p-4 bg-rust-900/30 rounded-lg border border-rust-800/50">
           <p class="text-sm text-stone-300">
-            <strong class="text-rust-400">Bottom line:</strong> Armature gives you the same composability with a cleaner,
-            more intuitive API that your whole team can understand and maintain.
+            <strong class="text-rust-400">Bottom line:</strong> Armature gives you the same composability with a
+            cleaner, more intuitive API that your whole team can understand and maintain.
           </p>
         </div>
       </div>
@@ -1227,8 +1232,7 @@ const internalBenchmarks = {
             <span class="text-green-400 font-bold">Armature</span>
             <span class="text-stone-500 text-sm">- NestJS-style</span>
           </div>
-          <pre
-            class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[controller("/users")]
+          <pre class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[controller("/users")]
 #[derive(Default, Clone)]
 struct UserController;
 
@@ -1260,8 +1264,7 @@ impl UserController &#123;
             <span class="text-orange-400 font-bold">Actix-web</span>
             <span class="text-stone-500 text-sm">- Handler functions</span>
           </div>
-          <pre
-            class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[get("/users/&#123;id&#125;")]
+          <pre class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[get("/users/&#123;id&#125;")]
 async fn get_user(
     path: web::Path&lt;u32&gt;
 ) -&gt; impl Responder &#123;
@@ -1290,8 +1293,7 @@ App::new()
             <span class="text-purple-400 font-bold">Axum</span>
             <span class="text-stone-500 text-sm">- Extractor-based</span>
           </div>
-          <pre
-            class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>async fn get_user(
+          <pre class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>async fn get_user(
     Path(id): Path&lt;u32&gt;
 ) -&gt; Result&lt;Json&lt;User&gt;, AppError&gt; &#123;
     let user = find_user(id).await?;
@@ -1317,8 +1319,7 @@ Router::new()
             <span class="text-red-400 font-bold">Rocket</span>
             <span class="text-stone-500 text-sm">- Attribute macros</span>
           </div>
-          <pre
-            class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[get("/users/&lt;id&gt;")]
+          <pre class="p-4 text-sm overflow-x-auto bg-stone-900 text-stone-300"><code>#[get("/users/&lt;id&gt;")]
 async fn get_user(id: u32)
     -&gt; Result&lt;Json&lt;User&gt;, Status&gt;
 &#123;
@@ -1355,11 +1356,10 @@ rocket::build()
             Node.js Developers Moving to Rust
           </h3>
           <p class="text-stone-300">
-            If you're coming from <strong class="text-white">NestJS</strong>, <strong class="text-white">Express</strong
-            >,
-            <strong class="text-white">Fastify</strong>, or <strong class="text-white">Koa</strong> and want Rust's performance
-            without losing familiar patterns like decorators, dependency injection, and middleware chains - Armature is for
-            you.
+            If you're coming from <strong class="text-white">NestJS</strong>,{' '}
+            <strong class="text-white">Express</strong>,<strong class="text-white">Fastify</strong>, or{' '}
+            <strong class="text-white">Koa</strong> and want Rust's performance without losing familiar patterns like
+            decorators, dependency injection, and middleware chains - Armature is for you.
           </p>
         </div>
 
@@ -1370,11 +1370,11 @@ rocket::build()
           </h3>
           <p class="text-stone-300">
             Building microservices, APIs, or backend systems that need
-            <strong class="text-white">authentication</strong> (JWT, OAuth2, SAML), <strong class="text-white"
-              >validation</strong
-            >,
-            <strong class="text-white">caching</strong>, <strong class="text-white">job queues</strong>, and
-            <strong class="text-white">observability</strong> out of the box? Armature includes all these enterprise features.
+            <strong class="text-white">authentication</strong> (JWT, OAuth2, SAML),{' '}
+            <strong class="text-white">validation</strong>,<strong class="text-white">caching</strong>,{' '}
+            <strong class="text-white">job queues</strong>, and
+            <strong class="text-white">observability</strong> out of the box? Armature includes all these enterprise
+            features.
           </p>
         </div>
 
@@ -1384,11 +1384,11 @@ rocket::build()
             Rust Developers Wanting Higher Abstractions
           </h3>
           <p class="text-stone-300">
-            Love Rust but find <strong class="text-white">Actix-web</strong>, <strong class="text-white">Rocket</strong
-            >, or
+            Love Rust but find <strong class="text-white">Actix-web</strong>, <strong class="text-white">Rocket</strong>
+            , or
             <strong class="text-white">Axum</strong>
-            too low-level? Armature provides a full-featured framework with modular architecture, reducing boilerplate while
-            maintaining type safety.
+            too low-level? Armature provides a full-featured framework with modular architecture, reducing boilerplate
+            while maintaining type safety.
           </p>
         </div>
 
@@ -1465,10 +1465,18 @@ rocket::build()
         <div class="bg-stone-800 p-6 rounded-xl shadow-md border-l-4 border-stone-500">
           <h4 class="font-bold text-white mb-2">Not sure? Start with...</h4>
           <ul class="text-sm text-stone-400 space-y-1">
-            <li>• <strong class="text-white">Armature</strong> if from Node.js</li>
-            <li>• <strong class="text-white">Axum</strong> if new to web in Rust</li>
-            <li>• <strong class="text-white">Actix-web</strong> if performance critical</li>
-            <li>• <strong class="text-white">Rocket</strong> if learning Rust</li>
+            <li>
+              • <strong class="text-white">Armature</strong> if from Node.js
+            </li>
+            <li>
+              • <strong class="text-white">Axum</strong> if new to web in Rust
+            </li>
+            <li>
+              • <strong class="text-white">Actix-web</strong> if performance critical
+            </li>
+            <li>
+              • <strong class="text-white">Rocket</strong> if learning Rust
+            </li>
           </ul>
         </div>
       </div>

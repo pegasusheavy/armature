@@ -1,12 +1,11 @@
 # Armature Documentation
 
-Welcome to the Armature framework documentation! Armature is a batteries-included, enterprise-grade web framework for Rust, inspired by NestJS and Angular.
+Welcome to the Armature framework documentation! Armature is a batteries-included web framework for Rust, inspired by NestJS and Angular.
 
 ## Framework Overview
 
-Armature provides everything you need to build production-ready APIs:
+Armature provides the building blocks for HTTP APIs:
 
-- ✅ **99% Feature Complete** - Enterprise-ready with 150+ features implemented
 - 🚀 **Actix-Competitive Performance** - 112 optimizations, SIMD JSON, zero-alloc responses
 - 🔒 **Type-Safe** - Catch errors at compile time
 - 💉 **Dependency Injection** - Automatic service injection
@@ -30,6 +29,25 @@ cd my-api
 # Start the dev server
 armature dev
 ```
+
+To add Armature to an existing project:
+
+```toml
+[dependencies]
+armature = { package = "armature-framework", version = "0.8" }
+```
+
+Enable optional crates with features, for example
+`armature = { package = "armature-framework", version = "0.8", features = ["auth", "security"] }`.
+The library is imported as `armature` (`use armature::prelude::*;`).
+
+### Secure defaults
+
+Guards fail closed, request paths are canonicalized before routing, request bodies
+and headers are read under deadlines, GraphQL developer tooling is off by default,
+and client IPs come from the socket peer unless you trust a fixed number of proxies.
+See the [Security Guide](security-guide.md), the [Authentication Guide](auth-guide.md)
+and each crate's `CHANGELOG.md` for the details and migrations.
 
 ## Documentation Index
 
@@ -210,7 +228,7 @@ Armature provides first-class integrations with major cloud providers:
 ## Quick Example
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

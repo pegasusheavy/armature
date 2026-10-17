@@ -18,7 +18,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-diesel = "0.1"
+armature-diesel = "0.2"
 ```
 
 ### Feature Flags
@@ -26,16 +26,16 @@ armature-diesel = "0.1"
 ```toml
 [dependencies]
 # PostgreSQL with deadpool (default)
-armature-diesel = "0.1"
+armature-diesel = "0.2"
 
 # MySQL with deadpool
-armature-diesel = { version = "0.1", default-features = false, features = ["mysql", "deadpool"] }
+armature-diesel = { version = "0.2", default-features = false, features = ["mysql", "deadpool"] }
 
 # PostgreSQL with bb8
-armature-diesel = { version = "0.1", default-features = false, features = ["postgres", "bb8"] }
+armature-diesel = { version = "0.2", default-features = false, features = ["postgres", "bb8"] }
 
 # With migrations support
-armature-diesel = { version = "0.1", features = ["migrations"] }
+armature-diesel = { version = "0.2", features = ["migrations"] }
 ```
 
 Available features:
@@ -183,7 +183,7 @@ if status.is_under_pressure() {
 ## With Armature DI
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_diesel::{DieselPool, DieselConfig};
 
 #[module_impl]
@@ -323,7 +323,7 @@ diesel::delete(users::table.filter(users::id.eq(1)))
 Enable the `migrations` feature:
 
 ```toml
-armature-diesel = { version = "0.1", features = ["migrations"] }
+armature-diesel = { version = "0.2", features = ["migrations"] }
 ```
 
 ```rust

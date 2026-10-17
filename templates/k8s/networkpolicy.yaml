@@ -1,5 +1,8 @@
 # =============================================================================
-# Armature - NetworkPolicy Template
+# Armature - NetworkPolicy (included in the Kustomize base)
+# =============================================================================
+# Default-deny for the app pods with explicit allows. Adjust the namespace
+# selectors to match your cluster (ingress controller, monitoring, data).
 # =============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -31,20 +34,22 @@ spec:
       ports:
         - protocol: TCP
           port: 3000
-    # Allow Prometheus scraping
+    # Allow Prometheus scraping of the dedicated metrics port only
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring
       ports:
         - protocol: TCP
-          port: 3000
+          port: 9090
   egress:
     # Allow DNS
     - to:
         - namespaceSelector: {}
       ports:
         - protocol: UDP
+          port: 53
+        - protocol: TCP
           port: 53
     # Allow database connections (adjust as needed)
     - to:
@@ -70,6 +75,8 @@ spec:
               - 10.0.0.0/8
               - 172.16.0.0/12
               - 192.168.0.0/16
+              - 169.254.0.0/16
+              - 100.64.0.0/10
       ports:
         - protocol: TCP
           port: 443

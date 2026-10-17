@@ -10,7 +10,10 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder - Build for ARM64
 # -----------------------------------------------------------------------------
-FROM --platform=linux/arm64 rust:1.85-alpine AS builder
+# Base images are pinned by exact tag AND digest (Rust 1.99.1 >= the 1.94.1
+# MSRV on Alpine 3.24; the Lambda provided:al2023-arm64 runtime). The digest
+# of the Rust image is the multi-arch index; --platform selects arm64 from it.
+FROM --platform=linux/arm64 rust:1.99.1-alpine3.24@sha256:557a94c82b485a14b569120e00867267108c734efe33f10cc31ca0cd5dd1eca9 AS builder
 
 WORKDIR /app
 
@@ -23,8 +26,18 @@ RUN apk add --no-cache \
     curl \
     gcc
 
-# Install cargo-lambda for ARM64
-RUN curl -sSL https://github.com/cargo-lambda/cargo-lambda/releases/latest/download/cargo-lambda-aarch64-unknown-linux-musl.tar.gz | tar xz -C /usr/local/bin
+# Install cargo-lambda for ARM64: exact release, verified against a
+# hardcoded SHA256; the build FAILS on mismatch. Upgrade both values together
+# (see Dockerfile for how to obtain and re-check the hash).
+ARG CARGO_LAMBDA_VERSION=1.9.2
+ARG CARGO_LAMBDA_SHA256=c3fd0a352bb439e4e84a09e5361ea333f7cdc58b0894105e93a33c43b867bc2d
+RUN set -eu \
+    && curl --proto '=https' --tlsv1.2 -fsSL -o cargo-lambda.tar.gz \
+         "https://github.com/cargo-lambda/cargo-lambda/releases/download/v${CARGO_LAMBDA_VERSION}/cargo-lambda-v${CARGO_LAMBDA_VERSION}.aarch64-unknown-linux-musl.tar.gz" \
+    && echo "${CARGO_LAMBDA_SHA256}  cargo-lambda.tar.gz" | sha256sum -c - \
+    && tar xzf cargo-lambda.tar.gz -C /usr/local/bin cargo-lambda \
+    && rm cargo-lambda.tar.gz \
+    && cargo lambda --version
 
 # Copy dependency files first (for caching)
 COPY Cargo.toml Cargo.lock* ./
@@ -38,7 +51,7 @@ RUN cargo lambda build --release --arm64
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime - AWS Lambda ARM64 base image
 # -----------------------------------------------------------------------------
-FROM --platform=linux/arm64 public.ecr.aws/lambda/provided:al2023-arm64 AS runtime
+FROM --platform=linux/arm64 public.ecr.aws/lambda/provided:al2023-arm64@sha256:7a99afa4f62c87e039c95dc3e2d307114f35a148ba5e2eb67287a84082521e44 AS runtime
 
 # Copy the bootstrap binary
 COPY --from=builder /app/target/lambda/*/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap

@@ -132,7 +132,7 @@ echo "Both runs are saved as criterion baselines: 'baseline' and 'current'."
 echo "Raw output: $RESULTS_DIR/{baseline,current}.txt"
 echo ""
 echo "To see the comparison (threshold ${THRESHOLD}%):"
-echo "   cargo install critcmp && critcmp baseline current"
+echo "   cargo install critcmp --version 0.1.8 --locked && critcmp baseline current"
 echo ""
 
 echo ""

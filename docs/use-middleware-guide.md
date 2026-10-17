@@ -6,6 +6,7 @@ Armature provides the `#[use_middleware]` decorator for applying middleware to i
 
 - [Overview](#overview)
 - [Features](#features)
+- [Global Middleware](#global-middleware)
 - [Basic Usage](#basic-usage)
 - [Multiple Middleware](#multiple-middleware)
 - [Controller-Level Middleware](#controller-level-middleware)
@@ -34,14 +35,61 @@ The `#[use_middleware]` decorator wraps route handlers with a middleware chain, 
 - ✅ Compatible with request extractors
 - ✅ Type-safe middleware configuration
 
+## Global Middleware
+
+Middleware that must run for every request, authentication in particular, belongs on the
+application. `Application::use_middleware` adds global middleware, run in the order added
+(first = outermost):
+
+```rust
+use armature::prelude::*;
+use armature::{LoggingMiddleware, RequestIdMiddleware};
+use armature_auth::JwtAuthMiddleware;
+use armature_jwt::{JwtConfig, JwtManager};
+
+// JwtConfig::new returns a Result and rejects secrets shorter than 32 bytes.
+let jwt = JwtManager::new(JwtConfig::new(std::env::var("JWT_SECRET")?)?)?;
+
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(RequestIdMiddleware)
+    .use_middleware(LoggingMiddleware::new())
+    .use_middleware(JwtAuthMiddleware::new(jwt));
+```
+
+Global middleware sees the canonical request path (a path with `.`/`..` segments or an
+encoded slash has already been refused with `400`) and also runs for requests that match no
+route.
+
+### The Request Pipeline
+
+Armature follows the NestJS order:
+
+1. Global middleware (`Application::use_middleware`)
+2. Global guards (`Application::with_guard`)
+3. Route-scoped middleware, then route-scoped guards (controller `#[middleware]` runs
+   **before** controller `#[guard]`; `RouteGroup` middleware before group guards)
+4. The handler
+
+Because middleware runs before guards, `JwtAuthMiddleware` can verify the token and attach
+`VerifiedIdentity` / `RequestRoles` / `UserContext` before `AuthenticationGuard`,
+`RolesGuard`, `RoleGuard` or `PermissionGuard` inspect them. Middleware also sees, and can
+post-process, the `401`/`403` a guard produces. A middleware that previously relied on only
+running for already-authorized requests must check authorization itself.
+
 ## Basic Usage
+
+The middleware attributes are re-exported by the framework crate
+(`use armature::{middleware, use_middleware};`). Their expansion names `armature_core::`
+paths, so keep `armature-core` as a direct dependency next to `armature`.
 
 ### Single Middleware
 
 Apply a single middleware to a route:
 
 ```rust
-use armature_framework::{get, use_middleware};
+use armature::get;
+use armature::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware};
 
 #[use_middleware(LoggerMiddleware::new())]
@@ -58,7 +106,8 @@ async fn get_users(req: HttpRequest) -> Result<HttpResponse, Error> {
 Middleware can be configured inline:
 
 ```rust
-use armature_framework::{get, use_middleware};
+use armature::get;
+use armature::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, CorsMiddleware};
 
 #[use_middleware(CorsMiddleware::new().allow_origin("https://example.com"))]
@@ -73,7 +122,8 @@ async fn get_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 Chain multiple middleware together by separating them with commas:
 
 ```rust
-use armature_framework::{get, use_middleware};
+use armature::get;
+use armature::use_middleware;
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, CorsMiddleware, SecurityHeadersMiddleware
@@ -102,7 +152,8 @@ Middleware executes in the order specified:
 Apply middleware to all routes in a controller using the `#[middleware]` decorator:
 
 ```rust
-use armature_framework::{controller, get, post, middleware};
+use armature::{controller, get, post};
+use armature::middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware, CorsMiddleware};
 
 #[middleware(LoggerMiddleware::new(), CorsMiddleware::new())]
@@ -124,12 +175,31 @@ impl ApiController {
 }
 ```
 
+### Controller Middleware and Guards
+
+A controller's `#[middleware(...)]` runs before its `#[guard(...)]`s, so authentication can
+live on the controller:
+
+```rust
+use armature::{guard, middleware};
+use armature_auth::{AuthGuard, JwtAuthMiddleware};
+
+#[controller("/admin")]
+#[middleware(jwt_auth())] // runs first: verifies the token, attaches UserContext
+#[guard(AuthGuard)]       // runs second: requires that UserContext
+struct AdminController;
+```
+
+(`jwt_auth()` is any function returning a configured `JwtAuthMiddleware`; struct-level
+arguments are expressions evaluated once when the routes are registered.)
+
 ### Combining Controller and Route Middleware
 
 Route-level middleware adds to controller-level middleware:
 
 ```rust
-use armature_framework::{controller, get, middleware, use_middleware};
+use armature::{controller, get};
+use armature::{middleware, use_middleware};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, TimeoutMiddleware
@@ -201,21 +271,26 @@ pub struct AuthMiddleware {
 }
 
 impl AuthMiddleware {
-    pub fn new(api_key: &str) -> Self {
-        Self { api_key: api_key.to_string() }
+    pub fn new(api_key: impl Into<String>) -> Self {
+        Self { api_key: api_key.into() }
     }
 }
 
 #[async_trait]
 impl Middleware for AuthMiddleware {
-    async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
-        // Check for API key in headers
-        let auth_header = req.headers.get("X-API-Key")
-            .or_else(|| req.headers.get("x-api-key"));
+    async fn handle(&self, mut req: HttpRequest, next: Next) -> Result<HttpResponse, Error> {
+        // Header lookup is case-insensitive.
+        let auth_header = req.headers.get("x-api-key").map(str::to_owned);
 
         match auth_header {
-            Some(key) if key == &self.api_key => {
-                // Valid key, proceed to handler
+            // Compare secrets in constant time.
+            Some(key) if armature_core::crypto::constant_time_eq(
+                key.as_bytes(),
+                self.api_key.as_bytes(),
+            ) => {
+                // Verified: tell the guards who the caller is, then proceed.
+                req.extensions
+                    .insert(armature_core::VerifiedIdentity::new("api-client"));
                 next(req).await
             }
             Some(_) => {
@@ -240,10 +315,13 @@ impl Middleware for AuthMiddleware {
 Use your custom middleware:
 
 ```rust
-use armature_framework::{get, use_middleware};
+use armature::get;
+use armature::use_middleware;
 use my_app::AuthMiddleware;
 
-#[use_middleware(AuthMiddleware::new("secret-key"))]
+#[use_middleware(AuthMiddleware::new(
+    std::env::var("API_KEY").expect("API_KEY must be set"),
+))]
 #[get("/protected")]
 async fn protected(req: HttpRequest) -> Result<HttpResponse, Error> {
     Ok(HttpResponse::ok())
@@ -291,7 +369,10 @@ impl Middleware for RateLimitMiddleware {
 
 ## Execution Order
 
-Understanding middleware execution order is crucial:
+Understanding middleware execution order is crucial. Within one chain, middleware runs in
+the order listed; across layers, global middleware wraps global guards, which wrap
+route-scoped middleware, then route-scoped guards, then the handler (see
+[The Request Pipeline](#the-request-pipeline)):
 
 ```
 Request Flow:
@@ -344,7 +425,7 @@ Place middleware in logical order:
 #[use_middleware(
     RequestIdMiddleware,       // First: assign request ID
     LoggingMiddleware::new(),  // Second: log with request ID
-    AuthMiddleware::new(),     // Third: authenticate
+    AuthMiddleware::new(key),  // Third: authenticate
     TimeoutMiddleware::new(30) // Fourth: enforce timeout
 )]
 ```
@@ -465,7 +546,8 @@ async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Err
 | Decorator | Target | Description |
 |-----------|--------|-------------|
 | `#[use_middleware(...)]` | Function | Apply middleware to a route handler |
-| `#[middleware(...)]` | Struct | Apply middleware to a controller |
+| `#[middleware(...)]` | Struct | Apply middleware to a controller (runs before the controller's guards) |
+| `Application::use_middleware(m)` | Application | Global middleware, before every guard |
 
 ### Built-in Middleware Types
 
@@ -485,11 +567,12 @@ async fn handle(&self, req: HttpRequest, next: Next) -> Result<HttpResponse, Err
 **Key Points:**
 
 1. **`#[use_middleware]`** applies middleware to individual routes
-2. **`#[middleware]`** applies middleware to entire controllers
-3. Middleware executes in **order specified** (before handler) and **reverse order** (after handler)
-4. Always call `next(req).await` unless short-circuiting
-5. Use controller-level middleware for common functionality
-6. Keep middleware focused on single responsibilities
+2. **`#[middleware]`** applies middleware to entire controllers, ahead of their guards
+3. **`Application::use_middleware`** applies middleware globally; register authentication here
+4. Middleware executes in **order specified** (before handler) and **reverse order** (after handler); middleware runs before guards
+5. Always call `next(req).await` unless short-circuiting
+6. Use controller-level middleware for common functionality
+7. Keep middleware focused on single responsibilities
 
 **Quick Reference:**
 

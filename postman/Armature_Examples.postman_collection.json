@@ -10,6 +10,23 @@
       "key": "base_url",
       "value": "http://localhost",
       "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "user_password",
+      "value": "",
+      "type": "string",
+      "description": "Set in your (uncommitted) Postman environment. Generate with: openssl rand -base64 24"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string",
+      "description": "Set in your (uncommitted) Postman environment."
     }
   ],
   "item": [
@@ -284,7 +301,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}:3000/api/auth/register",
@@ -322,7 +339,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}:3000/api/auth/login",
@@ -368,7 +385,7 @@
               "port": "3000",
               "path": ["api", "admin", "stats"]
             },
-            "description": "Get admin statistics. Requires admin role.\n\nUse admin credentials: admin@example.com / admin123"
+            "description": "Get admin statistics. Requires admin role.\n\nUse the admin credentials from the environment ({{admin_email}} / {{admin_password}}); set admin_password to whatever the example was started with"
           }
         }
       ]
@@ -398,7 +415,7 @@
             "header": [
               {
                 "key": "x-api-key",
-                "value": "secret-key-123"
+                "value": "{{api_key}}"
               }
             ],
             "url": {

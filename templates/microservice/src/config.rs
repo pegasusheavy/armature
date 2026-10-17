@@ -1,8 +1,9 @@
 //! Service configuration
 
 use std::env;
+use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ServiceConfig {
     pub service_name: String,
     pub host: String,
@@ -38,8 +39,11 @@ impl ServiceConfig {
                 .unwrap_or_else(|_| "8080".to_string())
                 .parse()
                 .unwrap_or(8080),
+            // An empty REDIS_URL (as in .env.example) counts as unset.
             redis_url: env::var("REDIS_URL")
-                .unwrap_or_else(|_| "redis://localhost:6379".to_string()),
+                .ok()
+                .filter(|url| !url.is_empty())
+                .unwrap_or_else(|| "redis://localhost:6379".to_string()),
             queue_name: env::var("QUEUE_NAME").unwrap_or_else(|_| "jobs".to_string()),
             concurrency: env::var("CONCURRENCY")
                 .unwrap_or_else(|_| "4".to_string())
@@ -54,5 +58,33 @@ impl ServiceConfig {
                 .parse()
                 .unwrap_or(1000),
         }
+    }
+}
+
+impl ServiceConfig {
+    /// The Redis URL with any userinfo (password) stripped, for logging.
+    pub fn redis_host(&self) -> &str {
+        let rest = self
+            .redis_url
+            .split_once("://")
+            .map_or(self.redis_url.as_str(), |(_, rest)| rest);
+        rest.rsplit_once('@').map_or(rest, |(_, host)| host)
+    }
+}
+
+// Hand-written so the Redis password embedded in `redis_url` never reaches a
+// log line via `{:?}`.
+impl fmt::Debug for ServiceConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ServiceConfig")
+            .field("service_name", &self.service_name)
+            .field("host", &self.host)
+            .field("port", &self.port)
+            .field("redis_url", &self.redis_host())
+            .field("queue_name", &self.queue_name)
+            .field("concurrency", &self.concurrency)
+            .field("retry_attempts", &self.retry_attempts)
+            .field("retry_delay_ms", &self.retry_delay_ms)
+            .finish()
     }
 }

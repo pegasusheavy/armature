@@ -22,6 +22,8 @@ data:
 
     [metrics]
     enabled = true
+    # Dedicated listener: keeps /metrics off the public HTTP port
+    port = 9090
     endpoint = "/metrics"
 
     [health]

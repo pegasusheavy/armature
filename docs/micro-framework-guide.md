@@ -366,6 +366,12 @@ App::new()
     .route("/public", get(public_page))  // No auth required
 ```
 
+The micro server canonicalizes the request path before middleware and routing
+see it: `//` collapses and percent-encoded unreserved characters decode, while
+`.`/`..` segments, `%2F`, `%5C`, `%00`, `\` and malformed escapes are refused
+with `400`. A scope's middleware therefore cannot be bypassed with
+`//api/users` or `/%61pi/users`.
+
 ## Built-in Middleware
 
 ### Logger
@@ -394,10 +400,10 @@ Cross-Origin Resource Sharing configuration:
 ```rust
 use armature_core::micro::Cors;
 
-// Permissive (allow all)
+// Permissive: any origin, never with credentials
 App::new().wrap(Cors::permissive())
 
-// Custom configuration
+// Credentialed requests: list the exact origins
 App::new().wrap(
     Cors::default()
         .allowed_origins(["https://example.com", "https://app.example.com"])
@@ -407,6 +413,18 @@ App::new().wrap(
         .max_age(3600)
 )
 ```
+
+Origin rules:
+
+- A listed origin (ASCII case-insensitive) is reflected, with
+  `Access-Control-Allow-Credentials` if `allow_credentials(true)`.
+- A `*` entry allows any other origin **without credentials**: it answers
+  `Access-Control-Allow-Origin: *` and revokes `allow_credentials` instead of
+  reflecting the caller's origin.
+- The opaque `null` origin (sandboxed iframes, `file:` pages) is never allowed.
+- Responses carry `Vary: Origin`.
+- Only `OPTIONS` with both `Origin` and `Access-Control-Request-Method` is
+  treated as a preflight; any other `OPTIONS` request is routed normally.
 
 ### Compress
 

@@ -98,7 +98,7 @@ export function renderDocMarkdown(file: string): string {
   try {
     markdown = readFileSync(resolve(DOCS_DIR, file), 'utf-8');
   } catch (e) {
-    throw new Error(`failed to read markdown source "${file}": ${(e as Error).message}`);
+    throw new Error(`failed to read markdown source "${file}": ${(e as Error).message}`, { cause: e });
   }
   if (!markdown.trim()) {
     throw new Error(`empty markdown source: ${file}`);

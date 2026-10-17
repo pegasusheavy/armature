@@ -11,7 +11,13 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder
 # -----------------------------------------------------------------------------
-FROM rust:1.94-alpine AS builder
+# Base images are pinned by exact tag AND digest (Rust 1.99.1 >= the 1.94.1
+# MSRV on Alpine 3.24; Functions host v4). The Functions base image is
+# published only under the floating "4-slim" tag, so the digest is what makes
+# it reproducible: re-resolve it with
+#   docker buildx imagetools inspect mcr.microsoft.com/azure-functions/base:4-slim
+# when you want the newer host (Dependabot's "docker" ecosystem does this).
+FROM rust:1.99.1-alpine3.24@sha256:557a94c82b485a14b569120e00867267108c734efe33f10cc31ca0cd5dd1eca9 AS builder
 
 # Name of the compiled binary (your crate's [[bin]] name, usually the
 # package name). Override with: docker build --build-arg BIN_NAME=my-app
@@ -39,28 +45,42 @@ RUN cargo build --release --target x86_64-unknown-linux-musl --bin ${BIN_NAME}
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime - Azure Functions base image
 # -----------------------------------------------------------------------------
-FROM mcr.microsoft.com/azure-functions/base:4-slim AS runtime
+FROM mcr.microsoft.com/azure-functions/base:4-slim@sha256:c200ecb8eba6d393979ee97209c3852317d59c38c37b6e3c40224619a170a383 AS runtime
 
 # Redeclare: ARGs do not cross FROM boundaries
 ARG BIN_NAME=app
 
+# Unprivileged user for the Functions host and the handler.
+RUN groupadd --system --gid 10001 functions \
+    && useradd --system --uid 10001 --gid functions --no-create-home \
+         --shell /usr/sbin/nologin functions
+
 WORKDIR /home/site/wwwroot
 
 # Copy the binary
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /home/site/wwwroot/handler
+COPY --from=builder --chown=root:root --chmod=0755 /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /home/site/wwwroot/handler
 
-# Copy function configuration files
-COPY host.json ./
-COPY local.settings.json* ./
-COPY */function.json ./
+# Copy function configuration files.
+#
+# local.settings.json is deliberately NOT copied: it holds local secrets
+# (storage connection strings, API keys) and anything COPY'd into a layer can
+# be read back by whoever can pull the image. In Azure, set those values as
+# Function App application settings (backed by Key Vault references). It is
+# also excluded by .dockerignore so it never even reaches the build context.
+COPY --chown=root:root host.json ./
+COPY --chown=root:root */function.json ./
 
-# Set the custom handler
+# Run the host as the unprivileged user on an unprivileged port.
+# FUNCTIONS_CUSTOMHANDLER_PORT is not set here: the host assigns the handler
+# its port at startup (and the old value, 80, collided with the host itself).
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
-    FUNCTIONS_CUSTOMHANDLER_PORT=80
+    ASPNETCORE_URLS=http://+:8080
 
-# Expose port
-EXPOSE 80
+USER functions
+
+# Expose port. In Azure, set the app setting WEBSITES_PORT=8080.
+EXPOSE 8080
 
 # =============================================================================
 # Required Files

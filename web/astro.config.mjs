@@ -62,6 +62,44 @@ export default defineConfig({
   build: {
     format: 'file',
   },
+  // Astro 7 defaults to JSX-style whitespace collapsing, which can drop the
+  // spaces between inline elements; keep the v6 HTML-aware behaviour.
+  compressHTML: true,
+  // Docs are rendered by marked (src/lib/markdown.ts), not Astro's Markdown
+  // pipeline, so Shiki is unused; its inline styles would also violate the CSP.
+  markdown: {
+    syntaxHighlight: false,
+  },
+  // Emits a per-page <meta http-equiv="content-security-policy"> whose
+  // script-src/style-src list the SHA-256 of every script and style Astro
+  // bundles, so nothing inline runs unless Astro produced it. GitHub Pages
+  // cannot set response headers, so the meta tag is the only option (and it
+  // cannot carry frame-ancestors). JSON-LD blocks are data, not script, and are
+  // not subject to script-src.
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "manifest-src 'self'",
+        'upgrade-insecure-requests',
+      ],
+      scriptDirective: {
+        resources: ["'self'"],
+      },
+      styleDirective: {
+        // Elements: the hashes Astro computes. Attributes: only the exact
+        // build-time values pages register through `styleAttr()`
+        // (src/lib/csp.ts), which adds each one's hash.
+        resources: ["'self'", { kind: 'attribute', resource: "'unsafe-hashes'" }],
+      },
+    },
+  },
   integrations: [
     sitemap({
       // 404 has no business in a sitemap; the text endpoints are for agents,

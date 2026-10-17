@@ -40,7 +40,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-aws = { version = "0.1", features = ["s3", "dynamodb", "sqs"] }
+armature-aws = { version = "0.2", features = ["s3", "dynamodb", "sqs"] }
 ```
 
 ### Available Features
@@ -120,7 +120,7 @@ let config = AwsConfig::builder()
 
 ```toml
 [dependencies]
-armature-gcp = { version = "0.1", features = ["storage", "pubsub"] }
+armature-gcp = { version = "0.2", features = ["storage", "pubsub"] }
 ```
 
 ### Available Features
@@ -170,13 +170,27 @@ let config = GcpConfig::from_env()
     .build();
 ```
 
+### Cloud Spanner
+
+The `spanner` feature is built on `gcloud-spanner` 1.x (the maintained
+continuation of `google-cloud-spanner`, which pinned a vulnerable
+`jsonwebtoken`). The crate is re-exported as `armature_gcp::gcloud_spanner`
+(formerly `armature_gcp::google_cloud_spanner`), and `GcpServices::spanner()`
+returns a `gcloud_spanner::client::Client`:
+
+```rust
+use armature_gcp::gcloud_spanner::client::Client;
+
+let spanner: Client = services.spanner()?;
+```
+
 ## Azure Integration
 
 ### Installation
 
 ```toml
 [dependencies]
-armature-azure = { version = "0.1", features = ["blob", "cosmos"] }
+armature-azure = { version = "0.3", features = ["blob", "cosmos"] }
 ```
 
 ### Available Features
@@ -226,6 +240,16 @@ let config = AzureConfig::from_env()
     .build();
 ```
 
+### Credential Handling
+
+`AzureConfig`, `CredentialsSource` and `ServiceBusServiceConfig` have redacting
+`Debug` impls: the Service Bus connection string, the service principal
+`client_secret` and `shared_access_key` print as `<redacted>`, and free-form
+`service_configs` values are shown by service name only. The connection string
+and `client_secret` are skipped when serializing (they still deserialize), so
+re-supply secrets from their source instead of round-tripping a serialized
+config. Do not serialize a config whose `service_configs` holds a SAS key.
+
 ## Dependency Injection
 
 The cloud provider crates integrate seamlessly with Armature's DI system.
@@ -233,7 +257,7 @@ The cloud provider crates integrate seamlessly with Armature's DI system.
 ### Registering Cloud Services
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_aws::{AwsServices, AwsConfig};
 
 #[module]
@@ -371,10 +395,10 @@ Only enable the services you need to minimize compile times and binary size:
 
 ```toml
 # Good - only what you need
-armature-aws = { version = "0.1", features = ["s3", "sqs"] }
+armature-aws = { version = "0.2", features = ["s3", "sqs"] }
 
 # Avoid unless you need everything
-armature-aws = { version = "0.1", features = ["all"] }
+armature-aws = { version = "0.2", features = ["all"] }
 ```
 
 ### 2. Use Environment Configuration

@@ -23,7 +23,8 @@ Complete guide to using OAuth2/OIDC providers with Armature authentication.
 
 - **Single Sign-On (SSO)**: Users authenticate with their existing accounts
 - **Enterprise Ready**: Integrates with corporate identity providers
-- **Security**: Leverages battle-tested OAuth2/OIDC protocols
+- **Security**: PKCE (S256) on every flow, library-verified `state`, and for
+  OIDC providers a verified `id_token` with `nonce`
 - **No User Management**: Delegate user storage to providers
 - **Multi-Provider**: Support multiple providers simultaneously
 
@@ -36,6 +37,18 @@ Complete guide to using OAuth2/OIDC providers with Armature authentication.
 | **AWS Cognito** | Cloud | AWS-native applications |
 | **Okta** | Enterprise | Enterprise SSO, SAML bridge |
 | **Auth0** | Universal | Multi-provider, custom branding |
+
+Google, Microsoft Entra, Okta, Auth0 and Cognito (with a user pool ID) are
+configured for OpenID Connect: their `id_token` is verified against the
+provider's JWKS (asymmetric algorithms only; `iss`, `aud`, `azp`, `exp` and
+`nonce` checked) before it is exposed. Provider domains (Okta, Auth0, the
+Cognito user-pool domain, the Microsoft tenant) must be bare hostnames: a
+scheme, path, port, `@` or whitespace is rejected by the constructor.
+
+All provider HTTP calls (token, userinfo, JWKS) use a rustls client that does
+not follow redirects, so a 307/308 from a token endpoint cannot re-send the
+client secret and code elsewhere. Client secrets and tokens are redacted from
+`Debug` output.
 
 ## Google OAuth2
 
@@ -71,8 +84,9 @@ let provider = GoogleProvider::new(config)?;
 
 ### User Info
 
-Google returns:
-- `sub`: Google user ID
+User info comes from Google's OIDC userinfo endpoint and must name the same
+`sub` as the verified `id_token`:
+- `sub`: Google user ID (key accounts on this)
 - `email`: User's Gmail address
 - `name`: Full name
 - `picture`: Profile picture URL
@@ -130,16 +144,20 @@ let provider = MicrosoftEntraProvider::new(config)?;
 - **common**: Any Azure AD account (personal or work/school)
 - **organizations**: Work or school accounts only
 - **consumers**: Personal Microsoft accounts only
-- **{tenant-id}**: Specific Azure AD tenant
+- **{tenant-id}**: Specific Azure AD tenant (a GUID is matched exactly against the token issuer)
 
 ### User Info
 
-Microsoft Graph returns:
-- `id`: Azure AD user ID (mapped to `sub`)
-- `userPrincipalName`: User's UPN
-- `displayName`: Full name
-- `mail`: Email address
-- `jobTitle`: Job title
+`get_user_info` requires the verified `id_token` (request the `openid`
+scope) and keys the user on its immutable tenant and object IDs:
+
+- `sub`: `"{tid}:{oid}"` from the verified `id_token`. `oid` is only unique
+  within a tenant, so always key accounts on this combined value.
+- `email`: Graph `mail` (or `userPrincipalName`), always reported with
+  `email_verified: Some(false)`. It is a mutable, tenant-administered
+  attribute; never use it to find or link accounts.
+- `name`: Graph `displayName`
+- `additional`: includes `tid`, `oid` and `graph_id`
 
 ## AWS Cognito
 
@@ -163,7 +181,10 @@ let config = AwsCognitoConfig::new(
     "http://localhost:3000/auth/cognito/callback".to_string(),
     "your-app.auth.us-east-1.amazoncognito.com".to_string(),
     "us-east-1".to_string(),
-);
+)
+// Required for OIDC: enables id_token verification. Without it no id_token
+// is exposed.
+.with_user_pool_id("us-east-1_AbCdEf123".to_string());
 
 // Optional: Custom scopes
 let config = config.with_scopes(vec![
@@ -275,180 +296,185 @@ Auth0 returns:
 
 ## OAuth2 Flow
 
+The library generates and checks every piece of per-flow state itself.
+`authorization_url()` returns the URL **and** a `PendingAuth` holding the
+`state`, the PKCE verifier and (for OIDC) the `nonce`. Keep the `PendingAuth`
+**server-side**, bound to the user's session, until the callback; never put it
+in a client-readable cookie or form field (the verifier and nonce are secrets).
+It is `Serialize`/`Deserialize` only so it can live in a session store, and it
+expires after 10 minutes (`PENDING_AUTH_MAX_AGE`).
+
 ### Step 1: Generate Authorization URL
 
 ```rust
-use armature_auth::OAuth2Provider;
+use armature_auth::{OAuth2Provider, PendingAuth};
+use armature_session::SessionStore;
 
-let (auth_url, csrf_token) = provider.authorization_url()?;
+let (auth_url, pending) = provider.authorization_url()?;
 
-// IMPORTANT: Armature is stateless - no server-side sessions.
-// `csrf_token` (an oauth2::CsrfToken) must be preserved across the redirect
-// so it can be compared against the `state` parameter the provider echoes
-// back on callback. Since there's no server-side session to stash it in,
-// embed it in a signed/encrypted cookie or a signed value passed through
-// the flow (e.g. as part of the state parameter itself).
+// Store the pending flow in the user's server-side session
+// (`session_id` comes from the session cookie).
+sessions.set_value(&session_id, "oauth_pending", &pending).await?;
 
 // Redirect user to auth_url
-response.redirect(auth_url.as_str());
+let response = HttpResponse::redirect(auth_url.as_str());
 ```
 
 ### Step 2: Handle Callback
 
 ```rust
 // Extract code and state from query parameters
-let code = request.query("code")?;
-let state = request.query("state")?;
+let code = request.query_param("code").ok_or_else(|| Error::BadRequest("missing code".into()))?;
+let state = request.query_param("state").ok_or_else(|| Error::BadRequest("missing state".into()))?;
 
-// Verify the state parameter matches the csrf_token generated in Step 1
-// (read back from the signed cookie or wherever it was stored) before
-// trusting the callback.
-//
-// Plain `!=` is acceptable here: state values are single-use and
-// short-lived, so timing side-channels are a much lower risk than for
-// long-lived secrets like TOTP codes or API tokens (which should use a
-// constant-time comparison instead).
-if state != csrf_token.secret().as_str() {
-    return Err(Error::AuthenticationFailed);
+// Take the pending flow out of the session (single use)
+let pending: PendingAuth = sessions
+    .get_value(&session_id, "oauth_pending")
+    .await?
+    .ok_or_else(|| Error::BadRequest("no login in progress".into()))?;
+sessions.remove_value(&session_id, "oauth_pending").await?;
+
+// Compares `state` in constant time, checks the 10-minute expiry, sends the
+// PKCE verifier and, for OIDC providers, verifies the id_token and nonce.
+let token = provider.exchange_code(code.to_string(), state, pending).await?;
+
+// Verified id_token claims (OIDC providers only)
+if let Some(claims) = &token.id_token_claims {
+    let subject = claims["sub"].as_str();
 }
-
-// Exchange code for token
-let token = provider.exchange_code(code.to_string()).await?;
 ```
 
 ### Step 3: Get User Info
 
 ```rust
-// Fetch user information
+// Fetch user information. For OIDC providers the userinfo `sub` must match
+// the verified id_token's, or this fails.
 let user_info = provider.get_user_info(&token).await?;
 
-// Create JWT token (stateless authentication)
-let user_claims = UserClaims {
-    sub: user_info.sub,
-    email: user_info.email.unwrap_or_default(),
-    name: user_info.name,
-};
+// Rotate the session ID now that the user is logged in (session fixation)
+let session = sessions.regenerate(&session_id).await?;
 
-// Generate JWT instead of session
-let jwt_token = jwt_manager.create_token(user_claims)?;
-
-// Return JWT to client
-// Client stores token and sends it with each request
-// No server-side session needed
+// Or issue your own JWT for a stateless API
+let claims = Claims::new(serde_json::json!({ "roles": ["user"] }))
+    .with_subject(user_info.sub.clone())
+    .with_expiration(900);
+let jwt = jwt_manager.sign(&claims)?;
 ```
 
 ### Step 4: Token Refresh
 
 ```rust
 // When access token expires
-if let Some(refresh_token) = token.refresh_token {
+if let Some(refresh_token) = token.refresh_token.clone() {
     let new_token = provider.refresh_token(refresh_token).await?;
-    // Update stored token
+    // Any id_token in a refresh response is not surfaced (it cannot be
+    // bound to a nonce).
 }
 ```
 
 ## Complete Example
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_auth::providers::{GoogleConfig, GoogleProvider};
-use armature_auth::OAuth2Provider;
+use armature_auth::{OAuth2Provider, PendingAuth, UserContext};
+use armature_session::{RedisSessionStore, SessionStore};
 
 #[controller("/auth")]
 struct AuthController {
     google_provider: Arc<GoogleProvider>,
+    sessions: Arc<RedisSessionStore>,
 }
 
 impl AuthController {
     #[get("/google")]
-    async fn google_login(&self) -> Result<Response> {
-        // Generate authorization URL
-        let (auth_url, csrf_token) = self.google_provider
+    async fn google_login(&self, request: HttpRequest) -> Result<HttpResponse> {
+        let session_id = session_id_from_cookie(&request)?; // your session cookie
+
+        // Generate authorization URL (PKCE + state + nonce)
+        let (auth_url, pending) = self.google_provider
             .authorization_url()
             .map_err(|e| Error::Internal(e.to_string()))?;
 
-        // Armature is stateless - there's no server-side session to stash
-        // `csrf_token` in. Persist it (e.g. in a signed/encrypted cookie)
-        // so it can be compared against the `state` query parameter the
-        // provider sends back to the callback route below.
+        // Keep the pending flow server-side, bound to this session
+        self.sessions
+            .set_value(&session_id, "oauth_pending", &pending)
+            .await
+            .map_err(|e| Error::Internal(e.to_string()))?;
 
         // Redirect to Google
-        Ok(Response::redirect(auth_url.as_str()))
+        Ok(HttpResponse::redirect(auth_url.as_str()))
     }
 
     #[get("/google/callback")]
-    async fn google_callback(&self, request: HttpRequest) -> Result<Response> {
+    async fn google_callback(&self, request: HttpRequest) -> Result<HttpResponse> {
+        let session_id = session_id_from_cookie(&request)?;
+
         // Extract authorization code and state
         let code = request.query_param("code")
             .ok_or_else(|| Error::BadRequest("Missing code".into()))?;
         let state = request.query_param("state")
             .ok_or_else(|| Error::BadRequest("Missing state".into()))?;
 
-        // Verify `state` against the csrf_token persisted during login
-        // before proceeding (omitted here for brevity).
-
-        // Exchange code for token
-        let token = self.google_provider
-            .exchange_code(code.to_string())
+        let pending: PendingAuth = self.sessions
+            .get_value(&session_id, "oauth_pending")
+            .await
+            .map_err(|e| Error::Internal(e.to_string()))?
+            .ok_or_else(|| Error::BadRequest("No login in progress".into()))?;
+        self.sessions
+            .remove_value(&session_id, "oauth_pending")
             .await
             .map_err(|e| Error::Internal(e.to_string()))?;
+
+        // Exchange code for token: state, PKCE and id_token are all verified here
+        let token = self.google_provider
+            .exchange_code(code.to_string(), state, pending)
+            .await
+            .map_err(|_| Error::Unauthorized("Login failed".into()))?;
 
         // Get user info
         let user_info = self.google_provider
             .get_user_info(&token)
             .await
+            .map_err(|_| Error::Unauthorized("Login failed".into()))?;
+
+        // Rotate the session ID on login, then store the user in it
+        let session = self.sessions
+            .regenerate(&session_id)
+            .await
             .map_err(|e| Error::Internal(e.to_string()))?;
 
-        // Create user session
         let user = UserContext::new(user_info.sub)
             .with_email(user_info.email.unwrap_or_default());
+        self.sessions
+            .set_value(&session.id, "user", &user)
+            .await
+            .map_err(|e| Error::Internal(e.to_string()))?;
 
-        // In production:
-        // 1. Find or create user in database
-        // 2. Generate JWT token (stateless auth)
-        // 3. Return JWT to client
-        // 4. Client stores JWT and includes in subsequent requests
-
-        Ok(Response::json(serde_json::json!({
-            "user": user,
-            "token": token.access_token
-        })))
+        // Set the new session cookie (see the Session Guide) and redirect.
+        // Never return provider tokens to the browser.
+        Ok(HttpResponse::redirect("/"))
     }
 }
 ```
 
 ## Best Practices
 
-### 1. CSRF Protection
+### 1. State, PKCE and Nonce
 
-`authorization_url()` returns a `CsrfToken` alongside the authorization URL. Persist
-it and verify it against the `state` parameter the provider echoes back on callback:
+You no longer generate or compare `state` yourself. `authorization_url()`
+creates the `state`, a PKCE (S256) verifier and, for OIDC, a `nonce`, and
+returns them in a `PendingAuth`; `exchange_code(code, returned_state, pending)`
+compares the state in constant time, rejects flows older than 10 minutes,
+sends the verifier, and verifies the `id_token` and its `nonce`.
 
-```rust
-// Generate the authorization URL and its CSRF token
-let (auth_url, csrf_token) = provider.authorization_url()?;
+Your responsibilities:
 
-// Persist csrf_token.secret() somewhere that survives the redirect
-// (a signed/encrypted cookie, since Armature keeps no server-side session)
-// before sending the user to auth_url.
-
-// On callback, compare the `state` query parameter against the
-// persisted token before exchanging the code.
-//
-// Plain `!=` is acceptable here: state values are single-use and
-// short-lived, so timing side-channels are a much lower risk than for
-// long-lived secrets like TOTP codes or API tokens (which should use a
-// constant-time comparison instead).
-if state != csrf_token.secret().as_str() {
-    return Err(Error::AuthenticationFailed);
-}
-let token = provider.exchange_code(code).await?;
-```
-
-**Note:** Armature is stateless, so there's no server-side session to hold the
-`CsrfToken` between the redirect and the callback. Store it client-side in a
-signed/encrypted cookie (or otherwise bind it to the redirect) so it can be
-compared against `state` when the callback arrives.
+- Store `PendingAuth` server-side, bound to the user's session (not in a
+  client-readable cookie), and remove it when the callback arrives so it is
+  used once.
+- Pass the `state` query parameter the provider returned, unchanged.
+- Treat any `exchange_code` error as a failed login.
 
 ### 2. Secure Redirect URIs
 
@@ -477,18 +503,18 @@ if token_expired && refresh_token.is_some() {
 }
 
 // ✗ Don't expose tokens to client
-// ✗ Don't log tokens
+// ✗ Don't log tokens (OAuth2Token and PendingAuth already redact them from Debug)
 ```
 
 ### 4. Error Handling
 
 ```rust
-match provider.exchange_code(code).await {
+match provider.exchange_code(code, state, pending).await {
     Ok(token) => { /* Success */ },
     Err(e) => {
         log::error!("OAuth2 error: {}", e);
         // Show user-friendly message
-        return Err(Error::AuthenticationFailed);
+        return Err(Error::Unauthorized("Login failed".into()));
     }
 }
 ```
@@ -503,12 +529,21 @@ enum Provider {
 }
 
 impl Provider {
-    async fn authenticate(&self, code: String) -> Result<OAuth2Token> {
+    fn as_dyn(&self) -> &dyn OAuth2Provider {
         match self {
-            Provider::Google(p) => p.exchange_code(code).await,
-            Provider::Microsoft(p) => p.exchange_code(code).await,
-            Provider::Okta(p) => p.exchange_code(code).await,
+            Provider::Google(p) => p,
+            Provider::Microsoft(p) => p,
+            Provider::Okta(p) => p,
         }
+    }
+
+    async fn authenticate(
+        &self,
+        code: String,
+        state: &str,
+        pending: PendingAuth,
+    ) -> Result<OAuth2Token> {
+        self.as_dyn().exchange_code(code, state, pending).await
     }
 }
 ```
@@ -526,10 +561,13 @@ async fn link_oauth_user(
         return Ok(user);
     }
 
-    // Check if email matches existing user
-    if let Some(email) = user_info.email {
+    // Only link by e-mail when the provider says it is verified.
+    // Microsoft Entra always reports `email_verified: Some(false)`: its
+    // `mail` attribute is tenant-administered and mutable.
+    if let (Some(email), Some(true)) = (user_info.email.clone(), user_info.email_verified) {
         if let Some(user) = db.find_by_email(&email).await? {
-            // Link OAuth account to existing user
+            // Prefer asking the user to log in to the existing account
+            // and confirm the link before doing this.
             db.link_oauth(user.id, provider, oauth_sub).await?;
             return Ok(user);
         }
@@ -552,7 +590,7 @@ The `armature-auth` OAuth2 provider system offers:
 - ✅ **Consistent API** across all providers
 - ✅ **Type-safe** configuration
 - ✅ **Async-first** design
-- ✅ **Production-ready** error handling
+- ✅ **PKCE, state and OIDC nonce** handled by the library
 - ✅ **Extensible** for custom providers
 
 For more information:

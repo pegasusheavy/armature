@@ -1,6 +1,9 @@
 # Rust
 target/
-Cargo.lock
+# Cargo.lock is committed: CI audits it and publishing uses it (--locked).
+# Lockfiles of nested, non-workspace projects stay ignored.
+/**/Cargo.lock
+!/Cargo.lock
 **/*.rs.bk
 *.pdb
 
@@ -56,16 +59,21 @@ pnpm-debug.log*
 .pnpm-store/
 
 # Environment & Secrets
+# Every .env variant (.env.staging, .env.test, .env.prod, ...) is ignored;
+# only the committed, value-free .env.example files are tracked.
 .env
-.env.local
-.env.*.local
-.env.development
-.env.production
+.env.*
+!.env.example
+!**/.env.example
+local.settings.json
 *.pem
 *.key
 *.crt
 *.p12
-!armature-jwt/tests/fixtures/*.pem
+# Throwaway test-only RSA keys; listed by exact name so a real key dropped
+# next to them is still ignored.
+!armature-jwt/tests/fixtures/test_rsa_priv.pem
+!armature-jwt/tests/fixtures/test_rsa_pub.pem
 *.pfx
 secrets/
 credentials/
@@ -99,7 +107,8 @@ docker-compose.override.yml
 
 # Kubernetes secrets (but keep templates)
 *-secret.yaml
-!templates/k8s/secret.yaml
+# The kustomize base ships secret.yaml.example; the filled-in copy stays local.
+/templates/k8s/secret.yaml
 
 # Serverless
 .serverless/
@@ -163,8 +172,10 @@ criterion/
 benches/target/
 
 # Cargo specific
-.cargo/
+# `.cargo/*` (not `.cargo/`) so the negations below can re-include files.
+.cargo/*
 !.cargo/config.toml
+!.cargo/audit.toml
 
 # Rust analyzer
 rust-project.json
