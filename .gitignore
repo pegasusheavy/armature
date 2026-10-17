@@ -1,6 +1,9 @@
 # Rust
 target/
-Cargo.lock
+# Cargo.lock is committed: CI audits it and publishing uses it (--locked).
+# Lockfiles of nested, non-workspace projects stay ignored.
+/**/Cargo.lock
+!/Cargo.lock
 **/*.rs.bk
 *.pdb
 
