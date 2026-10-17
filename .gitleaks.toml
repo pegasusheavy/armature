@@ -1,0 +1,112 @@
+# gitleaks configuration (https://github.com/gitleaks/gitleaks)
+#
+# Extends gitleaks' built-in rule set and allowlists only values that are
+# PUBLIC, documented placeholders or deliberately fake test fixtures. Every
+# entry below is a known non-secret; anything else that matches a rule is a
+# finding. Keep entries as narrow as possible (exact value or exact path),
+# and add a comment saying why each one is safe.
+#
+# Usage:
+#   gitleaks git --config .gitleaks.toml          # history of this repo
+#   gitleaks dir --config .gitleaks.toml .        # working tree (incl. submodules)
+#
+# Requires gitleaks >= 8.25 for the [[allowlists]] array syntax.
+
+title = "armature gitleaks config"
+
+[extend]
+useDefault = true
+
+# -----------------------------------------------------------------------------
+# Documented emulator / example credentials (public by design)
+# -----------------------------------------------------------------------------
+[[allowlists]]
+description = "Public emulator and documentation example credentials"
+regexTarget = "match"
+regexes = [
+  # Azurite (Azure Storage emulator) well-known account key for
+  # devstoreaccount1, published in Microsoft's docs.
+  '''Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==''',
+  # AWS documentation example access key pair.
+  '''AKIAIOSFODNN7EXAMPLE''',
+  '''wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY''',
+]
+stopwords = [
+  # LocalStack's documented dummy credentials (AWS_ACCESS_KEY_ID=test /
+  # AWS_SECRET_ACCESS_KEY=test) and the Azurite account name.
+  "devstoreaccount1",
+]
+
+# -----------------------------------------------------------------------------
+# Deliberately fake provider keys used by redaction / sanitizer tests
+# (armature-payments, armature-audit, armature-app, armature-webhooks). They
+# exist to prove that real-looking keys are masked in logs and error bodies.
+# -----------------------------------------------------------------------------
+[[allowlists]]
+description = "Fake Stripe-style keys in sanitizer and webhook tests"
+regexTarget = "match"
+regexes = [
+  '''\b(sk|rk|pk)_(live|test)_(abcdef[a-z]*|secret|1|123|x+|fake[A-Za-z0-9_]*|test[A-Za-z0-9_]*)\b''',
+  '''\bwhsec_(abcdefghij|attacker_guess|my_super_secret_key|test[A-Za-z0-9_]*|fake[A-Za-z0-9_]*)\b''',
+]
+
+# -----------------------------------------------------------------------------
+# Test-only key material, by exact location
+# -----------------------------------------------------------------------------
+[[allowlists]]
+description = "Throwaway private keys used only by test suites"
+paths = [
+  # armature-jwt RS/EC/Ed25519 signing tests
+  '''(^|/)armature-jwt/tests/fixtures/test_(rsa|ec|ed25519)_priv\.pem$''',
+  # armature-auth OIDC id_token verification tests
+  '''(^|/)armature-auth/tests/fixtures/oidc_test_ec_priv\.pem$''',
+]
+
+# -----------------------------------------------------------------------------
+# Fixed fake values in unit tests, doc examples and docs (each checked by hand)
+# -----------------------------------------------------------------------------
+[[allowlists]]
+description = "Fake values in tests, doc examples and documentation"
+regexTarget = "secret"
+regexes = [
+  # armature-azure servicebus.rs connection-string parser test / LockToken UUID
+  '''^abc123def456==$''',
+  '''^7da9cfd5-40d5-4bb1-8d64-ec5a52e1c547$''',
+  # armature-security request_signing.rs doc example (a visibly fake 32-byte key)
+  '''^0123456789abcdef0123456789abcdef$''',
+  # armature-payments provider.rs sanitizer test: base64("public_key:private_key_very_secret")
+  '''^cHVibGljX2tleTpwcml2YXRlX2tleV92ZXJ5X3NlY3JldA$''',
+  # armature-siem client.rs: expected HMAC for a fixed test key/workspace
+  '''^xJZwrcXTwTLznci6k1CzpQVgM4PIvPImd8Xlj6QEO1g=$''',
+  # Truncated JWT header shown in examples/audit_example.rs
+  '''^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.\.\.$''',
+  # Redaction example in docs/error-transformation-guide.md
+  '''^api_key=abc123$''',
+  # Placeholder bearer tokens in curl examples (docs/, examples/)
+  '''^(your-token-here|my-token|user-token|admin-token|YOUR_TOKEN|token123)$''',
+]
+
+[[allowlists]]
+description = "Unsigned alg:none JWTs used to test that unverified tokens are rejected"
+regexTarget = "match"
+regexes = [
+  # header {"alg":"none"}; carries no signature, so it is not a credential
+  '''eyJhbGciOiJub25lIn0\.[A-Za-z0-9_-]+\.''',
+]
+
+[[allowlists]]
+description = "PEM header literals in key-encoding code, and test-only keys in tests"
+targetRules = ["private-key"]
+paths = [
+  # Code that *writes* a PEM header around freshly generated/encoded DER
+  '''(^|/)armature-acme/src/(jws|client)\.rs$''',
+  '''(^|/)armature-storage/src/gcs\.rs$''',
+  # Throwaway keys that sign only against stub servers in tests
+  '''(^|/)armature-push/tests/(apns|fcm)\.rs$''',
+]
+
+[[allowlists]]
+description = "Generated build output of the docs site (rendered copies of docs/)"
+paths = [
+  '''(^|/)web/dist/''',
+]
