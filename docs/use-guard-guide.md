@@ -82,7 +82,9 @@ Without it, every route behind these guards answers `401 Unauthorized`.
 
 ## Basic Usage
 
-The guard attributes live in `armature_proc_macro`.
+The guard attributes are re-exported by the framework crate (`use armature::{guard, use_guard};`).
+Their expansion names `armature_core::` paths, so keep `armature-core` as a direct dependency
+next to `armature`.
 
 ### Guard Instance
 
@@ -91,7 +93,7 @@ its own value:
 
 ```rust
 use armature::get;
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::AuthenticationGuard};
 
 #[guard(AuthenticationGuard)]
@@ -106,12 +108,12 @@ async fn protected_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
 ### Simple Type-Based Guard
 
 `#[use_guard(...)]` takes guard *types* and constructs each with `Default::default()`, so
-the type must implement `Default` (`AuthenticationGuard`, `RolesGuard` and `ApiKeyGuard` do
-not; use `#[guard(...)]` for them):
+the type must implement `Default` (`AuthenticationGuard` does; `RolesGuard` and `ApiKeyGuard`
+do not, so use `#[guard(...)]` for them):
 
 ```rust
 use armature::get;
-use armature_proc_macro::use_guard;
+use armature::use_guard;
 
 #[derive(Default)]
 struct PremiumGuard; // implements Guard, see below
@@ -142,7 +144,7 @@ Chain multiple guards - all must pass:
 
 ```rust
 use armature::get;
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_core::{
     HttpRequest, HttpResponse, Error, RequestRoles,
     guard::AuthenticationGuard,
@@ -185,7 +187,7 @@ Use `#[guard(...)]` for guards that need configuration:
 
 ```rust
 use armature::get;
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::ApiKeyGuard};
 
 fn api_keys() -> Vec<String> {
@@ -208,7 +210,7 @@ async fn api_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 
 ```rust
 use armature::get;
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     guard::{AuthenticationGuard, RolesGuard}
@@ -233,7 +235,7 @@ attaches):
 
 ```rust
 use armature::{controller, get, post};
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_auth::AuthGuard;
 use armature_core::{HttpRequest, HttpResponse, Error};
 
@@ -267,7 +269,7 @@ Route guards add to controller guards:
 
 ```rust
 use armature::{controller, get};
-use armature_proc_macro::guard;
+use armature::guard;
 use armature_auth::AuthGuard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::RolesGuard};
 
@@ -299,7 +301,7 @@ before the guards check it. The middleware also sees (and can post-process) a gu
 `403`.
 
 ```rust
-use armature_proc_macro::{guard, middleware};
+use armature::{guard, middleware};
 use armature_auth::{AuthGuard, JwtAuthMiddleware};
 use armature_jwt::{JwtConfig, JwtManager};
 

@@ -117,7 +117,7 @@ used) that is in scope. It is meant for service methods returning data, not for
 handlers returning an `HttpResponse`:
 
 ```rust
-use armature_proc_macro::cache;
+use armature::cache;
 
 // Default key: module path, `Self` type, function name, attribute location and
 // return type, then every argument as length-prefixed JSON.

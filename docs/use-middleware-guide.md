@@ -79,13 +79,17 @@ running for already-authorized requests must check authorization itself.
 
 ## Basic Usage
 
+The middleware attributes are re-exported by the framework crate
+(`use armature::{middleware, use_middleware};`). Their expansion names `armature_core::`
+paths, so keep `armature-core` as a direct dependency next to `armature`.
+
 ### Single Middleware
 
 Apply a single middleware to a route:
 
 ```rust
 use armature::get;
-use armature_proc_macro::use_middleware;
+use armature::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware};
 
 #[use_middleware(LoggerMiddleware::new())]
@@ -103,7 +107,7 @@ Middleware can be configured inline:
 
 ```rust
 use armature::get;
-use armature_proc_macro::use_middleware;
+use armature::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, CorsMiddleware};
 
 #[use_middleware(CorsMiddleware::new().allow_origin("https://example.com"))]
@@ -119,7 +123,7 @@ Chain multiple middleware together by separating them with commas:
 
 ```rust
 use armature::get;
-use armature_proc_macro::use_middleware;
+use armature::use_middleware;
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, CorsMiddleware, SecurityHeadersMiddleware
@@ -149,7 +153,7 @@ Apply middleware to all routes in a controller using the `#[middleware]` decorat
 
 ```rust
 use armature::{controller, get, post};
-use armature_proc_macro::middleware;
+use armature::middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware, CorsMiddleware};
 
 #[middleware(LoggerMiddleware::new(), CorsMiddleware::new())]
@@ -177,7 +181,7 @@ A controller's `#[middleware(...)]` runs before its `#[guard(...)]`s, so authent
 live on the controller:
 
 ```rust
-use armature_proc_macro::{guard, middleware};
+use armature::{guard, middleware};
 use armature_auth::{AuthGuard, JwtAuthMiddleware};
 
 #[controller("/admin")]
@@ -195,7 +199,7 @@ Route-level middleware adds to controller-level middleware:
 
 ```rust
 use armature::{controller, get};
-use armature_proc_macro::{middleware, use_middleware};
+use armature::{middleware, use_middleware};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
     LoggerMiddleware, TimeoutMiddleware
@@ -312,7 +316,7 @@ Use your custom middleware:
 
 ```rust
 use armature::get;
-use armature_proc_macro::use_middleware;
+use armature::use_middleware;
 use my_app::AuthMiddleware;
 
 #[use_middleware(AuthMiddleware::new(
