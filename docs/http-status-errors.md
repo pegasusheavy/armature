@@ -239,15 +239,14 @@ fn handle_error(error: Error) -> HttpResponse {
     let response = ErrorResponse {
         status,
         error: error.http_status().reason().to_string(),
-        message: error.to_string(),
+        // Client-safe: generic for 5xx and deserialization errors
+        message: error.client_message(),
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
 
-    HttpResponse {
-        status,
-        headers: std::collections::HashMap::new(),
-        body: serde_json::to_vec(&response).unwrap(),
-    }
+    HttpResponse::new(status)
+        .with_json(&response)
+        .unwrap_or_else(|_| HttpResponse::new(500))
 }
 
 // In route handler
@@ -418,13 +417,20 @@ Error::BadRequest("Invalid input".to_string())
 
 ```rust
 // Good - safe message
-Error::InternalServerError("Database operation failed".to_string())
+Error::Internal("Database operation failed".to_string())
 
 // Bad - leaks implementation details
-Error::InternalServerError(
+Error::Internal(
     "PostgreSQL connection to db.internal.company.com:5432 failed".to_string()
 )
 ```
+
+When you build error bodies yourself, use `Error::client_message()` rather
+than `to_string()`. It returns `"Internal Server Error"` for every 5xx and a
+fixed message for `Error::Deserialization`, whose serde text names Rust
+types, variants and fields. Other 4xx messages, including application-written
+`Error::Validation` messages, are returned as-is. `Error::to_client_response()`
+builds a complete response with the same rules.
 
 ### 4. Use Appropriate Status Codes
 
@@ -452,25 +458,23 @@ Err(Error::UnprocessableEntity("Invalid email".to_string()))
 fn handle_error(error: Error) -> HttpResponse {
     let status = error.status_code();
 
-    // Log server errors
+    // Log server errors (full detail stays server-side)
     if error.is_server_error() {
-        eprintln!("Server error: {}", error);
+        tracing::error!(error = %error, "Server error");
     }
 
     // Create consistent response format
     let body = json!({
         "error": {
             "code": status,
-            "message": error.to_string(),
+            "message": error.client_message(),
             "type": error.http_status().reason(),
         }
     });
 
-    HttpResponse {
-        status,
-        headers: HashMap::new(),
-        body: serde_json::to_vec(&body).unwrap(),
-    }
+    HttpResponse::new(status)
+        .with_json(&body)
+        .unwrap_or_else(|_| HttpResponse::new(500))
 }
 ```
 

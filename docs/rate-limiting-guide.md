@@ -1,7 +1,8 @@
 # Rate Limiting Guide
 
 Rate limiting protects your API from abuse and ensures fair usage across all clients.
-The `armature-ratelimit` crate provides a comprehensive, production-ready rate limiting solution.
+The `armature-ratelimit` crate provides token bucket, sliding window and fixed window
+limiters with in-memory and Redis storage, plus an HTTP middleware.
 
 ## Table of Contents
 
@@ -31,7 +32,9 @@ This prevents:
 
 - ✅ **Multiple Algorithms**: Token bucket, sliding window log, fixed window
 - ✅ **Distributed Support**: Redis backend for multi-instance deployments
-- ✅ **Flexible Key Extraction**: By IP, user ID, API key, or custom function
+- ✅ **Flexible Key Extraction**: By client address, verified user ID, validated API key, or custom function
+- ✅ **Spoof-Resistant Client Address**: Socket peer by default; `X-Forwarded-For` only with an explicit trusted proxy depth
+- ✅ **Fail-Closed for Unkeyed Requests**: A request no key can be derived from gets a 429 by default
 - ✅ **Standard Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 - ✅ **Per-Route Limits**: Different limits for different endpoints
 - ✅ **Bypass Rules**: Whitelist specific clients or API keys
@@ -43,7 +46,7 @@ Add the dependency:
 
 ```toml
 [dependencies]
-armature-ratelimit = "0.1"
+armature-ratelimit = "0.5"
 ```
 
 Basic usage:
@@ -214,15 +217,20 @@ let limiter = RateLimiter::builder()
 
 ```toml
 [dependencies]
-armature-ratelimit = { version = "0.1", features = ["redis"] }
+armature-ratelimit = { version = "0.5", features = ["redis"] }
 ```
+
+The Redis store names its keys by the SHA-256 digest of the rate-limit key,
+so raw client addresses, user IDs and API keys never appear in Redis. The
+connection URL, which may hold a password, is not logged. Upgrading from an
+earlier release starts every bucket fresh, because the key names changed.
 
 ## Key Extraction
 
 Rate limits are applied per-key. The key extraction strategy determines how
 clients are identified.
 
-### By IP Address (Default)
+### By Client Address (Default)
 
 ```rust
 use armature_ratelimit::{RateLimitMiddleware, KeyExtractor};
@@ -231,24 +239,67 @@ let middleware = RateLimitMiddleware::new(limiter)
     .with_extractor(KeyExtractor::Ip);
 ```
 
-### By User ID
+The middleware takes the address from
+`HttpRequest::client_address(trusted_proxy_depth)`:
 
-Requires authentication. Falls back to IP if user is not authenticated.
+- **Depth `0` (default)**: the socket peer. `X-Forwarded-For` is ignored, so
+  a client cannot pick its own bucket by sending the header.
+- **Depth `N`**: the `N`-th `X-Forwarded-For` hop from the right, read across
+  every `X-Forwarded-For` field line. Set `N` to the number of reverse proxies
+  you run in front of the app. If the chain is shorter than `N`, the
+  request has no address and is treated as unkeyed.
+- `X-Real-IP` is never consulted.
+
+IPv6 clients are bucketed by `/64`, because one host usually controls a
+whole `/64`. IPv4-mapped IPv6 addresses are bucketed as IPv4.
 
 ```rust
+// Behind exactly one load balancer that appends to X-Forwarded-For
 let middleware = RateLimitMiddleware::new(limiter)
-    .with_extractor(KeyExtractor::UserId);
+    .with_trusted_proxy_depth(1);
+
+// Or set it on the limiter config
+let limiter = RateLimiter::builder()
+    .token_bucket(100, 10.0)
+    .trusted_proxy_depth(1)
+    .build()
+    .await?;
+```
+
+### By User ID
+
+`KeyExtractor::UserId` keys **only** on the `armature_core::VerifiedIdentity`
+request extension that an authentication middleware (for example
+`armature_auth::JwtAuthMiddleware`) inserts after verifying a credential.
+Client headers such as `X-User-Id` are ignored. The rate-limit middleware must
+therefore run **after** the authentication middleware. Without a verified
+identity the request is unkeyed and, by default, denied.
+
+```rust
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))   // inserts VerifiedIdentity
+    .use_middleware(
+        RateLimitMiddleware::new(limiter).with_extractor(KeyExtractor::UserId),
+    );
 ```
 
 ### By API Key
 
-Extracts the key from a header (e.g., `X-API-Key`).
+Extracts the key from a header (e.g., `X-API-Key`) and keys on it **only if
+the validator accepts it**. The bucket is named `apikey:<sha256 of the key>`.
+Clients rotating junk keys therefore cannot mint unlimited buckets, and the
+plaintext key is never stored.
 
 ```rust
+use std::collections::HashSet;
+use std::sync::Arc;
+
+let known: Arc<HashSet<String>> = Arc::new(load_api_keys());
 let middleware = RateLimitMiddleware::new(limiter)
-    .with_extractor(KeyExtractor::ApiKey {
-        header_name: "X-API-Key".to_string(),
-    });
+    .with_extractor(KeyExtractor::api_key("X-API-Key", move |key: &str| {
+        known.contains(key)
+    }));
 ```
 
 ### By IP and Path
@@ -260,8 +311,9 @@ let middleware = RateLimitMiddleware::new(limiter)
     .with_extractor(KeyExtractor::IpAndPath);
 ```
 
-This creates keys like `192.168.1.1:/api/users`, allowing different rate limits
-for different endpoints.
+The path is normalized (`//`, `.`, `..`, a trailing `/` and the query string
+are removed), so `/api/users`, `/api//users/` and `/api/users?x=1` share one
+bucket. `KeyExtractor::UserIdAndPath` does the same for a verified user ID.
 
 ### Custom Extractor
 
@@ -271,11 +323,39 @@ Build complex extraction logic:
 use armature_ratelimit::extractor::KeyExtractorBuilder;
 
 let extractor = KeyExtractorBuilder::new()
-    .prefer_user_id()           // Try user ID first
-    .prefer_api_key("X-API-Key") // Then API key
-    // Falls back to IP automatically
+    .prefer_user_id()                                      // Verified user ID first
+    .prefer_api_key("X-API-Key", |key: &str| is_known(key)) // Then a validated API key
+    // Falls back to the client address automatically
     .build();
 ```
+
+### Unkeyed Requests
+
+A request is **unkeyed** when the extractor has nothing to work with: no
+client address, no `VerifiedIdentity` under `UserId`, or no API key that
+passed validation under `ApiKey`. Letting such requests through would let
+any caller bypass the limiter by withholding the key, so the default
+`UnkeyedRequestPolicy::Deny` answers them with the same 429 as an exceeded
+limit.
+
+```rust
+use armature_ratelimit::middleware::UnkeyedRequestPolicy;
+
+// Only where another layer protects the route, and never on login,
+// password reset or OTP endpoints
+let middleware = RateLimitMiddleware::new(limiter)
+    .with_extractor(KeyExtractor::UserId)
+    .with_unkeyed_policy(UnkeyedRequestPolicy::Allow);
+
+// Requests let through this way are counted
+let allowed_unkeyed = middleware.unkeyed_allow_count();
+```
+
+### Logging
+
+Rate-limit keys are never logged verbatim. Logs carry a 12-hex-character
+SHA-256 fingerprint (`extractor::key_fingerprint`), so client addresses, user
+IDs and API keys stay out of log storage.
 
 ## Middleware Integration
 
@@ -439,27 +519,33 @@ let limiter = RateLimiter::builder()
 
 ## Common Pitfalls
 
-### ❌ Don't: Use IP-only limiting behind a proxy
+### ❌ Don't: Leave the proxy depth at 0 behind a proxy
 
 ```rust
-// All requests will have the same IP (the proxy's IP)
+// Every request comes from the proxy's address: one shared bucket
 let middleware = RateLimitMiddleware::new(limiter)
     .with_extractor(KeyExtractor::Ip);
 ```
 
-### ✅ Do: Use X-Forwarded-For or X-Real-IP
+### ❌ Don't: Trust the leftmost X-Forwarded-For entry or X-Real-IP
 
 ```rust
-// Extract the real client IP from headers
-let info = RequestInfo::new(path, method)
-    .with_header("X-Forwarded-For", forwarded_for);
-
-// Or use the first IP from X-Forwarded-For
+// The client writes the leftmost entry itself, so it can choose
+// a new bucket per request or exhaust someone else's
 fn get_real_ip(headers: &Headers) -> Option<IpAddr> {
     headers.get("X-Forwarded-For")
         .and_then(|h| h.split(',').next())
         .and_then(|ip| ip.trim().parse().ok())
 }
+```
+
+### ✅ Do: Set the trusted proxy depth to your proxy count
+
+```rust
+// One proxy in front of the app: key on the hop it observed
+let middleware = RateLimitMiddleware::new(limiter)
+    .with_extractor(KeyExtractor::Ip)
+    .with_trusted_proxy_depth(1);
 ```
 
 ### ❌ Don't: Fail closed on errors
@@ -519,7 +605,15 @@ let algo = Algorithm::SlidingWindowLog {
 
 - `RateLimitMiddleware` - HTTP middleware for rate limiting
 - `KeyExtractor` - Strategies for extracting rate limit keys
+- `ApiKeyValidator` - Accepts only genuine API keys for `KeyExtractor::ApiKey`
+- `UnkeyedRequestPolicy` - What to do with requests no key can be derived from (default `Deny`)
 - `RequestInfo` - Request information for key extraction
+
+### Helpers (`armature_ratelimit::extractor`)
+
+- `key_digest` / `key_fingerprint` - SHA-256 digest and 12-hex-character log fingerprint of a key
+- `api_key_bucket` / `ip_bucket` - Bucket names for API keys and client addresses (IPv6 by /64)
+- `normalize_path` - Path normalization used by the `*AndPath` extractors
 
 ### Errors
 
@@ -528,12 +622,14 @@ let algo = Algorithm::SlidingWindowLog {
 
 ## Summary
 
-Rate limiting is essential for production APIs. Key takeaways:
+Key takeaways:
 
 1. **Choose the right algorithm** for your use case
 2. **Use Redis** for multi-instance deployments
 3. **Include headers** so clients can self-regulate
 4. **Fail open** to maintain availability
 5. **Use tiered limits** for different user classes
-6. **Handle proxy IPs** correctly
+6. **Handle proxy IPs** correctly: set `trusted_proxy_depth` to your proxy count; never trust `X-Real-IP` or the leftmost `X-Forwarded-For` entry
+7. **Run after authentication** when keying on `UserId`, since only a `VerifiedIdentity` is used
+8. **Validate API keys** in the `ApiKey` extractor so junk keys cannot mint buckets
 

@@ -21,9 +21,9 @@ Comprehensive guide to Armature's logging system with JSON output by default and
 
 ## Overview
 
-Armature provides a powerful, environment-configurable logging system built for production use with features like:
+Armature provides an environment-configurable logging system with features like:
 
-- **JSON by Default**: Production-ready structured logging out of the box
+- **JSON by Default**: Structured logging out of the box
 - **Pretty Printing**: Human-readable format for development
 - **Environment Configuration**: Switch formats without code changes
 - **Runtime Configuration**: Change settings programmatically
@@ -215,6 +215,32 @@ Minimal single-line output for space efficiency.
 **Enable:**
 ```bash
 ARMATURE_LOG_FORMAT=compact cargo run
+```
+
+### Log Injection Protection
+
+Log lines often contain attacker-influenced text such as paths, headers and
+usernames. In the Pretty and Compact formats, the target and message are
+escaped before they are written:
+
+- `\n`, `\r` and `\t` become the two-character escapes `\n`, `\r`, `\t`
+- every other control character, including ANSI `ESC`, becomes `\u{..}`
+- Unicode bidirectional overrides (`U+202A`–`U+202E`, `U+2066`–`U+2069`) become `\u{..}`
+
+A message such as `"login ok\r\nINFO forged entry"` therefore stays on one
+line and cannot forge a second entry or rewrite the operator's terminal. The
+JSON format already escapes every control character.
+
+### Request Paths in Logs
+
+The core request-logging middleware (`LoggerMiddleware`, `LoggingMiddleware`)
+and the middleware chain log the request **path without its query string**.
+Query strings routinely carry password-reset codes, OAuth `code`s and API
+keys. When you log requests yourself, use `HttpRequest::path_only()` rather
+than the raw `path` field:
+
+```rust
+info!("Handled {} {}", req.method, req.path_only());
 ```
 
 ---
@@ -499,7 +525,7 @@ fn main() {
 
 ### Key Features
 
-✅ **JSON by Default** - Production-ready structured logging
+✅ **JSON by Default** - Structured logging for log aggregators
 ✅ **Pretty Printing** - Human-readable development output
 ✅ **Environment Configuration** - Switch formats via env vars
 ✅ **Runtime Configuration** - Change settings in code

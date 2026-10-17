@@ -64,7 +64,7 @@ assert_eq!(weak.to_header_value(), "W/\"abc123\"");
 use armature_framework::prelude::*;
 use std::time::SystemTime;
 
-// From bytes (hash-based)
+// From bytes: strong ETag of the SHA-256 digest (64 hex chars)
 let data = b"Hello, World!";
 let etag = ETag::from_bytes(data);
 
@@ -77,6 +77,13 @@ let etag = ETag::from_version(42);  // "v42"
 // From file metadata
 let etag = ETag::from_file_metadata(1024, SystemTime::now());
 ```
+
+`from_bytes` and `from_str` use SHA-256, a collision-resistant digest, because
+a strong ETag is what `If-Match` compares for lost-update protection. A
+64-bit non-cryptographic hash would let two different bodies share an ETag,
+so a stale `If-Match` could pass. ETags produced by releases that used the
+old hash differ from current ones, so clients holding them see one cache
+miss or `412` after an upgrade.
 
 ### Parsing ETags
 

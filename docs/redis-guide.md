@@ -39,14 +39,14 @@ The `armature-redis` crate provides a centralized Redis client that other Armatu
 
 ```toml
 [dependencies]
-armature-redis = "0.1"
+armature-redis = "0.2"
 ```
 
 With optional features:
 
 ```toml
 [dependencies]
-armature-redis = { version = "0.1", features = ["cluster", "tls"] }
+armature-redis = { version = "0.2", features = ["cluster", "tls"] }
 ```
 
 ## Basic Usage
@@ -292,6 +292,18 @@ let config = RedisConfig::builder()
     .connection_name("my-app")
     .build();
 ```
+
+### Credential Handling
+
+`RedisConfig` keeps its credentials out of logs and serialized output:
+
+- Its `Debug` output prints `password` as `<redacted>` and strips
+  `user:pass@` userinfo from `url` and every `cluster_nodes` entry, so
+  `tracing::debug!(?config)` is safe.
+- `password` is `#[serde(skip_serializing)]`. It still deserializes, but
+  serializing a config and reading it back loses the password. Supply it again
+  from its source (an environment variable or secret manager) rather than
+  round-tripping a serialized config.
 
 ### Cluster Mode
 
