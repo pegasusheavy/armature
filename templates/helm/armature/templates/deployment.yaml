@@ -20,7 +20,15 @@ spec:
     metadata:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        # Not a hash of the Secret: pod annotations are readable by anyone
+        # who can list pods, and a hash of a low-entropy value can be brute
+        # forced offline. Bump secrets.revision to roll pods after rotation.
+        armature.io/secret-revision: {{ .Values.secrets.revision | quote }}
+        {{- if .Values.metrics.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.metrics.port | quote }}
+        prometheus.io/path: {{ .Values.metrics.path | quote }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -32,6 +40,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "armature.serviceAccountName" . }}
+      automountServiceAccountToken: false
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.initContainers }}
@@ -48,31 +57,41 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
+            {{- if .Values.metrics.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+            {{- end }}
           env:
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- if .Values.secrets.databaseUrl }}
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "armature.fullname" . }}-secrets
-                  key: database-url
+            {{- if .Values.metrics.enabled }}
+            - name: METRICS_PORT
+              value: {{ .Values.metrics.port | quote }}
             {{- end }}
-            {{- if .Values.secrets.redisUrl }}
-            - name: REDIS_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "armature.fullname" . }}-secrets
-                  key: redis-url
-            {{- end }}
-            {{- if .Values.secrets.jwtSecret }}
+            # Always set: the chart refuses to render without a JWT secret.
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "armature.fullname" . }}-secrets
+                  name: {{ include "armature.secretName" . }}
                   key: jwt-secret
+            {{- if or .Values.secrets.existingSecret .Values.secrets.databaseUrl }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "armature.secretName" . }}
+                  key: database-url
+                  optional: {{ not .Values.secrets.databaseUrl }}
+            {{- end }}
+            {{- if or .Values.secrets.existingSecret .Values.secrets.redisUrl }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "armature.secretName" . }}
+                  key: redis-url
+                  optional: {{ not .Values.secrets.redisUrl }}
             {{- end }}
           {{- with .Values.envFrom }}
           envFrom:

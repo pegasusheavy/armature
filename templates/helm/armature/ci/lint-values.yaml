@@ -1,0 +1,9 @@
+# Values used only to lint/render the chart in CI (`helm lint -f` /
+# `helm template -f`). The chart has required values with no defaults
+# (image, JWT secret), so a bare `helm lint` fails by design.
+# These are dummy, non-functional placeholders.
+image:
+  repository: registry.example.com/armature-api
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+secrets:
+  existingSecret: armature-api-secrets
