@@ -1,68 +1,104 @@
 #![allow(clippy::needless_question_mark)]
 //! Route Groups Example
 //!
-//! This example demonstrates `RouteGroup` for composing shared path
-//! *prefixes* across related controllers, and the framework's real
-//! guard/middleware enforcement mechanism: the `#[guard(...)]` /
-//! `#[middleware(...)]` attributes on `#[routes]`-annotated controller
-//! methods.
+//! This example demonstrates `RouteGroup` for organizing related routes under
+//! shared path prefixes, middleware and guards. A group's middleware and
+//! guards are **enforced** on every route registered through it
+//! (`RouteGroup::route` / `RouteGroup::add_route`): each such route runs the
+//! group's middleware (parents first), then its guards, then the handler.
+//! They are bound to the route itself, so no spelling of the path
+//! (`//api/v1/admin/users`, `%61pi/...`) reaches the handler around them.
 //!
-//! **Important:** `RouteGroup::middleware(...)` / `RouteGroup::guard(...)`
-//! only *record* values on the `RouteGroup` itself -- nothing in the router
-//! or application ever reads them back out to enforce anything. Below,
-//! `RouteGroup` is used purely to compute the shared prefix strings
-//! ("/api/public", "/api/v1", "/api/v1/admin"); the guards and middleware
-//! that actually run on every request are wired separately, via
-//! `#[guard(...)]` on each protected handler and `#[middleware(...)]` on
-//! each controller struct.
+//! Groups compose with `with_parent`: `/api/v1/admin` inherits the
+//! authentication middleware and guard of `/api/v1` and adds a role check.
 //!
 //! Run with:
 //! ```bash
 //! cargo run --example route_groups_example
 //! ```
 //!
-//! Test with:
+//! The demo tokens come from `DEMO_USER_TOKEN` / `DEMO_ADMIN_TOKEN`, or are
+//! generated at random and printed at startup. Test with:
 //! ```bash
 //! # Public API (no auth required)
 //! curl http://localhost:3000/api/public/health
 //!
-//! # Authenticated API: AuthenticationGuard only checks that an
-//! # `Authorization: Bearer <token>` header is present/well-formed, so any
-//! # bearer value passes.
-//! curl http://localhost:3000/api/v1/users -H "Authorization: Bearer token123"
-//! # Missing/invalid Authorization header -> 403:
-//! curl -i http://localhost:3000/api/v1/users
+//! # Authenticated API: the token must verify; a bare Bearer header does not.
+//! curl http://localhost:3000/api/v1/users -H "Authorization: Bearer $USER_TOKEN"
+//! # Missing or unverified token -> 401:
+//! curl -i http://localhost:3000/api/v1/users -H "Authorization: Bearer token123"
 //!
-//! # Admin API: requires authentication AND the admin role. This
-//! # standalone example ships no JWT/session layer to populate verified
-//! # roles, so the admin check is simulated by requiring a distinguished
-//! # bearer token; see `require_admin_role` below for the real-world
-//! # equivalent (`armature_core::guard::RolesGuard` plus an authentication
-//! # middleware).
-//! curl http://localhost:3000/api/v1/admin/users -H "Authorization: Bearer admin-token"
-//! # Authenticated but non-admin token -> 403 (role required):
-//! curl -i http://localhost:3000/api/v1/admin/users -H "Authorization: Bearer token123"
-//! # No Authorization header at all -> 403:
-//! curl -i http://localhost:3000/api/v1/admin/users
+//! # Admin API: requires authentication AND the verified admin role.
+//! curl http://localhost:3000/api/v1/admin/users -H "Authorization: Bearer $ADMIN_TOKEN"
+//! # Authenticated but non-admin token -> 403:
+//! curl -i http://localhost:3000/api/v1/admin/users -H "Authorization: Bearer $USER_TOKEN"
 //! ```
 
 use armature_core::*;
-use armature_proc_macro::{controller, guard, middleware, module, routes};
+use std::sync::{Arc, OnceLock};
 
-/// Demo-only "admin role" check for this standalone example.
+// ===== Authentication (stand-in for real JWT verification) =====
+
+/// Attaches a verified identity and roles when the request presents one of
+/// the demo tokens; anything else stays unauthenticated.
 ///
-/// Real applications should guard admin routes with
-/// [`armature_core::guard::RolesGuard`], which reads a `RequestRoles`
-/// extension populated by a genuine authentication layer (e.g.
-/// `armature-auth`'s `JwtAuthMiddleware`) *after* it verifies the caller's
-/// token -- `RolesGuard` fails closed without that upstream population, so
-/// a bare bearer token is never by itself sufficient. This example ships no
-/// such layer, so the "admin" designation here is simulated by checking for
-/// a distinguished bearer token value instead.
-fn require_admin_role(ctx: &GuardContext) -> Result<bool, Error> {
-    match ctx.get_header("authorization") {
-        Some("Bearer admin-token") => Ok(true),
-        _ => Err(Error::Forbidden("Admin role required".to_string())),
+/// In a real application this is `armature_auth::JwtAuthMiddleware`, which
+/// verifies a JWT before attaching the caller's `UserContext`/roles. The
+/// guards below fail closed without it: a bare `Authorization: Bearer ...`
+/// header never satisfies `AuthenticationGuard` or `RolesGuard`.
+struct DemoAuthMiddleware;
+
+/// `name` from the environment, or a random 32-byte hex token.
+fn token_from_env(name: &str) -> String {
+    std::env::var(name).unwrap_or_else(|_| {
+        let bytes: [u8; 32] = rand::random();
+        bytes.iter().map(|b| format!("{b:02x}")).collect()
+    })
+}
+
+fn user_token() -> &'static str {
+    static TOKEN: OnceLock<String> = OnceLock::new();
+    TOKEN.get_or_init(|| token_from_env("DEMO_USER_TOKEN"))
+}
+
+fn admin_token() -> &'static str {
+    static TOKEN: OnceLock<String> = OnceLock::new();
+    TOKEN.get_or_init(|| token_from_env("DEMO_ADMIN_TOKEN"))
+}
+
+/// Constant-time comparison, so timing does not reveal matching prefixes.
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+}
+
+#[async_trait::async_trait]
+impl Middleware for DemoAuthMiddleware {
+    async fn handle(
+        &self,
+        mut request: HttpRequest,
+        next: middleware::Next,
+    ) -> Result<HttpResponse, Error> {
+        let presented = request
+            .headers
+            .get("authorization")
+            .and_then(|v| v.strip_prefix("Bearer "))
+            .map(str::to_owned);
+        if let Some(token) = presented {
+            if constant_time_eq(token.as_bytes(), admin_token().as_bytes()) {
+                request
+                    .extensions
+                    .insert(VerifiedIdentity::new("demo-admin"));
+                request
+                    .extensions
+                    .insert(RequestRoles::new(["admin", "user"]));
+            } else if constant_time_eq(token.as_bytes(), user_token().as_bytes()) {
+                request
+                    .extensions
+                    .insert(VerifiedIdentity::new("demo-user"));
+                request.extensions.insert(RequestRoles::new(["user"]));
+            }
+        }
+        next(request).await
     }
 }
 
@@ -83,100 +119,87 @@ impl Middleware for LoggerMiddleware {
     }
 }
 
-// ===== Public API: no guard =====
+// ===== Handlers =====
 
-#[controller("/api/public")]
-#[middleware(LoggerMiddleware)]
-#[derive(Default)]
-struct PublicController;
-
-#[routes]
-impl PublicController {
-    #[get("/health")]
-    async fn health() -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
-            "status": "healthy",
-            "group": "public"
-        }))?)
-    }
+async fn health(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        "status": "healthy",
+        "group": "public"
+    }))?)
 }
 
-// ===== V1 API: requires authentication =====
-
-#[controller("/api/v1")]
-#[middleware(LoggerMiddleware)]
-#[derive(Default)]
-struct V1Controller;
-
-#[routes]
-impl V1Controller {
-    // `_req` must stay an explicit parameter on guarded handlers: `#[routes]`
-    // decides the call-site argument count from this handler's signature
-    // *before* `#[guard(...)]` expands, and `#[guard(...)]` injects an
-    // implicit request parameter into guarded handlers that have none --
-    // dropping this parameter would make the two disagree on arity.
-    #[guard(AuthenticationGuard)]
-    #[get("/users")]
-    async fn users(_req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
-            "users": ["alice", "bob", "charlie"],
-            "version": "v1"
-        }))?)
-    }
-
-    #[guard(AuthenticationGuard)]
-    #[get("/posts")]
-    async fn posts(_req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
-            "posts": [
-                {"id": 1, "title": "First Post"},
-                {"id": 2, "title": "Second Post"}
-            ],
-            "version": "v1"
-        }))?)
-    }
+async fn users(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        "users": ["alice", "bob", "charlie"],
+        "version": "v1"
+    }))?)
 }
 
-// ===== Admin API: requires authentication + admin role =====
-
-#[controller("/api/v1/admin")]
-#[middleware(LoggerMiddleware)]
-#[derive(Default)]
-struct AdminController;
-
-#[routes]
-impl AdminController {
-    // See `V1Controller::users` above for why `_req` stays an explicit
-    // parameter on guarded handlers.
-    #[guard(AuthenticationGuard, CustomGuard::new(require_admin_role))]
-    #[get("/users")]
-    async fn users(_req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
-            "users": [
-                {"id": 1, "username": "alice", "role": "admin"},
-                {"id": 2, "username": "bob", "role": "user"},
-                {"id": 3, "username": "charlie", "role": "user"}
-            ],
-            "group": "admin",
-            "version": "v1"
-        }))?)
-    }
-
-    #[guard(AuthenticationGuard, CustomGuard::new(require_admin_role))]
-    #[get("/stats")]
-    async fn stats(_req: HttpRequest) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::ok().with_json(&serde_json::json!({
-            "total_users": 3,
-            "total_posts": 2,
-            "total_requests": 42,
-            "group": "admin"
-        }))?)
-    }
+async fn posts(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        "posts": [
+            {"id": 1, "title": "First Post"},
+            {"id": 2, "title": "Second Post"}
+        ],
+        "version": "v1"
+    }))?)
 }
 
-#[module(controllers: [PublicController, V1Controller, AdminController])]
-#[derive(Default)]
-struct AppModule;
+async fn admin_users(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        "users": [
+            {"id": 1, "username": "alice", "role": "admin"},
+            {"id": 2, "username": "bob", "role": "user"},
+            {"id": 3, "username": "charlie", "role": "user"}
+        ],
+        "group": "admin",
+        "version": "v1"
+    }))?)
+}
+
+async fn admin_stats(_req: HttpRequest) -> Result<HttpResponse, Error> {
+    Ok(HttpResponse::ok().with_json(&serde_json::json!({
+        "total_users": 3,
+        "total_posts": 2,
+        "total_requests": 42,
+        "group": "admin"
+    }))?)
+}
+
+/// Build the router: every route is registered through its group, so the
+/// group's middleware and guards run on it.
+fn build_router() -> Router {
+    let mut router = Router::new();
+
+    let api = RouteGroup::new()
+        .prefix("/api")
+        .middleware(Arc::new(LoggerMiddleware));
+
+    // Public: logging only.
+    let public = RouteGroup::new().prefix("/public").with_parent(&api);
+    public.route(&mut router, HttpMethod::GET, "/health", health);
+
+    // V1: authentication middleware, then a guard that requires a verified
+    // identity.
+    let v1 = RouteGroup::new()
+        .prefix("/v1")
+        .middleware(Arc::new(DemoAuthMiddleware))
+        .guard(Box::new(AuthenticationGuard))
+        .with_parent(&api);
+    v1.route(&mut router, HttpMethod::GET, "/users", users)
+        .route(&mut router, HttpMethod::GET, "/posts", posts);
+
+    // Admin: inherits v1's middleware and guard, and requires the admin role.
+    let admin = RouteGroup::new()
+        .prefix("/admin")
+        .guard(Box::new(RolesGuard::new(vec!["admin".to_string()])))
+        .with_parent(&v1);
+    admin
+        .route(&mut router, HttpMethod::GET, "/users", admin_users)
+        .route(&mut router, HttpMethod::GET, "/stats", admin_stats);
+
+    router
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -186,60 +209,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Route Groups Example");
     info!("====================");
 
-    // ----- RouteGroup: prefix composition only -----
-    //
-    // `RouteGroup` composes shared path *prefixes* correctly (that part is
-    // real and tested). It also exposes `.middleware(...)`/`.guard(...)`
-    // builders, but those only *record* values on the `RouteGroup` value
-    // itself -- no router or application code ever reads them back out, so
-    // they would silently enforce nothing. This example therefore uses
-    // `RouteGroup` only for prefix composition below; the middleware and
-    // guards that actually run are wired separately via `#[middleware(...)]`
-    // and `#[guard(...)]` on each controller/handler.
-    let api = RouteGroup::new().prefix("/api");
+    if std::env::var("DEMO_USER_TOKEN").is_err() || std::env::var("DEMO_ADMIN_TOKEN").is_err() {
+        println!("Demo tokens (set DEMO_USER_TOKEN / DEMO_ADMIN_TOKEN to choose them):");
+        println!("  export USER_TOKEN={}", user_token());
+        println!("  export ADMIN_TOKEN={}", admin_token());
+    }
 
-    info!("Created base /api group");
+    let router = build_router();
 
-    let public = RouteGroup::new().prefix("/public").with_parent(&api);
-    info!("Created /api/public group (no auth)");
-
-    let v1 = RouteGroup::new().prefix("/v1").with_parent(&api);
-    info!("Created /api/v1 group");
-
-    let admin = RouteGroup::new().prefix("/admin").with_parent(&v1);
-    info!("Created /api/v1/admin group");
-
-    // Demonstrate route prefix application
-    info!("\nRoute Prefix Examples:");
-    info!("----------------------");
-
-    let public_health = public.apply_prefix("/health");
-    info!("Public health: {}", public_health);
-
-    let v1_users = v1.apply_prefix("/users");
-    info!("V1 users: {}", v1_users);
-
-    let admin_users = admin.apply_prefix("/users");
-    info!("Admin users: {}", admin_users);
-
-    // ----- Real routing + enforcement -----
-    //
-    // These controllers are registered at paths matching the prefixes
-    // computed above ("/api/public", "/api/v1", "/api/v1/admin"). Auth and
-    // role enforcement genuinely happen here via `#[guard(...)]` on the
-    // protected handlers, and `LoggerMiddleware` genuinely runs via
-    // `#[middleware(...)]` on each controller struct -- this is the
-    // framework's real, tested enforcement mechanism, unlike the inert
-    // `RouteGroup.middleware()`/`.guard()` builders described above.
     info!("\nStarting server on http://localhost:3000");
     info!("Try these endpoints:");
     info!("  GET /api/public/health          (no auth)");
-    info!("  GET /api/v1/users               (requires Authorization: Bearer <token>)");
-    info!("  GET /api/v1/posts               (requires Authorization: Bearer <token>)");
-    info!("  GET /api/v1/admin/users         (requires Authorization: Bearer admin-token)");
-    info!("  GET /api/v1/admin/stats         (requires Authorization: Bearer admin-token)");
+    info!("  GET /api/v1/users               (requires Authorization: Bearer $USER_TOKEN)");
+    info!("  GET /api/v1/posts               (requires Authorization: Bearer $USER_TOKEN)");
+    info!("  GET /api/v1/admin/users         (requires Authorization: Bearer $ADMIN_TOKEN)");
+    info!("  GET /api/v1/admin/stats         (requires Authorization: Bearer $ADMIN_TOKEN)");
 
-    let app = Application::create::<AppModule>().await;
+    let app = Application::new(Container::new(), router);
 
     info!("\n✓ Server started successfully");
     info!("Press Ctrl+C to stop");
@@ -247,4 +233,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.listen(3000).await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn get(path: &str, token: Option<&str>) -> HttpRequest {
+        let mut req = HttpRequest::new("GET".to_string(), path.to_string());
+        if let Some(token) = token {
+            req.headers
+                .insert("authorization", format!("Bearer {token}"));
+        }
+        req
+    }
+
+    async fn status(router: &Router, req: HttpRequest) -> u16 {
+        match router.route(req).await {
+            Ok(response) => response.status,
+            Err(e) => e.status_code(),
+        }
+    }
+
+    #[tokio::test]
+    async fn group_guards_are_enforced() {
+        let router = build_router();
+
+        assert_eq!(status(&router, get("/api/public/health", None)).await, 200);
+
+        assert_eq!(status(&router, get("/api/v1/users", None)).await, 401);
+        assert_eq!(
+            status(&router, get("/api/v1/users", Some("token123"))).await,
+            401,
+            "a bare Bearer header is not a verified identity"
+        );
+        assert_eq!(
+            status(&router, get("/api/v1/users", Some(user_token()))).await,
+            200
+        );
+
+        assert_eq!(
+            status(&router, get("/api/v1/admin/users", Some(user_token()))).await,
+            403
+        );
+        assert_eq!(
+            status(&router, get("/api/v1/admin/stats", Some(admin_token()))).await,
+            200
+        );
+    }
 }

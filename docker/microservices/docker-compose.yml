@@ -1,5 +1,8 @@
 # Armature Microservices Architecture
 # ====================================
+# DEVELOPMENT / DEMO ONLY. Do not expose this stack to an untrusted network
+# and never reuse its configuration or credentials in production.
+#
 # Multi-service setup demonstrating service mesh patterns
 #
 # Services:
@@ -10,10 +13,21 @@
 # - Notification Service
 # - Shared infrastructure
 #
+# Every published port is bound to 127.0.0.1 (Docker's own iptables rules
+# bypass host firewalls for published ports). Secrets come from .env (copy
+# .env.example); Compose refuses to start while a required one is unset.
+#
 # Usage:
+#   cp .env.example .env   # then set every value
 #   docker compose up -d
-#   Gateway: http://localhost:8000
-#   Kong Admin: http://localhost:8001
+#   Gateway:    http://localhost:8000
+#   Kong Admin: not published. The Admin API is unauthenticated in Kong OSS
+#               and, in DB-less mode, `POST /config` replaces the whole
+#               gateway config, so it listens on the container's loopback
+#               only. Use it with:
+#                 docker compose exec kong curl -s http://127.0.0.1:8001/status
+#
+# Images are pinned by tag and digest; Dependabot keeps them current.
 #
 # NOTE — demo simplification:
 #   User/Product/Order/Notification "services" below are illustrative only.
@@ -29,8 +43,6 @@
 #   rather than left in as unused config. Wiring real per-service binaries
 #   is a follow-up.
 
-version: "3.8"
-
 x-service-defaults: &service-defaults
   restart: unless-stopped
   networks:
@@ -44,24 +56,25 @@ x-service-defaults: &service-defaults
 x-armature-env: &armature-env
   RUST_LOG: info,armature=debug
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
-  REDIS_URL: redis://redis:6379
+  REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
 
 services:
   # ============================================
   # API Gateway (Kong)
   # ============================================
   kong:
-    image: kong:3.5
+    image: kong:3.9.4@sha256:aa4a4687b1330e427ad0d3b27a0606b833894297c78abf1a212edc9ba73c8620
     <<: *service-defaults
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong/kong.yml
       KONG_PROXY_LISTEN: 0.0.0.0:8000
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      # Loopback inside the container: unreachable from the host and from
+      # the other containers on the mesh network (see the header).
+      KONG_ADMIN_LISTEN: 127.0.0.1:8001
       KONG_LOG_LEVEL: info
     ports:
-      - "8000:8000"  # Proxy
-      - "8001:8001"  # Admin API
+      - "127.0.0.1:8000:8000"  # Proxy
     volumes:
       - ./kong/kong.yml:/kong/kong.yml:ro
     healthcheck:
@@ -85,8 +98,8 @@ services:
       <<: *armature-env
       SERVICE_NAME: user-service
       PORT: 3000
-      DATABASE_URL: postgres://armature:armature@postgres:5432/users
-      JWT_SECRET: ${JWT_SECRET:-user-service-secret}
+      DATABASE_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/users
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (openssl rand -hex 32)}
     depends_on:
       postgres:
         condition: service_healthy
@@ -114,7 +127,7 @@ services:
       <<: *armature-env
       SERVICE_NAME: product-service
       PORT: 3000
-      DATABASE_URL: postgres://armature:armature@postgres:5432/products
+      DATABASE_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/products
     depends_on:
       postgres:
         condition: service_healthy
@@ -142,7 +155,7 @@ services:
       <<: *armature-env
       SERVICE_NAME: order-service
       PORT: 3000
-      DATABASE_URL: postgres://armature:armature@postgres:5432/orders
+      DATABASE_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/orders
       USER_SERVICE_URL: http://user-service:3000
       PRODUCT_SERVICE_URL: http://product-service:3000
     depends_on:
@@ -193,8 +206,8 @@ services:
     environment:
       <<: *armature-env
       SERVICE_NAME: worker-service
-      RABBITMQ_URL: amqp://armature:armature@rabbitmq:5672
-      DATABASE_URL: postgres://armature:armature@postgres:5432/workers
+      RABBITMQ_URL: amqp://armature:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env (openssl rand -hex 32)}@rabbitmq:5672
+      DATABASE_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/workers
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -211,17 +224,17 @@ services:
   # PostgreSQL
   # ============================================
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     <<: *service-defaults
     environment:
       POSTGRES_USER: armature
-      POSTGRES_PASSWORD: armature
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       POSTGRES_MULTIPLE_DATABASES: users,products,orders,workers
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/create-databases.sh:/docker-entrypoint-initdb.d/create-databases.sh:ro
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U armature"]
       interval: 10s
@@ -232,13 +245,18 @@ services:
   # Redis
   # ============================================
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     <<: *service-defaults
-    command: redis-server --appendonly yes
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -249,16 +267,16 @@ services:
   # RabbitMQ
   # ============================================
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:4.1.8-management-alpine@sha256:72b92455b387f14d44efa3b9b4553bae3d8d82cd515376712ae08d67fc9a7b0d
     <<: *service-defaults
     environment:
       RABBITMQ_DEFAULT_USER: armature
-      RABBITMQ_DEFAULT_PASS: armature
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env (openssl rand -hex 32)}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 30s
@@ -268,19 +286,24 @@ services:
   # ============================================
   # Elasticsearch
   # ============================================
+  # Authentication is ON (user "elastic", password ELASTIC_PASSWORD). HTTP TLS
+  # is off to keep the demo simple, so the port is bound to localhost only.
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.5@sha256:86d0a30f420470d9cd4102cdf380c5a458bd6ccbbd3f54f7332d3b0b562431b8
     <<: *service-defaults
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env (openssl rand -hex 32)}
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
+      - "127.0.0.1:9200:9200"
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+      test: ["CMD-SHELL", "curl -s -u \"elastic:$$ELASTIC_PASSWORD\" http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -289,24 +312,24 @@ services:
   # Jaeger (Tracing)
   # ============================================
   jaeger:
-    image: jaegertracing/all-in-one:1.52
+    image: jaegertracing/all-in-one:1.76.0@sha256:ab6f1a1f0fb49ea08bcd19f6b84f6081d0d44b364b6de148e1798eb5816bacac
     <<: *service-defaults
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
-      - "16686:16686"  # UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
+      - "127.0.0.1:16686:16686"  # UI
+      - "127.0.0.1:4317:4317"    # OTLP gRPC
+      - "127.0.0.1:4318:4318"    # OTLP HTTP
 
   # ============================================
-  # Mailhog (Email Testing)
+  # Mailpit (Email Testing; maintained MailHog replacement, same ports)
   # ============================================
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit:v1.31.6@sha256:23fe39e81bde596a918000b3135c0f85dc8bb4c9ea6be274b051143f3e300387
     <<: *service-defaults
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI
+      - "127.0.0.1:1025:1025"   # SMTP
+      - "127.0.0.1:8025:8025"   # Web UI
 
 networks:
   mesh:

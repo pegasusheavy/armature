@@ -1,6 +1,19 @@
 # Armature Docker Compose Examples
 
-Production-ready Docker Compose configurations for deploying Armature applications.
+Docker Compose stacks for **local development and demos only**. They are not
+hardened production deployments: do not run them on a host reachable from an
+untrusted network.
+
+Common to every stack:
+
+- Every published port is bound to `127.0.0.1`. (Docker writes its own
+  iptables rules for published ports, so `"5432:5432"` would be reachable
+  from the network even with ufw/firewalld blocking it.)
+- No credentials are committed. Each directory has an `.env.example`; copy it
+  to `.env` and fill in every value (`openssl rand -hex 32`). Compose refuses
+  to start while a required variable is unset.
+- No container mounts the Docker socket (it is root on the host).
+- Images are pinned by tag and digest.
 
 ## Available Configurations
 
@@ -10,6 +23,7 @@ Lightweight stack for local development:
 
 ```bash
 cd docker/development
+cp .env.example .env   # fill in every value
 docker compose up -d
 ```
 
@@ -17,12 +31,12 @@ docker compose up -d
 | Service | Port | Description |
 |---------|------|-------------|
 | PostgreSQL | 5432 | Database |
-| Redis | 6379 | Cache/sessions |
+| Redis | 6379 | Cache/sessions (password: `REDIS_PASSWORD`) |
 | Adminer | 8080 | Database UI |
-| MailHog | 8025 | Email testing |
-| RedisInsight | 8001 | Redis GUI |
-| LocalStack | 4566 | AWS emulation |
-| MinIO | 9000/9001 | S3 storage |
+| Mailpit | 8025 | Email testing (SMTP on 1025) |
+| RedisInsight | 5540 | Redis GUI |
+| LocalStack | 4566 | AWS emulation, incl. S3 |
+| pgAdmin | 5050 | `--profile full` (login: `PGADMIN_PASSWORD`) |
 
 ### 2. Observability (`observability/`)
 
@@ -30,6 +44,7 @@ Complete monitoring stack with Prometheus, Grafana, and distributed tracing:
 
 ```bash
 cd docker/observability
+cp .env.example .env   # set GRAFANA_ADMIN_PASSWORD
 docker compose up -d
 ```
 
@@ -38,7 +53,7 @@ docker compose up -d
 |---------|------|-------------|
 | Armature API | 3000 | Your application |
 | Prometheus | 9090 | Metrics collection |
-| Grafana | 3001 | Dashboards (admin/admin) |
+| Grafana | 3001 | Dashboards (admin / `GRAFANA_ADMIN_PASSWORD`) |
 | Jaeger | 16686 | Distributed tracing |
 | Loki | 3100 | Log aggregation |
 | Alertmanager | 9093 | Alert routing |
@@ -47,10 +62,11 @@ docker compose up -d
 
 ### 3. Full Stack (`full-stack/`)
 
-Production-ready setup with load balancing, database replication, and message queues:
+Demo of a multi-service setup with load balancing and message queues:
 
 ```bash
 cd docker/full-stack
+cp .env.example .env   # fill in every value
 docker compose up -d
 ```
 
@@ -60,11 +76,11 @@ docker compose up -d
 | Ferron | 80/443 | Load balancer (Rust-native) |
 | API (x2) | - | Application instances |
 | PostgreSQL Primary | 5432 | Primary database |
-| PostgreSQL Replica | - | Read replica |
+| PostgreSQL "Replica" | - | Standalone placeholder (not replicated) |
 | Redis | 6379 | Cache |
 | RabbitMQ | 5672/15672 | Message queue |
-| Elasticsearch | 9200 | Search |
-| MinIO | 9000/9001 | Object storage |
+| Elasticsearch | 9200 | Search (user `elastic`, auth enabled) |
+| RustFS | 9000/9001 | S3-compatible object storage |
 
 ### 4. Microservices (`microservices/`)
 
@@ -72,13 +88,14 @@ Multi-service architecture with API gateway:
 
 ```bash
 cd docker/microservices
+cp .env.example .env   # fill in every value
 docker compose up -d
 ```
 
 **Services:**
 | Service | Port | Description |
 |---------|------|-------------|
-| Kong Gateway | 8000/8001 | API Gateway |
+| Kong Gateway | 8000 | API Gateway (Admin API not published; see the compose header) |
 | User Service | - | Authentication |
 | Product Service | - | Product catalog |
 | Order Service | - | Orders & cart |
@@ -97,10 +114,11 @@ docker compose up -d
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/armature
+git clone https://github.com/quinnjr/armature
 cd armature/docker/development
 
-# Start services
+# Provide credentials, then start services
+cp .env.example .env   # fill in every value
 docker compose up -d
 
 # Check status
@@ -115,23 +133,23 @@ docker compose down
 
 ### Environment Variables
 
-Create a `.env` file for secrets:
+Each stack's `.env.example` lists the variables it requires. Generate every
+secret rather than inventing one:
 
-```env
-# Required
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-
-# Optional
-RUST_LOG=info,armature=debug
+```bash
+openssl rand -hex 32
 ```
+
+`JWT_SECRET` (full-stack, microservices) must be at least 32 bytes; Armature
+refuses shorter or placeholder-looking JWT secrets.
 
 ### Connecting Your Application
 
 Add these environment variables to your Armature app:
 
 ```env
-DATABASE_URL=postgres://armature:armature@localhost:5432/armature_dev
-REDIS_URL=redis://localhost:6379
+DATABASE_URL=postgres://armature:<POSTGRES_PASSWORD>@localhost:5432/armature_dev
+REDIS_URL=redis://:<REDIS_PASSWORD>@localhost:6379
 SMTP_HOST=localhost
 SMTP_PORT=1025
 ```
@@ -148,7 +166,7 @@ SMTP_PORT=1025
             │         │         │
             ▼         ▼         ▼
 ┌─────────┐ ┌───────┐ ┌─────────┐
-│PostgreSQL│ │ Redis │ │ MailHog │
+│PostgreSQL│ │ Redis │ │ Mailpit │
 │  :5432   │ │ :6379 │ │  :8025  │
 └─────────┘ └───────┘ └─────────┘
 ```
@@ -274,7 +292,7 @@ lsof -i :5432
 
 # Or change port in compose file
 ports:
-  - "5433:5432"  # Use 5433 on host
+  - "127.0.0.1:5433:5432"  # Use 5433 on host, loopback only
 ```
 
 ### Volume Permissions
@@ -297,8 +315,9 @@ docker compose up -d
 
 ## Production Checklist
 
-- [ ] Change default passwords in `.env`
-- [ ] Enable TLS/SSL
+- [ ] Do not deploy these stacks as-is; they are development examples
+- [ ] Use a secret manager instead of `.env` files
+- [ ] Enable TLS/SSL (including between services)
 - [ ] Configure proper log rotation
 - [ ] Set up backup procedures
 - [ ] Configure alerting

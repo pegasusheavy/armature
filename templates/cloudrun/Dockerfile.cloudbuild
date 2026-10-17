@@ -7,7 +7,9 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder
 # -----------------------------------------------------------------------------
-FROM rust:1.94-alpine AS builder
+# Base images are pinned by exact tag AND digest (Rust 1.99.1 >= the 1.94.1
+# MSRV on Alpine 3.24; distroless static Debian 13).
+FROM rust:1.99.1-alpine3.24@sha256:557a94c82b485a14b569120e00867267108c734efe33f10cc31ca0cd5dd1eca9 AS builder
 
 # Name of the compiled binary (your crate's [[bin]] name, usually the
 # package name). Override with: docker build --build-arg BIN_NAME=my-app
@@ -35,7 +37,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl --bin ${BIN_NAME}
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55d0659eceabb657f56b6782ab500a9fc7f555e3
 
 # Redeclare: ARGs do not cross FROM boundaries
 ARG BIN_NAME=app

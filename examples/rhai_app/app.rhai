@@ -9,7 +9,8 @@
 //   - Module composition
 //   - Lifecycle hooks
 //
-// Run:  armature run examples/rhai_app/app.rhai
+// Run:  export API_TOKEN=$(openssl rand -hex 32)
+//       armature run examples/rhai_app/app.rhai
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -60,16 +61,23 @@ greeting_service.define("hello", |name| {
 // Guards
 // ---------------------------------------------------------------------------
 
-// A simple bearer-token guard.
+// A bearer-token guard. The expected token comes from the API_TOKEN
+// environment variable; without it every request is refused (fail closed).
+// A bare "Bearer <anything>" header is never enough. Real applications verify
+// a signed JWT or a session instead of a single shared token.
 let auth_guard = guard("AuthGuard");
 auth_guard.can_activate(|req| {
-    let token = req.header("authorization");
+    let expected = env("API_TOKEN");
+    if expected == () || expected == "" {
+        return false;
+    }
 
+    let token = req.header("authorization");
     if token == () {
         return false;
     }
 
-    token.starts_with("Bearer ")
+    token == `Bearer ${expected}`
 });
 
 // ---------------------------------------------------------------------------
@@ -208,4 +216,5 @@ app.on_shutdown(|| {
     log_info("=== Armature Rhai App shutting down ===");
 });
 
-app.listen(3000);
+// Loopback only; use app.listen_host(3000, "0.0.0.0") deliberately to expose it.
+app.listen_host(3000, "127.0.0.1");

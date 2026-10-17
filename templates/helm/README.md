@@ -4,17 +4,32 @@ Production-ready Helm chart for deploying Armature applications on Kubernetes.
 
 ## Quick Start
 
-```bash
-# Install from local chart
-helm install my-api ./armature
+The chart has **no default image and no default JWT secret**: `helm install`
+fails until you provide them. (The Armature project does not publish an
+application image; build your own and push it to a registry you control.)
 
-# Install with custom values
+```bash
+# Secret managed outside the chart (recommended): must contain the key
+# jwt-secret, and optionally database-url / redis-url.
+kubectl create secret generic my-api-secrets \
+  --from-literal=jwt-secret="$(openssl rand -hex 32)"
+
 helm install my-api ./armature \
-  --set image.repository=myregistry/myapp \
-  --set image.tag=v1.0.0 \
+  --set image.repository=registry.example.com/my-api \
+  --set image.digest=sha256:<digest printed by docker push> \
+  --set secrets.existingSecret=my-api-secrets \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=api.example.com
+
+# Or let the chart create the Secret (keep the value out of committed files)
+helm install my-api ./armature \
+  --set image.repository=registry.example.com/my-api \
+  --set image.tag=v1.0.0 \
+  --set secrets.jwtSecret="$(openssl rand -hex 32)"
 ```
+
+`image.tag=latest` is rejected; prefer `image.digest`. Linting needs values
+too: `helm lint ./armature -f ./armature/ci/lint-values.yaml`.
 
 ## Configuration
 
@@ -28,8 +43,8 @@ See `armature/values.yaml` for all available options.
 # values-basic.yaml
 replicaCount: 2
 image:
-  repository: ghcr.io/my-org/my-api
-  tag: v1.0.0
+  repository: registry.example.com/my-api
+  digest: sha256:<digest>
 resources:
   requests:
     cpu: 100m
@@ -60,11 +75,19 @@ ingress:
 #### With Database
 
 ```yaml
-# values-db.yaml
+# values-db.yaml -- reference a Secret you manage (External Secrets, Sealed
+# Secrets, Vault, ...) holding jwt-secret, database-url and redis-url.
 secrets:
-  databaseUrl: "postgres://user:pass@host:5432/db"
-  redisUrl: "redis://redis:6379"
-  jwtSecret: "your-secret-key"
+  existingSecret: my-api-secrets
+networkPolicy:
+  extraEgress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: databases
+      ports:
+        - protocol: TCP
+          port: 5432
 ```
 
 #### Production Configuration
@@ -134,8 +157,15 @@ armature/
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `3` |
-| `image.repository` | Image repository | `ghcr.io/armature-rs/armature-api` |
-| `image.tag` | Image tag | Chart appVersion |
+| `image.repository` | Image repository (**required**) | `""` |
+| `image.digest` | Image digest `sha256:...` (preferred; wins over tag) | `""` |
+| `image.tag` | Image tag, used when no digest; `latest` rejected | `""` |
+| `secrets.existingSecret` | Existing Secret with `jwt-secret` (+ optional `database-url`, `redis-url`) | `""` |
+| `secrets.jwtSecret` | JWT secret (>= 32 chars) if the chart should create the Secret; required without `existingSecret` | `""` |
+| `secrets.revision` | Bump to roll pods after rotating the Secret | `"1"` |
+| `metrics.enabled` / `metrics.port` | Metrics on a dedicated port, not exposed via Service/Ingress | `true` / `9090` |
+| `networkPolicy.enabled` | Default-deny NetworkPolicy with explicit allows | `true` |
+| `networkPolicy.extraEgress` | Extra egress rules (databases, caches) | `[]` |
 | `image.pullPolicy` | Pull policy | `IfNotPresent` |
 | `service.type` | Service type | `ClusterIP` |
 | `service.port` | Service port | `80` |

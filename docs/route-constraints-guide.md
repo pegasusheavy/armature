@@ -167,14 +167,24 @@ assert!(constraint.validate("unknown").is_err());
 
 ### RegexConstraint
 
-Validates that a parameter matches a regular expression pattern.
+Validates that a parameter matches a regular expression pattern. The pattern is anchored
+at both ends: it must match the **whole** parameter, so `^`/`$` are optional.
 
 ```rust
 // Only lowercase letters
-let constraint = RegexConstraint::new(r"^[a-z]+$", "lowercase letters").unwrap();
+let constraint = RegexConstraint::new(r"[a-z]+", "lowercase letters").unwrap();
 assert!(constraint.validate("hello").is_ok());
 assert!(constraint.validate("HELLO").is_err());
+
+// Anchored: a matching substring is not enough
+let digits = RegexConstraint::new(r"\d+", "digits").unwrap();
+assert!(digits.validate("123").is_ok());
+assert!(digits.validate("123abc").is_err());
+assert!(digits.validate("abc123").is_err());
 ```
+
+> Earlier versions matched the pattern anywhere in the value (`\d+` accepted `1abc`). If a
+> pattern relied on substring matching, rewrite it to describe the entire parameter.
 
 ---
 
@@ -330,7 +340,7 @@ impl RouteConstraint for CustomConstraint {
 | `LengthConstraint` | `new(min, max)` | String length |
 | `RangeConstraint` | `new(min, max)` | Number range |
 | `EnumConstraint` | `new(values)` | Enum values |
-| `RegexConstraint` | `new(pattern, desc)` | Regex match |
+| `RegexConstraint` | `new(pattern, desc)` | Regex match (anchored, whole value) |
 
 ---
 

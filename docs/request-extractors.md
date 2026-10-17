@@ -31,18 +31,18 @@ The `armature-core` extractors module provides a type-safe way to extract data f
 
 ## Installation
 
-Request extractors are included in `armature-core`:
+Request extractors are included in `armature-core`, so they need no feature flag:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["core"] }
+armature = { package = "armature-framework", version = "0.8" }
 ```
 
 Or use directly:
 
 ```toml
 [dependencies]
-armature-core = "0.1"
+armature-core = "0.11"
 ```
 
 ## Extractor Types
@@ -286,7 +286,7 @@ For more concise syntax, use the helper macros that extract and unwrap in one st
 Extract and deserialize request body.
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract body as CreateUser
@@ -303,7 +303,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract and deserialize query parameters.
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract query params as Pagination
@@ -320,7 +320,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract a path parameter by name with type conversion.
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract "id" parameter as u32
@@ -340,7 +340,7 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
 Extract a header value by name.
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract Authorization header
@@ -349,11 +349,18 @@ fn handler(request: &HttpRequest) -> Result<(), Error> {
     // Extract custom header
     let request_id: String = header!(request, "X-Request-ID")?;
 
-    println!("Auth: {}", auth);
+    // Never log credentials such as `auth`.
+    println!("Request ID: {}", request_id);
 
     Ok(())
 }
 ```
+
+> Header values are client-controlled. Don't make authorization decisions from a raw
+> `Authorization` header or from headers like `X-User-Id`/`X-User-Role`: verify the
+> credential in an authentication middleware (for JWTs, `armature_auth::JwtAuthMiddleware`
+> registered with `Application::use_middleware`) and read the verified identity from
+> `request.extensions` (`armature_core::VerifiedIdentity`, `armature_auth::UserContext`).
 
 ## Traits
 
@@ -536,7 +543,7 @@ fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
 **Quick Reference:**
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn handler(request: &HttpRequest) -> Result<HttpResponse, Error> {
     // Body extraction

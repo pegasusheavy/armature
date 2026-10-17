@@ -2,6 +2,9 @@
 
 name: Documentation
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main, develop]
@@ -23,11 +26,12 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: '22'
+          node-version: '22.22'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
@@ -75,12 +79,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Only deploy on push to main or develop, not on PRs
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # Production site: deploy only from main (a push, or a manual run on main).
+    # develop pushes still build the site above but never publish it.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    environment:
+      name: github-pages
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Download website artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8

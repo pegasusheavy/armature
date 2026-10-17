@@ -82,7 +82,7 @@ done
 
 if ! command -v oha >/dev/null 2>&1; then
     echo -e "${RED}oha is not installed.${NC}" >&2
-    echo "  cargo install oha" >&2
+    echo "  cargo install oha --version 1.16.0 --locked" >&2
     echo >&2
     echo "oha rather than wrk or ab: it reports a latency distribution rather" >&2
     echo "than a mean, and a mean latency on a keep-alive HTTP benchmark hides" >&2

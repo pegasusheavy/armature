@@ -96,11 +96,15 @@ Response:
   "status": 404,
   "message": "User not found",
   "error_type": "NOT_FOUND",
-  "path": "/users/123",
   "timestamp": "2024-01-15T10:30:00Z",
   "request_id": "req-abc123"
 }
 ```
+
+The request path is **not** included by default, because error bodies that
+echo the request target are a reflection vector. Call `.include_path(true)` to
+add a `"path"` field; even then only the path is echoed, never the query
+string, which routinely carries tokens and personal data.
 
 ### Plain Text
 
@@ -332,7 +336,7 @@ let transformer = ErrorTransformer::new()
 
     // Include/exclude options
     .include_stack_trace(false)
-    .include_path(true)
+    .include_path(true)   // off by default; never includes the query string
     .include_timestamp(true)
 
     // Security
@@ -467,7 +471,7 @@ let transformer = ErrorTransformer::new()
             eprintln!(
                 "[ERROR] {} {} - {} ({})",
                 context.request.method,
-                context.request.path,
+                context.request.path_only(), // never log the query string
                 error,
                 response.request_id.as_deref().unwrap_or("unknown")
             );
@@ -585,7 +589,7 @@ let transformer = ErrorTransformer::new()
             // Log full details for debugging
             tracing::error!(
                 error = %error,
-                path = ctx.request.path,
+                path = %ctx.request.path_only(),
                 "Server error"
             );
         }
@@ -603,6 +607,26 @@ Err(Error::Internal("Column 'users.password_hash' not found".into()))
 
 // Good: Generic message
 Err(Error::Internal("Database error".into()))
+```
+
+In production mode the response message comes from `Error::client_message()`,
+which already applies these rules: every 5xx becomes
+`"Internal Server Error"`, and `Error::Deserialization` (whose serde text
+names Rust types, enum variants and fields) becomes a fixed generic message.
+The serde detail is logged at `debug` instead. `Error::Validation` messages
+are written by the application for the client, so they are kept.
+`Error::to_client_response()` uses the same message.
+
+```rust
+use armature_core::Error;
+
+let e = Error::Deserialization("unknown variant `Admin`, expected `User`".into());
+assert!(!e.client_message().contains("Admin"));
+
+assert_eq!(
+    Error::Validation("email is required".into()).client_message(),
+    "Validation error: email is required"
+);
 ```
 
 ### ❌ Including Sensitive Data in Errors
@@ -655,6 +679,7 @@ ErrorResponseBuilder::validation_error(vec![
 | `api()` | API preset (RFC 7807) |
 | `format(fmt)` | Set response format |
 | `production_mode(bool)` | Enable/disable production mode |
+| `include_path(bool)` | Echo the request path (never the query) in error bodies; off by default |
 | `filter_sensitive_data(bool)` | Enable/disable filtering |
 | `with_transformer(fn)` | Add custom transformer |
 | `with_logger(fn)` | Add custom logger |

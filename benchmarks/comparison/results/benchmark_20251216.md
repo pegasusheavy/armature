@@ -304,12 +304,12 @@ pkill fiber_bench
 
 # === C# ===
 cd ../aspnet_core && dotnet publish -c Release -o ./publish
-ASPNETCORE_URLS="http://0.0.0.0:8092" dotnet ./publish/aspnet_bench.dll &
+ASPNETCORE_URLS="http://127.0.0.1:8092" dotnet ./publish/aspnet_bench.dll &
 oha -c 100 -z 10s http://localhost:8092/json
 pkill -f aspnet_bench
 
 # === NODE.JS ===
-cd .. && npm install express fastify
+cd .. && npm ci
 PORT=8081 node express_bench.js &
 oha -c 100 -z 10s http://localhost:8081/json
 pkill -f express_bench
@@ -318,12 +318,12 @@ PORT=8084 node fastify_bench.js &
 oha -c 100 -z 10s http://localhost:8084/json
 pkill -f fastify_bench
 
-cd nestjs_express && npm install && npx tsc
+cd nestjs_express && npm ci && npx tsc
 PORT=8085 node dist/main.js &
 oha -c 100 -z 10s http://localhost:8085/json
 pkill -f "node dist/main"
 
-cd ../nestjs_fastify && npm install && npx tsc
+cd ../nestjs_fastify && npm ci && npx tsc
 PORT=8086 node dist/main.js &
 oha -c 100 -z 10s http://localhost:8086/json
 pkill -f "node dist/main"

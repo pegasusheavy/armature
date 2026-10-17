@@ -2,6 +2,16 @@
 # Armature Cloud Run - Local Development Environment
 # =============================================================================
 # Simulates Cloud Run environment locally
+#
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
+# Usage:
+#   cp .env.example .env   # then set POSTGRES_PASSWORD and REDIS_PASSWORD
+#   docker compose up
 # =============================================================================
 
 services:
@@ -15,7 +25,7 @@ services:
       target: runtime-debug  # Use debug target for local development
     container_name: armature-cloudrun-app
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       # Cloud Run environment variables
       - PORT=8080
@@ -25,15 +35,15 @@ services:
       - GOOGLE_CLOUD_PROJECT=local-project
       # Application configuration
       - RUST_LOG=debug
-      - DATABASE_URL=postgres://armature:armature@postgres:5432/armature
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/armature
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -43,13 +53,13 @@ services:
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     container_name: armature-postgres
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_USER=armature
-      - POSTGRES_PASSWORD=armature
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       - POSTGRES_DB=armature
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -63,10 +73,16 @@ services:
   # Redis Cache
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     container_name: armature-redis
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -79,21 +95,21 @@ services:
   # Pub/Sub Emulator (Google Cloud Pub/Sub)
   # ---------------------------------------------------------------------------
   pubsub:
-    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:589.0.0-emulators@sha256:dff831e11d4013af597446d43e1222a9196d9b2b0c8180606bb2e35bf1ea6e03
     container_name: armature-pubsub
     command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085
     ports:
-      - "8085:8085"
+      - "127.0.0.1:8085:8085"
 
   # ---------------------------------------------------------------------------
   # Firestore Emulator
   # ---------------------------------------------------------------------------
   firestore:
-    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:589.0.0-emulators@sha256:dff831e11d4013af597446d43e1222a9196d9b2b0c8180606bb2e35bf1ea6e03
     container_name: armature-firestore
     command: gcloud emulators firestore start --host-port=0.0.0.0:8086
     ports:
-      - "8086:8086"
+      - "127.0.0.1:8086:8086"
 
 volumes:
   postgres_data:

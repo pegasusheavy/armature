@@ -69,12 +69,20 @@ aws lambda create-function \
 ## Local Development
 
 ```bash
-# Start LocalStack
-docker-compose up -d
+# Start LocalStack and the function (behind the Runtime Interface Emulator)
+docker compose up -d
 
-# Test locally
-curl http://localhost:9000/
+# Invoke the function (ports are bound to 127.0.0.1 only)
+curl -X POST http://127.0.0.1:9000/2015-03-31/functions/function/invocations \
+  -d '{"rawPath":"/health","requestContext":{"http":{"method":"GET"}}}'
 ```
+
+LocalStack's own Lambda service is not enabled because it needs the Docker
+socket mounted (root on the host); see the header of `docker-compose.yml`.
+
+The Dockerfiles install `cargo-lambda` at a pinned version and verify it
+against a hardcoded SHA256; the build fails if the download does not match.
+Update `CARGO_LAMBDA_VERSION` and `CARGO_LAMBDA_SHA256` together.
 
 ## Armature Integration
 

@@ -55,7 +55,7 @@ an immutable object-storage backend (e.g. S3 Object Lock) fed from
 - ✅ **Multiple Backends** - File, memory, stdout, extensible
 - ✅ **Retention Policies** - Automatic cleanup with configurable TTL
 - ✅ **Compliance Ready** - PCI-DSS, GDPR, SOC2, HIPAA
-- ✅ **Async & Thread-safe** - Production-ready performance
+- ✅ **Async & Thread-safe** - Non-blocking logging from async handlers
 
 ---
 
@@ -94,13 +94,15 @@ logger.log(AuditEvent::new("user.login")
 ### 4. Add Middleware (Optional)
 
 ```rust
+use armature_auth::JwtAuthMiddleware;
 use armature_core::*;
 
-let audit_middleware = Arc::new(AuditMiddleware::new(logger));
-
-let app = Application::new()
-    .middleware(audit_middleware)
-    .build();
+// Register after the authentication middleware so the verified
+// `UserContext` it attaches is available as the audit principal
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))
+    .use_middleware(AuditMiddleware::new(logger));
 ```
 
 ---
@@ -225,6 +227,9 @@ let logger = AuditLogger::builder()
     .build();
 ```
 
+On Unix the file (and the file rewritten by retention cleanup) is created
+with mode `0600`, not the process umask.
+
 **Format:** JSON Lines (JSONL)
 ```json
 {"id":"...","timestamp":"...","event_type":"user.login",...}
@@ -302,22 +307,32 @@ impl AuditBackend for DatabaseBackend {
 Automatically masks common sensitive fields:
 
 ```rust
-password, secret, token, api_key, credit_card, cvv, ssn, private_key
+password, passwd, secret, token, api_key, apikey, api-key, access_token,
+refresh_token, bearer, authorization, auth, credit_card, creditcard,
+card_number, cvv, ssn, social_security, pin, private_key, privatekey,
+cookie, session
 ```
+
+(`DEFAULT_MASKED_FIELDS`.) Credential fields (passwords, secrets, tokens, API
+keys, authorization, cookies, sessions, private keys) and identity fields
+(SSN, card numbers) are **always masked completely**. `show_last_chars`
+(default `0`) only applies to custom fields added with `add_field`.
 
 ### Masking Configuration
 
 ```rust
 use armature_audit::*;
 
-let config = MaskingConfig::new()
+let mut config = MaskingConfig::new()
     .add_field("custom_field")
     .mask_emails(true)
     .mask_phones(true)
-    .mask_ssn(true)
-    .mask_credit_cards(true)
     .mask_char('*')
-    .show_last_chars(4);
+    .show_last_chars(4); // custom fields only; credentials are always fully masked
+
+// SSN and credit-card pattern masking are public fields, on by default
+config.mask_ssn = true;
+config.mask_credit_cards = true;
 
 let logger = AuditLogger::builder()
     .masking_config(config)
@@ -332,8 +347,19 @@ let logger = AuditLogger::builder()
 {"username": "alice", "password": "secret123"}
 
 // After
-{"username": "alice", "password": "******123"}
+{"username": "alice", "password": "*********"}
 ```
+
+**Form bodies** (`application/x-www-form-urlencoded`) are masked by key:
+```
+Before: user=alice&api_key=sk_live_1
+After:  user=alice&api_key=[REDACTED]
+```
+
+**Free text** has `key: value` and `key=value` occurrences of masked fields
+redacted, including `Authorization: Bearer ...`. A body that looks like JSON
+but does not parse is replaced entirely with `UNPARSEABLE_BODY_PLACEHOLDER`
+instead of being logged with only pattern-based masking.
 
 **Email Addresses:**
 ```
@@ -391,25 +417,38 @@ let logger = Arc::new(AuditLogger::builder()
     .backend(FileBackend::new("audit.log"))
     .build());
 
-let audit_middleware = Arc::new(AuditMiddleware::new(logger));
-
-let app = Application::new()
-    .middleware(audit_middleware)
-    .build();
+// Register after the authentication middleware so the verified
+// `UserContext` it attaches is available as the audit principal
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))
+    .use_middleware(AuditMiddleware::new(logger));
 ```
 
 ### Configuration
 
 ```rust
-let audit_middleware = Arc::new(
-    AuditMiddleware::new(logger)
-        .log_request_body(true)      // Log request bodies
-        .log_response_body(true)     // Log response bodies
-        .max_body_size(10_000)       // Max 10KB body size
-        .fail_on_error(false)        // Default: fail open on audit-write errors.
-                                      // Set true to fail the request closed instead.
-);
+let audit_middleware = AuditMiddleware::new(logger)
+    .log_request_body(true)      // Default: false (bodies carry credentials and PII)
+    .log_response_body(true)     // Default: false
+    .max_body_size(10_000)       // Max 10KB body size (applied after masking)
+    .trusted_proxy_depth(1)      // Default: 0 (record the socket peer)
+    .fail_on_error(false);       // Default: fail open on audit-write errors.
+                                 // Set true to fail the request closed instead.
 ```
+
+Request and response bodies are **not logged by default**. When you enable
+them, each body is masked with the logger's `MaskingConfig` *before* it is
+truncated to `max_body_size`, so a large JSON or form body is still masked
+by key.
+
+The client address comes from `HttpRequest::client_address(trusted_proxy_depth)`.
+At the default depth `0` it is the socket peer and forwarding headers are
+ignored. At depth `N` it is the `N`-th `X-Forwarded-For` hop from the right,
+read across every `X-Forwarded-For` line. `X-Real-IP` is never consulted.
+Set the depth to the number of proxies in front of the service. A chain
+shorter than the depth records no address rather than a client-chosen one.
+(`record_unverified_ip` has been removed.)
 
 An audit-write failure always increments `audit_middleware.write_failure_count()`
 regardless of `fail_on_error`, so it stays observable even under the default
@@ -420,14 +459,18 @@ fail-open behavior.
 For each HTTP request:
 - Event type: `http.request`
 - HTTP method (GET, POST, etc.)
-- Request path
+- Request path (without the query string, which commonly carries tokens and personal data)
 - Status code
-- User ID (from Authorization header)
-- IP address (from X-Forwarded-For or X-Real-IP)
+- User ID (from the verified `UserContext` attached by `JwtAuthMiddleware`; none if absent)
+- IP address (`client_address(trusted_proxy_depth)`, see above)
 - User agent
-- Request body (masked)
-- Response body (masked)
+- Request body (masked, only if `log_request_body(true)`)
+- Response body (masked, only if `log_response_body(true)`)
 - Duration in milliseconds
+
+The principal is never read from an unverified bearer token unless you opt
+in with `trust_unverified_jwt_subject(true)`. That setting is spoofable:
+any client can forge the token payload.
 
 ### Example Audit Log Entry
 
@@ -445,7 +488,7 @@ For each HTTP request:
   "method": "POST",
   "path": "/api/users",
   "status_code": 201,
-  "request_body": "{\"username\":\"alice\",\"password\":\"******123\"}",
+  "request_body": "{\"username\":\"alice\",\"password\":\"*********\"}",
   "response_body": "{\"id\":123,\"username\":\"alice\"}",
   "duration_ms": 45
 }
@@ -518,11 +561,10 @@ For payment card data:
 ```rust
 use armature_audit::*;
 
-// Mask credit card data
-let config = MaskingConfig::new()
-    .add_field("credit_card")
-    .add_field("cvv")
-    .mask_credit_cards(true);
+// Mask credit card data. `credit_card` and `cvv` are default masked
+// fields, and card-number pattern masking (`mask_credit_cards`) is on
+// by default.
+let config = MaskingConfig::new();
 
 // Log payment transactions
 logger.log(AuditEvent::new("payment.processed")
@@ -756,15 +798,15 @@ let logger = Arc::new(AuditLogger::builder()
     .backend(FileBackend::new("audit.log"))
     .build());
 
-let audit_middleware = Arc::new(
-    AuditMiddleware::new(logger)
-        .log_request_body(true)
-        .log_response_body(true)
-);
+// Bodies are off by default; opt in explicitly
+let audit_middleware = AuditMiddleware::new(logger)
+    .log_request_body(true)
+    .log_response_body(true);
 
-let app = Application::new()
-    .middleware(audit_middleware)
-    .build();
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))
+    .use_middleware(audit_middleware);
 ```
 
 ### Example 3: Multiple Backends
@@ -789,7 +831,7 @@ let config = MaskingConfig::new()
     .add_field("medical_id")
     .mask_emails(true)
     .mask_phones(true)
-    .show_last_chars(4);
+    .show_last_chars(4); // applies to medical_id; credit_card and ssn are always fully masked
 
 let logger = AuditLogger::builder()
     .masking_config(config)
@@ -840,9 +882,10 @@ logger.log(AuditEvent::new("user.action")
     .status(AuditStatus::Success)).await?;
 
 // Add middleware
-let app = Application::new()
-    .middleware(Arc::new(AuditMiddleware::new(logger)))
-    .build();
+let app = Application::create::<AppModule>()
+    .await
+    .use_middleware(JwtAuthMiddleware::new(jwt_manager))
+    .use_middleware(AuditMiddleware::new(logger));
 
 // Setup retention
 let manager = Arc::new(RetentionManager::new(

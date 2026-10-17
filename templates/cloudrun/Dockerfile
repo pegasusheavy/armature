@@ -12,7 +12,10 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Chef - Prepare dependency recipe
 # -----------------------------------------------------------------------------
-FROM lukemathwalker/cargo-chef:latest-rust-1.94.1-alpine AS chef
+# Base images are pinned by exact tag AND digest: cargo-chef 0.1.78 on Rust
+# 1.99.1 (>= the 1.94.1 MSRV), Alpine 3.24 and distroless static Debian 13.
+# Dependabot's "docker" ecosystem proposes digest bumps.
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.99.1-alpine3.24@sha256:c48fa69aff194617af79ddc9473a58b946068012721979a9aef9c3e1466ccbd8 AS chef
 WORKDIR /app
 
 # -----------------------------------------------------------------------------
@@ -45,9 +48,37 @@ COPY src ./src
 RUN cargo build --release --target x86_64-unknown-linux-musl --bin ${BIN_NAME}
 
 # -----------------------------------------------------------------------------
-# Stage 4: Runtime - Minimal Distroless image
+# Stage 4a: Debug runtime (Alpine, has a shell). Used by docker-compose.yml
+# for local development via `target: runtime-debug`. It is declared BEFORE
+# the production stage on purpose: a plain `docker build` builds the LAST
+# stage, which must stay the distroless one.
 # -----------------------------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot AS runtime
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS runtime-debug
+
+ARG BIN_NAME=app
+
+WORKDIR /app
+
+# No curl: the health check uses BusyBox wget from the base image.
+RUN apk add --no-cache ca-certificates \
+    && adduser -D -u 65532 nonroot
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /app/server
+
+USER nonroot
+
+ENV PORT=8080
+EXPOSE 8080
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q --spider "http://127.0.0.1:${PORT}/health" || exit 1
+
+CMD ["/app/server"]
+
+# -----------------------------------------------------------------------------
+# Stage 4b: Runtime - Minimal Distroless image (default build target)
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55d0659eceabb657f56b6782ab500a9fc7f555e3 AS runtime
 
 # Redeclare: ARGs do not cross FROM boundaries
 ARG BIN_NAME=app
@@ -68,33 +99,6 @@ USER nonroot:nonroot
 
 # Run
 ENTRYPOINT ["/app/server"]
-
-# =============================================================================
-# Alternative: Debug Image with Shell
-# =============================================================================
-# FROM alpine:3.20 AS runtime-debug
-#
-# WORKDIR /app
-#
-# RUN apk add --no-cache ca-certificates curl \
-#     && adduser -D -u 65532 nonroot
-#
-# ARG BIN_NAME=app
-#
-# COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${BIN_NAME} /app/server
-#
-# RUN chown -R nonroot:nonroot /app
-#
-# USER nonroot
-#
-# ENV PORT=8080
-# EXPOSE 8080
-#
-# HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-#     CMD curl -f http://localhost:${PORT}/health || exit 1
-#
-# CMD ["/app/server"]
-# =============================================================================
 
 # =============================================================================
 # Deployment Instructions

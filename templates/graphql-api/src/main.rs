@@ -33,17 +33,24 @@ use crate::services::{BookService, UserService};
 // =============================================================================
 
 /// Build the GraphQL schema, enforcing the depth/complexity limits from
-/// [`AppConfig`] (`GRAPHQL_DEPTH_LIMIT` / `GRAPHQL_COMPLEXITY_LIMIT`).
+/// [`AppConfig`] (`GRAPHQL_DEPTH_LIMIT` / `GRAPHQL_COMPLEXITY_LIMIT`) and
+/// disabling introspection unless `GRAPHQL_INTROSPECTION=true`.
 fn build_schema(config: &AppConfig) -> Schema<QueryRoot, MutationRoot, EmptySubscription> {
     let user_service = UserService::new();
     let book_service = BookService::new();
 
     let query = QueryRoot::new(user_service.clone(), book_service.clone());
     let mutation = MutationRoot::new(user_service, book_service);
-    Schema::build(query, mutation, EmptySubscription)
+    let builder = Schema::build(query, mutation, EmptySubscription)
         .limit_depth(config.graphql_depth_limit)
-        .limit_complexity(config.graphql_complexity_limit)
-        .finish()
+        .limit_complexity(config.graphql_complexity_limit);
+    // Introspection is off unless `GRAPHQL_INTROSPECTION=true`; the same flag
+    // gates `GET /graphql/schema`, which would otherwise publish the full SDL.
+    if config.graphql_introspection {
+        builder.finish()
+    } else {
+        builder.disable_introspection().finish()
+    }
 }
 
 // The config and schema (and the `UserService`/`BookService` state graph the
@@ -117,6 +124,14 @@ impl GraphQLController {
 
     #[get("/schema")]
     async fn get_schema() -> Result<HttpResponse, Error> {
+        // Publishing the SDL is introspection by another name, so it obeys
+        // the same switch and is off by default.
+        if !app_config().graphql_introspection {
+            return Err(Error::NotFound(
+                "GraphQL schema export is disabled (set GRAPHQL_INTROSPECTION=true to enable)"
+                    .to_string(),
+            ));
+        }
         let sdl = graphql_schema().sdl();
 
         Ok(HttpResponse::ok()
@@ -256,8 +271,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("Endpoints:");
     println!("  POST /graphql        - GraphQL endpoint");
-    println!("  GET  /graphql/schema - GraphQL SDL");
-    println!("  GET  /playground     - GraphiQL Playground");
+    println!("  GET  /graphql/schema - GraphQL SDL (needs GRAPHQL_INTROSPECTION=true)");
+    println!("  GET  /playground     - GraphiQL Playground (needs GRAPHQL_PLAYGROUND=true)");
     println!("  GET  /health         - Health check");
     println!("  GET  /health/live    - Liveness probe");
     println!("  GET  /health/ready   - Readiness probe");

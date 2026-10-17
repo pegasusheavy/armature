@@ -9,21 +9,39 @@
 
 #![allow(dead_code, unused_imports)]
 
+use armature_webhooks::WebhookError;
 use armature_webhooks::{
     RetryPolicy, WebhookClient, WebhookConfig, WebhookDeliveryStatus, WebhookEndpoint,
     WebhookPayload, WebhookReceiver, WebhookRegistry, WebhookSignature,
 };
 use std::sync::Arc;
 
-fn main() {
+type Result<T> = std::result::Result<T, WebhookError>;
+
+fn main() -> Result<()> {
     println!("🪝 Armature Webhooks Example");
     println!("============================\n");
 
     demonstrate_payload_creation();
-    demonstrate_signature();
-    demonstrate_endpoint_registry();
-    demonstrate_receiver();
+    demonstrate_signature()?;
+    demonstrate_endpoint_registry()?;
+    demonstrate_receiver()?;
     demonstrate_client_config();
+    Ok(())
+}
+
+/// The signing secret, from `WEBHOOK_SECRET` (at least 32 bytes) or, for this
+/// demo only, a fresh random one. Never hardcode webhook secrets.
+fn signing_secret() -> String {
+    match std::env::var("WEBHOOK_SECRET") {
+        Ok(secret) => secret,
+        Err(_) => {
+            // A new endpoint carries a 32-byte secret from the OS CSPRNG.
+            let secret = WebhookEndpoint::new("https://example.com").secret;
+            println!("   WEBHOOK_SECRET not set; generated a random demo secret");
+            secret
+        }
+    }
 }
 
 fn demonstrate_payload_creation() {
@@ -48,12 +66,13 @@ fn demonstrate_payload_creation() {
     println!();
 }
 
-fn demonstrate_signature() {
+fn demonstrate_signature() -> Result<()> {
     println!("2️⃣  Webhook Signatures");
     println!("----------------------");
 
-    let secret = "whsec_my_super_secret_key";
-    let signer = WebhookSignature::new(secret);
+    // Secrets shorter than 32 bytes are rejected.
+    let secret = signing_secret();
+    let signer = WebhookSignature::new(secret)?;
 
     // Create a payload
     let payload = WebhookPayload::new("order.completed")
@@ -66,31 +85,33 @@ fn demonstrate_signature() {
     println!("   Signature: {}", signature);
 
     // Verify the signature
-    let is_valid = signer.verify(&payload_bytes, &signature, 300).unwrap();
+    let is_valid = signer.verify(&payload_bytes, &signature, 300)?;
     println!("   Valid: {}", is_valid);
     println!();
+    Ok(())
 }
 
-fn demonstrate_endpoint_registry() {
+fn demonstrate_endpoint_registry() -> Result<()> {
     println!("3️⃣  Endpoint Registry");
     println!("---------------------");
 
     let registry = WebhookRegistry::new();
 
-    // Register endpoints
+    // Register endpoints. `build` enforces the egress policy: the URL must be
+    // https and must not target loopback, private or metadata addresses.
     let endpoint1 = WebhookEndpoint::builder("https://api.example.com/webhooks")
         .events(vec!["user.*", "order.created"])
         .description("Main API webhook")
         .header("X-Custom-Header", "custom-value")
-        .build();
+        .build()?;
 
     let endpoint2 = WebhookEndpoint::builder("https://analytics.example.com/events")
         .events(vec!["*"])
         .description("Analytics - all events")
-        .build();
+        .build()?;
 
-    let id1 = registry.register(endpoint1);
-    let id2 = registry.register(endpoint2);
+    let id1 = registry.register(endpoint1)?;
+    let id2 = registry.register(endpoint2)?;
 
     println!("   Registered endpoints: {}", registry.count());
     println!("   Endpoint 1 ID: {}", id1);
@@ -107,21 +128,22 @@ fn demonstrate_endpoint_registry() {
     );
 
     // Track failures
-    registry.record_failure(&id1).unwrap();
-    registry.record_failure(&id1).unwrap();
+    registry.record_failure(&id1)?;
+    registry.record_failure(&id1)?;
     let failing = registry.get_failing_endpoints(2);
     println!("   Failing endpoints (≥2 failures): {}", failing.len());
     println!();
+    Ok(())
 }
 
-fn demonstrate_receiver() {
+fn demonstrate_receiver() -> Result<()> {
     println!("4️⃣  Receiving Webhooks");
     println!("----------------------");
 
-    let secret = "whsec_receiver_secret";
+    let secret = signing_secret();
 
     // Sender side
-    let signer = WebhookSignature::new(secret);
+    let signer = WebhookSignature::new(secret.clone())?;
     let payload = WebhookPayload::new("payment.succeeded").with_data(serde_json::json!({
         "payment_id": "pay_abc123",
         "amount": 9999,
@@ -131,8 +153,8 @@ fn demonstrate_receiver() {
     let signature = signer.sign(&payload_bytes);
 
     // Receiver side
-    let receiver = WebhookReceiver::new(secret);
-    let received = receiver.receive(&payload_bytes, &signature).unwrap();
+    let receiver = WebhookReceiver::new(secret)?;
+    let received = receiver.receive(&payload_bytes, &signature)?;
 
     println!("   Received event: {}", received.event);
     println!("   Verified: ✅");
@@ -140,7 +162,12 @@ fn demonstrate_receiver() {
         "   Payment ID: {}",
         received.data.get("payment_id").unwrap()
     );
+
+    // The receiver keeps a replay cache: the same delivery is refused twice.
+    let replay = receiver.receive(&payload_bytes, &signature);
+    println!("   Replayed delivery rejected: {}", replay.is_err());
     println!();
+    Ok(())
 }
 
 fn demonstrate_client_config() {

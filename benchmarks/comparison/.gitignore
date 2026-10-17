@@ -1,0 +1,13 @@
+# Build outputs. Every comparison server is built from the source in this
+# directory (see README.md); compiled binaries are never committed, so what
+# gets benchmarked is always what the committed source says.
+/target/
+/go_fiber/fiber_bench
+/go_gin/gin_bench
+/aspnet_core/bin/
+/aspnet_core/obj/
+/aspnet_core/publish/
+/springboot_bench/target/
+/nestjs_express/dist/
+/nestjs_fastify/dist/
+node_modules/

@@ -9,6 +9,10 @@ pipeline {
     agent any
 
     environment {
+        // Fixed image name: JOB_NAME embeds the (pusher-chosen) branch name
+        // in multibranch jobs, so it is not used to build shell commands.
+        IMAGE_NAME = 'armature-app'
+        // Per-job cargo/rustup state; never shared between jobs.
         CARGO_HOME = "${WORKSPACE}/.cargo"
         RUSTUP_HOME = "${WORKSPACE}/.rustup"
         RUST_BACKTRACE = '1'
@@ -61,7 +65,7 @@ pipeline {
                     steps {
                         sh '''
                             echo "🔗 Running integration tests..."
-                            cargo test --test '*' --release || true
+                            cargo test --test '*' --release
                         '''
                     }
                 }
@@ -107,7 +111,11 @@ pipeline {
             steps {
                 sh '''
                     echo "🔒 Running security audit..."
-                    cargo audit || true
+                    # Blocking: a known-vulnerable dependency fails the build.
+                    # Record a justified exception in .cargo/audit.toml instead.
+                    command -v cargo-audit >/dev/null 2>&1 \
+                        || cargo install cargo-audit --version 0.22.2 --locked
+                    cargo audit
                 '''
             }
         }
@@ -126,8 +134,8 @@ pipeline {
             steps {
                 sh '''
                     echo "🐳 Building Docker image..."
-                    docker build -t ${JOB_NAME}:${BUILD_NUMBER} .
-                    docker tag ${JOB_NAME}:${BUILD_NUMBER} ${JOB_NAME}:latest
+                    docker build -t "${IMAGE_NAME}:${BUILD_NUMBER}" .
+                    docker tag "${IMAGE_NAME}:${BUILD_NUMBER}" "${IMAGE_NAME}:latest"
                 '''
             }
         }
@@ -145,7 +153,9 @@ pipeline {
                 // Examples:
                 // - kubectl apply -f k8s/
                 // - helm upgrade --install myapp ./helm/armature
-                // - docker push ${REGISTRY}/${JOB_NAME}:${BUILD_NUMBER}
+                // - sh 'docker push "${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"'
+                //   (single-quoted sh, values from env -- never Groovy "${...}"
+                //   interpolation of branch/tag names into shell commands)
             }
         }
     }

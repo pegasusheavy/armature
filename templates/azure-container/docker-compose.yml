@@ -2,6 +2,16 @@
 # Armature Azure Container - Local Development Environment
 # =============================================================================
 # Simulates Azure Container Apps environment locally with Azurite
+#
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network or reuse
+# its configuration in production. Published ports are bound to 127.0.0.1
+# (Docker's own iptables rules bypass host firewalls for published ports).
+# Secrets come from .env (copy .env.example); Compose refuses to start while a
+# required one is unset. Images are pinned by tag and digest.
+#
+# Usage:
+#   cp .env.example .env   # then set POSTGRES_PASSWORD and REDIS_PASSWORD
+#   docker compose up
 # =============================================================================
 
 services:
@@ -14,15 +24,16 @@ services:
       dockerfile: Dockerfile
     container_name: armature-azure-app
     ports:
-      - "80:80"
+      - "127.0.0.1:8080:80"
     environment:
       - PORT=80
       - RUST_LOG=debug
       - AZURE_FUNCTIONS_ENVIRONMENT=Development
       - WEBSITE_SITE_NAME=armature-app
-      - DATABASE_URL=postgres://armature:armature@postgres:5432/armature
-      - REDIS_URL=redis://redis:6379
-      # Azure Storage connection (Azurite)
+      - DATABASE_URL=postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres:5432/armature
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
+      # Azure Storage connection (Azurite). devstoreaccount1 and its key are
+      # Azurite's public, documented development credentials, not a secret.
       - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1
     depends_on:
       postgres:
@@ -32,7 +43,7 @@ services:
       azurite:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -42,13 +53,13 @@ services:
   # PostgreSQL Database
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     container_name: armature-postgres
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_USER=armature
-      - POSTGRES_PASSWORD=armature
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       - POSTGRES_DB=armature
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -62,10 +73,16 @@ services:
   # Redis Cache
   # ---------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     container_name: armature-redis
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -78,12 +95,12 @@ services:
   # Azurite - Azure Storage Emulator
   # ---------------------------------------------------------------------------
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0@sha256:647c63a91102a9d8e8000aab803436e1fc85fbb285e7ce830a82ee5d6661cf37
     container_name: armature-azurite
     ports:
-      - "10000:10000"  # Blob
-      - "10001:10001"  # Queue
-      - "10002:10002"  # Table
+      - "127.0.0.1:10000:10000"  # Blob
+      - "127.0.0.1:10001:10001"  # Queue
+      - "127.0.0.1:10002:10002"  # Table
     volumes:
       - azurite_data:/data
     command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
@@ -92,11 +109,11 @@ services:
   # Azure Cosmos DB Emulator (Optional - requires license acceptance)
   # ---------------------------------------------------------------------------
   # cosmos:
-  #   image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+  #   image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:<pin a version>
   #   container_name: armature-cosmos
   #   ports:
-  #     - "8081:8081"
-  #     - "10250-10256:10250-10256"
+  #     - "127.0.0.1:8081:8081"
+  #     - "127.0.0.1:10250-10256:10250-10256"
   #   environment:
   #     - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10
   #     - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
@@ -107,11 +124,11 @@ services:
   # Service Bus Emulator (Optional)
   # ---------------------------------------------------------------------------
   # servicebus:
-  #   image: azure/servicebus-emulator:latest
+  #   image: mcr.microsoft.com/azure-messaging/servicebus-emulator:<pin a version>
   #   container_name: armature-servicebus
   #   ports:
-  #     - "5672:5672"
-  #     - "5673:5673"
+  #     - "127.0.0.1:5672:5672"
+  #     - "127.0.0.1:5673:5673"
 
 volumes:
   postgres_data:

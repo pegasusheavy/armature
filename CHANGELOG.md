@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-17
+
+### Security
+
+- **Security-hardening release train (breaking).** A full audit of the
+  framework and its 65 crates turned up fail-open defaults in the request
+  pipeline, the auth stack and outbound clients. Every finding is fixed in the
+  crate that owns it and recorded in that crate's own `CHANGELOG.md`. The
+  highlights, which change behaviour for every application on default settings:
+  - Request paths are canonicalized once, before middleware, guards and
+    routing, on every transport; `//admin` no longer slips past a module guard,
+    and module guards attach to their own routes instead of a URL prefix.
+  - HTTP/2 connections no longer panic (hyper now has a timer); HTTP/3 runs
+    through the same guards, filters and CORS as TCP.
+  - Guards fail closed: authentication guards need a verified identity from
+    `JwtAuthMiddleware`, middleware runs before guards
+    (`Application::use_middleware`), refresh tokens are rejected as bearer
+    tokens, and `JwtConfig` has no default secret.
+  - Bounded resources by default: body inactivity deadline and minimum rate,
+    header-read and TLS-handshake timeouts, and a connection cap.
+  - Outbound requests (webhooks, `armature-http-client`, push) go through an
+    SSRF egress policy and don't follow redirects by default.
+  - Shared response caching no longer stores cookie-authenticated responses.
+- The crate is published as `armature-framework`; the crates.io crate named
+  `armature` is an unrelated project. Release notes and the website now give
+  `armature = { package = "armature-framework", version = "0.8" }`.
+
+### Added
+
+- `armature-framework` re-exports the guard, middleware and handler attribute
+  macros (`guard`, `use_guard`, `middleware`, `use_middleware`, `cache`,
+  `catch`, `timeout`, `body_limit`, `head`, `options`, `mcp`, `mcp_resource`,
+  the `Validate` derive, and the HTTP `QUERY` attribute as `query_method`), so
+  they import as `use armature::{guard, ...}` instead of from
+  `armature_proc_macro`.
+
+### Changed
+
+- Every sibling requirement moves to its new minor: 58 of the 66 crates are
+  bumped, either for their own fixes or because a dependency's public API
+  changed. The templates pin `armature-framework` 0.8 and `armature-core` 0.11.
+- `panic = "abort"` is gone from the `release-fat` and `pgo-use` profiles: a
+  server must survive a panic in one request task.
+- The published crate uses an `include` allowlist, so templates, docker
+  stacks, scripts and agent tooling are no longer packaged.
+- crates.io publishing is manual only; the release workflow creates the GitHub
+  release and nothing else, so the registry token never enters CI.
+- `Cargo.lock` is committed, and CI audits it with `cargo audit`,
+  `cargo deny --workspace` and a gitleaks secret scan. All workflow actions are
+  pinned to commit SHAs with least-privilege tokens.
+
 ## [0.7.0] - 2026-09-15
 
 ### Changed

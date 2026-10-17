@@ -7,6 +7,9 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -21,7 +24,12 @@ jobs:
   # from every dependency, thousands of files) as individual release assets,
   # which was both meaningless (nothing there was a real deliverable) and
   # unreliable (frequent transient network failures from the sheer number of
-  # uploads). The actual deliverable is the crates.io publish below.
+  # uploads).
+  #
+  # Publishing to crates.io is deliberately NOT done here: it runs manually from
+  # a maintainer machine via scripts/publish.sh. Keeping the registry token out
+  # of CI means no third-party action, cached `target/`, or dependency build
+  # script executed in CI can ever see it.
   # ============================================================================
 
   release:
@@ -30,61 +38,36 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
+      # The tag filter above admits only `vMAJOR.MINOR.PATCH`, so the derived
+      # values are digits and dots; they still go through env, never inline.
+      - name: Write release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          REQ="${VERSION%.*}"
+          cat > release-notes.md <<NOTES
+          # Armature ${TAG}
+
+          See the [CHANGELOG](https://github.com/quinnjr/armature/blob/main/CHANGELOG.md) and each crate's own CHANGELOG.md for details.
+
+          ## Installation
+
+          The crate is published as \`armature-framework\`; its library name is \`armature\`.
+          (The crates.io crate named \`armature\` is an unrelated project.)
+
+          \`\`\`toml
+          [dependencies]
+          armature = { package = "armature-framework", version = "${REQ}" }
+          \`\`\`
+          NOTES
 
       - name: Create Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           name: Release ${{ github.ref_name }}
-          body: |
-            # Armature ${{ github.ref_name }}
-
-            See [CHANGELOG.md](https://github.com/quinnjr/armature/blob/main/CHANGELOG.md) for details.
-
-            ## Installation
-
-            ```toml
-            [dependencies]
-            armature = "${{ github.ref_name }}"
-            ```
+          body_path: release-notes.md
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # ============================================================================
-  # PUBLISH TO CRATES.IO
-  # ============================================================================
-
-  publish:
-    name: Publish to crates.io
-    needs: release
-    runs-on: ubuntu-latest
-    # Required by both scripts/publish.sh and the final bare 'cargo publish' step below —
-    # both read this env var natively, neither takes an explicit --token flag.
-    env:
-      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-
-      # Publishes all workspace member crates in dependency-topological order
-      # (see scripts/publish.sh for the ordering logic and rate-limit handling).
-      - name: Publish workspace crates
-        run: ./scripts/publish.sh --yes
-
-      - name: Wait for crates.io indexing
-        run: sleep 60
-
-      # The workspace root is a mixed manifest: package name is "armature-framework"
-      # (the crates.io package), while [lib] name = "armature" is only the library's
-      # import name. It depends on the workspace member crates published above, so
-      # it must be published last.
-      - name: Publish armature-framework (root crate)
-        run: cargo publish -p armature-framework
-

@@ -521,7 +521,7 @@ worker.stop_with_timeout(Duration::from_secs(60)).await?;
 ### Using DI for Queue Service
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_queue::*;
 
 #[injectable]

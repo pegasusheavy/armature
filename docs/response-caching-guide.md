@@ -8,6 +8,7 @@ This guide covers HTTP response caching in Armature, including Cache-Control hea
 - [Features](#features)
 - [Cache-Control Headers](#cache-control-headers)
 - [In-Memory Response Cache](#in-memory-response-cache)
+- [What Gets Stored](#what-gets-stored)
 - [Cache Keys](#cache-keys)
 - [Request Extensions](#request-extensions)
 - [Response Extensions](#response-extensions)
@@ -39,7 +40,7 @@ Armature provides comprehensive HTTP response caching support:
 ### Parsing Cache-Control
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 let cc = CacheControl::parse("public, max-age=3600, must-revalidate");
 
@@ -52,7 +53,7 @@ assert!(cc.is_cacheable());
 ### Building Cache-Control
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 let cc = CacheControl::new()
@@ -66,7 +67,7 @@ assert_eq!(cc.to_header_value(), "public, max-age=3600, must-revalidate");
 ### Preset Configurations
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 // Never cache (no-store, no-cache)
@@ -105,7 +106,7 @@ let revalidate = CacheControl::revalidate(Duration::from_secs(60));
 ### Basic Usage
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 #[controller("/api")]
@@ -139,7 +140,7 @@ impl ApiController {
 ### Custom Configuration
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 let cache = ResponseCache::with_config(ResponseCacheConfig {
@@ -154,13 +155,14 @@ let cache = ResponseCache::with_config(ResponseCacheConfig {
 ### Cache Operations
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 async fn cache_operations(cache: &ResponseCache, request: &HttpRequest, response: &HttpResponse) {
-    // Store with default TTL
+    // Store using the response's own freshness (s-maxage, max-age, Expires,
+    // or `public` + the default TTL). Skipped if the response states none.
     cache.store(request, response).await;
 
-    // Store with custom TTL
+    // Store with a caller-chosen TTL (every other storage rule still applies)
     cache.store_with_ttl(request, response, Duration::from_secs(60)).await;
 
     // Get cached response
@@ -187,24 +189,64 @@ async fn cache_operations(cache: &ResponseCache, request: &HttpRequest, response
 }
 ```
 
+## What Gets Stored
+
+`ResponseCache` is a **shared** cache: one entry is served to every client
+that sends a matching request. To keep one user's response from reaching
+another, `store` and `store_with_ttl` refuse to store anything that could be
+per-user:
+
+| Rule | Effect |
+|------|--------|
+| Explicit freshness | `store` keeps a response only if it states its own lifetime: `Cache-Control: s-maxage`, then `max-age`, then `Expires` (relative to `Date`). A response that is only `public` gets `default_ttl`. A response with no freshness information is **not** stored (no heuristic freshness). |
+| `no-store` / `private` / `no-cache` | Never stored. |
+| `Authorization` request header | Stored only if the response is `public`, has `s-maxage`, or `must-revalidate`. |
+| `Cookie` request header, or a response that sets a cookie | Stored only if the response is explicitly `public`. |
+| `Set-Cookie` | Never kept in the stored headers, even for `public` responses. |
+| Method / status / size | Must be in `cacheable_methods` (GET, HEAD, QUERY), `cacheable_status_codes`, and under `max_body_size`. |
+
+Header checks are case-insensitive. `store_with_ttl` lets you choose the
+lifetime, but every other rule above still applies.
+
+```rust
+use armature::prelude::*;
+use std::time::Duration;
+
+async fn example(cache: &ResponseCache, request: &HttpRequest) -> Result<(), Error> {
+    // Not stored: no explicit freshness
+    let response = HttpResponse::ok().with_json(&"data")?;
+    cache.store(request, &response).await;
+
+    // Stored for 300s: explicit max-age
+    let response = HttpResponse::ok()
+        .with_json(&"data")?
+        .cache_public(Duration::from_secs(300));
+    cache.store(request, &response).await;
+    Ok(())
+}
+```
+
+`invalidate_prefix` matches the stored request path, not a substring of the
+rendered key.
+
 ## Cache Keys
 
 ### Automatic Key Generation
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 let request = HttpRequest::new("GET".into(), "/api/users".into());
 let key = request.cache_key();
 
-// Key includes: method, path, sorted query params
-println!("Key: {}", key);  // GET:/api/users
+// Key includes: method, path, sorted query params (length-prefixed)
+println!("Key: {}", key);  // GET:10:/api/users
 ```
 
 ### Keys with Vary Headers
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 let mut request = HttpRequest::new("GET".into(), "/api/users".into());
 request.headers.insert("Accept".into(), "application/json".into());
@@ -216,10 +258,15 @@ let key = request.cache_key_with_vary(&["Accept", "Accept-Language"]);
 // Different Accept values = different cache entries
 ```
 
+The path, query pairs and Vary names/values are length-prefixed in the
+rendered key, so a crafted header value or a decoded `&`/`=` in a query
+value cannot produce the same key as a different request. Treat the key
+format as opaque; it can change between releases.
+
 ### Cache with Vary Support
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 async fn get_with_vary(cache: &ResponseCache, request: &HttpRequest) -> Option<HttpResponse> {
     // Get with specific Vary headers
@@ -230,7 +277,7 @@ async fn get_with_vary(cache: &ResponseCache, request: &HttpRequest) -> Option<H
 ## Request Extensions
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn analyze_request(request: &HttpRequest) {
     // Get Cache-Control from request
@@ -258,7 +305,7 @@ fn analyze_request(request: &HttpRequest) {
 ## Response Extensions
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 fn build_cached_response() -> HttpResponse {
@@ -306,7 +353,7 @@ fn check_response_cacheability(response: &HttpResponse) {
 ### 1. Choose the Right Cache-Control
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 // Static assets - cache for a long time with immutable
@@ -341,7 +388,7 @@ fn sensitive_response() -> HttpResponse {
 ### 2. Use Vary Headers Correctly
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 fn content_negotiated_response() -> HttpResponse {
     HttpResponse::ok()
@@ -353,7 +400,7 @@ fn content_negotiated_response() -> HttpResponse {
 ### 3. Invalidate on Mutations
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[put("/users/:id")]
 async fn update_user(
@@ -374,7 +421,7 @@ async fn update_user(
 ### 4. Configure Cache Appropriately
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 // Small API responses
@@ -399,7 +446,7 @@ let file_cache = ResponseCache::with_config(
 ### Complete Cached API Endpoint
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 use std::sync::Arc;
 
@@ -467,7 +514,7 @@ impl ProductController {
 ### Cache Middleware Pattern
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::sync::Arc;
 
 struct CachingMiddleware {
@@ -507,7 +554,7 @@ impl CachingMiddleware {
 ### Versioned Static Assets
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 #[controller("/assets")]
@@ -539,6 +586,8 @@ impl AssetController {
 - ❌ Forgetting Vary headers with content negotiation
 - ❌ Not invalidating cache after mutations
 - ❌ Caching responses with no-store directive
+- ❌ Expecting `store` to cache a response that has no `max-age`/`s-maxage`/`Expires`/`public`
+- ❌ Expecting cookie-authenticated or cookie-setting responses to be cached without `public`
 
 - ✅ Use `private` for user-specific data
 - ✅ Include all negotiated headers in Vary
@@ -561,6 +610,7 @@ impl AssetController {
 3. **Invalidation** - Invalidate cache on mutations
 4. **TTL** - Set reasonable expiration times
 5. **Private data** - Use `private` or `no-store` for sensitive content
+6. **Explicit freshness** - `store` only keeps responses that state their own lifetime; `Set-Cookie` is never cached
 
 
 
@@ -568,7 +618,7 @@ impl AssetController {
 
 The IETF `QUERY` method (`#[query(...)]`) is a safe, idempotent read whose parameters
 travel in the request body. Because the body is what distinguishes one query from another,
-the response cache includes a hash of the request body in the cache key for `QUERY`
+the response cache includes a SHA-256 digest of the request body in the cache key for `QUERY`
 requests (it does not for other methods). `QUERY` is a cacheable method by default, so two
 `QUERY` requests to the same path with different bodies are cached and served as distinct
 entries, exactly as two GETs with different query strings would be.

@@ -61,7 +61,31 @@ Armature provides macros through three complementary crates:
 | `#[injectable]` | DI injectable | `#[injectable]` |
 | `#[timeout]` | Request timeout | `#[timeout(30)]` |
 | `#[body_limit]` | Body size limit | `#[body_limit("10mb")]` |
-| `#[cache]` | Result caching | `#[cache(ttl = 300)]` |
+| `#[cache]` | Result caching (see [cache keys](#cache-keys)) | `#[cache(ttl = 300)]` |
+| `#[guard]` | Guard instances (fn) / guard types (controller) | `#[guard(RolesGuard::new(vec!["admin".into()]))]` |
+| `#[use_guard]` | Guard types constructed with `Default` | `#[use_guard(MyGuard)]` |
+| `#[middleware]` | Middleware (fn or controller); controller middleware runs before controller guards | `#[middleware(LoggerMiddleware::new())]` |
+| `#[use_middleware]` | Middleware on a handler | `#[use_middleware(LoggerMiddleware::new())]` |
+
+Route attributes accept `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS` and
+`QUERY`; any other method is a compile error rather than a silent `GET`.
+
+#### Cache Keys
+
+`#[cache]` stores a function's `Ok` value (`Serialize + DeserializeOwned`). The default key
+names the module, `Self` type, function, attribute location and return type, followed by
+every argument as length-prefixed JSON, so every argument must implement `Serialize`. A
+custom `key = "..."` template must reference every argument and separate placeholders with
+a delimiter such as `:` (`key = "user:{tenant}:{id}"`); interpolated values are
+percent-escaped. Arguments bound to `_` or elided with `..` are compile errors. See the
+[Macros Guide](macros-guide.md#cache-and-cache-keys).
+
+#### Guards and Middleware Order
+
+Requests flow through middleware first, then guards, then the handler (global middleware →
+global guards → controller `#[middleware]` → controller `#[guard]` → handler). The built-in
+guards fail closed and need the verified identity an authentication middleware such as
+`armature_auth::JwtAuthMiddleware` attaches; see the [Use Guard Guide](use-guard-guide.md).
 
 ### Response Macros (armature-macros)
 
@@ -393,7 +417,6 @@ use armature_macros::prelude::*;
 ```rust
 #[timeout(30)]
 #[body_limit("5mb")]
-#[cache(ttl = 300)]
 #[post("/process")]
 async fn handler(req: HttpRequest) -> Result<HttpResponse, Error> {
     // Handler code

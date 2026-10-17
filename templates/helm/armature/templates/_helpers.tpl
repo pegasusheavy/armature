@@ -60,10 +60,41 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Return the proper image name
+Return the image reference. Fails loudly when no image is configured: the
+chart ships no default image (the project does not publish one, and a
+default pointing at a registry namespace nobody controls could be claimed by
+anyone). A digest wins over a tag; "latest" is refused.
 */}}
 {{- define "armature.image" -}}
-{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
-{{- printf "%s:%s" .Values.image.repository $tag }}
+{{- $repo := required "image.repository is required (the chart has no default image; use your own registry)" .Values.image.repository }}
+{{- if .Values.image.digest }}
+{{- if not (regexMatch "^sha256:[a-f0-9]{64}$" .Values.image.digest) }}
+{{- fail "image.digest must look like sha256:<64 lowercase hex chars>" }}
+{{- end }}
+{{- printf "%s@%s" $repo .Values.image.digest }}
+{{- else }}
+{{- $tag := required "set image.digest (preferred) or image.tag" .Values.image.tag }}
+{{- if eq $tag "latest" }}
+{{- fail "image.tag \"latest\" is not allowed; pin a version tag or, better, image.digest" }}
+{{- end }}
+{{- printf "%s:%s" $repo $tag }}
+{{- end }}
+{{- end }}
+
+{{/*
+Name of the Secret holding JWT_SECRET (and optionally DATABASE_URL /
+REDIS_URL): the user's existing Secret, or the one this chart creates.
+Fails when neither is configured, so JWT_SECRET can never be silently absent.
+*/}}
+{{- define "armature.secretName" -}}
+{{- if .Values.secrets.existingSecret }}
+{{- .Values.secrets.existingSecret }}
+{{- else }}
+{{- $jwt := required "secrets.jwtSecret is required (or set secrets.existingSecret); generate one with: openssl rand -hex 32" .Values.secrets.jwtSecret }}
+{{- if lt (len $jwt) 32 }}
+{{- fail "secrets.jwtSecret must be at least 32 characters; generate one with: openssl rand -hex 32" }}
+{{- end }}
+{{- printf "%s-secrets" (include "armature.fullname" .) }}
+{{- end }}
 {{- end }}
 

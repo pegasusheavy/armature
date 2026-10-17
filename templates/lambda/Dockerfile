@@ -12,7 +12,11 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder - Build with cargo-lambda
 # -----------------------------------------------------------------------------
-FROM rust:1.94-alpine AS builder
+# Base images are pinned by exact tag AND digest (Rust 1.99.1 >= the 1.94.1
+# MSRV on Alpine 3.24; the Lambda provided:al2023 runtime). The Lambda base
+# image is published under a floating tag, so the digest is what makes the
+# build reproducible; Dependabot's "docker" ecosystem proposes bumps.
+FROM rust:1.99.1-alpine3.24@sha256:557a94c82b485a14b569120e00867267108c734efe33f10cc31ca0cd5dd1eca9 AS builder
 
 WORKDIR /app
 
@@ -25,22 +29,22 @@ RUN apk add --no-cache \
     curl \
     gcc
 
-# Install cargo-lambda, pinned to a specific release (not "latest") to avoid
-# pulling an unvetted moving target on every future `docker build`.
-# TODO: update this pin periodically. Integrity is verified via the
-# CARGO_LAMBDA_SHA256 build-arg below when a checksum is supplied; look up
-# the current release's SHA256 on cargo-lambda's GitHub releases page and
-# pass it with `--build-arg CARGO_LAMBDA_SHA256=<hash>`.
-ARG CARGO_LAMBDA_VERSION=v1.8.3
-ARG CARGO_LAMBDA_SHA256=""
-RUN curl -sSL -o cargo-lambda.tar.gz "https://github.com/cargo-lambda/cargo-lambda/releases/download/${CARGO_LAMBDA_VERSION}/cargo-lambda-x86_64-unknown-linux-musl.tar.gz" \
-    && if [ -n "$CARGO_LAMBDA_SHA256" ]; then \
-         echo "${CARGO_LAMBDA_SHA256}  cargo-lambda.tar.gz" | sha256sum -c -; \
-       else \
-         echo "WARNING: CARGO_LAMBDA_SHA256 not set — skipping integrity check" >&2; \
-       fi \
-    && tar xz -C /usr/local/bin -f cargo-lambda.tar.gz \
-    && rm cargo-lambda.tar.gz
+# Install cargo-lambda: exact release, verified against a hardcoded SHA256.
+# The build FAILS if the download does not match -- there is no "skip the
+# check" path. To upgrade, change both values together, taking the hash from
+# the release's own .sha256 asset and re-computing it yourself, e.g.
+#   gh release download v1.9.2 -R cargo-lambda/cargo-lambda \
+#     -p 'cargo-lambda-v1.9.2.x86_64-unknown-linux-musl.tar.gz*'
+#   sha256sum cargo-lambda-v1.9.2.x86_64-unknown-linux-musl.tar.gz
+ARG CARGO_LAMBDA_VERSION=1.9.2
+ARG CARGO_LAMBDA_SHA256=b5c258c424ebaef39541c3641f33c51137ee6c426016f365628fedb2c737271d
+RUN set -eu \
+    && curl --proto '=https' --tlsv1.2 -fsSL -o cargo-lambda.tar.gz \
+         "https://github.com/cargo-lambda/cargo-lambda/releases/download/v${CARGO_LAMBDA_VERSION}/cargo-lambda-v${CARGO_LAMBDA_VERSION}.x86_64-unknown-linux-musl.tar.gz" \
+    && echo "${CARGO_LAMBDA_SHA256}  cargo-lambda.tar.gz" | sha256sum -c - \
+    && tar xzf cargo-lambda.tar.gz -C /usr/local/bin cargo-lambda \
+    && rm cargo-lambda.tar.gz \
+    && cargo lambda --version
 
 # Copy dependency files first (for caching)
 COPY Cargo.toml Cargo.lock* ./
@@ -57,7 +61,7 @@ RUN cargo lambda build --release --target x86_64-unknown-linux-musl
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime - AWS Lambda base image
 # -----------------------------------------------------------------------------
-FROM public.ecr.aws/lambda/provided:al2023 AS runtime
+FROM public.ecr.aws/lambda/provided:al2023@sha256:f42e771ae36a9d34ab2e594ef5860fff8ace80aff5ad7c75fca28c06cbc7c6d5 AS runtime
 
 # Note: no non-root USER is set here, unlike the Cloud Run Dockerfile.
 # The AWS Lambda "provided" base image's bootstrap/init process and Lambda
@@ -78,7 +82,7 @@ CMD ["bootstrap"]
 # Alternative: ARM64 (Graviton2) Build
 # =============================================================================
 # To build for ARM64, use:
-#   docker build --platform linux/arm64 -f Dockerfile.lambda-arm64 .
+#   docker buildx build --platform linux/arm64 -f Dockerfile.arm64 .
 #
 # Or use cargo-lambda with:
 #   cargo lambda build --release --arm64

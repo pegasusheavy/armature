@@ -26,7 +26,20 @@ function readField(field: string, fallback: string): string {
 }
 
 /** Version of the `armature-framework` facade crate. */
-export const FRAMEWORK_VERSION = readField('version', '0.4.0');
+export const FRAMEWORK_VERSION = readField('version', '0.8.0');
+
+/**
+ * Cargo requirement for depending on the facade. Pre-1.0 the minor version is
+ * the compatibility boundary, so `0.8.0` becomes `"0.8"`.
+ */
+export const DEPENDENCY_REQ = FRAMEWORK_VERSION.split('.').slice(0, 2).join('.');
+
+/**
+ * The `[dependencies]` line for the framework. The crate is published as
+ * `armature-framework` (`armature` on crates.io is someone else's crate), so a
+ * bare `armature = "…"` line would pull in an unrelated package.
+ */
+export const DEPENDENCY_LINE = `armature = { package = "armature-framework", version = "${DEPENDENCY_REQ}" }`;
 
 /** Minimum supported Rust version. */
 export const MSRV = readField('rust-version', '1.94.1');
