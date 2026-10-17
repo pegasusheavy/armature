@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-17
+
 ### Security
 
 - **Security-hardening release train (breaking).** A full audit of the
