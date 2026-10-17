@@ -384,7 +384,9 @@ async fn main() {
     println!();
 
     // Start server
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
 
     // Handle graceful shutdown
     let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel::<()>();
