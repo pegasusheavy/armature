@@ -45,9 +45,12 @@ Starter templates for building applications with the Armature framework.
    name = "my-project"
    ```
 
-3. Copy `.env.example` to `.env` and configure:
+3. Copy `.env.example` to `.env` and fill in the empty values. Secrets ship
+   empty on purpose; generate them (e.g. `JWT_SECRET` for `api-full`, which
+   refuses to start without one of at least 32 bytes):
    ```bash
    cp .env.example .env
+   openssl rand -hex 32   # paste into JWT_SECRET / *_PASSWORD
    ```
 
 4. Run the project:
@@ -77,7 +80,9 @@ Production-ready API template. Perfect for:
 - Enterprise applications
 
 Features:
-- JWT authentication
+- JWT authentication (required `JWT_SECRET`, no fallback)
+- Per-user authorization: users can only read/update/delete their own
+  account; admins can manage all accounts
 - Request validation
 - OpenAPI documentation
 - Structured logging
@@ -93,7 +98,7 @@ GraphQL API server. Perfect for:
 - APIs requiring flexible queries
 
 Features:
-- GraphQL Playground/GraphiQL
+- GraphQL Playground/GraphiQL (opt-in via `GRAPHQL_PLAYGROUND=true`)
 - Query, Mutation, Subscription support
 - Type-safe schema with async-graphql
 - Pagination patterns

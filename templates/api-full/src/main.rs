@@ -51,8 +51,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting Armature API (Full Template)");
 
-    // Load configuration
-    let config = AppConfig::from_env();
+    // Load configuration. A missing or too-short JWT_SECRET is fatal: there
+    // is no built-in fallback secret.
+    let config = match AppConfig::from_env() {
+        Ok(config) => config,
+        Err(e) => {
+            error!(error = %e, "invalid configuration");
+            std::process::exit(1);
+        }
+    };
 
     info!(host = %config.host, port = %config.port, "Configuration loaded");
 
@@ -105,9 +112,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  GET    /health/ready      - Readiness probe");
     println!("  POST   /api/auth/login    - Login");
     println!("  POST   /api/auth/register - Register");
-    println!("  GET    /api/users         - List users (auth required)");
-    println!("  GET    /api/users/:id     - Get user (auth required)");
-    println!("  DELETE /api/users/:id     - Delete user (auth required)");
+    println!("  GET    /api/users         - List users (admin only)");
+    println!("  GET    /api/users/:id     - Get user (self or admin)");
+    println!("  PATCH  /api/users/:id     - Update user (self or admin)");
+    println!("  DELETE /api/users/:id     - Delete user (self or admin)");
     println!();
 
     // Create application

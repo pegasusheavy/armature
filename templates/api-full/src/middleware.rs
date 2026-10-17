@@ -4,8 +4,11 @@ use crate::services::get_auth_service;
 use armature::prelude::*;
 use armature::{Middleware, Next};
 
-/// Requires a valid `Authorization: Bearer <token>` header.
+/// Requires a valid `Authorization: Bearer <token>` access token.
 ///
+/// On success the verified [`TokenClaims`](crate::models::TokenClaims) are
+/// attached to the request as an extension; handlers read them with
+/// `req.extension::<TokenClaims>()` to make ownership and role decisions.
 /// `UserController` wraps its handlers in this middleware (via a small
 /// `with_auth` helper) so every route it protects requires a valid JWT.
 #[derive(Default)]
@@ -22,7 +25,13 @@ impl Middleware for AuthMiddleware {
 
         match token {
             Some(t) => match get_auth_service().verify_token(&t) {
-                Ok(_claims) => next(req).await,
+                Ok(claims) => {
+                    // Hand the *verified* claims to the handler. Extensions
+                    // are server-side only, so a client cannot inject them.
+                    let mut req = req;
+                    req.insert_extension(claims);
+                    next(req).await
+                }
                 Err(e) => {
                     // Log the concrete failure (expired/invalid-signature/config
                     // error/etc.) server-side only — returning it to the client

@@ -13,6 +13,11 @@ pub struct AuthService {
     jwt_manager: JwtManager,
     password_hasher: PasswordHasher,
     token_expiry_secs: u64,
+    /// Hash of a random password nobody knows. Login verifies against it when
+    /// the email is unknown, so "no such user" costs the same Argon2 work as
+    /// "wrong password" and response timing does not reveal which emails
+    /// have accounts.
+    dummy_hash: String,
 }
 
 impl AuthService {
@@ -22,14 +27,28 @@ impl AuthService {
     /// invalid, so callers can log the concrete cause and shut down
     /// cleanly instead of crashing with an opaque `expect()` message.
     pub fn new(secret: String, expiry_hours: u64) -> Result<Self, JwtError> {
-        let jwt_config = JwtConfig::new(secret);
+        // `JwtConfig::new` rejects empty, short (< 32 bytes) and placeholder
+        // secrets, so a misconfigured deployment fails here at startup.
+        let jwt_config = JwtConfig::new(secret)?;
         let jwt_manager = JwtManager::new(jwt_config)?;
+        let password_hasher = PasswordHasher::default();
+        let dummy_hash = password_hasher
+            .hash(&uuid::Uuid::new_v4().simple().to_string())
+            .map_err(|e| JwtError::ConfigError(format!("failed to prepare dummy hash: {e}")))?;
 
         Ok(Self {
             jwt_manager,
-            password_hasher: PasswordHasher::default(),
+            password_hasher,
             token_expiry_secs: expiry_hours.saturating_mul(3600),
+            dummy_hash,
         })
+    }
+
+    /// Spend the same password-verification work as a real login attempt,
+    /// for a login whose email matched no account. Always returns `false`.
+    pub fn verify_password_for_unknown_user(&self, password: &str) -> bool {
+        let _ = self.verify_password(password, &self.dummy_hash);
+        false
     }
 
     /// Hash a password with Argon2.
@@ -69,11 +88,14 @@ impl AuthService {
         self.jwt_manager.sign(&claims).map_err(|e| e.to_string())
     }
 
-    /// Verify a JWT (with or without a leading `Bearer ` prefix) and return
-    /// its claims.
+    /// Verify an **access** token (with or without a leading `Bearer `
+    /// prefix) and return its claims. Refresh tokens are rejected.
     pub fn verify_token(&self, token: &str) -> Result<TokenClaims, String> {
         let token = token.trim_start_matches("Bearer ").trim();
-        let claims: TokenClaims = self.jwt_manager.verify(token).map_err(|e| e.to_string())?;
+        let claims: TokenClaims = self
+            .jwt_manager
+            .verify_access(token)
+            .map_err(|e| e.to_string())?;
         Ok(claims)
     }
 

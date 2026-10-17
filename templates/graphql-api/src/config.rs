@@ -15,14 +15,20 @@ pub struct AppConfig {
     /// mounted there.
     pub graphql_path: String,
     /// Gates the `/playground` controller: when `false` it returns 404
-    /// instead of serving GraphiQL.
+    /// instead of serving GraphiQL. Off unless `GRAPHQL_PLAYGROUND=true`.
     pub graphql_playground: bool,
     /// Enforced via `SchemaBuilder::limit_depth` when the schema is built.
     pub graphql_depth_limit: usize,
     /// Enforced via `SchemaBuilder::limit_complexity` when the schema is built.
     pub graphql_complexity_limit: usize,
-    pub jwt_secret: String,
 }
+
+// There is intentionally no `jwt_secret` here: this template does not
+// authenticate requests. If you add JWT auth, read `JWT_SECRET` as a
+// *required* variable (no fallback default — a default would ship in this
+// public template and let anyone forge tokens) and build the key with
+// `armature_jwt::JwtConfig::new(secret)?`, which rejects secrets shorter than
+// 32 bytes and known placeholders.
 
 impl AppConfig {
     /// Load configuration from environment variables
@@ -36,7 +42,7 @@ impl AppConfig {
             graphql_path: env::var("GRAPHQL_PATH").unwrap_or_else(|_| "/graphql".to_string()),
             graphql_playground: env::var("GRAPHQL_PLAYGROUND")
                 .map(|v| v.to_lowercase() == "true")
-                .unwrap_or(true),
+                .unwrap_or(false),
             graphql_depth_limit: env::var("GRAPHQL_DEPTH_LIMIT")
                 .ok()
                 .and_then(|d| d.parse().ok())
@@ -45,8 +51,6 @@ impl AppConfig {
                 .ok()
                 .and_then(|c| c.parse().ok())
                 .unwrap_or(100),
-            jwt_secret: env::var("JWT_SECRET")
-                .unwrap_or_else(|_| "default-secret-change-me".to_string()),
         }
     }
 }
