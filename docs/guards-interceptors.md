@@ -89,7 +89,7 @@ Verifies a JWT bearer token and attaches the caller's identity so the guards can
 Register it globally with `Application::use_middleware` so it runs before every guard:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_auth::JwtAuthMiddleware;
 use armature_jwt::{JwtConfig, JwtManager};
 
@@ -121,7 +121,7 @@ A bare `Authorization: Bearer …` header is **not** consulted; without a verifi
 the guard returns `Error::Unauthorized` (`401`).
 
 ```rust
-use armature_framework::{AuthenticationGuard, Guard, GuardContext, HttpRequest, VerifiedIdentity};
+use armature::{AuthenticationGuard, Guard, GuardContext, HttpRequest, VerifiedIdentity};
 
 // A forged header alone is rejected.
 let mut forged = HttpRequest::new("GET", "/me");
@@ -140,7 +140,7 @@ Requires a verified `RequestRoles` extension containing at least one of the list
 Missing roles or no matching role is `Error::Forbidden` (`403`).
 
 ```rust
-use armature_framework::{Guard, GuardContext, RolesGuard};
+use armature::{Guard, GuardContext, RolesGuard};
 
 let guard = RolesGuard::new(vec!["admin".to_string(), "moderator".to_string()]);
 let context = GuardContext::new(request);
@@ -162,7 +162,7 @@ constant time, so response timing does not reveal which key a guess shares a pre
 Load keys from configuration, and use long random values.
 
 ```rust
-use armature_framework::{ApiKeyGuard, Guard, GuardContext};
+use armature::{ApiKeyGuard, Guard, GuardContext};
 
 let valid_keys: Vec<String> = std::env::var("API_KEYS")?
     .split(',')
@@ -189,7 +189,7 @@ curl http://localhost:3000/api/data \
 Create custom guards by implementing the `Guard` trait:
 
 ```rust
-use armature_framework::{Guard, GuardContext, Error};
+use armature::{Guard, GuardContext, Error};
 use async_trait::async_trait;
 use std::net::IpAddr;
 
@@ -230,7 +230,7 @@ impl Guard for IpAllowlistGuard {
 For simpler cases, use `CustomGuard`:
 
 ```rust
-use armature_framework::{CustomGuard, GuardContext, Error};
+use armature::{CustomGuard, GuardContext, Error};
 use chrono::Datelike;
 
 let guard = CustomGuard::new(|_context: &GuardContext| {
@@ -253,8 +253,8 @@ group's prefix, middleware and guards are bound to each route, so they run howev
 client spells the path (`/api/protected`, `//api/protected`, ...):
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{AuthenticationGuard, RouteGroup, Router};
+use armature::prelude::*;
+use armature::{AuthenticationGuard, RouteGroup, Router};
 
 async fn protected(_req: HttpRequest) -> Result<HttpResponse, Error> {
     HttpResponse::ok().with_json(&serde_json::json!({ "data": "protected data" }))
@@ -273,7 +273,7 @@ RouteGroup::new()
 All guards in a group must pass; they run in the order added:
 
 ```rust
-use armature_framework::{AuthenticationGuard, RolesGuard, RouteGroup};
+use armature::{AuthenticationGuard, RolesGuard, RouteGroup};
 
 RouteGroup::new()
     .prefix("/api/admin")
@@ -315,7 +315,7 @@ let app = Application::try_create::<AppModule>().await?;
 Logs all incoming requests and outgoing responses with timing.
 
 ```rust
-use armature_framework::{Interceptor, LoggingInterceptor, ExecutionContext};
+use armature::{Interceptor, LoggingInterceptor, ExecutionContext};
 
 let interceptor = LoggingInterceptor;
 
@@ -329,7 +329,7 @@ let interceptor = LoggingInterceptor;
 Transforms responses using a custom function.
 
 ```rust
-use armature_framework::{Interceptor, TransformInterceptor, HttpResponse};
+use armature::{Interceptor, TransformInterceptor, HttpResponse};
 
 let interceptor = TransformInterceptor::new(|mut response| {
     // Add custom header to all responses
@@ -346,7 +346,7 @@ let interceptor = TransformInterceptor::new(|mut response| {
 Caches responses for a specified TTL (Time To Live).
 
 ```rust
-use armature_framework::{Interceptor, CacheInterceptor};
+use armature::{Interceptor, CacheInterceptor};
 
 let interceptor = CacheInterceptor::new(60); // Cache for 60 seconds
 ```
@@ -356,7 +356,7 @@ let interceptor = CacheInterceptor::new(60); // Cache for 60 seconds
 Create custom interceptors by implementing the `Interceptor` trait:
 
 ```rust
-use armature_framework::{Interceptor, ExecutionContext, HttpResponse, Error};
+use armature::{Interceptor, ExecutionContext, HttpResponse, Error};
 use async_trait::async_trait;
 use std::future::Future;
 use std::pin::Pin;
@@ -398,7 +398,7 @@ impl Interceptor for CompressionInterceptor {
 #### Metrics Interceptor Example
 
 ```rust
-use armature_framework::{Interceptor, ExecutionContext, HttpResponse, Error};
+use armature::{Interceptor, ExecutionContext, HttpResponse, Error};
 use async_trait::async_trait;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -451,7 +451,7 @@ impl Interceptor for MetricsInterceptor {
 Currently, interceptors need to be manually applied within route handlers. A more integrated approach (similar to NestJS's `@UseInterceptors()`) can be added to the macro system in the future.
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 async fn get_data(req: HttpRequest) -> Result<HttpResponse, Error> {
     // Simulate interceptor logging
@@ -477,8 +477,8 @@ Here's a complete example: a JWT authentication middleware registered globally, 
 route, an authenticated route, and an admin-only route.
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{AuthenticationGuard, RolesGuard, RouteGroup, Router};
+use armature::prelude::*;
+use armature::{AuthenticationGuard, RolesGuard, RouteGroup, Router};
 use armature_auth::JwtAuthMiddleware;
 use armature_jwt::{JwtConfig, JwtManager};
 use serde::Serialize;

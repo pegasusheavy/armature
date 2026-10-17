@@ -443,7 +443,7 @@ spec:
 ### 4. Configure Graceful Shutdown
 
 ```rust
-use armature_framework::shutdown::GracefulShutdown;
+use armature::shutdown::GracefulShutdown;
 use tokio::signal;
 
 async fn shutdown_signal() {

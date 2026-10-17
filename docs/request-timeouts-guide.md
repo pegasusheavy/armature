@@ -54,7 +54,7 @@ cannot be used to make the server buffer bodies.
 ### Default Configuration
 
 ```rust,ignore
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Error> {
 
 ```rust,ignore
 use armature_core::{BodyReadPolicy, pipeline::PipelineConfig};
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 #[tokio::main]
@@ -259,7 +259,7 @@ you run. Never trust the leftmost `X-Forwarded-For` entry.
 
 ```rust,ignore
 use armature_core::{BodyReadPolicy, pipeline::PipelineConfig};
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::time::Duration;
 
 #[tokio::main]

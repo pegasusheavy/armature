@@ -295,7 +295,7 @@ spec:
 ### Response Compression
 
 ```rust
-use armature_framework::compression::CompressionConfig;
+use armature::compression::CompressionConfig;
 
 let config = CompressionConfig::default()
     .gzip(true)
@@ -339,7 +339,7 @@ impl UserController {
 ### Key Metrics
 
 ```rust
-use armature_framework::metrics::{counter, histogram};
+use armature::metrics::{counter, histogram};
 
 // Track request rate
 counter!("http_requests_total", "endpoint" => path);

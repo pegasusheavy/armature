@@ -429,7 +429,7 @@ value is not echoed in the error.
 ### Middleware Approach
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_session::*;
 
 pub struct SessionMiddleware {

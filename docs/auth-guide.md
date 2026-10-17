@@ -36,7 +36,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.7", features = ["auth"] }
+armature = { package = "armature-framework", version = "0.7", features = ["auth"] }
 ```
 
 The `auth` feature automatically includes `armature-jwt`.
@@ -745,7 +745,7 @@ verified `UserContext` from the request:
 
 ```rust
 use armature_auth::{AuthGuard, JwtAuthMiddleware, RoleGuard, UserContext};
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[controller("/admin")]
 #[guard(RoleGuard::any(vec!["admin".to_string()]))]

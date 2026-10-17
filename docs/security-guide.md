@@ -43,7 +43,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.7", features = ["security"] }
+armature = { package = "armature-framework", version = "0.7", features = ["security"] }
 ```
 
 ## Quick Start
@@ -55,7 +55,7 @@ Global middleware runs in registration order, before any guard and handler,
 so the headers are applied to every response, including guard rejections:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_security::SecurityMiddleware;
 
 #[module(
@@ -79,8 +79,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Full Application Example
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{LoggerMiddleware, CorsMiddleware};
+use armature::prelude::*;
+use armature::{LoggerMiddleware, CorsMiddleware};
 use armature_security::{
     SecurityMiddleware,
     content_security_policy::CspConfig,
@@ -498,8 +498,8 @@ Main security middleware struct.
 ### Complete Application with Middleware Chain
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{
+use armature::prelude::*;
+use armature::{
     LoggerMiddleware, CorsMiddleware, RequestIdMiddleware, TimeoutMiddleware
 };
 use armature_security::{
@@ -593,7 +593,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### API-Only Configuration (Minimal)
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_security::{SecurityMiddleware, frame_guard::FrameGuard};
 
 // For API servers that don't serve HTML, the always-safe baseline is enough

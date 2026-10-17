@@ -375,7 +375,7 @@ if let Some(refresh_token) = token.refresh_token.clone() {
 ## Complete Example
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_auth::providers::{GoogleConfig, GoogleProvider};
 use armature_auth::{OAuth2Provider, PendingAuth, UserContext};
 use armature_session::{RedisSessionStore, SessionStore};

@@ -90,7 +90,7 @@ The `HttpStatus` enum provides type-safe access to all standard HTTP status code
 ### HttpStatus Methods
 
 ```rust
-use armature_framework::HttpStatus;
+use armature::HttpStatus;
 
 let status = HttpStatus::Ok;
 
@@ -119,7 +119,7 @@ The `Error` enum provides typed error variants for all common HTTP error scenari
 ### 4xx Client Error Variants
 
 ```rust
-use armature_framework::Error;
+use armature::Error;
 
 // Validation errors
 Error::BadRequest("Invalid input".to_string())
@@ -144,7 +144,7 @@ Error::ImATeapot("Easter egg!".to_string())
 ### 5xx Server Error Variants
 
 ```rust
-use armature_framework::Error;
+use armature::Error;
 
 // General server errors
 Error::Internal("Unexpected error".to_string())
@@ -162,7 +162,7 @@ Error::NotImplemented("Feature coming soon".to_string())
 ### Error Methods
 
 ```rust
-use armature_framework::Error;
+use armature::Error;
 
 let error = Error::NotFound("User not found".to_string());
 
@@ -182,8 +182,8 @@ assert!(!error.is_server_error());
 ### Basic Error Handling
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{Error, HttpStatus};
+use armature::prelude::*;
+use armature::{Error, HttpStatus};
 
 #[controller("/api")]
 struct UserController;
@@ -222,8 +222,8 @@ impl UserController {
 ### Custom Error Responses
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{Error, HttpStatus};
+use armature::prelude::*;
+use armature::{Error, HttpStatus};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -267,8 +267,8 @@ router.add_route(Route {
 ### Rate Limiting Example
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::Error;
+use armature::prelude::*;
+use armature::Error;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -307,8 +307,8 @@ impl RateLimiter {
 ### Service Unavailable Example
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::Error;
+use armature::prelude::*;
+use armature::Error;
 
 #[injectable]
 struct HealthChecker {
@@ -353,8 +353,8 @@ router.add_route(Route {
 ### All Status Codes Example
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{Error, HttpStatus};
+use armature::prelude::*;
+use armature::{Error, HttpStatus};
 
 #[controller("/api")]
 struct ItemController {

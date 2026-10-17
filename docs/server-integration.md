@@ -451,7 +451,7 @@ ferron-core = "0.1" # hypothetical
 
 // main.rs
 use ferron_core::Server as FerronServer;
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -42,8 +42,8 @@ application. `Application::use_middleware` adds global middleware, run in the or
 (first = outermost):
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::{LoggingMiddleware, RequestIdMiddleware};
+use armature::prelude::*;
+use armature::{LoggingMiddleware, RequestIdMiddleware};
 use armature_auth::JwtAuthMiddleware;
 use armature_jwt::{JwtConfig, JwtManager};
 
@@ -84,7 +84,7 @@ running for already-authorized requests must check authorization itself.
 Apply a single middleware to a route:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware};
 
@@ -102,7 +102,7 @@ async fn get_users(req: HttpRequest) -> Result<HttpResponse, Error> {
 Middleware can be configured inline:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::use_middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, CorsMiddleware};
 
@@ -118,7 +118,7 @@ async fn get_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 Chain multiple middleware together by separating them with commas:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::use_middleware;
 use armature_core::{
     HttpRequest, HttpResponse, Error,
@@ -148,7 +148,7 @@ Middleware executes in the order specified:
 Apply middleware to all routes in a controller using the `#[middleware]` decorator:
 
 ```rust
-use armature_framework::{controller, get, post};
+use armature::{controller, get, post};
 use armature_proc_macro::middleware;
 use armature_core::{HttpRequest, HttpResponse, Error, LoggerMiddleware, CorsMiddleware};
 
@@ -194,7 +194,7 @@ arguments are expressions evaluated once when the routes are registered.)
 Route-level middleware adds to controller-level middleware:
 
 ```rust
-use armature_framework::{controller, get};
+use armature::{controller, get};
 use armature_proc_macro::{middleware, use_middleware};
 use armature_core::{
     HttpRequest, HttpResponse, Error,
@@ -311,7 +311,7 @@ impl Middleware for AuthMiddleware {
 Use your custom middleware:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::use_middleware;
 use my_app::AuthMiddleware;
 

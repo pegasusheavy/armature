@@ -98,7 +98,7 @@ Use for examples that require external resources:
 /// # Examples
 ///
 /// ```no_run
-/// use armature_framework::prelude::*;
+/// use armature::prelude::*;
 ///
 /// #[module()]
 /// #[derive(Default)]

@@ -66,7 +66,7 @@ authentication layer has verified a credential and attached an identity extensio
 Register it globally so it runs before every guard:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_auth::JwtAuthMiddleware;
 use armature_jwt::{JwtConfig, JwtManager};
 
@@ -90,7 +90,7 @@ The guard attributes live in `armature_proc_macro`.
 its own value:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::guard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::AuthenticationGuard};
 
@@ -110,7 +110,7 @@ the type must implement `Default` (`AuthenticationGuard`, `RolesGuard` and `ApiK
 not; use `#[guard(...)]` for them):
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::use_guard;
 
 #[derive(Default)]
@@ -141,7 +141,7 @@ async fn admin_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
 Chain multiple guards - all must pass:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::guard;
 use armature_core::{
     HttpRequest, HttpResponse, Error, RequestRoles,
@@ -184,7 +184,7 @@ async fn premium_content(req: HttpRequest) -> Result<HttpResponse, Error> {
 Use `#[guard(...)]` for guards that need configuration:
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::guard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::ApiKeyGuard};
 
@@ -207,7 +207,7 @@ async fn api_data(req: HttpRequest) -> Result<HttpResponse, Error> {
 ### Combining Guards
 
 ```rust
-use armature_framework::get;
+use armature::get;
 use armature_proc_macro::guard;
 use armature_core::{
     HttpRequest, HttpResponse, Error,
@@ -232,7 +232,7 @@ takes guard *types* constructed with `Default`, so use a guard that implements i
 attaches):
 
 ```rust
-use armature_framework::{controller, get, post};
+use armature::{controller, get, post};
 use armature_proc_macro::guard;
 use armature_auth::AuthGuard;
 use armature_core::{HttpRequest, HttpResponse, Error};
@@ -266,7 +266,7 @@ impl UserController {
 Route guards add to controller guards:
 
 ```rust
-use armature_framework::{controller, get};
+use armature::{controller, get};
 use armature_proc_macro::guard;
 use armature_auth::AuthGuard;
 use armature_core::{HttpRequest, HttpResponse, Error, guard::RolesGuard};

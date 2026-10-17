@@ -200,7 +200,7 @@ All documentation examples must:
 For examples that compile but shouldn't execute:
 ```rust
 /// ```no_run
-/// use armature_framework::prelude::*;
+/// use armature::prelude::*;
 /// let app = Application::create::<AppModule>().await;
 /// app.listen(3000).await.unwrap();
 /// ```

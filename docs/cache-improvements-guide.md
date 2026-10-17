@@ -13,7 +13,7 @@ Advanced caching features for Armature including tag-based invalidation, multi-t
 
 ## Overview
 
-Armature's cache improvements provide enterprise-grade caching capabilities:
+Armature's cache improvements provide these caching capabilities:
 
 - ✅ **Tag-Based Invalidation** - Bulk cache invalidation using tags
 - ✅ **Multi-Tier Caching** - L1 (in-memory) + L2 (distributed) layers

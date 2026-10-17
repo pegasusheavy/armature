@@ -65,7 +65,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.7", features = ["opentelemetry"] }
+armature = { package = "armature-framework", version = "0.7", features = ["opentelemetry"] }
 
 # Choose exporters (available features: "otlp" [default], "zipkin", "full")
 armature-opentelemetry = { version = "0.5", features = ["otlp", "zipkin"] }
@@ -74,7 +74,7 @@ armature-opentelemetry = { version = "0.5", features = ["otlp", "zipkin"] }
 ### Basic Setup
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_opentelemetry::*;
 
 #[module()]
@@ -602,8 +602,8 @@ let telemetry = TelemetryBuilder::new("my-service")
 ### Complete Application
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::armature_opentelemetry::*;
+use armature::prelude::*;
+use armature::armature_opentelemetry::*;
 
 #[derive(Clone)]
 #[injectable]

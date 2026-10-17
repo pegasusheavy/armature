@@ -91,7 +91,7 @@ Never commit real values. Load secrets from your platform's secret store.
 ### Configuration Files
 
 ```rust
-use armature_framework::config::{Config, Environment};
+use armature::config::{Config, Environment};
 
 let config = Config::builder()
     .add_source(Environment::with_prefix("APP"))
@@ -199,7 +199,7 @@ impl HealthController {
 ### Prometheus Metrics
 
 ```rust
-use armature_framework::metrics::{MetricsConfig, PrometheusExporter};
+use armature::metrics::{MetricsConfig, PrometheusExporter};
 
 let metrics = MetricsConfig::default()
     .enable_prometheus("/metrics")
@@ -209,7 +209,7 @@ let metrics = MetricsConfig::default()
 ### OpenTelemetry
 
 ```rust
-use armature_framework::telemetry::{TelemetryConfig, OtlpExporter};
+use armature::telemetry::{TelemetryConfig, OtlpExporter};
 
 let telemetry = TelemetryConfig::default()
     .with_traces(OtlpExporter::new("http://jaeger:4317"))
