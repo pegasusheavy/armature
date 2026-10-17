@@ -32,9 +32,21 @@ impl AuthUser for User {
     }
 
     fn has_permission(&self, _permission: &str) -> bool {
-        // Implement based on your permission system
-        true
+        // Wire this to your permission system. Fail closed until you do:
+        // granting every permission by default is an authorization bypass.
+        false
     }
+}
+
+/// `JWT_SECRET` from the environment, or — for this demo only — a random
+/// 32-byte secret generated at startup and printed. Never hardcode it.
+fn jwt_secret() -> String {
+    std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        let bytes: [u8; 32] = rand::random();
+        let secret: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+        println!("   JWT_SECRET is not set; generated a random demo secret: {secret}");
+        secret
+    })
 }
 
 fn main() {
@@ -43,7 +55,8 @@ fn main() {
 
     // 1. Setup Authentication Service
     println!("1. Setting up authentication service...");
-    let jwt_config = JwtConfig::new("your-secret-key-change-in-production".to_string())
+    let jwt_config = JwtConfig::new(jwt_secret())
+        .expect("JWT_SECRET must be at least 32 random bytes")
         .with_expiration(Duration::from_secs(3600))
         .with_issuer("armature-app".to_string());
 

@@ -29,31 +29,17 @@
 //! # Test the signed-request endpoint WITHOUT a signature -> rejected (401)
 //! curl -i -X POST http://localhost:3000/api/secure -d '{"test":"data"}'
 //!
-//! # Test the signed-request endpoint WITH a valid signature -> succeeds
-//! #
-//! # Option A: use the demo helper endpoint, which computes a real HMAC-SHA256
-//! # signature using the server's own signing secret (convenient for local testing,
-//! # but obviously only possible here because it's *our* demo server):
-//! SIG_JSON=$(curl -s http://localhost:3000/generate-signature)
-//! SIGNATURE=$(echo "$SIG_JSON" | jq -r '.headers["X-Signature"]')
-//! TIMESTAMP=$(echo "$SIG_JSON" | jq -r '.headers["X-Timestamp"]')
+//! # Test the signed-request endpoint WITH a valid signature -> succeeds.
+//! # The server reads SIGNING_SECRET (at least 32 bytes) from the environment;
+//! # without it, it generates a random one at startup and prints it. A client
+//! # computes the signature itself with the shared secret -- this example does
+//! # that in its `sign` mode, which prints ready-to-use headers:
+//! export SIGNING_SECRET=...   # the value the server printed or was given
+//! cargo run --example security_advanced -- sign POST /api/secure '{"test":"data"}'
 //! curl -i -X POST http://localhost:3000/api/secure \
-//!   -H "X-Signature: $SIGNATURE" \
-//!   -H "X-Timestamp: $TIMESTAMP" \
+//!   -H "X-Signature: <printed signature>" \
+//!   -H "X-Timestamp: <printed timestamp>" \
 //!   -d '{"test":"data"}'
-//!
-//! # Option B: compute the HMAC yourself with openssl, exactly like a real API
-//! # client would (no server help involved). The signed message is
-//! # "{METHOD}:{PATH}:{BODY}:{TIMESTAMP}", HMAC-SHA256'd with the shared secret:
-//! SECRET="super-secret-key-change-in-production"
-//! BODY='{"test":"data"}'
-//! TIMESTAMP=$(date +%s)
-//! MESSAGE="POST:/api/secure:${BODY}:${TIMESTAMP}"
-//! SIGNATURE=$(printf '%s' "$MESSAGE" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/^.* //')
-//! curl -i -X POST http://localhost:3000/api/secure \
-//!   -H "X-Signature: $SIGNATURE" \
-//!   -H "X-Timestamp: $TIMESTAMP" \
-//!   -d "$BODY"
 //! ```
 //!
 //! Note: this example predates the controller-macro style used elsewhere in
@@ -71,11 +57,30 @@ use armature_security::hsts::HstsConfig;
 use armature_security::request_signing::{RequestSigner, RequestVerifier, SigningError};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// Shared secret used to sign and verify requests.
-///
-/// In production, load this from an environment variable or secrets
-/// manager — never hardcode it.
-const SIGNING_SECRET: &str = "super-secret-key-change-in-production";
+/// Shared secret used to sign and verify requests, loaded once at startup
+/// (see [`load_signing_secret`]). Never hardcode it.
+static SIGNING_SECRET: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
+fn signing_secret() -> &'static str {
+    SIGNING_SECRET
+        .get()
+        .expect("signing secret is initialized in main")
+}
+
+/// `SIGNING_SECRET` from the environment, or — for this demo only — a fresh
+/// random 32-byte secret, printed so a client can be pointed at it.
+fn load_signing_secret() -> String {
+    match std::env::var("SIGNING_SECRET") {
+        Ok(secret) => secret,
+        Err(_) => {
+            let bytes: [u8; 32] = rand::random();
+            let secret: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
+            println!("SIGNING_SECRET is not set; generated a random demo secret:");
+            println!("  export SIGNING_SECRET={secret}");
+            secret
+        }
+    }
+}
 
 /// CORS configuration shared by the preflight (`OPTIONS /api/users`) and
 /// data (`GET /api/users`) routes below.
@@ -85,7 +90,8 @@ fn cors_config() -> CorsConfig {
         .allow_origin("https://app.example.com")
         .allow_origin("https://admin.example.com")
         // Allow regex pattern for subdomains
-        .allow_origin_regex(r"https://.*\.mydomain\.com")
+        // Allow one subdomain label (the pattern is anchored; never use `.*`)
+        .allow_origin_regex(r"https://[a-z0-9-]+\.mydomain\.com")
         .unwrap()
         // Allowed methods
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH"])
@@ -142,6 +148,7 @@ fn security_config() -> SecurityMiddleware {
 
     SecurityMiddleware::new()
         .with_csp(csp)
+        .expect("the CSP above is valid")
         .with_hsts(hsts)
         .with_frame_guard(FrameGuard::Deny)
         .hide_powered_by(true)
@@ -149,7 +156,7 @@ fn security_config() -> SecurityMiddleware {
 
 /// Verifier used to *actually* check signatures on `POST /api/secure`.
 fn verifier() -> RequestVerifier {
-    RequestVerifier::new(SIGNING_SECRET)
+    RequestVerifier::new(signing_secret()).expect("secret is validated at startup")
 }
 
 /// OPTIONS handler for CORS preflight.
@@ -188,8 +195,8 @@ async fn secure_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
         }))?),
         Ok(false) => Err(Error::Unauthorized("Invalid request signature".to_string())),
         Err(SigningError::RequestExpired) => Err(Error::Unauthorized(
-            "Request expired (replay protection). Generate a fresh signature via \
-             GET /generate-signature."
+            "Request expired (replay protection). Sign the request again with a \
+             fresh timestamp."
                 .to_string(),
         )),
         Err(SigningError::MissingSignature) => Err(Error::Unauthorized(
@@ -203,33 +210,6 @@ async fn secure_endpoint(req: HttpRequest) -> Result<HttpResponse, Error> {
             e
         ))),
     }
-}
-
-/// Generate signature helper endpoint (demo/testing convenience only — a
-/// real client would compute this signature itself using the shared
-/// secret, as shown in the module docs above).
-#[use_middleware(security_config())]
-async fn generate_signature(_req: HttpRequest) -> Result<HttpResponse, Error> {
-    let signer = RequestSigner::new(SIGNING_SECRET);
-
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-
-    let signature = signer.sign("POST", "/api/secure", "{\"test\":\"data\"}", timestamp);
-
-    Ok(HttpResponse::ok().with_json(&serde_json::json!({
-        "message": "Use these headers for signed request",
-        "headers": {
-            "X-Signature": signature,
-            "X-Timestamp": timestamp
-        },
-        "example_curl": format!(
-            "curl -X POST http://localhost:3000/api/secure -H 'X-Signature: {}' -H 'X-Timestamp: {}' -d '{{\"test\":\"data\"}}'",
-            signature, timestamp
-        )
-    }))?)
 }
 
 /// Home endpoint with all security info.
@@ -246,8 +226,7 @@ async fn home(_req: HttpRequest) -> Result<HttpResponse, Error> {
         "endpoints": {
             "OPTIONS /api/users": "CORS preflight",
             "GET /api/users": "CORS-enabled API",
-            "POST /api/secure": "Signed requests only",
-            "GET /generate-signature": "Get signature for testing"
+            "POST /api/secure": "Signed requests only"
         },
         "cors_config": {
             "allowed_origins": [
@@ -269,6 +248,27 @@ async fn home(_req: HttpRequest) -> Result<HttpResponse, Error> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // `sign METHOD PATH BODY`: act as a client and print signed headers.
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.first().map(String::as_str) == Some("sign") {
+        let [_, method, path, body] = args.as_slice() else {
+            return Err("usage: security_advanced sign METHOD PATH BODY".into());
+        };
+        let secret = std::env::var("SIGNING_SECRET")
+            .map_err(|_| "set SIGNING_SECRET to the server's signing secret")?;
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+        let signature = RequestSigner::new(secret)?.sign(method, path, body.as_bytes(), timestamp);
+        println!("X-Signature: {signature}");
+        println!("X-Timestamp: {timestamp}");
+        return Ok(());
+    }
+
+    // Load and validate the signing secret before serving anything.
+    let secret = load_signing_secret();
+    RequestVerifier::new(&secret)
+        .map_err(|e| format!("SIGNING_SECRET is unusable ({e}); use at least 32 bytes"))?;
+    SIGNING_SECRET.set(secret).expect("set once");
+
     // Initialize logging
     let _guard = LogConfig::default().init();
 
@@ -323,13 +323,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     router.add_route(Route {
         method: HttpMethod::GET,
-        path: "/generate-signature".to_string(),
-        handler: handler(generate_signature),
-        constraints: None,
-    });
-
-    router.add_route(Route {
-        method: HttpMethod::GET,
         path: "/".to_string(),
         handler: handler(home),
         constraints: None,
@@ -354,11 +347,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("  curl -i http://localhost:3000/");
     info!("\n  # Unsigned POST to /api/secure -> rejected with 401");
     info!("  curl -i -X POST http://localhost:3000/api/secure -d '{{\"test\":\"data\"}}'");
-    info!("\n  # Get a real HMAC-SHA256 signature for testing");
-    info!("  curl http://localhost:3000/generate-signature");
-    info!("\n  # ...then POST with the returned X-Signature/X-Timestamp headers -> 200 OK");
-    info!("  # (see the module doc comment at the top of this file for a full example");
-    info!("  #  using either the helper endpoint or `openssl dgst -hmac`)");
+    info!("\n  # Sign a request as a client (same SIGNING_SECRET), then POST it");
+    info!(
+        "  cargo run --example security_advanced -- sign POST /api/secure '{{\"test\":\"data\"}}'"
+    );
+    info!("  # ...POST with the printed X-Signature/X-Timestamp headers -> 200 OK");
     info!("\nPress Ctrl+C to stop\n");
 
     app.listen(3000).await?;
