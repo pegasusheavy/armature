@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { styleAttr } from '../lib/csp';
 
 interface RoadmapItem {
   feature: string;
@@ -1444,14 +1445,15 @@ function titlecase(value: string): string {
         <div class="bg-stone-800/50 rounded-xl p-6 border border-stone-700 max-w-xl">
           <div class="flex items-center justify-between mb-3">
             <span class="text-lg font-semibold text-white">Overall Progress</span>
-            <span class="text-2xl font-bold text-emerald-400">{completedIn(categories)}/{totalIn(categories)}</span>
+            <span class="text-2xl font-bold text-emerald-400">
+              {completedIn(categories)}/{totalIn(categories)}
+            </span>
           </div>
           <div class="w-full bg-stone-700 rounded-full h-3 mb-2">
             <div
               class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-3 rounded-full transition-all duration-500"
-              style={`width: ${(completedIn(categories) / totalIn(categories)) * 100}%`}
-            >
-            </div>
+              style={styleAttr(Astro, `width: ${(completedIn(categories) / totalIn(categories)) * 100}%`)}
+            ></div>
           </div>
           <p class="text-stone-400 text-sm">
             {((completedIn(categories) / totalIn(categories)) * 100).toFixed(0)}% complete — Only i18n and Grafana
@@ -1465,29 +1467,19 @@ function titlecase(value: string): string {
     <section class="bg-stone-900 border-b border-stone-800 py-6">
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-wrap gap-4 items-center justify-center">
-          <span
-            class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-400 text-sm font-medium border border-emerald-800"
-          >
+          <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-400 text-sm font-medium border border-emerald-800">
             ✅ Completed
           </span>
-          <span
-            class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/50 text-red-400 text-sm font-medium border border-red-800"
-          >
+          <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/50 text-red-400 text-sm font-medium border border-red-800">
             🔴 Critical
           </span>
-          <span
-            class="flex items-center gap-2 px-3 py-1 rounded-full bg-orange-900/50 text-orange-400 text-sm font-medium border border-orange-800"
-          >
+          <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-orange-900/50 text-orange-400 text-sm font-medium border border-orange-800">
             🟠 High Priority
           </span>
-          <span
-            class="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-900/50 text-yellow-400 text-sm font-medium border border-yellow-800"
-          >
+          <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-900/50 text-yellow-400 text-sm font-medium border border-yellow-800">
             🟡 Medium Priority
           </span>
-          <span
-            class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/50 text-green-400 text-sm font-medium border border-green-800"
-          >
+          <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/50 text-green-400 text-sm font-medium border border-green-800">
             🟢 Low Priority
           </span>
         </div>
@@ -1500,35 +1492,33 @@ function titlecase(value: string): string {
         <h2 class="text-3xl font-bold text-white mb-8">Implementation Phases</h2>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {
-            phases.map((phase) => (
-              <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
-                <div class="bg-stone-800 text-white px-6 py-4">
-                  <span class="text-sm font-medium text-stone-400">{phase.quarter}</span>
-                  <h3 class="text-lg font-semibold">{phase.name}</h3>
-                  <div class="mt-2">
-                    <div class="w-full bg-stone-700 rounded-full h-2">
-                      <div
-                        class="bg-emerald-500 h-2 rounded-full transition-all duration-500"
-                        style={`width: ${getProgress(phase.items)}%`}
-                      />
-                    </div>
-                    <p class="text-xs text-stone-400 mt-1">{getProgress(phase.items)}% complete</p>
+          {phases.map((phase) => (
+            <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
+              <div class="bg-stone-800 text-white px-6 py-4">
+                <span class="text-sm font-medium text-stone-400">{phase.quarter}</span>
+                <h3 class="text-lg font-semibold">{phase.name}</h3>
+                <div class="mt-2">
+                  <div class="w-full bg-stone-700 rounded-full h-2">
+                    <div
+                      class="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                      style={styleAttr(Astro, `width: ${getProgress(phase.items)}%`)}
+                    />
                   </div>
+                  <p class="text-xs text-stone-400 mt-1">{getProgress(phase.items)}% complete</p>
                 </div>
-                <ul class="p-4 space-y-2">
-                  {phase.items.map((item) => (
-                    <li class="flex items-center gap-2 text-sm">
-                      <span>{getStatusIcon(item.status)}</span>
-                      <span class={item.status === 'completed' ? 'text-stone-500 line-through' : 'text-stone-300'}>
-                        {item.feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-            ))
-          }
+              <ul class="p-4 space-y-2">
+                {phase.items.map((item) => (
+                  <li class="flex items-center gap-2 text-sm">
+                    <span>{getStatusIcon(item.status)}</span>
+                    <span class={item.status === 'completed' ? 'text-stone-500 line-through' : 'text-stone-300'}>
+                      {item.feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1555,9 +1545,11 @@ function titlecase(value: string): string {
             <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
               <div
                 class="bg-emerald-500 h-2 rounded-full"
-                style={`width: ${(completedIn(performanceCategories) / totalIn(performanceCategories)) * 100}%`}
-              >
-              </div>
+                style={styleAttr(
+                  Astro,
+                  `width: ${(completedIn(performanceCategories) / totalIn(performanceCategories)) * 100}%`,
+                )}
+              ></div>
             </div>
           </div>
           <div class="bg-stone-900/80 rounded-xl p-6 border border-stone-700">
@@ -1568,20 +1560,20 @@ function titlecase(value: string): string {
             <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
               <div
                 class="bg-orange-500 h-2 rounded-full"
-                style={`width: ${(completedIn(axumCategories) / totalIn(axumCategories)) * 100}%`}
-              >
-              </div>
+                style={styleAttr(Astro, `width: ${(completedIn(axumCategories) / totalIn(axumCategories)) * 100}%`)}
+              ></div>
             </div>
           </div>
           <div class="bg-stone-900/80 rounded-xl p-6 border border-stone-700">
             <div class="text-sm text-stone-400 mb-1">Actix-web Competitive</div>
-            <div class="text-2xl font-bold text-red-400">{completedIn(actixCategories)}/{totalIn(actixCategories)}</div>
+            <div class="text-2xl font-bold text-red-400">
+              {completedIn(actixCategories)}/{totalIn(actixCategories)}
+            </div>
             <div class="w-full bg-stone-700 rounded-full h-2 mt-2">
               <div
                 class="bg-red-500 h-2 rounded-full"
-                style={`width: ${(completedIn(actixCategories) / totalIn(actixCategories)) * 100}%`}
-              >
-              </div>
+                style={styleAttr(Astro, `width: ${(completedIn(actixCategories) / totalIn(actixCategories)) * 100}%`)}
+              ></div>
             </div>
           </div>
         </div>
@@ -1591,31 +1583,29 @@ function titlecase(value: string): string {
           <span>📊</span> CPU Profiling Results
         </h3>
         <div class="space-y-6 mb-12">
-          {
-            performanceCategories.map((category) => (
-              <div class="bg-stone-900/80 rounded-xl border border-stone-700 overflow-hidden">
-                <div class="bg-stone-800/50 px-6 py-4 border-b border-stone-700 flex justify-between items-center">
-                  <h4 class="font-semibold text-white">{category.name}</h4>
-                  <span class="text-sm text-stone-400">
-                    {getCompletedCount(category.items)}/{category.items.length}
-                  </span>
-                </div>
-                <div class="p-4 grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {category.items.map((item) => (
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
-                      <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
-                        {getStatusIcon(item.status)}
-                      </span>
-                      <div class="min-w-0">
-                        <div class="font-medium text-white text-sm">{item.feature}</div>
-                        <div class="text-xs text-stone-500 truncate">{item.description}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          {performanceCategories.map((category) => (
+            <div class="bg-stone-900/80 rounded-xl border border-stone-700 overflow-hidden">
+              <div class="bg-stone-800/50 px-6 py-4 border-b border-stone-700 flex justify-between items-center">
+                <h4 class="font-semibold text-white">{category.name}</h4>
+                <span class="text-sm text-stone-400">
+                  {getCompletedCount(category.items)}/{category.items.length}
+                </span>
               </div>
-            ))
-          }
+              <div class="p-4 grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {category.items.map((item) => (
+                  <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                    <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
+                      {getStatusIcon(item.status)}
+                    </span>
+                    <div class="min-w-0">
+                      <div class="font-medium text-white text-sm">{item.feature}</div>
+                      <div class="text-xs text-stone-500 truncate">{item.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         <!-- Axum-Competitive -->
@@ -1626,41 +1616,39 @@ function titlecase(value: string): string {
           Goal: Match Axum's zero-cost abstractions and TechEmpower performance.
         </p>
         <div class="space-y-6 mb-12">
-          {
-            axumCategories.map((category) => (
-              <div class="bg-stone-900/80 rounded-xl border border-orange-900/30 overflow-hidden">
-                <div class="bg-orange-950/30 px-6 py-4 border-b border-orange-900/30 flex justify-between items-center">
-                  <h4 class="font-semibold text-white">{category.name}</h4>
-                  <div class="flex gap-2 text-xs">
-                    {getCriticalCount(category.items) > 0 && (
-                      <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">
-                        🔴 {getCriticalCount(category.items)}
-                      </span>
-                    )}
-                    {getHighCount(category.items) > 0 && (
-                      <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">
-                        🟠 {getHighCount(category.items)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div class="p-4 grid md:grid-cols-2 gap-3">
-                  {category.items.map((item) => (
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
-                      <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
-                        {getStatusIcon(item.status)}
-                      </span>
-                      <div class="min-w-0 flex-1">
-                        <div class="font-medium text-white text-sm">{item.feature}</div>
-                        <div class="text-xs text-stone-500">{item.description}</div>
-                        <code class="text-xs text-stone-600 mt-1 block">{item.module}</code>
-                      </div>
-                    </div>
-                  ))}
+          {axumCategories.map((category) => (
+            <div class="bg-stone-900/80 rounded-xl border border-orange-900/30 overflow-hidden">
+              <div class="bg-orange-950/30 px-6 py-4 border-b border-orange-900/30 flex justify-between items-center">
+                <h4 class="font-semibold text-white">{category.name}</h4>
+                <div class="flex gap-2 text-xs">
+                  {getCriticalCount(category.items) > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">
+                      🔴 {getCriticalCount(category.items)}
+                    </span>
+                  )}
+                  {getHighCount(category.items) > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">
+                      🟠 {getHighCount(category.items)}
+                    </span>
+                  )}
                 </div>
               </div>
-            ))
-          }
+              <div class="p-4 grid md:grid-cols-2 gap-3">
+                {category.items.map((item) => (
+                  <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                    <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
+                      {getStatusIcon(item.status)}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="font-medium text-white text-sm">{item.feature}</div>
+                      <div class="text-xs text-stone-500">{item.description}</div>
+                      <code class="text-xs text-stone-600 mt-1 block">{item.module}</code>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         <!-- Actix-web Competitive -->
@@ -1671,41 +1659,39 @@ function titlecase(value: string): string {
           Goal: Match Actix-web's TechEmpower-leading performance through low-level optimizations.
         </p>
         <div class="space-y-6">
-          {
-            actixCategories.map((category) => (
-              <div class="bg-stone-900/80 rounded-xl border border-red-900/30 overflow-hidden">
-                <div class="bg-red-950/30 px-6 py-4 border-b border-red-900/30 flex justify-between items-center">
-                  <h4 class="font-semibold text-white">{category.name}</h4>
-                  <div class="flex gap-2 text-xs">
-                    {getCriticalCount(category.items) > 0 && (
-                      <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">
-                        🔴 {getCriticalCount(category.items)}
-                      </span>
-                    )}
-                    {getHighCount(category.items) > 0 && (
-                      <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">
-                        🟠 {getHighCount(category.items)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div class="p-4 grid md:grid-cols-2 gap-3">
-                  {category.items.map((item) => (
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
-                      <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
-                        {getStatusIcon(item.status)}
-                      </span>
-                      <div class="min-w-0 flex-1">
-                        <div class="font-medium text-white text-sm">{item.feature}</div>
-                        <div class="text-xs text-stone-500">{item.description}</div>
-                        <code class="text-xs text-stone-600 mt-1 block">{item.module}</code>
-                      </div>
-                    </div>
-                  ))}
+          {actixCategories.map((category) => (
+            <div class="bg-stone-900/80 rounded-xl border border-red-900/30 overflow-hidden">
+              <div class="bg-red-950/30 px-6 py-4 border-b border-red-900/30 flex justify-between items-center">
+                <h4 class="font-semibold text-white">{category.name}</h4>
+                <div class="flex gap-2 text-xs">
+                  {getCriticalCount(category.items) > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800">
+                      🔴 {getCriticalCount(category.items)}
+                    </span>
+                  )}
+                  {getHighCount(category.items) > 0 && (
+                    <span class="px-2 py-0.5 rounded bg-orange-900/50 text-orange-400 border border-orange-800">
+                      🟠 {getHighCount(category.items)}
+                    </span>
+                  )}
                 </div>
               </div>
-            ))
-          }
+              <div class="p-4 grid md:grid-cols-2 gap-3">
+                {category.items.map((item) => (
+                  <div class="flex items-start gap-3 p-3 rounded-lg bg-stone-800/30 border border-stone-700/50">
+                    <span class={'px-2 py-0.5 rounded text-xs font-medium shrink-0 ' + getStatusClass(item.status)}>
+                      {getStatusIcon(item.status)}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="font-medium text-white text-sm">{item.feature}</div>
+                      <div class="text-xs text-stone-500">{item.description}</div>
+                      <code class="text-xs text-stone-600 mt-1 block">{item.module}</code>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1719,16 +1705,17 @@ function titlecase(value: string): string {
         </div>
 
         <div class="bg-stone-900 rounded-xl shadow-sm border border-emerald-800 p-6">
-          <p class="text-stone-400 mb-4">The following features are already implemented and production-ready:</p>
+          <p class="text-stone-400 mb-4">
+            The following features are already implemented (Armature is pre-1.0, so their APIs can still change between
+            minor versions):
+          </p>
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {
-              completedFeatures.map((feature) => (
-                <div class="flex items-start gap-2 text-sm text-stone-300">
-                  <span class="text-emerald-400 mt-0.5">✓</span>
-                  <span>{feature}</span>
-                </div>
-              ))
-            }
+            {completedFeatures.map((feature) => (
+              <div class="flex items-start gap-2 text-sm text-stone-300">
+                <span class="text-emerald-400 mt-0.5">✓</span>
+                <span>{feature}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1740,59 +1727,57 @@ function titlecase(value: string): string {
         <h2 class="text-3xl font-bold text-white mb-8">Feature Categories</h2>
 
         <div class="space-y-8">
-          {
-            categories.map((category) => (
-              <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
-                <div class="bg-stone-800 px-6 py-4 border-b border-stone-700">
-                  <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-semibold text-white">{category.name}</h3>
-                    <span class="text-sm text-stone-400">
-                      {getCompletedCount(category.items)}/{category.items.length} completed
-                    </span>
-                  </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                  <table class="w-full">
-                    <thead class="bg-stone-800/50 border-b border-stone-700">
-                      <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
-                          Feature
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden md:table-cell">
-                          Description
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden lg:table-cell">
-                          Module
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-stone-800">
-                      {category.items.map((item) => (
-                        <tr class="hover:bg-stone-800/50">
-                          <td class="px-6 py-4 whitespace-nowrap">
-                            <span class={'px-2 py-1 rounded-full text-xs font-medium ' + getStatusClass(item.status)}>
-                              {getStatusIcon(item.status)} {titlecase(item.status)}
-                            </span>
-                          </td>
-                          <td class="px-6 py-4 whitespace-nowrap font-medium text-white">{item.feature}</td>
-                          <td class="px-6 py-4 text-stone-400 hidden md:table-cell">{item.description}</td>
-                          <td class="px-6 py-4 hidden lg:table-cell">
-                            <code class="text-xs bg-stone-800 px-2 py-1 rounded text-stone-300 border border-stone-700">
-                              {item.module}
-                            </code>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {categories.map((category) => (
+            <div class="bg-stone-900 rounded-xl shadow-sm border border-stone-800 overflow-hidden">
+              <div class="bg-stone-800 px-6 py-4 border-b border-stone-700">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xl font-semibold text-white">{category.name}</h3>
+                  <span class="text-sm text-stone-400">
+                    {getCompletedCount(category.items)}/{category.items.length} completed
+                  </span>
                 </div>
               </div>
-            ))
-          }
+
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-stone-800/50 border-b border-stone-700">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider">
+                        Feature
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden md:table-cell">
+                        Description
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wider hidden lg:table-cell">
+                        Module
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-stone-800">
+                    {category.items.map((item) => (
+                      <tr class="hover:bg-stone-800/50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class={'px-2 py-1 rounded-full text-xs font-medium ' + getStatusClass(item.status)}>
+                            {getStatusIcon(item.status)} {titlecase(item.status)}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-white">{item.feature}</td>
+                        <td class="px-6 py-4 text-stone-400 hidden md:table-cell">{item.description}</td>
+                        <td class="px-6 py-4 hidden lg:table-cell">
+                          <code class="text-xs bg-stone-800 px-2 py-1 rounded text-stone-300 border border-stone-700">
+                            {item.module}
+                          </code>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

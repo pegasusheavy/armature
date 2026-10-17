@@ -1,15 +1,19 @@
-# Armature Framework Security Policy
-# https://securitytxt.org/
+# Armature Framework security contact (RFC 9116)
+#
+# Placement note: RFC 9116 section 3 expects this file at the host root,
+# https://quinnjr.github.io/.well-known/security.txt. This site is a GitHub
+# Pages *project* site served under /armature/, and this repository cannot
+# publish files at the host root (that belongs to the quinnjr.github.io user
+# site). The file is therefore served at the Canonical URI below; scanners
+# that only check the host root will not find it, so the same contact is also
+# given in the repository's security policy (Policy, below).
+#
+# Report vulnerabilities privately through GitHub Security Advisories; please
+# do not open public issues for security problems.
 
-Contact: mailto:quinn.josephr@proton.me
 Contact: https://github.com/quinnjr/armature/security/advisories/new
-Expires: 2026-12-31T23:59:59.000Z
+Expires: 2027-10-17T00:00:00.000Z
 Encryption: https://github.com/quinnjr.gpg
 Preferred-Languages: en
 Canonical: https://quinnjr.github.io/armature/.well-known/security.txt
 Policy: https://github.com/quinnjr/armature/security/policy
-Hiring: https://github.com/quinnjr
-
-# We appreciate responsible disclosure of security vulnerabilities.
-# Please report any security issues via GitHub Security Advisories.
-
