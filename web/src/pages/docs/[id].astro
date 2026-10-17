@@ -61,36 +61,34 @@ const breadcrumbs = [
     {doc.id === 'readme' && <DocsOverview />}
     {doc.id === 'profiling-guide' && <ProfilingGuide />}
     {html !== null && <article class="markdown-content" set:html={html} />}
-    {
-      !doc.hasComponent && html === null && (
-        <div class="markdown-content">
-          <h1>{doc.title}</h1>
-          <p>This documentation page is being enhanced with beautiful visuals.</p>
-          <p>In the meantime, you can:</p>
-          <ul>
-            <li>
-              Check out the <a href={url('/docs/readme')}>Overview</a> for a quick start
-            </li>
-            <li>
-              Visit our{' '}
-              <a href="https://github.com/quinnjr/armature" target="_blank" rel="noopener noreferrer">
-                GitHub repository
-              </a>{' '}
-              for source code
-            </li>
-            <li>
-              See the{' '}
-              <a href="https://docs.rs/armature" target="_blank" rel="noopener noreferrer">
-                API documentation
-              </a>{' '}
-              on docs.rs
-            </li>
-          </ul>
-          <p>
-            <a href={url('/docs/readme')}>← Back to Overview</a>
-          </p>
-        </div>
-      )
-    }
+    {!doc.hasComponent && html === null && (
+      <div class="markdown-content">
+        <h1>{doc.title}</h1>
+        <p>This documentation page is being enhanced with beautiful visuals.</p>
+        <p>In the meantime, you can:</p>
+        <ul>
+          <li>
+            Check out the <a href={url('/docs/readme')}>Overview</a> for a quick start
+          </li>
+          <li>
+            Visit our{' '}
+            <a href="https://github.com/quinnjr/armature" target="_blank" rel="noopener noreferrer">
+              GitHub repository
+            </a>{' '}
+            for source code
+          </li>
+          <li>
+            See the{' '}
+            <a href="https://docs.rs/armature-framework" target="_blank" rel="noopener noreferrer">
+              API documentation
+            </a>{' '}
+            on docs.rs
+          </li>
+        </ul>
+        <p>
+          <a href={url('/docs/readme')}>← Back to Overview</a>
+        </p>
+      </div>
+    )}
   </DocsShell>
 </BaseLayout>
