@@ -15,9 +15,19 @@ name: armature-api
 replicaCount: 3
 
 # Container image configuration
+#
+# REQUIRED: there is no default image. The Armature project does not publish
+# an application image; point this at YOUR registry. Rendering fails until
+# image.repository and one of image.digest / image.tag are set.
+# Prefer a digest (immutable) over a tag:
+#   --set image.repository=registry.example.com/my-api \
+#   --set image.digest=sha256:<64 hex chars>
 image:
-  repository: ghcr.io/armature-rs/armature-api
-  tag: ""  # Defaults to Chart appVersion
+  repository: ""
+  # Immutable content digest, e.g. "sha256:abc..."; takes precedence over tag.
+  digest: ""
+  # Used only when digest is empty. "latest" is rejected.
+  tag: ""
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries
@@ -29,11 +39,9 @@ serviceAccount:
   annotations: {}
   name: ""
 
-# Pod annotations
-podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "3000"
-  prometheus.io/path: "/metrics"
+# Extra pod annotations (Prometheus scrape annotations are added
+# automatically from `metrics` below)
+podAnnotations: {}
 
 # Pod security context
 podSecurityContext:
@@ -41,6 +49,8 @@ podSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
   fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
 
 # Container security context
 securityContext:
@@ -50,11 +60,19 @@ securityContext:
     drop:
       - ALL
 
-# Service configuration
+# Service configuration (application traffic only; the metrics port is
+# never exposed through the Service or Ingress)
 service:
   type: ClusterIP
   port: 80
   targetPort: 3000
+
+# Prometheus metrics, served by the app on a dedicated port. Only pods in
+# namespaces matching networkPolicy.monitoringNamespaceSelector may reach it.
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
 
 # Ingress configuration
 ingress:
@@ -95,9 +113,29 @@ pdb:
   enabled: true
   minAvailable: 1
 
-# Network Policy
+# Network Policy (on by default: default-deny with explicit allows)
 networkPolicy:
-  enabled: false
+  enabled: true
+  # Namespaces allowed to reach the HTTP port (your ingress controller)
+  ingressNamespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: ingress-nginx
+  # Namespaces allowed to scrape the metrics port
+  monitoringNamespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: monitoring
+  # Allow pods in the release namespace to call the HTTP port
+  allowSameNamespace: true
+  # Additional egress rules (databases, caches, ...), as NetworkPolicy
+  # egress entries. DNS and HTTPS to public addresses are always allowed.
+  extraEgress: []
+  #  - to:
+  #      - namespaceSelector:
+  #          matchLabels:
+  #            kubernetes.io/metadata.name: databases
+  #    ports:
+  #      - protocol: TCP
+  #        port: 5432
 
 # Node selector
 nodeSelector: {}
@@ -128,12 +166,25 @@ envFrom: []
 #  - secretRef:
 #      name: armature-secrets
 
-# Secrets (will be created as a Kubernetes Secret)
+# Secrets
+#
+# Either reference a Secret you manage yourself (External Secrets, Sealed
+# Secrets, Vault, `kubectl create secret`), which must contain the key
+# `jwt-secret` and may contain `database-url` / `redis-url`:
+#   --set secrets.existingSecret=my-api-secrets
+# or let the chart create one from values (keep these out of committed files):
+#   --set secrets.jwtSecret="$(openssl rand -hex 32)"
+#
+# JWT_SECRET is REQUIRED: rendering fails if neither existingSecret nor a
+# jwtSecret of at least 32 characters is given. There is no default secret.
 secrets:
-  # Set these via --set or values file override
+  existingSecret: ""
+  jwtSecret: ""
   databaseUrl: ""
   redisUrl: ""
-  jwtSecret: ""
+  # Bump after rotating the secret to roll the pods (the secret's content is
+  # deliberately not hashed into a pod annotation).
+  revision: "1"
 
 # ConfigMap data
 config:
@@ -147,6 +198,12 @@ config:
       [logging]
       level = "info"
       format = "json"
+
+      [metrics]
+      enabled = true
+      # Dedicated listener: keeps /metrics off the public HTTP port
+      port = 9090
+      endpoint = "/metrics"
 
 # Liveness probe
 livenessProbe:

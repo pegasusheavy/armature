@@ -18,9 +18,8 @@ use armature::prelude::*;
 use armature::{
     BodySizeLimitMiddleware, CompressionMiddleware, CorsMiddleware, Error, HttpResponse,
     LoggerMiddleware, Middleware, RequestIdMiddleware, SecurityHeadersMiddleware,
-    TimeoutMiddleware,
+    TimeoutMiddleware, middleware, use_middleware,
 };
-use armature_proc_macro::{middleware, use_middleware};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
@@ -36,6 +35,35 @@ impl ApiKeyMiddleware {
     fn new(keys: Vec<String>) -> Self {
         Self { valid_keys: keys }
     }
+
+    /// Keys from `API_KEYS` (comma-separated). API keys are never hardcoded:
+    /// without the variable this demo uses one random key, printed by `main`.
+    fn from_env() -> Self {
+        Self::new(api_keys().to_vec())
+    }
+}
+
+/// The accepted API keys, resolved once.
+fn api_keys() -> &'static [String] {
+    static KEYS: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+    KEYS.get_or_init(|| match std::env::var("API_KEYS") {
+        Ok(keys) => keys
+            .split(',')
+            .map(str::trim)
+            .filter(|k| !k.is_empty())
+            .map(String::from)
+            .collect(),
+        Err(_) => {
+            let bytes: [u8; 24] = rand::random();
+            vec![bytes.iter().map(|b| format!("{b:02x}")).collect()]
+        }
+    })
+}
+
+/// Constant-time byte comparison, so response timing does not reveal how
+/// much of a guessed key matched.
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
 #[async_trait::async_trait]
@@ -52,9 +80,13 @@ impl Middleware for ApiKeyMiddleware {
         >,
     ) -> Result<HttpResponse, Error> {
         if let Some(api_key) = req.headers.get("x-api-key")
-            && self.valid_keys.iter().any(|k| k == api_key)
+            && self
+                .valid_keys
+                .iter()
+                .any(|k| constant_time_eq(k.as_bytes(), api_key.as_bytes()))
         {
-            println!("✓ Valid API key: {}", api_key);
+            // Never log the key itself.
+            println!("✓ Valid API key presented");
             return next(req).await;
         }
         Err(Error::Unauthorized(
@@ -158,8 +190,10 @@ impl DataService {
 #[middleware(
     RequestIdMiddleware,
     LoggerMiddleware::new(),
+    // Name the browser origins that may call this API; never reflect `*`
+    // for an API that takes credentials such as an API key.
     CorsMiddleware::new()
-        .allow_origin("*")
+        .allow_origin("http://localhost:3000")
         .allow_credentials(false),
     SecurityHeadersMiddleware::new(),
     CompressionMiddleware::new()
@@ -179,10 +213,7 @@ impl ApiController {
     }
 
     #[use_middleware(
-        ApiKeyMiddleware::new(vec![
-            "secret-key-123".to_string(),
-            "admin-key-456".to_string(),
-        ]),
+        ApiKeyMiddleware::from_env(),
         RateLimitMiddleware::new(60),
         TimingMiddleware
     )]
@@ -248,6 +279,12 @@ async fn main() {
     println!("  /api/upload    - Body size limit (max 1MB)");
     println!();
 
+    if std::env::var("API_KEYS").is_err() {
+        println!("API_KEYS is not set; generated a random demo key:");
+        println!("  export API_KEY={}", api_keys()[0]);
+        println!();
+    }
+
     println!("Server running on http://localhost:3014");
     println!();
     println!("API Endpoints:");
@@ -258,7 +295,7 @@ async fn main() {
     println!("2. Protected (requires API key - omit it to see a 401):");
     println!("   curl -i http://localhost:3014/api/protected");
     println!("   curl -i http://localhost:3014/api/protected \\");
-    println!("     -H \"x-api-key: secret-key-123\"");
+    println!("     -H \"x-api-key: $API_KEY\"");
     println!();
     println!("3. CORS preflight:");
     println!("   curl -X OPTIONS http://localhost:3014/api/protected");

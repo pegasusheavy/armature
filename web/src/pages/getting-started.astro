@@ -3,6 +3,7 @@ import { faTerminal, faMagic, faDownload, faRocket, faBook } from '@fortawesome/
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import { url } from '../lib/url';
+import { DEPENDENCY_LINE } from '../lib/version';
 ---
 
 <BaseLayout
@@ -18,8 +19,7 @@ import { url } from '../lib/url';
     <div class="max-w-4xl mx-auto">
       <h2 class="text-4xl font-bold text-center text-white mb-12">Quick Start</h2>
       <div class="bg-stone-950 rounded-xl p-8 shadow-2xl overflow-x-auto border border-stone-800">
-        <pre
-          class="text-sm text-stone-300"><code class="language-rust">use armature::prelude::*;
+        <pre class="text-sm text-stone-300"><code class="language-rust">use armature::prelude::*;
 
 // Injectable service
 #[injectable]
@@ -79,8 +79,7 @@ async fn main() &#123;
             The CLI provides code generation, project scaffolding, and a development server with hot reloading.
           </p>
           <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
-            <pre
-              class="text-sm text-stone-300"><code><span class="text-stone-500"># Install the CLI</span>
+            <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># Install the CLI</span>
 cargo install armature-cli
 
 <span class="text-stone-500"># Create a new project</span>
@@ -104,8 +103,7 @@ armature dev</code></pre>
             Generate Code
           </h3>
           <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
-            <pre
-              class="text-sm text-stone-300"><code><span class="text-stone-500"># Generate a controller</span>
+            <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># Generate a controller</span>
 armature generate controller users
 
 <span class="text-stone-500"># Generate a service</span>
@@ -128,9 +126,8 @@ armature generate guard admin</code></pre>
           </h3>
           <p class="text-stone-400 mb-4">Or add Armature directly to an existing project:</p>
           <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
-            <pre
-              class="text-sm text-stone-300"><code>[dependencies]
-armature = "0.1"
+            <pre class="text-sm text-stone-300"><code>[dependencies]
+{DEPENDENCY_LINE}
 tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
           </div>
         </div>
@@ -141,8 +138,7 @@ tokio = &#123; version = "1.35", features = ["full"] &#125;</code></pre>
             Run your app
           </h3>
           <div class="bg-stone-950 rounded-lg p-6 overflow-x-auto border border-stone-800">
-            <pre
-              class="text-sm text-stone-300"><code><span class="text-stone-500"># With CLI (recommended)</span>
+            <pre class="text-sm text-stone-300"><code><span class="text-stone-500"># With CLI (recommended)</span>
 armature dev
 
 <span class="text-stone-500"># Or with cargo</span>

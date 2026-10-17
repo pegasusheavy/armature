@@ -1,0 +1,7 @@
+# Code owners: every change needs review from the maintainer.
+# Later rules take precedence; /.github/ is listed explicitly so CI,
+# workflow and policy changes always require the owner even if the default
+# rule is ever broadened to other reviewers.
+
+*           @quinnjr
+/.github/   @quinnjr

@@ -236,7 +236,8 @@ async fn run_queue_worker(
             return;
         }
     };
-    info!(redis_url = %config.redis_url, queue = %config.queue_name, "Connected to job queue");
+    // Not the URL itself: it carries the Redis password.
+    info!(redis_host = %config.redis_host(), queue = %config.queue_name, "Connected to job queue");
 
     let worker_config = WorkerConfig {
         concurrency: config.concurrency,

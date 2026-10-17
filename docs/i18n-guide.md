@@ -15,23 +15,23 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-i18n = "0.1"
+armature-i18n = "0.6"
 ```
 
 ### Feature Flags
 
 ```toml
 # Default: simple JSON-based translation
-armature-i18n = "0.1"
+armature-i18n = "0.6"
 
 # Mozilla Fluent support (advanced formatting)
-armature-i18n = { version = "0.1", features = ["fluent"] }
+armature-i18n = { version = "0.6", features = ["fluent"] }
 
 # ICU-based formatting (most accurate)
-armature-i18n = { version = "0.1", features = ["icu"] }
+armature-i18n = { version = "0.6", features = ["icu"] }
 
 # All features
-armature-i18n = { version = "0.1", features = ["full"] }
+armature-i18n = { version = "0.6", features = ["full"] }
 ```
 
 ## Quick Start

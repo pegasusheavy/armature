@@ -1,37 +1,50 @@
 # Armature Development Environment
 # =================================
+# DEVELOPMENT ONLY. Do not run this stack on a host reachable from an
+# untrusted network, and never use it (or its credentials) in production.
+#
 # Lightweight stack for local development
 #
 # Services:
 # - PostgreSQL
-# - Redis
-# - MailHog (email testing)
+# - Redis (password protected)
+# - Mailpit (email testing)
 # - Adminer (database UI)
 # - RedisInsight (Redis UI)
+# - LocalStack (AWS emulation, incl. S3)
+# - pgAdmin (optional, --profile full)
+#
+# Every published port is bound to 127.0.0.1. Docker writes its own iptables
+# rules for published ports, so a plain "5432:5432" is reachable from the
+# network even when a host firewall (ufw, firewalld) says otherwise.
+#
+# Secrets come from .env (copy .env.example and fill it in). Compose refuses
+# to start while a required variable is unset.
 #
 # Usage:
+#   cp .env.example .env   # then set every value
 #   docker compose up -d
-#   Adminer: http://localhost:8080
-#   MailHog: http://localhost:8025
-#   RedisInsight: http://localhost:8001
-
-version: "3.8"
+#   Adminer:      http://localhost:8080
+#   Mailpit:      http://localhost:8025
+#   RedisInsight: http://localhost:5540
+#
+# Images are pinned by tag and digest; Dependabot keeps them current.
 
 services:
   # ============================================
   # PostgreSQL
   # ============================================
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
       POSTGRES_USER: armature
-      POSTGRES_PASSWORD: armature
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       POSTGRES_DB: armature_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d:ro
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U armature"]
       interval: 10s
@@ -43,12 +56,18 @@ services:
   # Redis
   # ============================================
   redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      # Lets the healthcheck's redis-cli authenticate.
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -57,22 +76,22 @@ services:
     restart: unless-stopped
 
   # ============================================
-  # MailHog - Email Testing
+  # Mailpit - Email Testing (maintained MailHog replacement, same ports)
   # ============================================
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit:v1.31.6@sha256:23fe39e81bde596a918000b3135c0f85dc8bb4c9ea6be274b051143f3e300387
     ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI
+      - "127.0.0.1:1025:1025"   # SMTP
+      - "127.0.0.1:8025:8025"   # Web UI
     restart: unless-stopped
 
   # ============================================
   # Adminer - Database Admin UI
   # ============================================
   adminer:
-    image: adminer:latest
+    image: adminer:5.5.1-standalone@sha256:e3a6b4942dd088a29cc8bbce22553429247c5c2b30b07d856ae49012b5c84a5b
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       ADMINER_DEFAULT_SERVER: postgres
       ADMINER_DESIGN: dracula
@@ -83,67 +102,50 @@ services:
   # ============================================
   # RedisInsight - Redis GUI
   # ============================================
+  # Connect it to host "redis", port 6379, with REDIS_PASSWORD.
   redisinsight:
-    image: redislabs/redisinsight:latest
+    image: redis/redisinsight:3.8.0@sha256:b5e19ee240abef6edb435871b90ff8a210995422e8e018ab61c0339d318a1f84
     ports:
-      - "8001:8001"
+      - "127.0.0.1:5540:5540"
     volumes:
-      - redisinsight_data:/db
+      - redisinsight_data:/data
     depends_on:
       - redis
     restart: unless-stopped
 
   # ============================================
-  # LocalStack - AWS Services Emulation
+  # LocalStack - AWS Services Emulation (S3, SQS, SNS, DynamoDB, SES)
   # ============================================
+  # The Docker socket is deliberately NOT mounted: access to it is root on the
+  # host. None of the services enabled here need it (only LocalStack's Lambda
+  # emulation does). Credentials for LocalStack are the documented dummy
+  # values AWS_ACCESS_KEY_ID=test / AWS_SECRET_ACCESS_KEY=test.
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:4.14.0@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
     ports:
-      - "4566:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # External services
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # External services
     environment:
       - SERVICES=s3,sqs,sns,dynamodb,ses
       - DEBUG=0
-      - DATA_DIR=/var/lib/localstack/data
-      - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-
-  # ============================================
-  # MinIO - S3 Compatible Storage (Alternative)
-  # ============================================
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"   # API
-      - "9001:9001"   # Console
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
     restart: unless-stopped
 
   # ============================================
   # pgAdmin - PostgreSQL Admin (Optional)
   # ============================================
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9.18.0@sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
     profiles: ["full"]  # Only starts with --profile full
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@localhost
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?set PGADMIN_PASSWORD in .env (openssl rand -hex 32)}
+      # Server mode keeps the login screen; desktop mode ("False") would hand
+      # full database access to anything that can reach the port.
+      PGADMIN_CONFIG_SERVER_MODE: "True"
     ports:
-      - "5050:80"
+      - "127.0.0.1:5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
@@ -155,6 +157,4 @@ volumes:
   redis_data:
   redisinsight_data:
   localstack_data:
-  minio_data:
   pgadmin_data:
-

@@ -32,7 +32,7 @@ Armature provides built-in HTTPS/TLS support using `rustls`, a modern TLS librar
 For local development, you can use automatically generated self-signed certificates:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[module()]
 #[derive(Default)]
@@ -71,7 +71,7 @@ curl -k https://localhost:8443/
 For production, use certificates from a trusted Certificate Authority:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[module()]
 #[derive(Default)]
@@ -198,7 +198,7 @@ sudo certbot certonly --standalone -d yourdomain.com
 #### Using Armature
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -246,11 +246,14 @@ chown root:root /etc/ssl/private/your-key.pem
 Automatically redirect HTTP traffic to HTTPS:
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let app = Application::create::<AppModule>().await;
+    // The redirect server only sends clients to hosts on this allowlist
+    let app = Application::create::<AppModule>()
+        .await
+        .with_https_redirect_hosts(["example.com", "www.example.com"]);
 
     let tls_config = TlsConfig::from_pem_files("cert.pem", "key.pem")?;
 
@@ -270,9 +273,30 @@ async fn main() -> Result<()> {
 **How it works:**
 
 1. HTTP server listens on port 80
-2. All requests receive a `301 Moved Permanently` response
-3. `Location` header points to the HTTPS URL
-4. Client automatically follows redirect to HTTPS
+2. The request's `Host` is checked against `with_https_redirect_hosts` (case and port ignored)
+3. Allowed hosts receive a `301 Moved Permanently` whose `Location` is the HTTPS URL, with the path and query preserved
+4. Any other `Host` receives `400 Bad Request`, so the redirect server cannot be used as an open redirect or to poison caches with an attacker's hostname
+5. Client automatically follows redirect to HTTPS
+
+`with_https_redirect_hosts` is **required** whenever `with_http_redirect` is
+set: `listen_with_config` refuses to start without it. A request with no
+`Host` header (HTTP/1.0) is sent to the first host in the list. IPv6
+authorities such as `[::1]:80` are parsed correctly.
+
+### Connection Timeouts
+
+The TLS listener and the redirect server apply these limits by default:
+
+- **TLS handshake timeout**: every TLS accept must complete its handshake
+  within 10 seconds, so a client that opens a connection and stalls cannot
+  hold it open.
+- **Header read timeout**: HTTP/1.1 connections (including the redirect
+  server) must deliver request headers within 10 seconds.
+- **Connection cap**: accept loops stop accepting at
+  `PipelineConfig::max_connections` concurrent connections (default 10 000).
+- **Body read policy**: request bodies must keep arriving (30 s of
+  inactivity, minimum 1 KiB/s; otherwise `408`). Tune with
+  `Application::with_body_read_policy`.
 
 **Example redirect response:**
 
@@ -429,7 +453,7 @@ sudo kill <PID>
 ### Basic HTTPS Server
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 
 #[derive(Default)]
 pub struct ApiService;
@@ -486,7 +510,7 @@ async fn main() -> Result<()> {
 ### HTTPS with Environment Config
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::env;
 
 #[tokio::main]
@@ -512,7 +536,7 @@ async fn main() -> Result<()> {
 ### Full Production Setup
 
 ```rust
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use std::env;
 
 #[tokio::main]
@@ -520,9 +544,11 @@ async fn main() -> Result<()> {
     // Load environment variables
     dotenv::dotenv().ok();
 
-    let app = Application::create::<AppModule>().await;
-
     let domain = env::var("DOMAIN")?;
+
+    let app = Application::create::<AppModule>()
+        .await
+        .with_https_redirect_hosts([domain.clone()]);
     let cert_dir = env::var("CERT_DIR").unwrap_or_else(|_| "/etc/letsencrypt/live".to_string());
 
     let cert_path = format!("{}/{}/fullchain.pem", cert_dir, domain);
@@ -533,7 +559,7 @@ async fn main() -> Result<()> {
     let https_config = HttpsConfig::new("0.0.0.0:443", tls_config)
         .with_http_redirect("0.0.0.0:80");
 
-    println!("🔒 Starting production HTTPS server");
+    println!("🔒 Starting HTTPS server");
     println!("   Domain: {}", domain);
     println!("   HTTPS: https://{}", domain);
     println!("   HTTP redirect enabled");
@@ -551,7 +577,7 @@ async fn main() -> Result<()> {
 1. ✅ Use `TlsConfig::self_signed()` for development
 2. ✅ Use `TlsConfig::from_pem_files()` for production
 3. ✅ Get free certificates from Let's Encrypt
-4. ✅ Enable HTTP to HTTPS redirect with `HttpsConfig`
+4. ✅ Enable HTTP to HTTPS redirect with `HttpsConfig` and list your hosts in `with_https_redirect_hosts`
 5. ✅ Protect private keys with proper permissions
 6. ✅ Automate certificate renewal
 7. ✅ Use environment variables for configuration

@@ -14,8 +14,9 @@ Armature provides optional GraphQL support through the `armature-graphql` module
 ✅ **Subscriptions** - Real-time GraphQL subscriptions
 ✅ **DI Integration** - Services injected into resolvers
 ✅ **Decorator-Style** - Rust procedural macros for clean syntax
-✅ **GraphiQL/Playground** - Built-in query interface
-✅ **Schema Introspection** - Automatic API documentation
+✅ **GraphiQL/Playground** - Built-in query interface (opt-in)
+✅ **Schema Introspection** - Automatic API documentation (opt-in)
+✅ **Locked-Down Defaults** - Introspection and playgrounds off; depth, complexity, directive and recursion limits on
 
 ## Installation
 
@@ -23,8 +24,8 @@ Add the GraphQL feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["graphql"] }
-armature-graphql = "0.1"
+armature = { package = "armature-framework", version = "0.8", features = ["graphql"] }
+armature-graphql = "0.6"
 ```
 
 ## Quick Start
@@ -90,34 +91,34 @@ let schema = ProgrammaticSchemaBuilder::new()
     .mutation(MutationRoot { book_service: book_service.clone() })
     .subscription(EmptySubscription)
     .add_service(book_service)  // Add to schema context
-    .build();
+    .build();                   // applies GraphQLConfig::default()
 
-// Or use the standard Schema::build
-let schema = Schema::build(
-    QueryRoot { book_service },
-    MutationRoot { book_service },
-    EmptySubscription
-).finish();
+// Or use the standard Schema::build, applying the config's limits yourself.
+// A bare `Schema::build(..).finish()` has no depth/complexity limits and
+// allows introspection.
+let schema = GraphQLConfig::default()
+    .configure(Schema::build(
+        QueryRoot { book_service: book_service.clone() },
+        MutationRoot { book_service },
+        EmptySubscription,
+    ))
+    .finish();
 ```
 
 ### 5. Create GraphQL Endpoint
 
 ```rust
-router.add_route(Route {
-    method: HttpMethod::POST,
-    path: "/graphql".to_string(),
-    handler: Arc::new(move |req| {
-        let schema = schema.clone();
-        Box::pin(async move {
-            // Handle GraphQL request
-            let gql_req: GraphQLRequest = req.json()?;
-            let request = async_graphql::Request::new(gql_req.query);
-            let response = schema.execute(request).await;
+router.post("/graphql", move |req: HttpRequest| {
+    let schema = schema.clone();
+    async move {
+        // Handle GraphQL request
+        let gql_req: GraphQLRequest = req.json()?;
+        let request = async_graphql::Request::new(gql_req.query);
+        let response = schema.execute(request).await;
 
-            let json = serde_json::to_value(&response)?;
-            HttpResponse::ok().with_json(&json)
-        })
-    }),
+        let json = serde_json::to_value(&response)?;
+        HttpResponse::ok().with_json(&json)
+    }
 });
 ```
 
@@ -610,25 +611,24 @@ impl User {
 
 ### Built-in Playground
 
-Armature provides two playground options:
+Armature provides two playground options. Both are **off by default** in
+`GraphQLConfig` (enable them with `GraphQLConfig::development(..)` or
+`with_playground(true)` / `with_graphiql(true)`), and introspection, which they
+need, is off by default too. Serve them only in development or behind
+authentication. Their assets are pinned (`GRAPHQL_PLAYGROUND_VERSION`,
+`GRAPHIQL_VERSION`) and loaded with Subresource Integrity.
 
 #### GraphiQL (Lightweight)
 
 ```rust
 use armature_graphql::graphiql_html;
 
-router.add_route(Route {
-    method: HttpMethod::GET,
-    path: "/playground".to_string(),
-    handler: Arc::new(move |_req| {
-        Box::pin(async move {
-            let html = graphiql_html("/graphql");
-            Ok(HttpResponse::ok()
-                .with_header("Content-Type".into(), "text/html".into())
-                .with_body(html.into_bytes()))
-        })
-    }),
-});
+// Development only: GraphiQL needs introspection, which is off by default.
+if cfg!(debug_assertions) {
+    router.get("/playground", |_req: HttpRequest| async move {
+        Ok(HttpResponse::html(graphiql_html("/graphql")))
+    });
+}
 ```
 
 #### GraphQL Playground
@@ -794,8 +794,8 @@ async fn test_graphql_query() {
 ## Performance Tips
 
 1. **Use DataLoader** - Batch database queries
-2. **Limit Query Depth** - Prevent deeply nested queries
-3. **Add Query Complexity** - Limit computational cost
+2. **Keep Query Depth Limited** - `max_depth` defaults to 15; lower it if your schema allows
+3. **Keep Query Complexity Limited** - `max_complexity` defaults to 1000 (also bounds alias amplification)
 4. **Cache Results** - Use Redis or in-memory cache
 5. **Optimize N+1** - Use DataLoader or JOIN queries
 
@@ -834,8 +834,8 @@ Armature's GraphQL support provides:
 ✅ **Type-Safe** - Compile-time schema validation
 ✅ **DI Integration** - Services injected into resolvers
 ✅ **Full Featured** - Queries, mutations, subscriptions
-✅ **Developer Friendly** - Built-in playground
-✅ **Production Ready** - Error handling, pagination, guards
+✅ **Developer Friendly** - Built-in playground (opt-in)
+✅ **Secure Defaults** - Introspection off, query limits on, guards
 ✅ **Performant** - DataLoader, caching support
 
 For more examples, see `examples/graphql_api.rs` in the repository.

@@ -1,34 +1,58 @@
-# Armature Full-Stack Production Setup
-# =====================================
-# Complete stack with database, cache, search, and message queue
+# Armature Full-Stack Example
+# ===========================
+# DEVELOPMENT / DEMO ONLY. This stack shows how the pieces fit together on a
+# single machine; it is not a hardened production deployment (no TLS between
+# services, single-node data stores, secrets in environment variables). Do
+# not expose it to an untrusted network.
 #
 # Services:
 # - Armature API (x2 instances)
-# - PostgreSQL (primary + replica)
-# - Redis (cache + sessions)
-# - Elasticsearch (search)
+# - PostgreSQL (primary + standalone "replica" placeholder)
+# - Redis (cache + sessions, password protected)
+# - Elasticsearch (search, security enabled)
 # - RabbitMQ (message queue)
 # - Ferron (load balancer / reverse proxy)
-# - MinIO (S3-compatible storage)
+# - RustFS (S3-compatible object storage)
+#
+# Every published port is bound to 127.0.0.1 (Docker's own iptables rules
+# bypass host firewalls for published ports). Secrets come from .env (copy
+# .env.example); Compose refuses to start while a required one is unset.
 #
 # Usage:
+#   cp .env.example .env   # then set every value
 #   docker compose up -d
-#   API: http://localhost
-#   RabbitMQ UI: http://localhost:15672 (guest/guest)
-#   MinIO UI: http://localhost:9001 (minioadmin/minioadmin)
-#   Elasticsearch: http://localhost:9200
+#   API:           http://localhost
+#   RabbitMQ UI:   http://localhost:15672 (armature / $RABBITMQ_PASSWORD)
+#   RustFS UI:     http://localhost:9001  ($S3_ACCESS_KEY / $S3_SECRET_KEY)
+#   Elasticsearch: http://localhost:9200  (elastic / $ELASTIC_PASSWORD)
+#
+# Images are pinned by tag and digest; Dependabot keeps them current.
 
-version: "3.8"
+x-api-env: &api-env
+  HOST: 0.0.0.0
+  PORT: 3000
+  RUST_LOG: info,armature=debug
+  DATABASE_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres-primary:5432/armature
+  DATABASE_REPLICA_URL: postgres://armature:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}@postgres-replica:5432/armature
+  REDIS_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379
+  REDIS_SESSION_URL: redis://:${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}@redis:6379/1
+  RABBITMQ_URL: amqp://armature:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env (openssl rand -hex 32)}@rabbitmq:5672/armature
+  ELASTICSEARCH_URL: http://elastic:${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env (openssl rand -hex 32)}@elasticsearch:9200
+  S3_ENDPOINT: http://rustfs:9000
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env (openssl rand -hex 16)}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in .env (openssl rand -hex 32)}
+  S3_BUCKET: armature
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (openssl rand -hex 32)}
 
 services:
   # ============================================
   # Load Balancer / Reverse Proxy (Ferron)
   # ============================================
   ferron:
-    image: ghcr.io/ferronserver/ferron:latest
+    image: ferronserver/ferron:2.6.4-alpine@sha256:902a88c421e95b89934bc145cbbf07e38af60072a536e131865a4bc570678c4a
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
     volumes:
       - ./ferron/ferron.kdl:/etc/ferron/ferron.kdl:ro
       - ./ferron/ssl:/etc/ferron/ssl:ro
@@ -39,7 +63,7 @@ services:
       - frontend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -57,21 +81,8 @@ services:
       context: ../..
       dockerfile: docker/full-stack/Dockerfile
     environment:
-      - HOST=0.0.0.0
-      - PORT=3000
-      - INSTANCE_ID=api-1
-      - RUST_LOG=info,armature=debug
-      - DATABASE_URL=postgres://armature:armature@postgres-primary:5432/armature
-      - DATABASE_REPLICA_URL=postgres://armature:armature@postgres-replica:5432/armature
-      - REDIS_URL=redis://redis:6379
-      - REDIS_SESSION_URL=redis://redis:6379/1
-      - RABBITMQ_URL=amqp://armature:armature@rabbitmq:5672
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - S3_ENDPOINT=http://minio:9000
-      - S3_ACCESS_KEY=minioadmin
-      - S3_SECRET_KEY=minioadmin
-      - S3_BUCKET=armature
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      <<: *api-env
+      INSTANCE_ID: api-1
     depends_on:
       postgres-primary:
         condition: service_healthy
@@ -94,21 +105,8 @@ services:
       context: ../..
       dockerfile: docker/full-stack/Dockerfile
     environment:
-      - HOST=0.0.0.0
-      - PORT=3000
-      - INSTANCE_ID=api-2
-      - RUST_LOG=info,armature=debug
-      - DATABASE_URL=postgres://armature:armature@postgres-primary:5432/armature
-      - DATABASE_REPLICA_URL=postgres://armature:armature@postgres-replica:5432/armature
-      - REDIS_URL=redis://redis:6379
-      - REDIS_SESSION_URL=redis://redis:6379/1
-      - RABBITMQ_URL=amqp://armature:armature@rabbitmq:5672
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - S3_ENDPOINT=http://minio:9000
-      - S3_ACCESS_KEY=minioadmin
-      - S3_SECRET_KEY=minioadmin
-      - S3_BUCKET=armature
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      <<: *api-env
+      INSTANCE_ID: api-2
     depends_on:
       postgres-primary:
         condition: service_healthy
@@ -130,10 +128,10 @@ services:
   # PostgreSQL Primary
   # ============================================
   postgres-primary:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
       POSTGRES_USER: armature
-      POSTGRES_PASSWORD: armature
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       POSTGRES_DB: armature
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -142,7 +140,7 @@ services:
       - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     networks:
       - backend
     restart: unless-stopped
@@ -153,13 +151,13 @@ services:
       retries: 5
 
   # ============================================
-  # PostgreSQL Replica (Read-only)
+  # PostgreSQL "Replica" (standalone placeholder, not streaming-replicated)
   # ============================================
   postgres-replica:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine3.24@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     environment:
       POSTGRES_USER: armature
-      POSTGRES_PASSWORD: armature
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (openssl rand -hex 32)}
       POSTGRES_DB: armature
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -175,14 +173,18 @@ services:
   # Redis (Cache + Sessions)
   # ============================================
   redis:
-    image: redis:7-alpine
-    command: >
-      redis-server
-      --appendonly yes
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    # The password is read from the environment inside the container rather
+    # than interpolated into the command line by Compose.
+    command:
+      - sh
+      - -c
+      - exec redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass "$$REDIS_PASSWORD"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env (openssl rand -hex 32)}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -198,14 +200,14 @@ services:
   # RabbitMQ (Message Queue)
   # ============================================
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:4.1.8-management-alpine@sha256:72b92455b387f14d44efa3b9b4553bae3d8d82cd515376712ae08d67fc9a7b0d
     environment:
       RABBITMQ_DEFAULT_USER: armature
-      RABBITMQ_DEFAULT_PASS: armature
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env (openssl rand -hex 32)}
       RABBITMQ_DEFAULT_VHOST: armature
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -220,64 +222,73 @@ services:
   # ============================================
   # Elasticsearch (Search)
   # ============================================
+  # Authentication is ON (user "elastic", password ELASTIC_PASSWORD). HTTP TLS
+  # is off to keep the demo simple, so the port is bound to localhost only;
+  # enable xpack.security.http.ssl before exposing it anywhere.
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.5@sha256:86d0a30f420470d9cd4102cdf380c5a458bd6ccbbd3f54f7332d3b0b562431b8
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env (openssl rand -hex 32)}
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - cluster.name=armature
     ports:
-      - "9200:9200"
+      - "127.0.0.1:9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      test: ["CMD-SHELL", "curl -s -u \"elastic:$$ELASTIC_PASSWORD\" http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   # ============================================
-  # MinIO (S3-Compatible Object Storage)
+  # RustFS (S3-Compatible Object Storage)
   # ============================================
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
+  # Replaces MinIO, whose public container images are no longer published.
+  rustfs:
+    image: rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env (openssl rand -hex 16)}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in .env (openssl rand -hex 32)}
+      RUSTFS_CONSOLE_ENABLE: "true"
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
-      - minio_data:/data
+      - rustfs_data:/data
     networks:
       - backend
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   # ============================================
-  # MinIO Bucket Initialization
+  # Object Storage Bucket Initialization
   # ============================================
-  minio-init:
-    image: minio/mc:latest
+  # Creates the private "armature" bucket. Nothing is made anonymously
+  # readable; serve public assets through the API or presigned URLs.
+  s3-init:
+    image: amazon/aws-cli:2.31.0@sha256:3b018ce74732c98acf6f1de59b3a89587cb7f9eb6ea0d1447d1779091b2bf057
     depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      mc mb myminio/armature --ignore-existing;
-      mc anonymous set public myminio/armature/public;
-      exit 0;
-      "
+      - rustfs
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env (openssl rand -hex 16)}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in .env (openssl rand -hex 32)}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in 1 2 3 4 5 6 7 8 9 10; do
+          aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket armature 2>/dev/null && exit 0
+          aws --endpoint-url http://rustfs:9000 s3 mb s3://armature && exit 0
+          sleep 3
+        done
+        exit 1
     networks:
       - backend
 
@@ -293,5 +304,4 @@ volumes:
   redis_data:
   rabbitmq_data:
   elasticsearch_data:
-  minio_data:
-
+  rustfs_data:

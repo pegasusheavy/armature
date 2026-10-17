@@ -49,15 +49,33 @@ yarn.lock
 # =============================================================================
 # Environment & Secrets
 # =============================================================================
+# .dockerignore patterns are anchored at the context root (no implicit
+# recursion like .gitignore), so every secret pattern is also given in its
+# `**/` form to cover nested directories (crate dirs, templates, docker/).
 .env
 .env.*
+**/.env
+**/.env.*
+local.settings.json
+**/local.settings.json
 *.pem
 *.key
 *.crt
 *.p12
 *.pfx
+*.jks
+**/*.pem
+**/*.key
+**/*.crt
+**/*.p12
+**/*.pfx
+**/*.jks
 secrets/
 credentials/
+**/secrets/
+**/credentials/
+.cargo/credentials
+.cargo/credentials.toml
 
 # =============================================================================
 # Documentation

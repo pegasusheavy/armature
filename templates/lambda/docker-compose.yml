@@ -1,7 +1,28 @@
 # =============================================================================
 # Armature Lambda - Local Development Environment
 # =============================================================================
-# Use this for local testing of Lambda functions with LocalStack
+# Use this for local testing of Lambda functions with LocalStack.
+#
+# DEVELOPMENT ONLY. Published ports are bound to 127.0.0.1 (Docker's own
+# iptables rules bypass host firewalls for published ports). Images are
+# pinned by tag and digest. AWS_ACCESS_KEY_ID=test / AWS_SECRET_ACCESS_KEY=test
+# are LocalStack's documented dummy credentials, not secrets.
+#
+# Invoking the function:
+#   docker compose up -d
+#   curl -X POST http://127.0.0.1:9000/2015-03-31/functions/function/invocations \
+#        -d '{"rawPath":"/health","requestContext":{"http":{"method":"GET"}}}'
+#
+# The function container is the AWS base image, which ships the Lambda
+# Runtime Interface Emulator; that is what answers on port 9000.
+#
+# Why LocalStack's own Lambda service is not enabled: LocalStack runs Lambda
+# functions by starting sibling containers, which requires mounting the
+# Docker socket -- equivalent to root on the host. The function is exercised
+# through the emulator above instead, and LocalStack provides the AWS
+# services it talks to. If you really need LocalStack-managed Lambdas, put the
+# socket mount (and `lambda` in SERVICES) in a docker-compose.override.yml on
+# your own machine; do not commit it.
 # =============================================================================
 
 services:
@@ -9,21 +30,18 @@ services:
   # LocalStack - AWS Services Emulator
   # ---------------------------------------------------------------------------
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:4.14.0@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
     container_name: armature-localstack
     ports:
-      - "4566:4566"              # LocalStack Gateway
-      - "4510-4559:4510-4559"    # Service ports
+      - "127.0.0.1:4566:4566"              # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"    # Service ports
     environment:
-      - SERVICES=lambda,apigateway,s3,dynamodb,sqs,sns,secretsmanager
+      - SERVICES=apigateway,s3,dynamodb,sqs,sns,secretsmanager
       - DEBUG=0
-      - LAMBDA_EXECUTOR=docker
-      - DOCKER_HOST=unix:///var/run/docker.sock
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
       - localstack_data:/var/lib/localstack
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
@@ -32,7 +50,7 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------------
-  # Lambda Function (for local invoke testing)
+  # Lambda Function (local invoke via the Runtime Interface Emulator)
   # ---------------------------------------------------------------------------
   lambda-app:
     build:
@@ -42,6 +60,8 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
+    ports:
+      - "127.0.0.1:9000:8080"
     environment:
       - AWS_ENDPOINT_URL=http://localstack:4566
       - AWS_DEFAULT_REGION=us-east-1
@@ -49,26 +69,9 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - RUST_LOG=debug
 
-  # ---------------------------------------------------------------------------
-  # Lambda Web Adapter (for local HTTP testing)
-  # ---------------------------------------------------------------------------
-  lambda-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: armature-lambda:dev
-    ports:
-      - "9000:8080"
-    environment:
-      - AWS_LWA_PORT=8080
-      - RUST_LOG=info
-    # Lambda Web Adapter converts HTTP to Lambda events
-    entrypoint: ["/app/bootstrap"]
-
 volumes:
   localstack_data:
 
 networks:
   default:
     name: armature-lambda-net
-

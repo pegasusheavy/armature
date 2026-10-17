@@ -43,7 +43,7 @@ Integration guide for OpenSearch with the Armature framework.
 - ✅ Index management (create, delete, mappings)
 - ✅ Bulk operations (index, delete)
 - ✅ AWS OpenSearch Service support
-- ✅ TLS support (rustls/native-tls)
+- ✅ TLS support (rustls)
 
 ---
 
@@ -53,7 +53,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-opensearch = "0.1"
+armature-opensearch = "0.5"
 ```
 
 ### Feature Flags
@@ -61,16 +61,11 @@ armature-opensearch = "0.1"
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `rustls` | ✅ | TLS via rustls |
-| `native-tls` | | TLS via native-tls |
 | `aws-auth` | | AWS OpenSearch Service authentication |
-| `bulk-stream` | | Streaming bulk operations |
 
 ```toml
 # With AWS auth
-armature-opensearch = { version = "0.1", features = ["aws-auth"] }
-
-# With native TLS
-armature-opensearch = { version = "0.1", default-features = false, features = ["native-tls"] }
+armature-opensearch = { version = "0.5", features = ["aws-auth"] }
 ```
 
 ---
@@ -122,7 +117,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Search
     let results: Vec<Article> = client
         .search()
-        .query_string("getting started")
+        .simple_query_string("getting started")
         .size(10)
         .execute()
         .await?;
@@ -148,8 +143,13 @@ let config = OpenSearchConfig::new("http://localhost:9200");
 
 ```rust
 let config = OpenSearchConfig::new("https://opensearch.example.com")
-    .with_basic_auth("admin", "password");
+    .with_basic_auth("admin", std::env::var("OPENSEARCH_PASSWORD")?);
 ```
+
+`OpenSearchConfig`'s `Debug` output and the client's "Initializing" log line
+redact credentials: the password and any AWS credentials provider print as
+`<redacted>`, and `user:pass@` userinfo in the configured URLs is masked as
+`***@`.
 
 ### With TLS
 
@@ -247,11 +247,15 @@ let deleted_count = client.delete_by_query(
 
 ### Basic Search
 
+Use `simple_query_string` for anything a user types into a search box. Its
+syntax is limited to the `+ | - " * ( ) ~` operators, it cannot target arbitrary
+fields or run regex/range queries, and it never fails on malformed input.
+
 ```rust
 let results: Vec<Article> = client
     .search()
     .index("articles")
-    .query_string("opensearch tutorial")
+    .simple_query_string("opensearch tutorial")
     .execute()
     .await?;
 ```
@@ -300,7 +304,7 @@ let results: Vec<Article> = client
 let results = client
     .search()
     .index("articles")
-    .query_string("opensearch")
+    .simple_query_string("opensearch")
     .highlight(vec!["title".to_string(), "body".to_string()])
     .execute_with_meta::<Article>()
     .await?;
@@ -320,7 +324,7 @@ for hit in results.hits {
 let result = client
     .search()
     .index("articles")
-    .query_string("tutorial")
+    .simple_query_string("tutorial")
     .execute_with_meta::<Article>()
     .await?;
 
@@ -340,7 +344,7 @@ for hit in result.hits {
 let count = client
     .search()
     .index("articles")
-    .query_string("tutorial")
+    .simple_query_string("tutorial")
     .count()
     .await?;
 ```
@@ -411,10 +415,37 @@ let results: Vec<Article> = client
     .await?;
 ```
 
-### Query String Query
+### Simple Query String (User Input)
 
 ```rust
-// Supports Lucene query syntax
+// Safe for end-user input: limited operators, never errors on bad syntax
+let results: Vec<Article> = client
+    .search()
+    .simple_query_string("rust +web -java")
+    .execute()
+    .await?;
+
+// Restrict to fields you choose (the user cannot pick fields)
+let results: Vec<Article> = client
+    .search()
+    .simple_query_string_fields(
+        user_input,
+        vec!["title".to_string(), "body".to_string()],
+    )
+    .execute()
+    .await?;
+```
+
+### Query String Query
+
+> **Security:** never pass untrusted input to `query_string`. Full Lucene syntax
+> lets the caller target any field (`password_hash:*`), run regex, wildcard and
+> range queries that can be very expensive, and malformed input makes the
+> request fail. Use it only for queries your own code builds; use
+> `simple_query_string` for search boxes.
+
+```rust
+// Full Lucene query syntax: trusted, application-built queries only
 let results: Vec<Article> = client
     .search()
     .query_string("title:opensearch AND author:Alice")
@@ -600,7 +631,7 @@ let deleted_count = client.bulk_delete::<Article>(ids).await?;
 Enable the `aws-auth` feature:
 
 ```toml
-armature-opensearch = { version = "0.1", features = ["aws-auth"] }
+armature-opensearch = { version = "0.5", features = ["aws-auth"] }
 ```
 
 ### Configuration

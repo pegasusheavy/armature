@@ -25,9 +25,11 @@ Get the application URL by running:
 📊 Health Endpoints:
   - Liveness:  /health/live
   - Readiness: /health/ready
-  - Metrics:   /metrics
+{{- if .Values.metrics.enabled }}
+  - Metrics:   {{ .Values.metrics.path }} on port {{ .Values.metrics.port }} (not exposed via Service/Ingress)
+{{- end }}
 
-📖 Documentation: https://armature.rs/docs
+📖 Documentation: https://quinnjr.github.io/armature/
 
 {{- if .Values.autoscaling.enabled }}
 

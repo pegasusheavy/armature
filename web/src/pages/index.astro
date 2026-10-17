@@ -23,7 +23,10 @@ import { url } from '../lib/url';
         architecture inspired by Angular &amp; NestJS.
       </p>
       <div class="flex gap-4 justify-center">
-        <a href={url('/getting-started')} class="btn-rust"> Get Started </a>
+        <a href={url('/getting-started')} class="btn-rust">
+          {' '}
+          Get Started{' '}
+        </a>
         <a
           href="https://github.com/quinnjr/armature"
           target="_blank"
@@ -40,8 +43,7 @@ import { url } from '../lib/url';
   <!-- Code Preview -->
   <section class="bg-stone-900 border-y border-stone-800">
     <div class="max-w-5xl mx-auto">
-      <pre
-        class="p-6 text-sm overflow-x-auto leading-relaxed"><code class="text-stone-300"><span class="text-rust-500">use</span> armature::prelude::*;
+      <pre class="p-6 text-sm overflow-x-auto leading-relaxed"><code class="text-stone-300"><span class="text-rust-500">use</span> armature::prelude::*;
 <span class="text-rust-500">use</span> serde::&#123;Deserialize, Serialize&#125;;
 
 <span class="text-amber-500">&#35;[derive(Serialize, Deserialize)]</span>
@@ -191,11 +193,17 @@ import { url } from '../lib/url';
           </div>
 
           <div class="mb-2 text-stone-500"># Create a new project</div>
-          <div><span class="text-green-400">$</span> <span class="text-stone-300">armature new my-api</span></div>
-          <div class="mb-4"><span class="text-green-400">$</span> <span class="text-stone-300">cd my-api</span></div>
+          <div>
+            <span class="text-green-400">$</span> <span class="text-stone-300">armature new my-api</span>
+          </div>
+          <div class="mb-4">
+            <span class="text-green-400">$</span> <span class="text-stone-300">cd my-api</span>
+          </div>
 
           <div class="mb-2 text-stone-500"># Start the dev server</div>
-          <div><span class="text-green-400">$</span> <span class="text-stone-300">armature dev</span></div>
+          <div>
+            <span class="text-green-400">$</span> <span class="text-stone-300">armature dev</span>
+          </div>
           <div class="mt-2 text-rust-400">→ Server running at http://localhost:3000</div>
         </div>
       </div>
@@ -208,7 +216,10 @@ import { url } from '../lib/url';
       <h2 class="text-2xl font-bold text-white mb-4">Ready to build?</h2>
       <p class="text-stone-400 mb-8">Check out the documentation to learn more.</p>
       <div class="flex gap-4 justify-center">
-        <a href={url('/getting-started')} class="btn-rust"> Get Started </a>
+        <a href={url('/getting-started')} class="btn-rust">
+          {' '}
+          Get Started{' '}
+        </a>
         <a
           href={url('/docs')}
           class="bg-stone-800 hover:bg-stone-700 text-white font-medium px-6 py-3 rounded-lg transition-colors border border-stone-700"

@@ -227,7 +227,7 @@ Test multiple components working together.
 
 ```rust
 // tests/api_integration.rs
-use armature_framework::prelude::*;
+use armature::prelude::*;
 use armature_testing::*;
 
 #[tokio::test]
@@ -255,7 +255,7 @@ Test examples in documentation comments.
 /// # Examples
 ///
 /// ```
-/// use armature_framework::User;
+/// use armature::User;
 ///
 /// let user = User::new("Alice");
 /// assert_eq!(user.name, "Alice");

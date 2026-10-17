@@ -23,8 +23,8 @@ Add the config feature to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["config"] }
-armature-config = "0.1"
+armature = { package = "armature-framework", version = "0.8", features = ["config"] }
+armature-config = "0.5"
 ```
 
 ## Quick Start
@@ -648,7 +648,7 @@ Armature's configuration system provides:
 ✅ **Type-Safe** - Strong typing and validation
 ✅ **DI Integration** - Seamlessly injectable
 ✅ **Flexible** - Hierarchical and namespace support
-✅ **Production Ready** - Validation and error handling
+✅ **Validated** - Validation and error handling
 ✅ **NestJS-Like** - Familiar patterns for NestJS users
 
 For complete examples, see `examples/config_example.rs` in the repository.

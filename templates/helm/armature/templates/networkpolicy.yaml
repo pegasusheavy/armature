@@ -1,4 +1,5 @@
 {{- if .Values.networkPolicy.enabled }}
+# Default-deny for the app pods, with explicit allows below.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -13,28 +14,41 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Allow traffic from ingress controller
+    # Application traffic from the ingress controller
     - from:
         - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
+            {{- toYaml .Values.networkPolicy.ingressNamespaceSelector | nindent 12 }}
       ports:
         - protocol: TCP
           port: {{ .Values.service.targetPort }}
-    # Allow traffic from same namespace
+    {{- if .Values.networkPolicy.allowSameNamespace }}
+    # Application traffic from pods in the same namespace
     - from:
         - podSelector: {}
       ports:
         - protocol: TCP
           port: {{ .Values.service.targetPort }}
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    # Metrics scraping, from the monitoring namespace only
+    - from:
+        - namespaceSelector:
+            {{- toYaml .Values.networkPolicy.monitoringNamespaceSelector | nindent 12 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.metrics.port }}
+    {{- end }}
   egress:
-    # Allow DNS
+    # DNS
     - to:
         - namespaceSelector: {}
       ports:
         - protocol: UDP
           port: 53
-    # Allow HTTPS egress
+        - protocol: TCP
+          port: 53
+    # HTTPS to public addresses only (no private ranges, no link-local /
+    # cloud metadata endpoint)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -42,8 +56,12 @@ spec:
               - 10.0.0.0/8
               - 172.16.0.0/12
               - 192.168.0.0/16
+              - 169.254.0.0/16
+              - 100.64.0.0/10
       ports:
         - protocol: TCP
           port: 443
+    {{- with .Values.networkPolicy.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 {{- end }}
-

@@ -28,21 +28,31 @@ spec:
   template:
     metadata:
       annotations:
+        # Metrics are served on a dedicated port (9090) that the Service and
+        # Ingress do not expose; networkpolicy.yaml admits only the
+        # monitoring namespace to it.
         prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
+        prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
       labels:
         app.kubernetes.io/name: armature-api
     spec:
       serviceAccountName: armature-api
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: armature-api
-          image: ghcr.io/armature-rs/armature-api:latest
+          # Placeholder on purpose: it is not a valid image reference, so the
+          # pod fails (InvalidImageName) until an overlay sets your image,
+          # rather than pulling something from a registry you do not control.
+          # See kustomization.yaml.
+          image: REPLACE_WITH_YOUR_IMAGE
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -54,6 +64,9 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
           env:
             - name: HOST
               value: "0.0.0.0"
@@ -63,6 +76,8 @@ spec:
               value: "info"
             - name: ENVIRONMENT
               value: "production"
+            - name: METRICS_PORT
+              value: "9090"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

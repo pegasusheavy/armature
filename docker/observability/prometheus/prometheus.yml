@@ -38,20 +38,6 @@ scrape_configs:
     static_configs:
       - targets: ["cadvisor:8080"]
 
-  # Docker containers with prometheus labels
-  - job_name: "docker-containers"
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
-    relabel_configs:
-      - source_labels: [__meta_docker_container_label_prometheus_scrape]
-        regex: "true"
-        action: keep
-      - source_labels: [__meta_docker_container_label_prometheus_port]
-        target_label: __address__
-        regex: (.+)
-        replacement: ${1}
-      - source_labels: [__meta_docker_container_name]
-        target_label: container
-        regex: /(.+)
-        replacement: ${1}
-
+  # Containers are scraped through the static targets above. Docker-label
+  # service discovery (docker_sd_configs) is not used: it needs the Docker
+  # socket, which is root-equivalent access to the host.

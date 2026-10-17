@@ -57,14 +57,14 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["openapi"] }
+armature = { package = "armature-framework", version = "0.8", features = ["openapi"] }
 ```
 
 ### Basic Example
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::armature_openapi::*;
+use armature::prelude::*;
+use armature::armature_openapi::*;
 
 // Build OpenAPI specification
 let spec = OpenApiBuilder::new("My API", "1.0.0")
@@ -378,8 +378,8 @@ let spec = OpenApiBuilder::new("API", "1.0.0")
 ### Basic Setup
 
 ```rust
-use armature_framework::prelude::*;
-use armature_framework::armature_openapi::*;
+use armature::prelude::*;
+use armature::armature_openapi::*;
 
 #[controller("/api-docs")]
 struct ApiDocsController {
@@ -410,6 +410,27 @@ impl ApiDocsController {
 let config = SwaggerConfig::new("/api-docs", spec)
     .with_title("My Amazing API Documentation");
 ```
+
+The title is HTML-escaped before it is written into the page.
+
+### Pinned Assets and Subresource Integrity
+
+`swagger_ui_response` loads `swagger-ui-dist` at an exact pinned version,
+exposed as `SWAGGER_UI_VERSION` (currently `5.33.1`). Each script and stylesheet
+tag carries a Subresource Integrity hash (`integrity="sha384-..."`) and
+`crossorigin="anonymous"`, so the browser refuses a tampered or substituted CDN
+file. If your Content-Security-Policy restricts `script-src`/`style-src`, allow
+the CDN origin the page loads from.
+
+```rust
+use armature_openapi::swagger::SWAGGER_UI_VERSION;
+
+println!("Swagger UI {}", SWAGGER_UI_VERSION);
+```
+
+YAML output (`SwaggerConfig::spec_yaml`, `spec_yaml_response`) is produced with
+`serde_norway`, the maintained fork of the deprecated `serde_yaml`; the output
+format is unchanged.
 
 ### Multiple Versions
 

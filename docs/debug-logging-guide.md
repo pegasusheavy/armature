@@ -10,6 +10,7 @@ Comprehensive guide to debug logging throughout the Armature framework.
 - [Log Levels](#log-levels)
 - [Examples](#examples)
 - [Troubleshooting](#troubleshooting)
+- [Hot Module Reload (HMR)](#hot-module-reload-hmr)
 
 ---
 
@@ -185,7 +186,7 @@ RUST_LOG=armature=debug,hyper=info cargo run
 **What's Logged:**
 - Server binding and startup
 - Connection acceptance
-- TLS handshakes
+- TLS handshakes (including handshakes that miss the 10 s deadline)
 - Connection errors
 
 **Log Levels:**
@@ -276,6 +277,18 @@ RUST_LOG=armature=debug,hyper=info cargo run
   "message": "Request completed"
 }
 ```
+
+Request paths are logged **without their query string**. `LoggerMiddleware`,
+`LoggingMiddleware` and the middleware chain all drop the query, because it
+commonly carries password-reset codes, OAuth `code`s and API keys. Log a
+specific query parameter yourself if you need it, never the whole query.
+
+`HttpRequest`'s `Debug` output redacts credential headers
+(`Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`, `X-Api-Key`
+print as `<redacted>`), so `debug!(?req)` does not leak them. The
+`armature-log` Pretty and Compact formats escape control characters
+(CR, LF, ANSI `ESC`) and Unicode bidi overrides in messages, so
+attacker-controlled text cannot forge extra log lines.
 
 ### 5. Lifecycle Hooks
 
@@ -580,6 +593,44 @@ LogConfig::new().format(LogFormat::Pretty)
 
 ---
 
+## Hot Module Reload (HMR)
+
+`armature_core::hmr` watches front-end assets and tells the browser to reload
+over a WebSocket. It is a development tool and is locked down accordingly:
+
+- The WebSocket server binds `127.0.0.1` only.
+- Every upgrade must carry the manager's random per-process token
+  (`HmrManager::token()`), which is embedded in the client script
+  `inject_hmr_script` adds to your HTML. A page on another origin cannot read
+  it, so it cannot connect.
+- The `Origin` must be a loopback origin (`localhost`, `127.0.0.1`, `[::1]`,
+  any port) or one you list with `HmrConfig::allow_origin`. Other upgrades get
+  `403`.
+- `HmrManager::start_websocket_server` fails in release builds
+  (`debug_assertions` off) unless `HmrConfig::allow_in_release(true)` is set.
+  Do not set it for anything you deploy.
+
+```rust,ignore
+use armature_core::hmr::{HmrConfig, HmrManager, inject_hmr_script};
+
+let manager = HmrManager::new(
+    HmrConfig::new()
+        .websocket_port(3001)
+        // Only needed when the dev page is not served from loopback:
+        .allow_origin("http://dev.example.test:8080"),
+);
+manager.start_watching().await?;
+manager.start_websocket_server().await?; // Err in release builds
+
+// Inject the client script (it carries the token) into served HTML:
+let html = inject_hmr_script(html, &manager).await;
+```
+
+Clients must use the injected script; a hand-written client without the token
+is refused.
+
+---
+
 ## Summary
 
 ### Key Takeaways
@@ -587,7 +638,7 @@ LogConfig::new().format(LogFormat::Pretty)
 ✅ **Comprehensive Coverage** - All major components log their operations
 ✅ **Structured Logging** - Rich context with key-value pairs
 ✅ **Multiple Levels** - TRACE to ERROR for different needs
-✅ **Production Ready** - Low overhead, configurable
+✅ **Low Overhead** - Configurable per module, cheap when disabled
 ✅ **Easy Debugging** - Clear, informative messages
 
 ### Quick Reference

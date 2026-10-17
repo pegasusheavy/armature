@@ -106,6 +106,7 @@ async fn main() {
 mod tests {
     use super::*;
     use armature::armature_testing::*;
+    use armature_core::handler::from_legacy_handler;
     use std::sync::Arc;
 
     #[tokio::test]
@@ -123,7 +124,7 @@ mod tests {
             path: "/users".to_string(),
             handler: from_legacy_handler(Arc::new(move |_req: HttpRequest| {
                 let c = ctrl.clone();
-                Box::pin(async move { c.get_all()?.into_response() })
+                Box::pin(async move { c.get_all() })
             })),
             constraints: None,
         });
@@ -157,7 +158,7 @@ mod tests {
                 let c = ctrl.clone();
                 Box::pin(async move {
                     let id = req.param("id").and_then(|s| s.parse().ok()).unwrap_or(0);
-                    c.get_one(id)?.into_response()
+                    c.get_one(id)
                 })
             })),
             constraints: None,
@@ -192,7 +193,7 @@ mod tests {
                 let c = ctrl.clone();
                 Box::pin(async move {
                     let id = req.param("id").and_then(|s| s.parse().ok()).unwrap_or(0);
-                    c.get_one(id)?.into_response()
+                    c.get_one(id)
                 })
             })),
             constraints: None,

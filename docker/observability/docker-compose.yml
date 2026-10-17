@@ -1,5 +1,8 @@
 # Armature Observability Stack
 # ============================
+# DEVELOPMENT ONLY. Do not expose this stack to an untrusted network: most of
+# these UIs and APIs have no authentication of their own.
+#
 # Complete monitoring, metrics, logging, and tracing stack
 #
 # Services:
@@ -9,13 +12,20 @@
 # - Loki: Log aggregation
 # - Promtail: Log shipping
 #
+# Every published port is bound to 127.0.0.1 (Docker's own iptables rules
+# bypass host firewalls for published ports). No container mounts the Docker
+# socket: read access to it is still full control of the Docker daemon, i.e.
+# root on the host. Grafana's admin password comes from .env (copy
+# .env.example); Compose refuses to start while it is unset.
+#
 # Usage:
+#   cp .env.example .env   # then set every value
 #   docker compose up -d
-#   Grafana: http://localhost:3001 (admin/admin)
+#   Grafana:    http://localhost:3001 (admin / $GRAFANA_ADMIN_PASSWORD)
 #   Prometheus: http://localhost:9090
-#   Jaeger: http://localhost:16686
-
-version: "3.8"
+#   Jaeger:     http://localhost:16686
+#
+# Images are pinned by tag and digest; Dependabot keeps them current.
 
 services:
   # ============================================
@@ -26,7 +36,7 @@ services:
       context: ../..
       dockerfile: docker/observability/Dockerfile.api
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - HOST=0.0.0.0
       - PORT=3000
@@ -34,24 +44,22 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
       - OTEL_SERVICE_NAME=armature-api
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - observability
-    labels:
-      - "prometheus.scrape=true"
-      - "prometheus.port=3000"
-      - "prometheus.path=/metrics"
 
   # ============================================
   # Prometheus - Metrics Collection
   # ============================================
+  # No --web.enable-lifecycle: it exposes unauthenticated /-/reload and
+  # /-/quit endpoints. Restart the container to pick up config changes.
   prometheus:
-    image: prom/prometheus:v2.48.0
+    image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -60,9 +68,6 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=15d"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
-      - "--web.enable-lifecycle"
     networks:
       - observability
     restart: unless-stopped
@@ -71,15 +76,15 @@ services:
   # Grafana - Visualization
   # ============================================
   grafana:
-    image: grafana/grafana:10.2.2
+    image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env (openssl rand -hex 32)}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_SERVER_ROOT_URL=http://localhost:3001
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
@@ -96,12 +101,12 @@ services:
   # Jaeger - Distributed Tracing
   # ============================================
   jaeger:
-    image: jaegertracing/all-in-one:1.52
+    image: jaegertracing/all-in-one:1.76.0@sha256:ab6f1a1f0fb49ea08bcd19f6b84f6081d0d44b364b6de148e1798eb5816bacac
     ports:
-      - "16686:16686"  # UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
-      - "14268:14268"  # Jaeger thrift
+      - "127.0.0.1:16686:16686"  # UI
+      - "127.0.0.1:4317:4317"    # OTLP gRPC
+      - "127.0.0.1:4318:4318"    # OTLP HTTP
+      - "127.0.0.1:14268:14268"  # Jaeger thrift
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - SPAN_STORAGE_TYPE=badger
@@ -118,9 +123,9 @@ services:
   # Loki - Log Aggregation
   # ============================================
   loki:
-    image: grafana/loki:2.9.2
+    image: grafana/loki:3.6.11@sha256:44148ad243c07957113baea950ee5ba9b0c8eff8d7e38ff3cc1c0af705790945
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
       - loki_data:/loki
@@ -132,12 +137,14 @@ services:
   # ============================================
   # Promtail - Log Shipping
   # ============================================
+  # Tails container log files read-only instead of using the Docker socket.
   promtail:
-    image: grafana/promtail:2.9.2
+    image: grafana/promtail:3.6.11@sha256:a761cb834cfaeee29745440d4884d6748f0a08d8f68928db1d707018c1dcfbe9
     volumes:
       - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
       - /var/log:/var/log:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail_positions:/positions
     command: -config.file=/etc/promtail/promtail-config.yml
     depends_on:
       - loki
@@ -149,9 +156,9 @@ services:
   # Alertmanager - Alert Routing
   # ============================================
   alertmanager:
-    image: prom/alertmanager:v0.26.0
+    image: prom/alertmanager:v0.34.1@sha256:e9733bafb1bdef9b00e25a21f8f99dc26a22224bf16641ad754d1649f4c3357a
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager_data:/alertmanager
@@ -166,16 +173,17 @@ services:
   # Node Exporter - Host Metrics
   # ============================================
   node-exporter:
-    image: prom/node-exporter:v1.7.0
+    image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
     ports:
-      - "9101:9100"
+      - "127.0.0.1:9101:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
-      - /:/rootfs:ro
+      - /:/rootfs:ro,rslave
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
     networks:
       - observability
@@ -184,15 +192,18 @@ services:
   # ============================================
   # cAdvisor - Container Metrics
   # ============================================
+  # Reads cgroup data from /sys and container metadata from /var/lib/docker,
+  # both read-only. The host root filesystem and /var/run (which holds the
+  # Docker socket) are not mounted; containers are therefore labelled by ID
+  # rather than by name.
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    image: ghcr.io/google/cadvisor:0.55.1@sha256:e02855207ec07bb45ee41f720645945251f093f24c28f8c29cf718490f784922
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
     networks:
       - observability
     restart: unless-stopped
@@ -207,4 +218,4 @@ volumes:
   jaeger_data:
   loki_data:
   alertmanager_data:
-
+  promtail_positions:

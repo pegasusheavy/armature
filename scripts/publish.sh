@@ -539,8 +539,11 @@ get_workspace_deps() {
         return
     fi
 
-    # Extract path dependencies that are workspace members, EXCLUDING
-    # [dev-dependencies].
+    # Extract armature-* dependencies, EXCLUDING [dev-dependencies]. Crates
+    # depend on each other by version requirement (the workspace root's
+    # [patch.crates-io] points those at the local checkouts), so match on the
+    # dependency name rather than on a `path = "../armature-*"` key; the caller
+    # keeps only names that are workspace members.
     #
     # Dev-dependency cycles are legal in cargo and this workspace has one:
     # armature-graphql depends on armature-graphql-macros, and
@@ -558,8 +561,8 @@ get_workspace_deps() {
         }
         !in_dev
     ' "$cargo_toml" 2>/dev/null \
-        | grep -E 'path\s*=\s*"\.\./armature-' \
-        | sed 's/.*path\s*=\s*"\.\.\/\(armature-[^"]*\)".*/\1/' \
+        | grep -oE '^[[:space:]]*armature-[a-z0-9-]+[[:space:]]*=' \
+        | sed -E 's/^[[:space:]]*(armature-[a-z0-9-]+).*/\1/' \
         | sort -u
 }
 
@@ -610,7 +613,7 @@ compute_publish_order() {
 
     while [[ ${#queue[@]} -gt 0 ]]; do
         # Sort queue for deterministic order
-        IFS=$'\n' sorted_queue=($(sort <<<"${queue[*]}")); unset IFS
+        mapfile -t sorted_queue < <(printf '%s\n' "${queue[@]}" | sort)
         local current="${sorted_queue[0]}"
         queue=("${sorted_queue[@]:1}")
 
@@ -618,8 +621,11 @@ compute_publish_order() {
 
         # For each crate that depends on current
         for crate in $members; do
-            if [[ "${deps[$crate]}" == *"$current"* ]]; then
-                ((in_degree[$crate]--))
+            # Whole-name match: a substring test would treat
+            # armature-graphql-macros as a dependency on armature-graphql.
+            # `deps` is newline-separated, so pad with newlines for the match.
+            if [[ $'\n'"${deps[$crate]}"$'\n' == *$'\n'"$current"$'\n'* ]]; then
+                in_degree[$crate]=$(( in_degree[$crate] - 1 ))
                 if [[ ${in_degree[$crate]} -eq 0 ]]; then
                     queue+=("$crate")
                 fi
@@ -670,11 +676,20 @@ check_crate() {
             errors+=("Missing 'description' field")
         fi
 
-        # Check for path dependencies (warning - will need conversion)
+        # A path-only dependency outside [dev-dependencies] cannot be
+        # published. Inter-crate deps carry a version requirement and are
+        # redirected to the local checkout by the root [patch.crates-io].
         local path_deps
-        path_deps=$(grep -cE 'path\s*=\s*"\.\./armature-' "$cargo_toml" 2>/dev/null) || path_deps=0
+        path_deps=$(awk '
+            /^[[:space:]]*\[/ {
+                in_dev = ($0 ~ /^[[:space:]]*\[(.*\.)?dev-dependencies(\.|\])/)
+                next
+            }
+            !in_dev
+        ' "$cargo_toml" 2>/dev/null \
+            | grep -E 'path\s*=\s*"' | grep -cvE 'version\s*=' ) || path_deps=0
         if [[ $path_deps -gt 0 ]]; then
-            warnings+=("$path_deps path deps (run prepare-publish.sh)")
+            errors+=("$path_deps path-only deps outside [dev-dependencies] (use a version requirement; [patch.crates-io] resolves it locally)")
         fi
     fi
 
@@ -986,7 +1001,8 @@ publish_all() {
 
     local publish_order
     publish_order=$(compute_publish_order)
-    local publish_order_array=($publish_order)
+    local -a publish_order_array
+    read -r -a publish_order_array <<< "$publish_order"
     local total_crates=${#publish_order_array[@]}
 
     echo ""
@@ -1165,7 +1181,8 @@ publish_all() {
     done
 
     # Final summary
-    local end_time=$(date +%s)
+    local end_time
+    end_time=$(date +%s)
     local elapsed=$((end_time - START_TIME))
 
     echo ""

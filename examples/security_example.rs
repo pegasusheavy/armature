@@ -50,6 +50,7 @@ fn custom_security() -> SecurityMiddleware {
                     "https:".to_string(),
                 ]),
         )
+        .expect("the CSP above is valid")
         .with_hsts(
             HstsConfig::new(31536000) // 1 year
                 .include_subdomains(true)

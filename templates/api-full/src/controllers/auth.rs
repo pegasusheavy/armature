@@ -30,6 +30,9 @@ impl AuthController {
         let user = match get_user_service().find_by_email(&body.email) {
             Some(u) => u,
             None => {
+                // Do the same Argon2 work as a real password check so an
+                // unknown email is not distinguishable by response time.
+                auth_service.verify_password_for_unknown_user(&body.password);
                 return HttpResponse::unauthorized().with_json(&ApiResponse::<()>::error(
                     "INVALID_CREDENTIALS",
                     "Invalid email or password",

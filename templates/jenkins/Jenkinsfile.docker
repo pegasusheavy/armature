@@ -7,14 +7,23 @@
 pipeline {
     agent {
         docker {
-            image 'rust:1.85-alpine'
-            args '-v cargo-cache:/usr/local/cargo/registry'
+            // Pinned by tag and digest (Rust 1.99.1 >= the 1.94.1 MSRV).
+            image 'rust:1.99.1-alpine3.24@sha256:557a94c82b485a14b569120e00867267108c734efe33f10cc31ca0cd5dd1eca9'
+            // No shared named volume for the cargo registry: a volume reused
+            // by every job lets one job plant crates/build scripts that
+            // another job then compiles and runs. CARGO_HOME below keeps the
+            // cache inside this job's workspace instead.
         }
     }
 
     environment {
         RUST_BACKTRACE = '1'
         CARGO_TERM_COLOR = 'always'
+        CARGO_HOME = "${WORKSPACE}/.cargo-home"
+        PATH = "/usr/local/cargo/bin:${PATH}"
+        // Fixed binary name: JOB_BASE_NAME is derived from the branch name
+        // in multibranch jobs and is not used to build paths/commands.
+        BIN_NAME = 'app'
     }
 
     options {
@@ -70,9 +79,22 @@ pipeline {
             steps {
                 sh '''
                     echo "📎 Running lints..."
-                    rustup component add rustfmt clippy || true
-                    cargo fmt -- --check || true
-                    cargo clippy --all-targets --release -- -D warnings || true
+                    rustup component add rustfmt clippy
+                    cargo fmt -- --check
+                    cargo clippy --all-targets --release -- -D warnings
+                '''
+            }
+        }
+
+        // =====================================================================
+        // SECURITY AUDIT (blocking)
+        // =====================================================================
+        stage('Security Audit') {
+            steps {
+                sh '''
+                    echo "🔒 Running security audit..."
+                    cargo install cargo-audit --version 0.22.2 --locked
+                    cargo audit
                 '''
             }
         }
@@ -85,9 +107,7 @@ pipeline {
                 sh '''
                     echo "📦 Archiving artifacts..."
                     mkdir -p artifacts
-                    cp target/x86_64-unknown-linux-musl/release/${JOB_BASE_NAME} artifacts/ || \
-                    cp target/release/${JOB_BASE_NAME} artifacts/ || \
-                    echo "No binary found"
+                    cp "target/x86_64-unknown-linux-musl/release/${BIN_NAME}" artifacts/
                 '''
                 archiveArtifacts artifacts: 'artifacts/**', allowEmptyArchive: true
             }

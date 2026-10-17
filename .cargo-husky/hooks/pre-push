@@ -75,25 +75,42 @@ fi
 echo "✅ Doc tests passed"
 echo ""
 
-# 4. Check for security vulnerabilities (if cargo-audit is installed)
+# 4. Supply-chain checks. A finding blocks the push: an advisory that is
+# genuinely not applicable belongs in .cargo/audit.toml / deny.toml with a
+# justification, not in a habit of pushing past red output.
+audit_ran=false
 if command -v cargo-audit >/dev/null 2>&1; then
-    echo "🔐 Running security audit..."
+    audit_ran=true
+    echo "🔐 Running cargo audit..."
     if ! cargo audit; then
         echo ""
-        echo "⚠️  Security vulnerabilities found!"
-        echo "   Review and address them before pushing to protected branches."
+        echo "❌ cargo audit reported vulnerabilities!"
+        echo "   Upgrade the affected dependency, or record a justified ignore"
+        echo "   in .cargo/audit.toml, before pushing."
         echo ""
-        # Don't fail on audit warnings for feature branches
-        if [ "$current_branch" = "develop" ]; then
-            echo "   Continuing anyway for develop branch..."
-        fi
-    else
-        echo "✅ No security vulnerabilities found"
-        echo ""
+        exit 1
     fi
-else
-    echo "ℹ️  cargo-audit not installed. Skipping security audit."
-    echo "   Install with: cargo install cargo-audit"
+    echo "✅ cargo audit passed"
+    echo ""
+fi
+if command -v cargo-deny >/dev/null 2>&1 && [ -f deny.toml ]; then
+    audit_ran=true
+    echo "🔐 Running cargo deny..."
+    if ! cargo deny check advisories bans sources; then
+        echo ""
+        echo "❌ cargo deny reported problems!"
+        echo "   Fix them (or record a justified exception in deny.toml) before pushing."
+        echo ""
+        exit 1
+    fi
+    echo "✅ cargo deny passed"
+    echo ""
+fi
+if [ "$audit_ran" = false ]; then
+    echo "⚠️  Neither cargo-audit nor cargo-deny is installed: dependency advisories"
+    echo "   were NOT checked. Install one (CI runs cargo audit regardless):"
+    echo "     cargo install cargo-audit --version 0.22.2 --locked"
+    echo "     cargo install cargo-deny --version 0.20.2 --locked"
     echo ""
 fi
 

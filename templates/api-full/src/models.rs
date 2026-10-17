@@ -73,6 +73,11 @@ pub struct RegisterRequest {
     pub name: String,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateUserRequest {
+    pub name: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct AuthResponse {
     pub token: String,
@@ -229,6 +234,15 @@ impl Validate for RegisterRequest {
         }
 
         if errors.is_empty() { Ok(()) } else { Err(errors) }
+    }
+}
+
+impl Validate for UpdateUserRequest {
+    fn validate(&self) -> Result<(), Vec<armature_validation::ValidationError>> {
+        if let Some(name) = &self.name {
+            NotEmpty::validate(name, "name").map_err(|e| vec![e])?;
+        }
+        Ok(())
     }
 }
 

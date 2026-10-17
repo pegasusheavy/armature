@@ -1,0 +1,44 @@
+# Keep secrets, VCS metadata and build output out of the Docker build
+# context: anything in the context can end up in an image layer via COPY.
+
+# Secrets and local configuration
+.env
+.env.*
+**/.env
+**/.env.*
+local.settings.json
+**/local.settings.json
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+**/*.pem
+**/*.key
+**/*.crt
+**/*.p12
+**/*.pfx
+**/*.jks
+secrets/
+credentials/
+.aws/
+.azure/
+.gcloud/
+
+# Version control and editor state
+.git
+.gitignore
+.idea/
+.vscode/
+*.swp
+
+# Build output (rebuilt inside the image)
+target/
+**/target/
+
+# Not needed in the image
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+*.md

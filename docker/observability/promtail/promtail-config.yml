@@ -4,28 +4,25 @@ server:
   grpc_listen_port: 0
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /positions/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  # Docker container logs
+  # Docker container logs, tailed from the json-file log driver's files
+  # (mounted read-only). This replaces docker_sd_configs, which needs the
+  # Docker socket, i.e. root-equivalent access to the host.
   - job_name: docker
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
-        refresh_interval: 5s
-    relabel_configs:
-      - source_labels: ["__meta_docker_container_name"]
-        regex: "/(.+)"
-        target_label: container
-      - source_labels: ["__meta_docker_container_log_stream"]
-        target_label: stream
-      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
-        target_label: service
-      - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
-        target_label: project
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*-json.log
     pipeline_stages:
+      # Unwrap the json-file driver envelope ({"log": ..., "stream": ...}).
+      - docker: {}
       # Parse JSON logs
       - json:
           expressions:

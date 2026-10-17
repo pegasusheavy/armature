@@ -30,7 +30,7 @@ templates/
 | Template | Description | Best For |
 |----------|-------------|----------|
 | `api-minimal` | Single-file REST API | Learning, prototyping |
-| `api-full` | Auth, validation, Docker | Production APIs |
+| `api-full` | Auth, validation, Docker | Authenticated REST APIs |
 | `graphql-api` | GraphQL API with queries, mutations, subscriptions | GraphQL APIs |
 | `microservice` | Job queue worker | Background processing |
 
@@ -68,15 +68,20 @@ cargo run
 cp -r templates/api-full my-api
 cd my-api
 cp .env.example .env
-# Edit .env with your JWT_SECRET
+# Set JWT_SECRET (required, at least 32 bytes): openssl rand -hex 32
 cargo run
 # Server at http://localhost:3000
 ```
 
-For production with Docker:
+The app refuses to start without a valid `JWT_SECRET`; there is no fallback
+secret.
+
+With Docker Compose, also set `POSTGRES_PASSWORD` and `REDIS_PASSWORD` in
+`.env`. Compose refuses to start while any of them is unset, and published
+ports are bound to `127.0.0.1`:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### graphql-api
@@ -86,7 +91,8 @@ cp -r templates/graphql-api my-graphql
 cd my-graphql
 cp .env.example .env
 cargo run
-# GraphQL Playground at http://localhost:3000/graphql
+# GraphQL endpoint at http://localhost:3000/graphql
+# GraphiQL at http://localhost:3000/playground only with GRAPHQL_PLAYGROUND=true
 ```
 
 #### microservice
@@ -129,10 +135,13 @@ api-minimal/
 
 ### api-full
 
-Production-ready API with authentication and validation.
+REST API with authentication, per-user authorization and validation.
 
 **Features:**
-- JWT authentication
+- JWT authentication (`JWT_SECRET` required, refresh tokens rejected as
+  bearer tokens via `verify_access`)
+- Per-user authorization: listing users is admin-only; reading, updating and
+  deleting a user is allowed for that user or an admin
 - Request validation
 - Structured logging
 - Docker support
@@ -168,18 +177,19 @@ api-full/
 - `GET /health/ready` - Readiness probe
 - `POST /api/auth/login` - Login
 - `POST /api/auth/register` - Register
-- `GET /api/users` - List users (authenticated)
-- `GET /api/users/:id` - Get user (authenticated)
-- `DELETE /api/users/:id` - Delete user (authenticated)
+- `GET /api/users` - List users (admin only)
+- `GET /api/users/:id` - Get user (self or admin)
+- `PATCH /api/users/:id` - Update user (self or admin)
+- `DELETE /api/users/:id` - Delete user (self or admin)
 
 ### graphql-api
 
-Production-ready GraphQL API with queries, mutations, and subscriptions.
+GraphQL API with queries and mutations. Subscriptions are not wired up (the
+schema uses `EmptySubscription`).
 
 **Features:**
-- GraphQL Playground/GraphiQL
+- GraphiQL playground, opt-in with `GRAPHQL_PLAYGROUND=true` (off by default)
 - Query and Mutation resolvers
-- Subscription support
 - Type-safe schema
 - Pagination support
 - Authentication integration
@@ -208,8 +218,9 @@ graphql-api/
 ```
 
 **Endpoints:**
-- `GET /graphql` - GraphQL Playground
 - `POST /graphql` - GraphQL endpoint
+- `GET /graphql/schema` - Schema SDL (404 unless `GRAPHQL_INTROSPECTION=true`; introspection queries are also disabled until then)
+- `GET /playground` - GraphiQL (404 unless `GRAPHQL_PLAYGROUND=true`)
 - `GET /health` - Health check
 - `GET /health/live` - Liveness probe
 - `GET /health/ready` - Readiness probe
@@ -310,7 +321,7 @@ let pool = PgPoolOptions::new()
 ```toml
 # Cargo.toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["ratelimit"] }
+armature = { package = "armature-framework", version = "0.8", features = ["ratelimit"] }
 ```
 
 ```rust
@@ -327,7 +338,7 @@ let limiter = RateLimiter::builder()
 ```toml
 # Cargo.toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["cache"] }
+armature = { package = "armature-framework", version = "0.8", features = ["cache"] }
 ```
 
 ### Adding Validation
@@ -335,7 +346,7 @@ armature-framework = { version = "0.1", features = ["cache"] }
 ```toml
 # Cargo.toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["validation"] }
+armature = { package = "armature-framework", version = "0.8", features = ["validation"] }
 ```
 
 ### Adding OpenAPI Docs
@@ -343,7 +354,7 @@ armature-framework = { version = "0.1", features = ["validation"] }
 ```toml
 # Cargo.toml
 [dependencies]
-armature-framework = { version = "0.1", features = ["openapi"] }
+armature = { package = "armature-framework", version = "0.8", features = ["openapi"] }
 ```
 
 ## Best Practices
@@ -395,25 +406,34 @@ Always include health endpoints for container orchestration:
 
 ### 5. Docker Best Practices
 
-Use multi-stage builds:
+Use multi-stage builds with base images pinned by tag **and** digest, and run
+as a non-root user. The template Dockerfiles use `cargo-chef` on Rust 1.99.1
+(at or above the 1.94.1 MSRV) and a minimal runtime image without `curl`:
 
 ```dockerfile
-# Build stage
-FROM rust:1.85 AS builder
-# ... build ...
+# Build stage (pin the digest: docker buildx imagetools inspect <image>:<tag>)
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.99.1-alpine3.24@sha256:<digest> AS chef
+# ... cargo chef cook, cargo build --release --locked ...
 
 # Runtime stage
-FROM debian:bookworm-slim
-# ... minimal runtime ...
+FROM alpine:3.24.2@sha256:<digest> AS runtime
+# ... copy the binary, USER a non-root numeric UID ...
 ```
+
+See the [Docker guide](docker-guide.md).
 
 ### 6. Security
 
-- Use strong JWT secrets (32+ random bytes)
-- Hash passwords with bcrypt/argon2
+- Use strong JWT secrets (32+ random bytes); `JwtConfig::new` rejects shorter,
+  placeholder or low-entropy secrets
+- Register authentication middleware with `Application::use_middleware` so
+  guards see a verified identity; built-in guards fail closed without one
+- Authorize per resource (self-or-admin), not only "is authenticated"
+- Hash passwords with Argon2id (`armature_auth::PasswordHasher`)
 - Validate all input
 - Use HTTPS in production
 - Implement rate limiting
+- Keep `.env` out of version control; ship `.env.example` with empty secrets
 
 ## Creating New Templates
 
@@ -435,7 +455,7 @@ Templates provide a quick start for common project types:
 | Need | Use |
 |------|-----|
 | Learning Armature | `api-minimal` |
-| Production REST API | `api-full` |
+| Authenticated REST API | `api-full` |
 | GraphQL API | `graphql-api` |
 | Background jobs | `microservice` |
 

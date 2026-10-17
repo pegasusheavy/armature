@@ -14,12 +14,14 @@ updates:
     labels:
       - "dependencies"
       - "rust"
+    # Only patch releases are grouped; every minor bump gets its own PR so a
+    # dependency's behaviour change is reviewed on its own rather than buried
+    # in a bundle.
     groups:
-      rust-minor:
+      rust-patch:
         patterns:
           - "*"
         update-types:
-          - "minor"
           - "patch"
 
   # GitHub Actions
@@ -56,3 +58,97 @@ updates:
         patterns:
           - "*"
 
+  # Crate submodules: keeps the umbrella's gitlinks moving with each crate
+  # repository's develop branch (see .gitmodules).
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(submodules)"
+    labels:
+      - "dependencies"
+
+  # Base images in the scaffolding templates and the docker/ stacks. These get
+  # copied into downstream projects, so stale or unpinned bases propagate.
+  - package-ecosystem: "docker"
+    directories:
+      - "/docker/full-stack"
+      - "/docker/microservices"
+      - "/docker/observability"
+      - "/templates/api-full"
+      - "/templates/api-minimal"
+      - "/templates/azure-container"
+      - "/templates/cloudrun"
+      - "/templates/graphql-api"
+      - "/templates/lambda"
+      - "/templates/microservice"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(docker)"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/docker/development"
+      - "/docker/full-stack"
+      - "/docker/microservices"
+      - "/docker/observability"
+      - "/templates/api-full"
+      - "/templates/api-minimal"
+      - "/templates/azure-container"
+      - "/templates/cloudrun"
+      - "/templates/graphql-api"
+      - "/templates/lambda"
+      - "/templates/microservice"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "deps(docker)"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Cross-framework benchmark harnesses.
+  - package-ecosystem: "gomod"
+    directories:
+      - "/benchmarks/comparison/go_fiber"
+      - "/benchmarks/comparison/go_gin"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps(bench)"
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "npm"
+    directories:
+      - "/benchmarks/comparison"
+      - "/benchmarks/comparison/nestjs_express"
+      - "/benchmarks/comparison/nestjs_fastify"
+      - "/benches/comparison_servers/express_server"
+      - "/benches/comparison_servers/koa_server"
+      - "/benches/comparison_servers/nestjs_server"
+      - "/benches/comparison_servers/nextjs_api"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps(bench)"
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "maven"
+    directory: "/benchmarks/comparison/springboot_bench"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps(bench)"
+    labels:
+      - "dependencies"
