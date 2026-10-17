@@ -219,7 +219,7 @@ graphql-api/
 
 **Endpoints:**
 - `POST /graphql` - GraphQL endpoint
-- `GET /graphql/schema` - Schema SDL
+- `GET /graphql/schema` - Schema SDL (404 unless `GRAPHQL_INTROSPECTION=true`; introspection queries are also disabled until then)
 - `GET /playground` - GraphiQL (404 unless `GRAPHQL_PLAYGROUND=true`)
 - `GET /health` - Health check
 - `GET /health/live` - Liveness probe

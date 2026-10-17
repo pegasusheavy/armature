@@ -219,6 +219,10 @@ Once enabled, access documentation at:
 - **Schema Docs**: `http://localhost:3000/graphql/schema`
 - **SDL Download**: `http://localhost:3000/graphql/schema.graphql`
 
+These endpoints expose the full schema, so serve them only where introspection is
+allowed. The `graphql-api` project template gates them on the same switch as
+introspection: they return `404` unless `GRAPHQL_INTROSPECTION=true` (default `false`).
+
 ---
 
 ## Playground Options
