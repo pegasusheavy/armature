@@ -27,7 +27,57 @@ that was built against and tested with a real WebSocket client. Run it with:
 cargo run --example websocket_chat
 ```
 
+### Security Defaults
+
+The server is locked down until you open it up explicitly:
+
+- **Loopback bind.** The default `bind_addr` is `127.0.0.1:9001`. Set `.bind_addr(..)` to
+  expose it.
+- **Origin allowlist (CSWSH defence).** Browsers always send `Origin` on an upgrade. By
+  default every request carrying an `Origin` header is refused with `403` until you list
+  the allowed origins with `.allowed_origins([..])` (exact `scheme://host[:port]`,
+  case-insensitive). Requests without `Origin` come from non-browser clients and go on to
+  the authorizer. `OriginPolicy::Any` disables the check (development only; it logs a
+  warning).
+- **Handshake authorization.** `WebSocketServerBuilder::build` fails unless you call
+  either `.authorizer(..)` or the explicit `.allow_anonymous()`. The authorizer runs
+  inside the upgrade handshake, before the connection exists, and returns the
+  connection's `Principal`; a rejection becomes a plain `401`/`403` response.
+- **Bounded resources.** `handshake_timeout` (10 s), `max_connections` (10,000),
+  `max_message_size`/`max_frame_size` (64 KiB), `max_write_buffer_size` (4 MiB) and a
+  per-connection `outbound_queue_capacity` (1,024 messages). A peer that stops reading is
+  evicted with `WebSocketError::SlowConsumer` instead of buffering without limit.
+
 ### Core Components
+
+#### Authorizer and Principal
+
+A `HandshakeAuthorizer` sees the upgrade request (`HandshakeRequest`, an
+`http::Request<()>`) and returns a `Principal` or a `HandshakeRejection`. Any
+`Fn(&HandshakeRequest) -> Result<Principal, HandshakeRejection>` closure is one:
+
+```rust
+use armature_websocket::{HandshakeRejection, HandshakeRequest, Principal};
+
+let authorizer = move |req: &HandshakeRequest| {
+    let token = req
+        .headers()
+        .get("authorization")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.strip_prefix("Bearer "))
+        .ok_or_else(HandshakeRejection::unauthorized)?;
+
+    // Verify the token with your auth stack (e.g. armature_jwt::JwtManager::verify).
+    let user_id = verify_token(token).map_err(|_| HandshakeRejection::unauthorized())?;
+
+    Ok(Principal::new(user_id).with_attribute("role", "member"))
+};
+```
+
+Browsers cannot set an `Authorization` header on a WebSocket upgrade; for browser clients
+authenticate with a session cookie (and rely on the Origin allowlist), or a short-lived
+signed token in the query string. `Principal::anonymous()` is what `allow_anonymous()`
+attaches. `Principal`'s `Debug` output redacts attribute values.
 
 #### Message
 
@@ -66,6 +116,7 @@ internally by the server as clients connect; you get one back from a
 use armature_websocket::RoomManager;
 
 if let Some(connection) = room_manager.get_connection(connection_id) {
+    let who = connection.principal().subject(); // set by the authorizer
     connection.send_text("Private message")?;
     connection.send_json(&payload)?;
     connection.is_open();
@@ -74,8 +125,10 @@ if let Some(connection) = room_manager.get_connection(connection_id) {
 ```
 
 `Connection::send`, `send_text`, `send_binary`, and `send_json` are all
-synchronous — they hand the message to an internal channel that a background
-writer task drains, so there is no `.await` on the send side.
+synchronous — they hand the message to a bounded internal queue that a
+background writer task drains, so there is no `.await` on the send side. When
+the queue is full the peer is a slow consumer: `send` returns
+`WebSocketError::SlowConsumer` and the connection is evicted.
 
 #### Room and RoomManager
 
@@ -120,8 +173,10 @@ Your application logic lives in a `WebSocketHandler` implementation. Only
 `on_message` is required; the rest have no-op or sensible default
 implementations:
 
+Every connection hook receives the `Principal` the authorizer returned:
+
 ```rust
-use armature_websocket::{Message, WebSocketError, WebSocketHandler};
+use armature_websocket::{Message, Principal, WebSocketError, WebSocketHandler};
 use async_trait::async_trait;
 
 #[derive(Clone, Default)]
@@ -129,16 +184,17 @@ struct ChatHandler;
 
 #[async_trait]
 impl WebSocketHandler for ChatHandler {
-    async fn on_connect(&self, connection_id: &str) {
-        println!("{connection_id} connected");
+    async fn on_connect(&self, connection_id: &str, principal: &Principal) {
+        println!("{connection_id} connected as {:?}", principal.subject());
     }
 
-    async fn on_message(&self, connection_id: &str, message: Message) {
+    async fn on_message(&self, connection_id: &str, principal: &Principal, message: Message) {
         // Handle an incoming frame (see examples/websocket_chat.rs for a
-        // full join/chat/leave protocol built on top of this).
+        // full join/chat/leave protocol built on top of this). Authorize
+        // per-message actions (e.g. joining a room) against `principal`.
     }
 
-    async fn on_disconnect(&self, connection_id: &str) {
+    async fn on_disconnect(&self, connection_id: &str, _principal: &Principal) {
         println!("{connection_id} disconnected");
     }
 
@@ -160,11 +216,16 @@ use armature_websocket::{RoomManager, WebSocketServerBuilder};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+// Expose the server explicitly (the default is 127.0.0.1:9001).
 let bind_addr: SocketAddr = "0.0.0.0:3006".parse().unwrap();
 let server = WebSocketServerBuilder::new()
     .bind_addr(bind_addr)
     .max_message_size(64 * 1024)
-    .build(ChatHandler::default());
+    // Browser pages from these origins only.
+    .allowed_origins(["https://chat.example.com"])
+    // Required: an authorizer, or the explicit `.allow_anonymous()`.
+    .authorizer(authorizer)
+    .build(ChatHandler::default())?; // returns WebSocketResult<WebSocketServer<_>>
 
 // The server owns a RoomManager; clone the Arc out so other parts of your
 // app (e.g. an HTTP controller) can join/broadcast into the same rooms.
@@ -177,6 +238,10 @@ tokio::spawn(async move {
 });
 ```
 
+Without the builder, `WebSocketServer::new(config, handler, authorizer)` takes a
+`WebSocketServerConfig` and an authorizer (`AllowAnonymous` to opt out) and also returns
+a `WebSocketResult`.
+
 ### Usage Example
 
 The pattern below mirrors `examples/websocket_chat.rs`: a real
@@ -187,7 +252,7 @@ and vice versa.
 #### 1. Define the handler
 
 ```rust
-use armature_websocket::{Message, RoomManager, WebSocketError, WebSocketHandler};
+use armature_websocket::{Message, Principal, RoomManager, WebSocketError, WebSocketHandler};
 use async_trait::async_trait;
 use std::sync::{Arc, OnceLock};
 
@@ -202,13 +267,14 @@ struct ChatHandler;
 
 #[async_trait]
 impl WebSocketHandler for ChatHandler {
-    async fn on_message(&self, connection_id: &str, message: Message) {
+    async fn on_message(&self, connection_id: &str, principal: &Principal, message: Message) {
         let Some(text) = message.as_text() else { return };
         // Parse `text` into your own protocol and call
-        // chat_rooms().join_room(...) / .broadcast_to_room(...) as needed.
+        // chat_rooms().join_room(...) / .broadcast_to_room(...) as needed,
+        // checking that `principal` may join the requested room.
     }
 
-    async fn on_disconnect(&self, connection_id: &str) {
+    async fn on_disconnect(&self, connection_id: &str, _principal: &Principal) {
         // RoomManager::unregister_connection (called by the server right
         // after this hook returns) already removes the connection from
         // every room it was a member of.
@@ -219,14 +285,19 @@ impl WebSocketHandler for ChatHandler {
 #### 2. Start the WebSocket server and publish its RoomManager
 
 ```rust
-use armature_websocket::WebSocketServerBuilder;
+use armature_websocket::{HandshakeRejection, HandshakeRequest, Principal, WebSocketServerBuilder};
 use std::net::SocketAddr;
 
-fn start_ws_server() {
+fn start_ws_server() -> armature_websocket::WebSocketResult<()> {
     let bind_addr = SocketAddr::from(([0, 0, 0, 0], 3006));
     let server = WebSocketServerBuilder::new()
         .bind_addr(bind_addr)
-        .build(ChatHandler::default());
+        .allowed_origins(["https://chat.example.com"])
+        .authorizer(|req: &HandshakeRequest| {
+            // See "Authorizer and Principal" above.
+            authenticate(req).ok_or_else(HandshakeRejection::unauthorized)
+        })
+        .build(ChatHandler::default())?;
 
     CHAT_ROOMS
         .set(Arc::clone(server.room_manager()))
@@ -235,6 +306,7 @@ fn start_ws_server() {
     tokio::spawn(async move {
         let _ = server.run().await;
     });
+    Ok(())
 }
 ```
 
@@ -288,7 +360,7 @@ struct AppModule;
 
 #[tokio::main]
 async fn main() {
-    start_ws_server();
+    start_ws_server().expect("WebSocket server config");
 
     let app = Application::create::<AppModule>().await;
     app.listen(3005).await.unwrap();
@@ -552,12 +624,21 @@ if last_message.elapsed() < Duration::from_millis(100) {
 }
 ```
 
-4. **Authentication**
+4. **Authentication and Authorization**
+
+Authenticate in the handshake authorizer (see [Authorizer and Principal](#authorizer-and-principal)),
+never in a message after the connection is open. Allowlist the browser origins that may
+connect, and use `.allow_anonymous()` only for genuinely public feeds. Authorize
+per-message actions against the `Principal` passed to `on_message`:
+
 ```rust
-// Validate before allowing a connection to join a room, e.g. as part of
-// handling a `join` message in WebSocketHandler::on_message.
-fn validate_connection(token: &str) -> Result<UserId, Error> {
-    verify_token(token)
+async fn on_message(&self, connection_id: &str, principal: &Principal, message: Message) {
+    if let Ok(Join { room }) = message.parse_json::<Join>() {
+        if !may_join(principal, &room) {
+            return; // or send an error frame
+        }
+        let _ = chat_rooms().join_room(connection_id, &room);
+    }
 }
 ```
 
@@ -667,10 +748,13 @@ use tokio::net::TcpListener;
 async fn test_websocket_broadcast() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
+    drop(listener); // free the port for the server
 
     let server = WebSocketServerBuilder::new()
         .bind_addr(addr)
-        .build(ChatHandler::default());
+        .allow_anonymous() // test clients send no Origin and no credentials
+        .build(ChatHandler::default())
+        .unwrap();
     let rooms = Arc::clone(server.room_manager());
 
     tokio::spawn(async move {
@@ -717,9 +801,10 @@ async fn test_sse_stream() {
 ### WebSocket Issues
 
 **Connection fails:**
-- Check HTTP → WebSocket upgrade
-- Verify protocol headers
-- Check firewall/proxy settings
+- `403 Origin not allowed`: add the page's origin to `.allowed_origins([..])`
+- `401`/`403` from the authorizer: check the credentials the client sends
+- Server unreachable from other hosts: the default bind is `127.0.0.1`; set `.bind_addr(..)`
+- Check HTTP → WebSocket upgrade, protocol headers, firewall/proxy settings
 
 **Messages not received:**
 - Verify connection is open
@@ -744,7 +829,6 @@ Planned features:
 
 - [ ] `#[websocket]` decorator for automatic upgrade
 - [ ] `#[sse]` decorator for streaming responses
-- [ ] Built-in authentication middleware
 - [ ] Rate limiting decorators
 - [ ] Redis adapter for clustering
 - [ ] Compression support
@@ -754,7 +838,7 @@ Planned features:
 
 Armature provides comprehensive real-time communication support:
 
-✅ **WebSocket** - Full-duplex communication with rooms and broadcasting
+✅ **WebSocket** - Full-duplex communication with rooms and broadcasting, authorized at the handshake
 ✅ **SSE** - Efficient server-to-client streaming
 ✅ **Type-Safe** - Compile-time verified message types
 ✅ **Easy to Use** - Simple, intuitive APIs
