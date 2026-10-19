@@ -89,7 +89,7 @@ services:
   # Adminer - Database Admin UI
   # ============================================
   adminer:
-    image: adminer:5.5.1-standalone@sha256:e3a6b4942dd088a29cc8bbce22553429247c5c2b30b07d856ae49012b5c84a5b
+    image: adminer:6.1.2-standalone@sha256:49a7d30e71de97fb18933ffe7d46cc2b343c49fd7a63a7791c8be2548eb65115
     ports:
       - "127.0.0.1:8080:8080"
     environment:
