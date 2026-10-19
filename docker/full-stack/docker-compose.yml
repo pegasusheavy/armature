@@ -200,7 +200,7 @@ services:
   # RabbitMQ (Message Queue)
   # ============================================
   rabbitmq:
-    image: rabbitmq:4.1.8-management-alpine@sha256:72b92455b387f14d44efa3b9b4553bae3d8d82cd515376712ae08d67fc9a7b0d
+    image: rabbitmq:4.3.5-management-alpine@sha256:b3b8b7f95f5382a19f9ea33540e604f30aad081d37ad9aba72255135765373a1
     environment:
       RABBITMQ_DEFAULT_USER: armature
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env (openssl rand -hex 32)}
